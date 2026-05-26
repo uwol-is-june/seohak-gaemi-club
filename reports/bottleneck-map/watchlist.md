@@ -1,6 +1,6 @@
 # 瓶颈猎手观察名单（持续更新）
 
-最后更新：2026-05-26 13:14（第九轮扫描）  
+最后更新：2026-05-26 14:11（第十轮扫描）  
 下次复查：下次扫描
 
 ---
@@ -125,6 +125,33 @@
 ---
 
 ## 持续跟踪（信号强度★★★）
+
+### 4b. Kanto Denka Kogyo（TSE: 4047.T）⏳ 待纯正度验证 【2026-05-26 14:11 初步识别】
+**瓶颈环节**：NF3/WF6半导体特种气体（A级，见master-map 3b条目）  
+**市值**：¥90-98B ≈ **$580-630M USD**（小市值✅）  
+**估值（初步绿灯，待确认）**：
+- P/S：**~1.4x**（¥98B / ¥65.4B收入）—— 极低，绿灯
+- P/E：**~24x**（¥98B / ¥3.79B净利）—— 合理，绿灯
+- 净利润增速：+17% YoY
+**瓶颈核心逻辑**：
+- Mitsui Chemicals 2026年3月退出NF3生产 → Kanto Denka成日本NF3唯一主要供应商（90%产能）
+- 2025-08-07工厂火灾已验证：Kanto Denka单点故障时TSMC/Samsung/Micron/Kioxia/Rapidus全部进入紧急状态
+- 同时是WF6生产商，受中国钨出口管制影响，H2 2026 WF6库存告急
+- NF3+WF6+ClF3+SF6全系列半导体特种气体，下游客户几乎涵盖所有全球顶级晶圆厂
+
+**关键未确认项（决定是否正式加入★★★+）**：
+- ⏳ **Precision Chemicals分部收入占比需>30%**（推算可能35%+，但需年报/IR确认）
+- ⏳ 2025火灾后生产能力是否完全恢复
+- ⏳ NF3产能扩张计划（若无扩张，集中供应风险持续）
+
+**估值安全边际（初步）**：以¥98B（$630M）买入，10年25xPE退出，年化10%需净利润$65M（当前$24M需2.7倍，CAGR约10%）。若NF3/WF6涨价周期推动利润率提升（当前5.8%→10%），目标可达，有安全边际。
+
+**下一步**：查公司IR或年报确认Precision Chemicals分部收入 → 若通过则升★★★并建议执行`/investment-team`
+
+**加入日期**：2026-05-26  
+**来源**：[TrendForce WF6供应中断](https://www.trendforce.com/news/2026/04/08/news-potential-supply-disruptions-of-tungsten-hexafluoride-from-japan-implications-for-the-semiconductor-industry/) | [Kanto Denka火灾 TrendForce](https://www.trendforce.com/news/2025/08/14/news-japans-kanto-denka-kogyo-fire-threatens-nf%E2%82%83-supply-alerts-chipmakers-like-tsmc-and-rapidus/) | [The Elec 钨供应风险](https://www.thelec.net/news/articleView.html?idxno=6325) | [Mitsui NF3退出 AlchemPro](https://www.alchempro.com/news/company-news/chemicals-news/japan-s-mitsui-chemicals-plans-nf3-exit-by-march-2026-302927-newsdetails.htm)
+
+---
 
 ### 5. 金盘科技 (688676.SH，上交所科创板) ★★★ 【2026-05-25新增】
 **市值**：约¥150亿（约$20亿美元）  
@@ -335,3 +362,7 @@
 | 2026-05-26 13:14 | AII.TO | **叙事升级（评级★★维持）** | 三大新事实确认：TPW绑定offtake（专供美国国防）+Montana项目（H2 2026）+HQ迁Montana；P/S修正~51x；10年退出需38.9% CAGR，无安全边际 |
 | 2026-05-26 13:14 | UAMY | **CFO黄灯（评级★★★维持）** | CFO Richard Isaak 5月4日起"个人原因"停职，Shawn Winkler临时接任；关键爬坡期管理层变动是黄灯但不颠覆论点 |
 | 2026-05-26 13:14 | master-map | **新增重稀土国防链瓶颈** | 条目0c2：中国4月4日出口管制7种重稀土（含yttrium/SmCo所需）；美国导弹库存耗尽后依赖中国供应来重建；S级地缘政治瓶颈；无可投资纯正标的（全部P/S 200x+） |
+| 2026-05-26 14:11 | 4047.T | **初步识别，待纯正度验证** | NF3/WF6半导体特种气体A级新瓶颈；Mitsui退出NF3→Kanto Denka日本唯一主要供应商；P/S 1.4x+P/E 24x双绿灯；待确认Precision Chemicals分部>30% |
+| 2026-05-26 14:11 | AII.TO | **Phase 1完成状态确认** | "Almonty Completes Phase 1 of Sangdong Tungsten Mine"正式公告，从commissioning进入完成阶段；评级★★维持 |
+| 2026-05-26 14:11 | UAMY | **$27M DoW DPA追加确认（评级★★★维持）** | DPA Title III $27M奖项（与$248M DLA合同独立）：$16.2M已拨款，Q1 $12.8M里程碑执行；政府资金多元化 |
+| 2026-05-26 14:11 | CHG.L | **股价554p更新（评级★★★★维持）** | +4.3% vs上次记录531p；分析师目标633p；June 9财报倒计时14天 |

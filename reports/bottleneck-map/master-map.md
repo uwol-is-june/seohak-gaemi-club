@@ -1,6 +1,6 @@
 # 供应链瓶颈总地图（持续更新）
 
-最后更新：2026-05-26 13:14（第九轮扫描）
+最后更新：2026-05-26 14:11（第十轮扫描）
 
 ---
 
@@ -142,6 +142,36 @@
 ---
 
 ## A级瓶颈（严重受限）
+
+### 3b. NF3/WF6半导体特种气体 【2026-05-26 14:11 新增，A级，连接AI制造+半导体再工业化】
+**核心数据**：
+- **Mitsui Chemicals 2026年3月正式退出NF3生产**（Shimonoseki工厂关闭），导致 **Kanto Denka Kogyo 成为日本唯一NF3主要生产商**（占日本产能约90%）
+- **WF6（六氟化钨）**：多家日本供应商因中国钨出口管制无法获得原材料，已通知韩国客户"H2 2026可能中断"，现有库存仅维持至2026年中
+- WF6价格涨幅：中国管制以来日韩供应商已涨价70-90%
+- 应用场景：NF3用于CVD腔室清洁（所有先进制程晶圆厂），WF6用于7nm以下芯片钨互连沉积（BEOL）
+- 2025-08-07：Kanto Denka群马县NF3工厂火灾（1人死亡），当时已引发TSMC/Samsung/Kioxia/Rapidus供应预警
+
+**瓶颈判定**：
+- 供给集中🔴（日本NF3：Kanto Denka 90%，Mitsui已退出；WF6：中国管制断原料）
+- 扩产周期🔴（氟化工厂建设多年）
+- 替代难度🔴（设计导入，新供应商认证>1年）
+- 产能利用率🔴（2025火灾已验证产能极度紧张）
+- 需求增速🔴（AI GPU更多钨层/CVD步骤）
+- 客户认证🔴（>1年）
+= **A级**（6红灯；NF3层有升S级条件）
+
+**NF3 vs WF6区别说明**：
+- NF3：Mitsui退出为结构性减供；Kanto Denka是唯一主要日本来源；与钨出口管制**独立**
+- WF6：受钨出口管制连带；多家日本厂商均受影响，非单一供应商
+
+**相关公司**：**Kanto Denka Kogyo（TSE: 4047.T，初步识别，待确认>30%纯正度）**
+- 市值：¥90-98B ≈ $580-630M；P/S ~1.4x；P/E ~24x；日本NF3+WF6+ClF3+SF6全系列特种气体
+- 下游客户：TSMC、Samsung、Micron、Sony、Kioxia、Rapidus
+- 关键未确认项：Precision Chemicals分部收入占比（需>30%确认纯正度）
+
+**来源**：[TrendForce WF6 2026-04-08](https://www.trendforce.com/news/2026/04/08/news-potential-supply-disruptions-of-tungsten-hexafluoride-from-japan-implications-for-the-semiconductor-industry/) | [The Elec 钨供应风险](https://www.thelec.net/news/articleView.html?idxno=6325) | [Digitimes SK Hynix+氦气+钨](https://www.digitimes.com/news/a20260409PD211/2026-sk-hynix-chipmakers-production.html) | [Sourceability Kanto Denka火灾](https://sourceability.com/post/supply-chain-shocks-nf3-fire-natcast-fallout) | [TrendForce Kanto Denka NF3火灾](https://www.trendforce.com/news/2025/08/14/news-japans-kanto-denka-kogyo-fire-threatens-nf%E2%82%83-supply-alerts-chipmakers-like-tsmc-and-rapidus/)
+
+---
 
 ### 4. CoWoS先进封装
 **核心数据**：TSMC CoWoS月产能从~80K片扩至年底约140K片，Nvidia预订60%  
@@ -341,3 +371,7 @@
 | 2026-05-26 13:14 | **Almonty三大新事实** | 钨条目（0c）更新：①TPW绑定offtake（专供美国国防，15年）；②Montana Gentung项目收购（H2 2026可能产出）；③HQ迁至Montana；P/S修正为~51x（非37x）；10年退出需38.9% CAGR，无安全边际 |
 | 2026-05-26 13:14 | **Nittobo股票拆分** | ABF/T-glass条目更新：Nittobo 5:1拆分（2026-07-01）+上调FY2026展望；正面催化剂；评级★★★★维持 |
 | 2026-05-26 13:14 | **UAMY CFO黄灯** | CFO Richard Isaak 5月4日起"个人原因"停职，Shawn Winkler临时接任；市场反应平静；评级★★★维持 |
+| 2026-05-26 14:11 | **新增 A级** | NF3/WF6半导体特种气体（3b）：Mitsui退出NF3→Kanto Denka成日本唯一NF3主要供应商（90%产能）；WF6受中国钨管制影响，H2 2026库存告急；Kanto Denka（4047.T）初步识别，P/S 1.4x绿灯，待确认分部纯正度 |
+| 2026-05-26 14:11 | **Almonty状态确认** | Sangdong Phase 1正式完成（Yahoo Finance/StockTitan公告），从commissioning进入正式完成阶段；Phase 2（4600吨/年）为下一里程碑 |
+| 2026-05-26 14:11 | **UAMY $27M DoW DPA追加** | DPA Title III $27M独立奖项确认（与$248M DLA合同独立）：$16.2M已拨款，Q1 $12.8M里程碑已执行；政府资金来源更多元 |
+| 2026-05-26 14:11 | **CHG股价更新** | Chemring 554p（+4.3% vs上次记录531p）；分析师目标633p；June 9财报倒计时14天 |
