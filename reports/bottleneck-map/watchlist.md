@@ -1,6 +1,6 @@
 # 瓶颈猎手观察名单（持续更新）
 
-最后更新：2026-05-26 09:09（第五轮扫描）  
+最后更新：2026-05-26 10:10（第六轮扫描）  
 下次复查：下次扫描
 
 ---
@@ -169,9 +169,36 @@
 
 ---
 
+### 9. United States Antimony Corporation (UAMY，NYSE) ★★★ 【2026-05-26 10:10 新增】
+**瓶颈环节**：锑（Antimony）供应（国防弹药链，A级，新加入）  
+**市值**：~$1.25B（股价约$8.42，2026-05-25）  
+**瓶颈核心逻辑**：美国唯一运营中的国内锑冶炼商（Thompson Falls, Montana）；全球锑缺口40,000 MT/年；中国出口管制断供后美国100%依赖进口；DoD/DLA $245M五年合同（锑金属锭，国防战略储备）；额外DoD DOTC资助$80M+  
+**财务快照**：
+- FY2025收入：$39.3M（+163% YoY）；毛利率25%；净亏损$4.34M（含$6.7M非现金）
+- 2026年收入指引：$125M（合同积压$354M）
+- **⚠️ Q1 2026重大miss**：收入$6.8M，净亏$11.3M；毛利率16%（vs FY2025的25%）；成本/磅$16.28（+69%）
+- Thompson Falls新炉灶预计2026年7月中旬80%投产
+**估值状态**：
+- P/S trailing（FY2025）= 31.8x（增速163% > 100%，不触红灯，触黄灯）
+- P/S forward（2026指引$125M）= 10x（绿灯，若执行）
+- 净亏损 + P/S>15x → **黄灯，最高★★★**，需等Q2验证盈利路径
+- 10年25xPE退出：需净利润~$50M（$500M+收入@10%净利率），CAGR约15%，技术可达但假设积极
+**信号验证**：
+- ✅ DoD DLA $245M五年合同——客户验证（最高级别：政府战略储备采购）
+- ✅ 全球锑缺口结构性（40,000 MT/年，2024年出口管制已生效）
+- ✅ FY2025收入+163%——供不应求初步体现
+- ⚠️ Q1 2026 miss严重：$6.8M收入 vs 实现$125M全年需Q2-Q4平均$39.3M/季
+- ⚠️ 成本通胀：每磅成本+69%，毛利率恶化
+- ❌ 尚无盈利（GAAP），Q1亏损$11.3M加速
+**催化剂**：Thompson Falls新炉灶中旬投产（7月）；Q2 2026财报（预计2026年8月）；锑价走势  
+**建议动作**：持续跟踪，等Q2财报验证产能爬坡是否按计划落地；若Q2收入>$25M且毛利率回升至20%+则升级评估  
+**来源**：[UAMY FY2025](https://www.accessnewswire.com/newsroom/en/metals-and-mining/united-states-antimony-corporation-reports-fiscal-year-2025-financial-and-operati-1149817) | [UAMY Q1 2026](https://www.stocktitan.net/news/UAMY/united-states-antimony-corporation-reports-first-quarter-2026-7w2rb5fb8cwd.html) | [锑价+300%](https://www.mining.com/web/metal-for-bullets-risks-bigger-shortage-after-near-300-surge/) | [DoD $245M合同](https://markets.financialcontent.com/wral/article/marketminute-2025-12-24-domestic-antimony-powerhouse-united-states-antimony-corp-secures-massive-defense-and-industrial-contracts-amid-geopolitical-supply-shifts)
+
+---
+
 ## 观察中（信号强度★★）
 
-### 9. L3Harris Missile Solutions（即将IPO） 【更新：旧编号8，顺延】
+### 10. L3Harris Missile Solutions（即将IPO） 【更新：旧编号9，顺延】
 **代码**：待定（来自LHX分拆）  
 **瓶颈环节**：固体火箭发动机（A级）  
 **待验证**：S-1提交进程；IPO估值；DoD $10亿优先股稀释条款；战略自主性  
@@ -225,3 +252,4 @@
 | 2026-05-26 08:10 | ACLS | **新增★★★（VECO合并后载体）** | 合并后MOCVD+离子注入双平台，合并后P/S~3.3x合理；等SAMR结果+回调至分析师目标区间$100-110再评估 |
 | 2026-05-26 09:09 | CHG.L | **Sole-source确认，候选★★★★★** | Nammo"完全依赖Chemring Nobel作为MCX唯一合格供应商"——合同文本证据；12年Diehl框架协议£200M；German/NATO 155mm供应链卡脖子位置锁定 |
 | 2026-05-26 09:09 | LEU | **信息更新（评级不变★★★）** | Oak Ridge $560M扩产（+Fluor/Palantir）；DOE $900M任务订单；⚠️Q1净利润$10M（vs去年$27.2M，下滑63%），需监控盈利质量 |
+| 2026-05-26 10:10 | UAMY | **新增★★★** | 锑A级瓶颈（国防弹药链）：DoD $245M合同；FY2025收入+163%；但Q1 2026严重miss（$6.8M收入，$11.3M净亏）；等Q2财报+Thompson Falls产能验证 |

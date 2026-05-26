@@ -1,6 +1,6 @@
 # 供应链瓶颈总地图（持续更新）
 
-最后更新：2026-05-26 09:09（第五轮扫描）
+最后更新：2026-05-26 10:10（第六轮扫描）
 
 ---
 
@@ -148,6 +148,26 @@
 
 **来源**：[Chemring 2025年报](https://www.chemring.com/~/media/Files/C/Chemring-V3/docs/chemring-annual-report-and-accounts-2025-v1.pdf) | [L3Harris IPO计划](https://www.gurufocus.com/news/8831123/l3harris-lhx-moves-forward-with-ipo-plans-for-missile-solutions-business) | [EPC.EU硝化纤维素报告](https://www.epc.eu/publication/running-on-empty-the-chemical-shortage-undermining-european-defence/) | [Diehl MCX 12年合同 — defence-industry.eu](https://defence-industry.eu/chemring-secures-long-term-contract-with-diehl-defence-for-energetic-materials-supply/) | [Lake City罢工 — National Interest](https://nationalinterest.org/blog/buzz/ammunition-plant-strike-could-leave-us-soldiers-without-bullets-ps-041126)
 
+### 9b. 锑（Antimony）—— 国防弹药链隐性化学品瓶颈 【2026-05-26 10:10 新增，A级】
+
+**核心数据**：
+- 全球需求约120,000 MT/年；全球产能约80,000 MT/年；**结构性缺口约40,000 MT/年（-33%）**
+- 中国控制全球锑化学品销售约46%；2024年扩大出口管制，NATO供应链失去主要来源
+- 美国历史上100%依赖进口，无国内采矿产能（UAMY正在重建）
+- 用途：引信药（初级炸药基础成分）、穿甲弹铅锑合金、夜视仪/红外传感器镀膜
+- 替代方案：无短期可行方案（BAE研究无锑引信，仍处实验室阶段）
+- 锑价较2023年基础累计涨幅约300%
+
+**瓶颈判定**：供给集中🔴（中国46%，美国零产能）| 扩产周期🔴（新矿山10-15年）| 替代难度🔴（引信/夜视仪无近期替代）| 需求增速🔴（NATO重整军备驱动）= **A级**（非S级：渐进缺口，有库存缓冲，不同于氦气的突发断供）
+
+**相关公司**：
+- United States Antimony (UAMY，NYSE，~$1.25B，美国唯一运营中国内锑冶炼商，★★★ 观察名单新增)
+- Perpetua Resources (PPTA，纳斯达克，Stibnite Gold+Sb项目，开发阶段，无收入，不追踪)
+
+**警告**：UAMY Q1 2026严重miss（营收$6.8M，净亏$11.3M）；Thompson Falls产能爬坡预计Q3 2026才完成；全年$125M指引执行风险高。
+
+**来源**：[Atlas Institute NATO Ammo Gap](https://atlasinstitute.org/the-strategic-ammunition-gap-natos-industrial-lag-risks-deterrence/) | [Antimony Supply Crisis — Skillings.net](https://skillings.net/antimony-supply-crisis-what-it-is-why-it-matters-2026-outlook/) | [UAMY Q1 2026 — StockTitan](https://www.stocktitan.net/news/UAMY/united-states-antimony-corporation-reports-first-quarter-2026-7w2rb5fb8cwd.html) | [UAMY FY2025 — AccessNewswire](https://www.accessnewswire.com/newsroom/en/metals-and-mining/united-states-antimony-corporation-reports-fiscal-year-2025-financial-and-operati-1149817)
+
 ---
 
 ## B级瓶颈（有压力但供应侧在快速响应）
@@ -208,3 +228,4 @@
 | 2026-05-26 09:09 | **Chemring sole-source确认** | Nammo "完全依赖Chemring Nobel作为MCX唯一合格供应商"——12年Diehl合同文本证据；德国155mm供应链咽喉位置文本锁定 |
 | 2026-05-26 09:09 | **新增背景信号** | Lake City Army Ammunition Plant罢工（4/4起）：1350+工人，生产几乎停摆；30%美军.223/5.56产量受影响；性质：劳资纠纷非结构性瓶颈；不列主追踪，作为美国弹药供应链压力背景信号 |
 | 2026-05-26 09:09 | **LEU信息更新** | Centrus Oak Ridge $560M扩产（1月宣布）+ Fluor工程合作 + DOE $900M HALEU任务订单 + Q1净利润大幅下滑（$27.2M→$10M）；增速放缓需关注 |
+| 2026-05-26 10:10 | **新增 A级** | 锑（Antimony）：全球缺口40,000 MT/年，中国46%控制+出口管制，NATO弹药链强依赖，无近期替代；UAMY加入观察名单★★★（Q1 miss，等产能爬坡验证） |
