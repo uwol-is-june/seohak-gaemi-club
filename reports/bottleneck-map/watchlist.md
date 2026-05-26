@@ -196,9 +196,23 @@
 
 ---
 
+### 9. United States Antimony Corporation (UAMY，NYSE) ★★★ 【2026-05-26 10:10 新增】
+**瓶颈环节**：锑（Antimony）供应（国防弹药链，A级，新加入）  
+**市值**：~$1.25B（股价约$8.42，2026-05-25）  
+**瓶颈核心逻辑**：美国唯一运营中的国内锑冶炼商（Thompson Falls, Montana）；全球锑缺口40,000 MT/年；中国出口管制断供后美国100%依赖进口；DoD/DLA $245M五年合同（锑金属锭，国防战略储备）；额外DoD DOTC资助$80M+  
+**财务快照**：FY2025收入$39.3M（+163% YoY）；毛利率25%；净亏损$4.34M；2026年收入指引$125M（合同积压$354M）；**Q1 2026 miss**：收入$6.8M，净亏$11.3M，毛利率16%；Thompson Falls新炉灶7月中旬80%投产  
+**估值状态**：P/S forward 10x（若$125M指引实现，绿灯）；黄灯（亏损+trailing PS高）；最高★★★  
+**信号验证**：✅ DoD $245M五年合同；✅ 全球锑结构性缺口40,000 MT/年；⚠️ Q1严重miss；❌ 尚无盈利  
+**催化剂**：Thompson Falls 7月投产；Q2 2026财报（8月）；锑价走势  
+**建议动作**：持续跟踪；等Q2财报验证产能爬坡；Q2收入>$25M+毛利率>20%则升级  
+**加入日期**：2026-05-26  
+**来源**：[UAMY FY2025](https://www.accessnewswire.com/newsroom/en/metals-and-mining/united-states-antimony-corporation-reports-fiscal-year-2025-financial-and-operati-1149817) | [UAMY Q1 2026](https://www.stocktitan.net/news/UAMY/united-states-antimony-corporation-reports-first-quarter-2026-7w2rb5fb8cwd.html) | [DoD $245M合同](https://markets.financialcontent.com/wral/article/marketminute-2025-12-24-domestic-antimony-powerhouse-united-states-antimony-corp-secures-massive-defense-and-industrial-contracts-amid-geopolitical-supply-shifts)
+
+---
+
 ## 观察中（信号强度★★）
 
-### 9. Almonty Industries（TSX:AII / OTC:ALM）★★ 【2026-05-26午后 新增】
+### 10. Almonty Industries（TSX:AII / OTC:ALM）★★ 【2026-05-26午后 新增】
 **代码**：AII.TO（TSX）/ ALM（OTC）  
 **瓶颈环节**：西方钨矿供应（S级跨趋势瓶颈——AI+国防+工业）  
 **市值**：C$5.22B（约$3.8B USD）  
@@ -214,7 +228,7 @@
 
 ---
 
-### 10. L3Harris Missile Solutions（即将IPO） 【更新：旧编号8，顺延】
+### 11. L3Harris Missile Solutions（即将IPO） 【更新：旧编号8，顺延】
 **代码**：待定（来自LHX分拆）  
 **瓶颈环节**：固体火箭发动机（A级）  
 **待验证**：S-1提交进程；IPO估值；DoD $10亿优先股稀释条款；战略自主性  
@@ -222,7 +236,7 @@
 
 ---
 
-### 10. 三变科技 (002112.SZ)
+### 12. 三变科技 (002112.SZ)
 **代码**：002112.SZ  
 **瓶颈环节**：数据中心大容量变压器（S级受益）  
 **待验证**：关税70%对出口的实际冲击；xAI订单可持续性；A股估值  
@@ -272,3 +286,4 @@
 | 2026-05-26（午后） | 3110.T | **新增★★★★重点关注** | Nittobo：T-glass 90-100%垄断；P/E 24.8x绿灯；$5.9B市值；5/5 Buy；Apple/Nvidia/Google/Amazon争夺产能；今日最重要新发现 |
 | 2026-05-26（午后） | AII.TO | **新增★★观察中** | Almonty Industries：西方最大钨矿纯正标的；Q1营收+221% YoY；但P/S~37x高位；Sangdong Phase 2产量待验证 |
 | 2026-05-26（午后） | ICL | **排除** | 溴化物业务占总收入仅17.3%，不达30%纯正度门槛；正式不追踪 |
+| 2026-05-26 10:10 | UAMY | **新增★★★** | 锑A级瓶颈（国防弹药链）；DoD $245M合同；FY2025收入+163%；但Q1 2026严重miss（$6.8M收入，$11.3M净亏）；等Q2财报+Thompson Falls产能验证 |

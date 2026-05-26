@@ -182,6 +182,26 @@
 
 **来源**：[Chemring 2025年报](https://www.chemring.com/~/media/Files/C/Chemring-V3/docs/chemring-annual-report-and-accounts-2025-v1.pdf) | [L3Harris IPO计划](https://www.gurufocus.com/news/8831123/l3harris-lhx-moves-forward-with-ipo-plans-for-missile-solutions-business) | [EPC.EU硝化纤维素报告](https://www.epc.eu/publication/running-on-empty-the-chemical-shortage-undermining-european-defence/) | [Diehl MCX 12年合同 — defence-industry.eu](https://defence-industry.eu/chemring-secures-long-term-contract-with-diehl-defence-for-energetic-materials-supply/) | [Lake City罢工 — National Interest](https://nationalinterest.org/blog/buzz/ammunition-plant-strike-could-leave-us-soldiers-without-bullets-ps-041126)
 
+### 9b. 锑（Antimony）—— 国防弹药链隐性化学品瓶颈 【2026-05-26 10:10 新增，A级】
+
+**核心数据**：
+- 全球需求约120,000 MT/年；全球产能约80,000 MT/年；**结构性缺口约40,000 MT/年（-33%）**
+- 中国控制全球锑化学品销售约46%；2024年扩大出口管制，NATO供应链失去主要来源
+- 美国历史上100%依赖进口，无国内采矿产能（UAMY正在重建）
+- 用途：引信药（初级炸药基础成分）、穿甲弹铅锑合金、夜视仪/红外传感器镀膜
+- 替代方案：无短期可行方案（BAE研究无锑引信，仍处实验室阶段）
+- 锑价较2023年基础累计涨幅约300%
+
+**瓶颈判定**：供给集中🔴（中国46%，美国零产能）| 扩产周期🔴（新矿山10-15年）| 替代难度🔴（引信/夜视仪无近期替代）| 需求增速🔴（NATO重整军备驱动）= **A级**（非S级：渐进缺口，有库存缓冲，不同于氦气的突发断供）
+
+**相关公司**：
+- United States Antimony（UAMY，NYSE，~$1.25B，美国唯一运营中国内锑冶炼商，★★★ 观察名单新增）
+- Perpetua Resources（PPTA，纳斯达克，Stibnite Gold+Sb项目，开发阶段，无收入，不追踪）
+
+**警告**：UAMY Q1 2026严重miss（营收$6.8M，净亏$11.3M）；Thompson Falls产能爬坡预计Q3 2026才完成；全年$125M指引执行风险高。
+
+**来源**：[Atlas Institute NATO Ammo Gap](https://atlasinstitute.org/the-strategic-ammunition-gap-natos-industrial-lag-risks-deterrence/) | [Antimony Supply Crisis](https://skillings.net/antimony-supply-crisis-what-it-is-why-it-matters-2026-outlook/) | [UAMY Q1 2026](https://www.stocktitan.net/news/UAMY/united-states-antimony-corporation-reports-first-quarter-2026-7w2rb5fb8cwd.html) | [UAMY FY2025](https://www.accessnewswire.com/newsroom/en/metals-and-mining/united-states-antimony-corporation-reports-fiscal-year-2025-financial-and-operati-1149817)
+
 ---
 
 ## B级瓶颈（有压力但供应侧在快速响应）
@@ -246,3 +266,4 @@
 | 2026-05-26（午后） | **投资标的排除 溴化物0b** | ICL Group Industrial Products（含溴化物）仅占总收入17.3%，不达30%纯正度门槛；溴化物瓶颈真实但无可投资纯正标的；ICL正式排除出观察名单候选 |
 | 2026-05-26（午后） | **新增 S级** | 钨（W）：中国出口管制消除国际供应，价格+557%，AI+国防双驱动，10年+扩产周期；Almonty Industries（TSX:AII）是西方最大纯正供应商（Sangdong矿韩国，40%非中国需求覆盖潜力） |
 | 2026-05-26（午后） | **新增 L3 可投资标的** | T-glass玻纤布子条目新增Nittobo（3110.T）详情：90-100%市占、P/E 24.8x绿灯、¥921.4B市值、5分析师Buy；ABF→T-glass瓶颈链中首个"真实垄断+估值合理"可投资标的 |
+| 2026-05-26 10:10 | **新增 A级** | 锑（Antimony）9b：全球缺口40,000 MT/年，中国46%控制+出口管制，NATO弹药链强依赖，价格+300%，UAMY加入持续跟踪★★★（Q1 miss，等Thompson Falls产能爬坡） |
