@@ -1,6 +1,6 @@
 # 瓶颈猎手观察名单（持续更新）
 
-最后更新：2026-05-26 午后（第六轮扫描）  
+最后更新：2026-05-26 11:10（第七轮扫描）  
 下次复查：下次扫描
 
 ---
@@ -18,11 +18,13 @@
 **瓶颈核心逻辑**：T-glass（低膨胀系数玻纤布）是防止AI GPU/ASIC先进封装翘曲的关键材料；Nittobo是全球唯一能稳定量产该材料的公司（90-100%市占率）；下游客户Apple、Nvidia、Google、Amazon齐来争夺产能；Nan Ya Plastics计划2027年起提供约20%替代——即2027年前Nittobo是单一来源。  
 **信号验证**：
 - ✅ 2025年8月涨价20%，2026年4月再涨20-30%（定价权确认）
-- ✅ H2 2026 T-glass供应缺口预计>40%（Morgan Stanley）
-- ✅ 投资¥15B扩产（但新产能2027年中前不上市）
+- ✅ H2 2026 T-glass供应缺口预计>40%（Morgan Stanley）；TrendForce量化台湾IC基板厂2026缺口10-20%
+- ✅ 投资¥15B扩产（但新产能2027年H2才上线）
 - ✅ 5位分析师全部Buy，0 Sell
-- ✅ 市值从ATH回调21%（入场时机比高点更合理）
-- ⚠️ T-glass约为Nittobo总营收约20%（估计：电子玻纤约60%总收入 × T-glass约30%的电子玻纤），低于30%纯正度门槛（纯正度问题存在但T-glass是最高利润率分部）
+- ✅ 市值从ATH回调21%（ATH ¥32,900于5/7；今日5/26跌-6.1%至¥25,890）
+- ✅ **【2026-05-26 11:10 新增】Nvidia已签中长期绑定合同**（Digitimes确认），不再是"竞争配额"而是"锁定供给"，其他CSP被进一步挤出
+- ✅ **【2026-05-26 11:10 新增】Meritz证券新研报**：《T-glass缺口加速及未来影响（以三星电机为例）》——首次将三星电机列为受损下游，引发市场更广泛关注
+- ⚠️ T-glass约为Nittobo总营收约20%（估计），低于30%纯正度门槛（纯正度问题存在但T-glass是最高利润率分部）
 - ⚠️ Nan Ya 2027年替代路径存在（20%），长期垄断将部分弱化
 - ⚠️ 日元汇率影响汇算收益
 
@@ -196,17 +198,21 @@
 
 ---
 
-### 9. United States Antimony Corporation (UAMY，NYSE) ★★★ 【2026-05-26 10:10 新增】
+### 9. United States Antimony Corporation (UAMY，NYSE) ★★★ 【2026-05-26 10:10 新增 | 2026-05-26 11:10 操作更新】
 **瓶颈环节**：锑（Antimony）供应（国防弹药链，A级，新加入）  
 **市值**：~$1.25B（股价约$8.42，2026-05-25）  
-**瓶颈核心逻辑**：美国唯一运营中的国内锑冶炼商（Thompson Falls, Montana）；全球锑缺口40,000 MT/年；中国出口管制断供后美国100%依赖进口；DoD/DLA $245M五年合同（锑金属锭，国防战略储备）；额外DoD DOTC资助$80M+  
-**财务快照**：FY2025收入$39.3M（+163% YoY）；毛利率25%；净亏损$4.34M；2026年收入指引$125M（合同积压$354M）；**Q1 2026 miss**：收入$6.8M，净亏$11.3M，毛利率16%；Thompson Falls新炉灶7月中旬80%投产  
-**估值状态**：P/S forward 10x（若$125M指引实现，绿灯）；黄灯（亏损+trailing PS高）；最高★★★  
-**信号验证**：✅ DoD $245M五年合同；✅ 全球锑结构性缺口40,000 MT/年；⚠️ Q1严重miss；❌ 尚无盈利  
-**催化剂**：Thompson Falls 7月投产；Q2 2026财报（8月）；锑价走势  
-**建议动作**：持续跟踪；等Q2财报验证产能爬坡；Q2收入>$25M+毛利率>20%则升级  
+**瓶颈核心逻辑**：美国唯一运营中的国内锑冶炼商（Thompson Falls, Montana）；全球锑缺口40,000 MT/年；中国出口管制断供后美国100%依赖进口；DoD/DLA $248M五年合同（锑金属锭，国防战略储备，其中~$85M为2026年已确认订单）  
+**财务快照**：FY2025收入$39.3M（+163% YoY）；毛利率25%；净亏损$4.34M；2026年收入指引$125M（合同积压$354M）；**Q1 2026 miss**：收入$6.8M，净亏$11.3M，毛利率16%  
+**2026-05-26 11:10 操作更新（重要）**：
+- ✅ Thompson Falls冶炼厂扩产**已于2026年4月完成**（早于7月预测），nameplate产能翻3倍至300-400 t/月；7月中旬目标是新炉灶80%负荷爬坡
+- ✅ **水冶（hydromet）路径新增**：玻利维亚设施产出~150 t/月高纯锑片运至Montana加工；配合Montana nameplate，综合潜在吞吐量达~700-1,000 t/月
+- ✅ **$44M DOE资助申请**：申请将玻利维亚水冶流程复制至美国国内，进一步降低对玻利维亚的地缘依赖  
+**估值状态**：P/S forward 10x（若$125M指引实现）；黄灯（亏损+forward PS偏高）；最高★★★；10年25xPE退出年化约6%，当前价格无安全边际  
+**信号验证**：✅ DoD $248M五年合同（$85M 2026确认）；✅ 全球锑结构性缺口；✅ 扩产比预期提前；⚠️ Q1严重miss；❌ 尚无盈利  
+**催化剂**：Q2 2026财报（8月）为关键验证点；新炉灶7月80%爬坡；锑价走势；DOE $44M资助批复  
+**建议动作**：持续跟踪；等Q2财报验证；Q2收入>$25M+毛利率>20%则升级至★★★★  
 **加入日期**：2026-05-26  
-**来源**：[UAMY FY2025](https://www.accessnewswire.com/newsroom/en/metals-and-mining/united-states-antimony-corporation-reports-fiscal-year-2025-financial-and-operati-1149817) | [UAMY Q1 2026](https://www.stocktitan.net/news/UAMY/united-states-antimony-corporation-reports-first-quarter-2026-7w2rb5fb8cwd.html) | [DoD $245M合同](https://markets.financialcontent.com/wral/article/marketminute-2025-12-24-domestic-antimony-powerhouse-united-states-antimony-corp-secures-massive-defense-and-industrial-contracts-amid-geopolitical-supply-shifts)
+**来源**：[UAMY FY2025](https://www.accessnewswire.com/newsroom/en/metals-and-mining/united-states-antimony-corporation-reports-fiscal-year-2025-financial-and-operati-1149817) | [UAMY Q1 2026](https://www.stocktitan.net/news/UAMY/united-states-antimony-corporation-reports-first-quarter-2026-7w2rb5fb8cwd.html) | [Thompson Falls扩产完成](https://nationaltoday.com/us/mt/thompson-falls/news/2026/04/07/united-states-antimony-secures-248m-defense-contract-expands-antimony-production/) | [水冶设施申请](https://www.stocktitan.net/news/UAMY/united-states-antimony-corporation-announces-new-hydromet-processing-axnl5tzm5xx0.html)
 
 ---
 
@@ -287,3 +293,6 @@
 | 2026-05-26（午后） | AII.TO | **新增★★观察中** | Almonty Industries：西方最大钨矿纯正标的；Q1营收+221% YoY；但P/S~37x高位；Sangdong Phase 2产量待验证 |
 | 2026-05-26（午后） | ICL | **排除** | 溴化物业务占总收入仅17.3%，不达30%纯正度门槛；正式不追踪 |
 | 2026-05-26 10:10 | UAMY | **新增★★★** | 锑A级瓶颈（国防弹药链）；DoD $245M合同；FY2025收入+163%；但Q1 2026严重miss（$6.8M收入，$11.3M净亏）；等Q2财报+Thompson Falls产能验证 |
+| 2026-05-26 11:10 | UAMY | **操作更新（评级不变★★★）** | Thompson Falls冶炼扩产4月已完成（早于7月预测），翻3倍至300-400 t/月；水冶路线：玻利维亚150t/月+Montana最终达700-1000 t/月；$44M DOE水冶设施申请；DoD合同$85M已确认2026订单 |
+| 2026-05-26 11:10 | 3110.T | **信号强化（评级不变★★★★）** | Nvidia中长期绑定合同确认（Digitimes）；Meritz证券《T-glass缺口加速》新研报；TrendForce量化缺口10-20%；今日跌-6.1%至¥25,890，趋近目标区间 |
+| 2026-05-26 11:10 | CW激光器 | **新增B级背景信号** | EML替代路线（CW+SiPh）自身逼近产能极限；同样受MOCVD交期+InP衬底瓶颈制约；无独立新标的，Coherent/Lumentum已在EML条目 |
