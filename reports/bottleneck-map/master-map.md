@@ -1,6 +1,6 @@
 # 供应链瓶颈总地图（持续更新）
 
-最后更新：2026-05-26 11:10（第七轮扫描）
+最后更新：2026-05-26 12:13（第八轮扫描）
 
 ---
 
@@ -79,9 +79,15 @@
 - 2026-03-02：Nvidia宣布向Lumentum、Coherent各投资$20亿美元并签署多年采购协议
 - Lumentum 2026-05-19再下单多台Aixtron G10-AsP MOCVD系统扩产InP激光器
 
+**2026-05-26 12:13 供给侧更新（Coherent Q3 FY2026财报，5/6）**：
+- Coherent确认InP产能将"下季度翻倍"（Q4 FY2026 ≈ 2026年9月），2027年"再翻倍以上"
+- 6英寸晶圆效益：相同面积产出激光芯片>4倍于3英寸，成本<50%；良率已超3英寸
+- 三地同步建设：Sherman TX、Järfälla SE、Zürich CH；Texas州政府追加$1,400万补贴
+- **意义**：Coherent执行力强，部分缓解Nvidia合同内供给；但非Nvidia客户仍被挤出；InP衬底S级约束未变；EML S级评级不变
+
 **相关公司**：Lumentum (LITE), Coherent (COHR), Mitsubishi Electric（未单独上市）
 
-**来源**：[SDxCentral激进采购](https://www.sdxcentral.com/news/nvidias-aggressive-laser-procurement-spurs-supply-chain-fears/) | [Lumentum订购Aixtron设备](https://www.semiconductor-today.com/news_items/2026/may/aixtron-200526.shtml)
+**来源**：[SDxCentral激进采购](https://www.sdxcentral.com/news/nvidias-aggressive-laser-procurement-spurs-supply-chain-fears/) | [Lumentum订购Aixtron设备](https://www.semiconductor-today.com/news_items/2026/may/aixtron-200526.shtml) | [Coherent Q3 FY2026电话会](https://www.fool.com/earnings/call-transcripts/2026/05/06/coherent-cohr-q3-2026-earnings-transcript/) | [Coherent 6英寸InP](https://www.stocktitan.net/news/COHR/coherent-demonstrates-in-p-technology-innovation-with-a-broad-range-bilwkfs4oorr.html)
 
 ---
 
@@ -95,9 +101,14 @@
 
 **L3材料瓶颈（2026-05-26 新发现）**：Cleveland-Cliffs（CLF）是美国唯一国内 GOES（粒取向电工钢）生产商；美国所有变压器厂商国内钢供应均来自单一来源；CLF 正投 $1.5 亿扩产 Weirton 线（+30-40%），但 GOES 是 CLF 年收入 ~$20B 中的一小部分（非纯正标的，不列入主观察名单）
 
+**2026-05-26 12:13 数据更新**：
+- 美国电网互联等待队列升至**2,600 GW**（前次引用2,100 GW，+24%）；北弗吉尼亚/凤凰城/达拉斯等待**4-7年**
+- 高压DC电缆交期>24个月；开关柜约3年；**母线槽（Busway）首次加入长交期类别**（此前不在清单内）
+- 2026年美国计划管道16 GW，实际在建仅约5 GW（~30%），约30-50%项目延迟或取消
+
 **相关公司**：GE Vernova (GEV，大市值), Eaton (ETN，大市值), Powell Industries (POWL，$5.6B), 金盘科技 (688676.SH，~$20亿美元小市值★), 许继电气 (000400.SZ，~$55亿)
 
-**来源**：[美国变压器交期4年 — pv-magazine-usa](https://pv-magazine-usa.com/2026/05/11/u-s-transformer-market-faces-severe-supply-constraints-as-lead-times-extend-to-four-years/) | [12GW数据中心被阻 — Energy News Beat](https://energynewsbeat.co/ai/more-than-half-of-the-data-centers-may-be-delayed-due-to-lack-of-transformers-and-electrical-equipment-2/)
+**来源**：[美国变压器交期4年 — pv-magazine-usa](https://pv-magazine-usa.com/2026/05/11/u-s-transformer-market-faces-severe-supply-constraints-as-lead-times-extend-to-four-years/) | [12GW数据中心被阻 — Energy News Beat](https://energynewsbeat.co/ai/more-than-half-of-the-data-centers-may-be-delayed-due-to-lack-of-transformers-and-electrical-equipment-2/) | [电网互联等待队列 — Grid Interconnection Delays 2026](https://enkiai.com/ai-market-intelligence/grid-interconnection-delays-2026-a-threat-to-us-energy/)
 
 ---
 
@@ -180,7 +191,12 @@
 - Lake City占美国.223/5.56mm NATO小口径弹药约30%产量，由Winchester/Olin（OLN）运营
 - **性质判断**：这是劳资纠纷而非结构性瓶颈，DoD短期影响真实，但可被其他供应商弥补；Olin是负面影响方，不是机会；暂不列入主追踪名单，但作为美国国防弹药供应链压力的背景信号继续跟踪
 
-**来源**：[Chemring 2025年报](https://www.chemring.com/~/media/Files/C/Chemring-V3/docs/chemring-annual-report-and-accounts-2025-v1.pdf) | [L3Harris IPO计划](https://www.gurufocus.com/news/8831123/l3harris-lhx-moves-forward-with-ipo-plans-for-missile-solutions-business) | [EPC.EU硝化纤维素报告](https://www.epc.eu/publication/running-on-empty-the-chemical-shortage-undermining-european-defence/) | [Diehl MCX 12年合同 — defence-industry.eu](https://defence-industry.eu/chemring-secures-long-term-contract-with-diehl-defence-for-energetic-materials-supply/) | [Lake City罢工 — National Interest](https://nationalinterest.org/blog/buzz/ammunition-plant-strike-could-leave-us-soldiers-without-bullets-ps-041126)
+**2026-05-26 12:13 NC瓶颈升级**：
+- **NAPIM正式声明**：NC短缺已从军用蔓延至商业印刷油墨/清漆行业；NC生产商将产能全面优先供应军用；工业级NC可获量大幅收缩；北美出现重大供需失衡
+- **AAC暂停生产**：America's Ammunition Company因"未预见的火药短缺"临时停产；主要火药供应商将全部库存转交军事合同
+- 意义：NC护城河进一步加深，Chemring Nobel的军用NC供给优先级（及定价能力）更强；June 9半年财报前景更佳
+
+**来源**：[Chemring 2025年报](https://www.chemring.com/~/media/Files/C/Chemring-V3/docs/chemring-annual-report-and-accounts-2025-v1.pdf) | [L3Harris IPO计划](https://www.gurufocus.com/news/8831123/l3harris-lhx-moves-forward-with-ipo-plans-for-missile-solutions-business) | [EPC.EU硝化纤维素报告](https://www.epc.eu/publication/running-on-empty-the-chemical-shortage-undermining-european-defence/) | [Diehl MCX 12年合同 — defence-industry.eu](https://defence-industry.eu/chemring-secures-long-term-contract-with-diehl-defence-for-energetic-materials-supply/) | [Lake City罢工 — National Interest](https://nationalinterest.org/blog/buzz/ammunition-plant-strike-could-leave-us-soldiers-without-bullets-ps-041126) | [NAPIM NC声明](https://www.napim.org/aws/NAPIM/pt/sd/news_article/598008/_PARENT/layout_details/false) | [AAC停产 — Guns & Gadgets Daily](https://gunsandgadgetsdaily.com/2026-ammo-shortage/)
 
 ### 9b. 锑（Antimony）—— 国防弹药链隐性化学品瓶颈 【2026-05-26 10:10 新增，A级】
 
@@ -288,3 +304,7 @@
 | 2026-05-26 11:10 | **Nittobo信号强化** | Nvidia中长期绑定合同确认（Digitimes），不再是竞争而是锁定；Meritz证券《T-glass缺口加速》新研报；TrendForce量化2026缺口10-20%；今日跌-6.1%至¥25,890 |
 | 2026-05-26 11:10 | **新增B级背景** | CW激光器（连续波+硅光子）：EML替代路线自身逼近产能极限；同样受MOCVD/InP上游制约；B级瓶颈，无独立新标的，Coherent/Lumentum在EML条目下 |
 | 2026-05-26 11:10 | **氦气轻微缓和** | Air Liquide台湾新设施4月投产；TSMC库存3-6个月自保；S级分类不变，性质维持"高成本强制约束" |
+| 2026-05-26 12:13 | **EML供给侧更新** | Coherent Q3 FY2026（5/6）：InP产能下季度翻倍，2027年再翻倍；6英寸效益4x；EML S级维持，衬底约束不变 |
+| 2026-05-26 12:13 | **NC瓶颈升级** | NAPIM正式警告NC商业短缺；AAC暂停生产；NC短缺从军用扩至商业，Chemring护城河更深；June 9财报前景加强 |
+| 2026-05-26 12:13 | **电力/变压器数据更新** | 美国互联队列2600GW（↑from 2100GW）；北弗吉尼亚等待4-7年；母线槽首次加入长交期类别；变压器S级确认 |
+| 2026-05-26 12:13 | **UAMY钨矿补录** | Fostung钨矿（安大略）技术报告（2026-03-03）：推断资源53.6M磅WO3，毛值$46亿；开发阶段，watchlist附加期权描述 |
