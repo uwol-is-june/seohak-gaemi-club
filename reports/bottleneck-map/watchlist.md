@@ -1,15 +1,16 @@
 # 瓶颈猎手观察名单（持续更新）
 
-最后更新：2026-05-26 05:18（第二轮扫描）  
-下次复查：2026-05-26 下一轮
+最后更新：2026-05-26 07:31（第三轮扫描）  
+下次复查：下次扫描
 
 ---
 
 ## 重点关注（信号强度★★★★+）
 
-### 1. Aixtron (AIXA，法兰克福交易所) ★★★★ ⚠️H2执行高度后置 【2026-05-26升级修正：★★★→★★★★】
+### 1. Aixtron (AIXA，法兰克福交易所) ★★★★ ⚠️H2执行高度后置 ⚠️市值修正：实际€6.09B
 **瓶颈环节**：InP MOCVD外延设备（A级）  
-**市值**：约€2-3B（估计，基于€560M收入指引，P/S约4-5x，待精确核实）  
+**市值**：**€6.09B（实际，2026-05-25）**（前期估算€2-3B严重偏低）  
+**估值（更新）**：P/S = **10.9x**（€6.09B ÷ €560M指引），P/E = **101.58x**；当前价 €53.66，52周高 €55.28；Berenberg目标价 €42（较现价低22%，已触发下调）  
 **瓶颈核心逻辑**：全球InP/光子MOCVD设备70-90%市场份额；设备材料专用不可替代；交期12-24个月。任何InP晶圆扩产都必须先排队等Aixtron。这是整条InP供应链扩产速度的物理上限。  
 **信号验证**：
 - ✅ Lumentum 2026-05-19下单多台G10-AsP系统（行业需求真实）
@@ -27,7 +28,9 @@
 **升级理由**：早间降级依据之一"guidance cut"经确认为误读——April 14公告为正式上调指引（€520M→€560M）；另一依据Q1亏损属周期性低点（GaN低迷+一次性费用），订单积压和光电子订单质量均强。订单书支撑H2强复苏逻辑。
 **关键验证点**：H2 2026财务交付（尤其Q3营收是否如期大幅跳升）  
 **行动**：候选深入研究；等Q2营收开始体现光电子订单收入后重新评估是否执行 `/investment-team`  
-**来源**：[Aixtron指引上调 — Finanzwire](https://www.finanzwire.com/press-release/aixtron-se-etr-aixa-aixtron-se-increases-fy-2026-guidance-and-reports-preliminary-q12026-figures-xdNX74Isy8R) | [CompoundSemiconductor指引上调](https://compoundsemiconductor.net/article/123997/AIXTRON_SE_increases_FY_2026_guidance) | [Aixtron Q1 营收](https://www.semiconductor-today.com/news_items/2026/may/aixtron-040526.shtml) | [Lumentum订单5月19日](https://www.semiconductor-today.com/news_items/2026/may/aixtron-200526.shtml)
+**估值安全边际（更新）**：以€6.09B市值，10年25xPE退出，年化10%回报需净利润€632M（对应收入€3.16B）；从€560M到€3.16B需CAGR 19%/年，门槛显著高于前期估算。结论：**当前价格无强安全边际，不追高**。
+
+**来源**：[Aixtron指引上调 — Finanzwire](https://www.finanzwire.com/press-release/aixtron-se-etr-aixa-aixtron-se-increases-fy-2026-guidance-and-reports-preliminary-q12026-figures-xdNX74Isy8R) | [CompoundSemiconductor指引上调](https://compoundsemiconductor.net/article/123997/AIXTRON_SE_increases_FY_2026_guidance) | [Aixtron Q1 营收](https://www.semiconductor-today.com/news_items/2026/may/aixtron-040526.shtml) | [Lumentum订单5月19日](https://www.semiconductor-today.com/news_items/2026/may/aixtron-200526.shtml) | [Berenberg下调Hold](https://www.investing.com/news/stock-market-news/berenberg-downgrades-aixtron-on-valuation-concerns-93CH-4663059) | [Stockopedia市值数据](https://www.stockopedia.com/share-prices/aixtron-se-ETR:AIXA/)
 
 ---
 
@@ -128,9 +131,27 @@
 
 ---
 
+### 8. Centrus Energy (LEU，纽交所) ★★★ 【2026-05-26 新增】
+**瓶颈环节**：HALEU 核燃料（SMR 链，B+级，2027+可能升A级）  
+**市值**：~$3.53B（2026-05-25，股价$179）  
+**估值**：P/S ~7.4x（绿灯），P/E ~45x（TTM 净利$78M，黄灯）  
+**瓶颈核心逻辑**：唯一西方商业规模 HALEU 富集商（Piketon, Ohio）；DOE $2.7B 任务指令背书；2030 年 HALEU 需求 40,000 kg/年+（是当前 Centrus 产能 12 MT 的 3.3 倍）；新竞争者进入需 10-15 年。  
+**信号验证**：
+- ✅ DOE 任务指令 $900M HALEU + $2.3B 商业 LEU 积压（收入可见度高）
+- ✅ Piketon 设施已投产（2025-12），12 MT/年产能
+- ✅ Oklo JV 洽谈（HALEU 脱转化服务，Piketon 成燃料中枢）
+- ✅ 2026 年收入指引上调至 $450-500M
+- ⚠️ SMR 商业化时间线多次延迟（NuScale UAMPS 项目已取消）
+- ❌ 尚无大型商业客户签约（TerraPower、Kairos 等仍在建设阶段）
+**催化剂**：SMR 项目商业化时间确认；Centrus Q2 2026 财报；Oklo JV 签约；DOE 制度性 HALEU 库存政策  
+**建议行动**：持续跟踪，等 SMR 里程碑后评估执行 `/investment-team`  
+**来源**：[Centrus Q1 2026](https://www.prnewswire.com/news-releases/centrus-reports-first-quarter-2026-results-302763250.html) | [HALEU Nuclear Fuel Deals](https://neutronbytes.com/2026/03/15/nuclear-fuel-deals-take-center-stage-for-smrs/)
+
+---
+
 ## 观察中（信号强度★★）
 
-### 8. L3Harris Missile Solutions（即将IPO）
+### 9. L3Harris Missile Solutions（即将IPO） 【更新：旧编号8，顺延】
 **代码**：待定（来自LHX分拆）  
 **瓶颈环节**：固体火箭发动机（A级）  
 **待验证**：S-1提交进程；IPO估值；DoD $10亿优先股稀释条款；战略自主性  
@@ -138,7 +159,7 @@
 
 ---
 
-### 9. 三变科技 (002112.SZ)
+### 10. 三变科技 (002112.SZ)
 **代码**：002112.SZ  
 **瓶颈环节**：数据中心大容量变压器（S级受益）  
 **待验证**：关税70%对出口的实际冲击；xAI订单可持续性；A股估值  
@@ -178,3 +199,5 @@
 | 2026-05-26（早） | VECO | **升级★★★→★★★★** | $250M+ InP MOCVD订单强验证；先进封装+100% YoY；股价盘后+22%；FY指引$740-800M |
 | 2026-05-26 05:18 | AIXA | **修正升级★★★→★★★★** | "guidance cut"系误读——April 14正式公告为上调指引（€520M→€560M，EBIT 17-20%）；早间降级依据消失；H2执行仍是核心风险 |
 | 2026-05-26 05:18 | CHG.L | **数据强化** | 订单覆盖率85%（↑from 76%）；挪威275%扩产；12-15年合同；7/7分析师Buy；June 9财报催化剂；Rheinmetall抢NC独立验证 |
+| 2026-05-26 07:31 | AIXA | **市值修正+估值警告** | 实际市值€6.09B（前估€2-3B），P/S实际10.9x（非4-5x），P/E 101x；Berenberg下调Hold目标€42；现价€53.66已在Berenberg目标价上方28%；不追高 |
+| 2026-05-26 07:31 | LEU | **新增★★★** | Centrus Energy：唯一西方HALEU商业富集商；DOE $2.7B任务指令；P/S 7.4x绿灯；等SMR商业化催化剂 |
