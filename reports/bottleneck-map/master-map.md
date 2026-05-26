@@ -1,6 +1,6 @@
 # 供应链瓶颈总地图（持续更新）
 
-最后更新：2026-05-26 18:30（第十四轮扫描 — 无新信号）
+最后更新：2026-05-26 19:06（第十五轮扫描 — 2个新信号）
 
 ---
 
@@ -293,7 +293,7 @@
 
 ---
 
-### 11b. CW激光器（连续波激光器）— EML替代路线自身逼近产能极限 【2026-05-26 11:10 新增，B级】
+### 11b. CW激光器+硅光子（SiPh）代工 — EML替代路线产能已实质锁满 【2026-05-26 11:10 新增，B级 | 2026-05-26 19:06 Tower数据升B+】
 **核心数据**：
 - EML（S级瓶颈）被Nvidia锁产后，CSP转向CW+硅光子（SiPh）替代架构
 - 但CW生产同样依赖：InP晶圆（S级短缺）+ MOCVD设备（Aixtron满订单，12-24月交期）+ 老化测试
@@ -301,12 +301,49 @@
 - 800G+光模块市场2026年需求翻2.6倍（6300万套）
 - 主要供应商：Coherent（InP产能2026年翻倍，2027年再翻），Lumentum（已订多台Aixtron MOCVD）
 
-**B级原因**（非S/A级）：
-- 供给集中度🟡（供应商多于EML）
-- 替代难度🟡（技术路线差异但不绝对）
-- 上游共享S/A级瓶颈（InP衬底、MOCVD）
+**2026-05-26 19:06 Tower Semiconductor SiPh重大确认**：
+- Tower Semiconductor（TSEM）是全球最大外部客户SiPh晶圆代工商，**已签$1.3B SiPh合约（2027交付）**，收取$290M预付款
+- **>70% 总SiPh产能预定至2028年**——实质上已接近锁满
+- $920M CapEx将SiPh产能扩至当前5倍以上（Q4 2026设备安装完成，实际产能2027年起兑现）
+- TSEM Q1 2026营收$414M（+15% YoY），Q2指引$455M（公司历史新高）；2028长期目标$2.8B收入/$750M净利
+- **意义**：SiPh替代路线与EML同步耗尽——两条路都塞住了，而上游瓶颈（InP衬底、MOCVD）被双重需求压迫
+- TSEM本身：市值$30B，PS ~18.5x，**不是可投资小市值标的**
 
-**投资意义**：Coherent (COHR) 和 Lumentum (LITE) 均已在watchlist（EML板块），CW是同一供应商的附加受益来源；不新增独立条目
+**B+级维持原因**（未升A）：
+- 供给集中度🟡（Tower主力但Intel/GF/TSMC各有内部SiPh）
+- TSEM 5x扩产进行中（解除时间线：2027），不同于NF3/InP那种10年扩产周期
+- 上游共享S级瓶颈（InP衬底、MOCVD）
+
+**投资意义**：Coherent (COHR) 和 Lumentum (LITE) 均已在watchlist（EML板块），CW/SiPh是同一供应商的附加受益来源；Tower Semiconductor本身市值过大不追踪；Ge光探测器（SiPh关键器件）供应商均已在EML条目下
+
+**来源**：[Tower Semiconductor $1.3B SiPh合约 2026-05-13](https://towersemi.com/2026/05/13/05132026_1/) | [Tower Q1 2026 Results](https://towersemi.com/2026/05/13/05132026/)
+
+---
+
+### 11c. 光纤预制棒（Optical Fiber Preform）— AI数据中心光纤饥荒新浮现 【2026-05-26 19:06 新增，B级】
+**核心数据**：
+- AI GPU集群需传统服务器架构**36倍光纤**互联量（Tom's Hardware）；Meta路易斯安那1M GPU园区消耗"800万英里光纤"
+- **G.652D光纤价格2026年1月单月+75%**；G.657A2（高密度接入光纤）近翻倍
+- 中国主要厂商（YOFC、长飞、亨通等）订单延伸至**2027年**（Digitimes，2026-05-15）
+- 预制棒（Preform）是光纤生产上游关键原材料，扩产周期 **18-24个月**——物理约束明确
+
+**瓶颈判定**：
+- 供给集中度🟡（Corning、Prysmian、YOFC、Sumitomo、Fujikura 5家寡头，但中国占主导）
+- 扩产周期🔴（18-24个月，不能快速响应）
+- 替代难度🔴（AI数据中心全光互联是物理刚需）
+- 需求增速🔴（GPU集群密度驱动指数级需求）
+= **B级**
+
+**关键性质**：不同于InP/钨"绝对控制型"瓶颈，光纤的供给方更多元；但扩产周期确保2026-2027年都是卖方市场
+
+**可投资标的（当前无）**：
+- Corning（GLW，~$30B，光纤业务~30%收入）：市值过大
+- Prysmian（意大利，~€180亿）：欧洲上市，市值大
+- YOFC（601869.SH，~¥150亿 = ~$21亿）：A股，规模合适，但中国内外销侧重结构不透明
+- 未上市：Shin-Etsu Chemical的光纤预制棒分部（母公司市值极大）
+- **结论**：瓶颈真实，无符合全部标准的小市值纯正可投资标的；持续监控
+
+**来源**：[Digitimes 光纤订单延至2027 2026-05-15](https://www.digitimes.com/news/a20260515PD226/fiber-optics-demand-data-center-telecom-2027.html) | [Tom's Hardware AI光纤需求36倍](https://www.tomshardware.com/tech-industry/ai-data-centers-are-consuming-fiber-optic-cable-faster-than-suppliers-can-make-it) | [hengtongglobal 光纤缺货指南](https://www.hengtongglobal.com/info/optical-fiber-shortage-2026-supply-beats-price-103498298.html)
 
 ---
 
@@ -410,3 +447,4 @@
 | 2026-05-26 16:12 | **CHG BAE风险项** | BAE Systems无NC/NG推进剂技术"预计2026年底工业成熟"；目前pilot阶段，若成立则Chemring NC护城河有长期时间线风险；短期（June 9财报）影响不大 |
 | 2026-05-26 17:30 | **第十三轮扫描 — 无新信号** | 覆盖AI基础设施、能源转型、国防现代化、半导体再工业化、太空经济全部方向；搜索InP/EML/HBM/变压器/钨/锑/NC/NF3/WF6/镓/HALEU等关键词；全部watchlist公司无重大新事件；钨APT价格确认~$3,185/MTU（前次$3,140/MTU，误差<1.5%，不触发更新）；所有已跟踪瓶颈状态不变 |
 | 2026-05-26 18:30 | **第十四轮扫描 — 无新信号** | 覆盖五大超级趋势全部方向；Samsung HBM4通过Nvidia质检（6月供货）是微正面供给侧新闻但不改变S级瓶颈；欧洲NC产能重建（Eurenco/莱茵金属Lingen/捷克Walsrode/波兰Azoty）为已知长期修复路径，不影响CHG近期护城河；Nittobo价格¥25,310仍高于入场目标区间；所有watchlist公司无新事件；不生成报告文件 |
+| 2026-05-26 19:06 | **第十五轮扫描 — 2个新信号** | ①Tower Semiconductor SiPh $1.3B合约+70%产能预定至2028+$920M CapEx（2026-05-13发布）：将CW/SiPh条目（11b）升级B+并加入Tower数据，SiPh替代路线与EML同步锁满确认；②光纤预制棒（11c）首次加入B级跟踪：AI数据中心需传统服务器36倍光纤量，G.652D单月涨75%，中国厂商订单延至2027，预制棒扩产周期18-24个月；两个瓶颈均无小市值可投资标的（TSEM $30B，Corning/Prysmian大市值） |
