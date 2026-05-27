@@ -1,6 +1,6 @@
 # 供应链瓶颈总地图（持续更新）
 
-最后更新：2026-05-27 08:30（第十六轮扫描 — 3项小状态更新，无新标的）
+最后更新：2026-05-27 09:00（第十七轮扫描 — 钇半导体设备涂层新向量确认，Trump-Xi峰会无具体稀土协议）
 
 ---
 
@@ -35,8 +35,11 @@
 - 中国2026-04-04对7种重稀土（钐、钆、铽、镝、镥、钪、钇）实施出口管制（须许可证）
 - 美国yttrium（钇）93%历史进口依赖中国；重稀土加工99%在中国
 - 伊朗战争耗尽：~50% THAAD、~50% Patriot、45% Precision Strike Missiles；Tomahawk补充需47个月
-- 应用场景：钐钴（SmCo）高温永磁体→导弹制导、Patriot/THAAD雷达；钇→喷气发动机涂层、导弹导引头光学
+- 应用场景（国防）：钐钴（SmCo）高温永磁体→导弹制导、Patriot/THAAD雷达；钇→喷气发动机涂层、导弹导引头光学
+- **应用场景（半导体设备，2026-05-27新增）**：钇氧化物（Y₂O₃）腔体涂层/保护件 → 等离子蚀刻/CVD设备（Lam Research、AMAT、TEL）→ 每台设备定期更换 → 断供直接影响晶圆厂设备维护计划
 - 2027-01-01：中国来源重稀土（含加工品）禁入美国国防采购
+- **2026-05-27 Trump-Xi北京峰会结果**：白宫称中国"同意解决"钇/钪/钕/铟关切；中国官方声明**未提稀土**；Trump"未带着确认协议离开北京"；中国出口管制制度"将长期存在"（TechTimes）；美国8个月后钇进口量仅17吨（vs控制前333吨，-94.9%）；2家北美Y₂O₃涂层商已暂停生产（Reuters）；价格暴涨约70-140x（数据来源有分歧，保守估约70x）
+- **截止日期风险**：2026年10月波第二波管制暂停至**2026年11月10日**，届满若重启则半导体设备涂层供应链面临新冲击
 
 **瓶颈判定**：
 - 供给集中🔴（99%加工在中国，已实施出口许可管制）
@@ -51,9 +54,10 @@
 - REalloys（ALOY，~$588M市值，$2.4M TTM收入）：P/S~245x ❌
 - USA Rare Earth（USAR，$5.57B市值，$5.7M Q1收入）：P/S~244x，亏损$67M/季 ❌
 - Energy Fuels（UUUU）：零REE收入Q1 2026，Q4 2026才有微量Dy/Tb ❌
-- 结论：重稀土加工瓶颈真实，但西方上市公司全处预收入/极早期，估值已反映所有叙事
+- **钇氧化物涂层供应商（2026-05-27新增评估）**：Kyocera（大型综合）、CoorsTek（私有）、NGK Insulators（大型）、Tosoh 4042.T（大型）——均非小市值纯正标的 ❌
+- 结论：重稀土加工瓶颈真实（国防+半导体设备双向），但西方上市公司全处预收入/极早期，估值已反映所有叙事；或业务规模不够纯正
 
-**来源**：[China REE export controls CSIS](https://www.csis.org/analysis/chinas-new-rare-earth-and-magnet-restrictions-threaten-us-defense-supply-chains) | [Fortune: America needs Beijing's permission to reload](https://fortune.com/2026/04/30/us-missile-stockpile-depleted-iran-ukraine-china-rare-earths-restock/) | [CNN: US missile stockpile](https://www.cnn.com/2026/04/21/politics/us-military-missile-stockpile)
+**来源**：[China REE export controls CSIS](https://www.csis.org/analysis/chinas-new-rare-earth-and-magnet-restrictions-threaten-us-defense-supply-chains) | [Fortune: America needs Beijing's permission to reload](https://fortune.com/2026/04/30/us-missile-stockpile-depleted-iran-ukraine-china-rare-earths-restock/) | [CNN: US missile stockpile](https://www.cnn.com/2026/04/21/politics/us-military-missile-stockpile) | [CNBC Trump-Xi Summit](https://www.cnbc.com/2026/05/18/us-china-announce-deals-after-trump-xi-summit.html) | [TechTimes REE controls post-summit](https://www.techtimes.com/articles/317208/20260526/china-rare-earth-export-controls-april-curbs-still-bite-after-beijing-summit.htm) | [Digitimes yttrium 140x](https://www.digitimes.com/news/a20260410PD229/china-export-restrictions-rare-earth-equipment-price-production.html)
 
 ---
 
@@ -449,3 +453,4 @@
 | 2026-05-26 18:30 | **第十四轮扫描 — 无新信号** | 覆盖五大超级趋势全部方向；Samsung HBM4通过Nvidia质检（6月供货）是微正面供给侧新闻但不改变S级瓶颈；欧洲NC产能重建（Eurenco/莱茵金属Lingen/捷克Walsrode/波兰Azoty）为已知长期修复路径，不影响CHG近期护城河；Nittobo价格¥25,310仍高于入场目标区间；所有watchlist公司无新事件；不生成报告文件 |
 | 2026-05-26 19:06 | **第十五轮扫描 — 2个新信号** | ①Tower Semiconductor SiPh $1.3B合约+70%产能预定至2028+$920M CapEx（2026-05-13发布）：将CW/SiPh条目（11b）升级B+并加入Tower数据，SiPh替代路线与EML同步锁满确认；②光纤预制棒（11c）首次加入B级跟踪：AI数据中心需传统服务器36倍光纤量，G.652D单月涨75%，中国厂商订单延至2027，预制棒扩产周期18-24个月；两个瓶颈均无小市值可投资标的（TSEM $30B，Corning/Prysmian大市值） |
 | 2026-05-27 08:30 | **第十六轮扫描 — 3项小状态更新，无新标的** | ①ASP Isotopes (ASPI, ~$664M市值) 5月11日签非约束性HALEU供应MOU（Quantum Leap Energy子公司与欧洲核技术公司），2028年开始交付——HALEU供应竞争新参与者，但ASPI仍开发阶段（P/S~28x，Q1收入仅$4.2M），不影响Centrus近期垄断地位；②L3Harris Missile Solutions确认品牌名"Axyz"，S-1已于4月29日提交，DoD $10亿优先股已完成，H2 2026目标上市；③钨价补充数据：trailing 12个月+900%（PR Newswire，APT现价$3,185/MTU），YTD+350%，与原记录$3,185/MTU一致，价格基础数字修正（原记录"管制前+557%"更改为"trailing 12个月+900%"）；所有其余监控瓶颈状态不变 |
+| 2026-05-27 09:00 | **第十七轮扫描 — 钇半导体设备涂层新向量（0c2扩展），Trump-Xi峰会无实质协议** | ①**0c2条目新增半导体设备向量**：Y₂O₃腔体涂层/保护件用于等离子蚀刻设备（Lam/AMAT/TEL），与SmCo国防磁体独立但同源于钇管制；美国钇进口-94.9%（333吨→17吨/8个月），价格约70-140x（来源有分歧）；2家北美涂层商已暂停生产（Reuters）；②Trump-Xi北京峰会（5/14-18）结果：白宫称中国"同意解决"钇/钪关切，但中国官方声明未提稀土，Mining.com称"未确认协议"；中国出口管制制度定性为合法且长期；③无新可投资标的（涂层商均非小市值纯正上市标的）；Aixtron AGM通过全部议案（GaN新订单，无新光电子订单）；Nittobo拆分7/1确认，当前¥25,890高于目标入场区间 |
