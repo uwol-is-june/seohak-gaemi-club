@@ -1,6 +1,6 @@
 # 供应链瓶颈总地图（持续更新）
 
-最后更新：2026-05-27 20:00 第二十五轮扫描（⚡**Kanto Denka 4047.T FY2027指引¥95B+45% YoY，前向P/S 1.43x / P/E ~19.7x双绿灯，评级升★★★★**；Chemring June 2财报确认；Centrus DOE续约仍无公告）
+最后更新：2026-05-27 17:06 第二十六轮扫描（TNT瓶颈新维度识别——欧洲单一来源Nitro-Chem（波兰）+Swebal €30M融资2026-05-07，无可投资标的但强化CHG.L护城河；UAMY Americas Gold JV+Radersburg选矿厂漏录补充；各瓶颈状态不变）
 
 ---
 
@@ -272,6 +272,16 @@
 - 此前已记录：Anduril $43.7M DoD DPA（2026-02）；Mach 是第二个验证案例，资金来源为私人而非政府
 - 来源：[TechCrunch](https://techcrunch.com/2026/05/19/mach-industries-just-spent-50m-to-solve-a-major-defense-tech-problem/) \| [Aviation Week](https://aviationweek.com/defense/missile-defense-weapons/mach-industries-acquires-rocket-motor-designer-exquadrum)
 
+**2026-05-27 17:06 新增——TNT瓶颈（独立维度）**：
+- **TNT（三硝基甲苯）是炸药填充材料**（155mm炮弹、炸弹等），与NC推进剂完全独立的化学品，用于弹药制造的不同环节
+- **欧洲唯一主要TNT生产商**：Nitro-Chem（波兰，PGZ国有防务集团旗下）；供应美国TNT进口约90%；欧盟范围内无其他商业规模生产商
+- **容量不足**：俄罗斯年产约50,000吨TNT；欧洲全部产能合计远低于此；Nitro-Chem 2026年3月起建设第二生产单元（Bydgoszcz，预计2026-2027年投产，增量有限）
+- **Swebal（瑞典）**：2024年成立的私有初创；2026-05-07完成€30M融资建瑞典首家TNT工厂（4,500吨/年目标，2028年投产）——距投产至少2年
+- **瓶颈评级**：供给集中🔴（欧洲单一来源）| 扩产周期🔴（2年+） | 替代难度🔴（主流弹药规格不可替代） = **B+级**（独立于NC，是NATO能量材料供应链的另一软肋）
+- **与NC瓶颈比较**：NC（推进剂，Chemring/Eurenco）缺口>50%，已追踪；TNT（炸药，Nitro-Chem）同样严重受限但属不同化学品，欧洲整体能量材料供应链全面脆弱
+- **可投资标的**：Nitro-Chem（PGZ旗下）= 国有非上市 ❌；Swebal = 私有初创 ❌；**间接受益：Chemring（CHG.L）——进一步强化其作为NATO主要上市能量材料供应商的战略价值**
+- 来源：[Defense News TNT投资](https://www.defensenews.com/global/europe/2026/04/14/swedish-polish-firms-invest-in-tnt-plants-to-quench-europes-ammo-thirst/) | [The Defense Post Swebal $35M](https://thedefensepost.com/2026/05/08/swebal-sweden-tnt-plant-construction/) | [TectonicDefense Swebal €30M](https://www.tectonicdefense.com/swedish-tnt-startup-swebal-raises-e30m/) | [TrueGovNews NATO TNT Shortage](https://www.truegovnews.com/article/3449cad52f765074b4b28e64ffeaa8afbe1079c0bd7e70d6c2d4b23da1b34610)
+
 **2026-05-26 09:09 新增——Chemring Nobel Sole-Source确认**：
 - Chemring Nobel是Nammo AS 155mm高级弹药生产的**唯一合格MCX供应商**（合同文本确认）
 - Diehl Defence + Nammo AS合作为德国联邦军/NATO生产155mm炮弹，完全依赖Chemring Nobel的MCX材料
@@ -489,3 +499,4 @@
 | 2026-05-27 晚 | **第二十三轮扫描 — 3项小状态更新，无新标的，无报告文件** | ①**WF6（3b条目）Central Glass第二独立来源确认**：Central Glass已直接通知Samsung "5-6月库存可维持，H2不确定"；Samsung比SK Hynix更暴露（对日本WF6依赖度更高）；TrendForce+Central Glass双源交叉确认"5-6月临界"，信号可信度升至高；A级评级不变；②**UAMY产能微调**：Q1 2026财报电话会确认Thompson Falls产能目标为400-500 t/月（前次记录300-400 t/月，小幅上调）；时间线：Q1收到OEM零件，爬坡中；③**Centrus DOE续约**：搜索未找到新合约公告；Phase III $110M到期日6/30/2026（约34天），DOE持有后续8年期权但尚未宣布行使；紧迫性不变；④Chemring June 2财报确认（无预告）；Almonty June 9催化剂维持；Gallium/Ge 11/27截止无新信息；InP/EML/NF3/钨等所有已跟踪瓶颈状态不变 |
 | 2026-05-27 15:10 | **第二十四轮扫描 — 1项新信号，无新标的** | ⚡ **Mach Industries 以 $50M 收购 Exquadrum（2026-05-19）**：固体火箭发动机领域私人资本自费垂直整合；Exquadrum更名为Mach Energetics（85人+70,000平方英尺工厂+推进试验场）；客户USAF/MDA/DARPA；与Anduril $43.7M DoD DPA资助（2026-02）共同验证SRM双寡头产能不足已驱动独立资本入场；Mach私有，间接关注Axyz IPO（H2 2026）。来源：TechCrunch/Aviation Week/TechTimes 2026-05-19至25 |
 | 2026-05-27 20:00 | **第二十五轮扫描 — 重大新信号：Kanto Denka FY2027指引¥95B+45%** | ⚡ **4047.T Kanto Denka FY2027经营指引（2026-05-15发布）**：收入¥95B（vs FY2026实际¥65.4B，+45.3% YoY）；营业利润¥10B（+82.5% YoY）；股息¥36/股（+16%）。前向P/S 1.43x / 前向P/E ~19.7x双绿灯——时间精确对齐Mitsui退出（3月）+WF6库存耗尽（6-7月）+FY2027起点（4月）。分析师共识EPS~¥52与管理层指引存在2.5倍差距（分析师可能尚未更新模型）。评级由★★★升至★★★★（待原始公告核实）。其他：Chemring June 2确认；Centrus DOE续约第二十五轮无新公告（倒计时33天）；Aixtron"guidance cut"标题确认为误导性标题，Q2指引€110M实为上调；变压器交期新Bloomberg报道称"最长5年"但不改变S级分类。生成报告文件：20-00-4047.md |
+| 2026-05-27 17:06 | **第二十六轮扫描 — TNT瓶颈新维度 + UAMY漏录里程碑** | ①**TNT瓶颈（国防9条目扩展）**：欧洲单一来源确认——Nitro-Chem（PGZ旗下，波兰）是EU唯一主要TNT生产商；Swebal€30M私有融资（2026-05-07）建瑞典首厂（2028），但均非上市可投标的；TNT与NC完全独立（炸药填充 vs 推进剂），NATO能量材料整体脆弱进一步确认，间接强化Chemring护城河；评级B+级新维度；②**UAMY漏录里程碑（watchlist更新）**：2026年2月Americas Gold JV（49%/51%水冶合资，北美首个商业级锑水冶）+ Q1 Radersburg选矿厂收购（$4.8M）两项Q1里程碑此前扫描遗漏，现补录；③Almonty AII.TO C$27.55（微涨），Phase 2投票June 8-9确认；Centrus DOE续约约30天倒计时无新公告；所有S/A/B级瓶颈状态不变。生成报告文件：17-06-信号扫描.md |
