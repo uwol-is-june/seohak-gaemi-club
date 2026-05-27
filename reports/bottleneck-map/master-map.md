@@ -1,6 +1,6 @@
 # 供应链瓶颈总地图（持续更新）
 
-最后更新：2026-05-27 17:06 第二十六轮扫描（TNT瓶颈新维度识别——欧洲单一来源Nitro-Chem（波兰）+Swebal €30M融资2026-05-07，无可投资标的但强化CHG.L护城河；UAMY Americas Gold JV+Radersburg选矿厂漏录补充；各瓶颈状态不变）
+最后更新：2026-05-27 晚 第二十七轮扫描（AES爆炸背景信号补录——美国铸装引爆装置产能空缺；全部已跟踪瓶颈状态不变；无新可投资标的；不生成报告文件）
 
 ---
 
@@ -292,6 +292,15 @@
 - Lake City占美国.223/5.56mm NATO小口径弹药约30%产量，由Winchester/Olin（OLN）运营
 - **性质判断**：这是劳资纠纷而非结构性瓶颈，DoD短期影响真实，但可被其他供应商弥补；Olin是负面影响方，不是机会；暂不列入主追踪名单，但作为美国国防弹药供应链压力的背景信号继续跟踪
 
+**2026-05-27 晚 新增——Accurate Energetic Systems（AES）爆炸事故（美国铸装引爆装置缺口）**：
+- 2025年10月10日，AES McEwen，Tennessee厂区Building 602发生爆炸，**16人死亡**，约23,000磅炸药（TNT/RDX/PETN/Comp B/Tritonal/Pentolite）引爆，爆炸震感覆盖20英里，注册里氏1.6级地震
+- **供应缺口**：Building 602是该设施唯一能生产**cast boosters**（铸装引爆装置）的建筑；AES是美国国防部不可替代的铸装引爆装置来源，持有$270M+联邦合同，产品涵盖Claymore地雷、TNT炸药块、拆除装药、特种爆炸装置
+- **现状（2026-05-27）**：生产暂停；TOSHA罚款$300万（近100项违规）；家属索赔$1.5亿诉讼进行中；CSB调查持续；无重建时间表公告
+- **性质判断**：这是美国本土军用精密引爆装置的**结构性产能空缺**，不同于Lake City罢工（可恢复），也不同于NC短缺（供需结构性）；AES私有小企业（75人），无法快速重建
+- **与已跟踪瓶颈的关系**：美国能量材料供应链第三个压力点（① Lake City罢工 ② NC短缺 ③ AES爆炸）；共同验证美国军工弹药制造链的全面脆弱
+- **投资意义**：AES私有，无可投资标的；间接信号：DoD紧急采购非中/俄/伊来源替代供应商（利好NATO欧洲供应商，潜在强化Chemring国际订单）
+- **来源**：[CSB调查更新](https://www.csb.gov/us-chemical-safety-board-issues-investigation-update-on-fatal-october-2025-explosions-at-accurate-energetic-systems-in-mcewen-tennessee/) | [TOSHA $3M罚款 — WPLN](https://wpln.org/post/aes-fined-3m-for-indifference-to-worker-safety-in-blast-that-killed-16/) | [$1.5亿诉讼 — WSMV](https://www.wsmv.com/2026/04/13/families-victims-fatal-tn-explosion-demand-150-million-accurate-energetic-systems/) | [FedSpend AES合同分析](https://fed-spend.com/blog/accurate-energetic-systems-federal-contracts-deep-dive)
+
 **2026-05-26 12:13 NC瓶颈升级**：
 - **NAPIM正式声明**：NC短缺已从军用蔓延至商业印刷油墨/清漆行业；NC生产商将产能全面优先供应军用；工业级NC可获量大幅收缩；北美出现重大供需失衡
 - **AAC暂停生产**：America's Ammunition Company因"未预见的火药短缺"临时停产；主要火药供应商将全部库存转交军事合同
@@ -500,3 +509,4 @@
 | 2026-05-27 15:10 | **第二十四轮扫描 — 1项新信号，无新标的** | ⚡ **Mach Industries 以 $50M 收购 Exquadrum（2026-05-19）**：固体火箭发动机领域私人资本自费垂直整合；Exquadrum更名为Mach Energetics（85人+70,000平方英尺工厂+推进试验场）；客户USAF/MDA/DARPA；与Anduril $43.7M DoD DPA资助（2026-02）共同验证SRM双寡头产能不足已驱动独立资本入场；Mach私有，间接关注Axyz IPO（H2 2026）。来源：TechCrunch/Aviation Week/TechTimes 2026-05-19至25 |
 | 2026-05-27 20:00 | **第二十五轮扫描 — 重大新信号：Kanto Denka FY2027指引¥95B+45%** | ⚡ **4047.T Kanto Denka FY2027经营指引（2026-05-15发布）**：收入¥95B（vs FY2026实际¥65.4B，+45.3% YoY）；营业利润¥10B（+82.5% YoY）；股息¥36/股（+16%）。前向P/S 1.43x / 前向P/E ~19.7x双绿灯——时间精确对齐Mitsui退出（3月）+WF6库存耗尽（6-7月）+FY2027起点（4月）。分析师共识EPS~¥52与管理层指引存在2.5倍差距（分析师可能尚未更新模型）。评级由★★★升至★★★★（待原始公告核实）。其他：Chemring June 2确认；Centrus DOE续约第二十五轮无新公告（倒计时33天）；Aixtron"guidance cut"标题确认为误导性标题，Q2指引€110M实为上调；变压器交期新Bloomberg报道称"最长5年"但不改变S级分类。生成报告文件：20-00-4047.md |
 | 2026-05-27 17:06 | **第二十六轮扫描 — TNT瓶颈新维度 + UAMY漏录里程碑** | ①**TNT瓶颈（国防9条目扩展）**：欧洲单一来源确认——Nitro-Chem（PGZ旗下，波兰）是EU唯一主要TNT生产商；Swebal€30M私有融资（2026-05-07）建瑞典首厂（2028），但均非上市可投标的；TNT与NC完全独立（炸药填充 vs 推进剂），NATO能量材料整体脆弱进一步确认，间接强化Chemring护城河；评级B+级新维度；②**UAMY漏录里程碑（watchlist更新）**：2026年2月Americas Gold JV（49%/51%水冶合资，北美首个商业级锑水冶）+ Q1 Radersburg选矿厂收购（$4.8M）两项Q1里程碑此前扫描遗漏，现补录；③Almonty AII.TO C$27.55（微涨），Phase 2投票June 8-9确认；Centrus DOE续约约30天倒计时无新公告；所有S/A/B级瓶颈状态不变。生成报告文件：17-06-信号扫描.md |
+| 2026-05-27 晚 | **第二十七轮扫描 — 无新独立信号，AES背景信号补录** | 扫描覆盖：WF6/NF3临界时间线、Chemring June 2财报前信号、Nittobo/ABF、Almonty Phase 2投票倒计时、Centrus DOE续约、InP/EML、钨/锑/稀土等全部已跟踪方向。**无新信号（过去1-2小时无突破事件）**。补录一项背景信号：**AES Accurate Energetic Systems爆炸（2025-10-10，Tennessee）**——16人死亡，Building 602（唯一铸装引爆装置生产建筑）摧毁，$270M+联邦合同暂停，无重建时间线；TOSHA $3M罚款+$150M诉讼进行中；此前扫描从未记录，补录至条目9国防弹药链；无可投资标的；间接为美国军工能量材料链第三压力点验证。其余状态确认：CHG June 2（6天）催化剂维持；WF6库存耗尽1-2个月临界不变；Almonty Phase 2 June 8-9不变；Centrus DOE续约34天倒计时无新公告；Nittobo ¥25,310-25,890仍高于入场目标区间；钨APT国际价$3,050-3,185/MTU（一致）；所有S/A/B级评级不变。**不生成报告文件**。 |

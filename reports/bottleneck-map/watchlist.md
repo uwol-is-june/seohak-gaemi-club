@@ -1,8 +1,8 @@
 # 瓶颈猎手观察名单（持续更新）
 
-最后更新：2026-05-27 17:06 第二十六轮扫描（TNT瓶颈新维度识别；UAMY Americas Gold JV+Radersburg选矿厂漏录补充；各watchlist标的状态确认）
+最后更新：2026-05-27 晚 第二十七轮扫描（各watchlist标的状态无变化；AES背景信号补录至master-map）
 
-下次复查：**June 2 Chemring半年财报**（5天后，最紧迫）；**本周核实Kanto Denka FY2027指引原始公告**（高优先级）；June 8-9 Almonty Phase 2投票+Sangdong Q2数据；Centrus DOE续约（June 30到期，约30天）；WF6中断新闻（6-7月临界期）
+下次复查：**June 2 Chemring半年财报**（6天后，最紧迫）；**本周核实Kanto Denka FY2027指引原始公告**（高优先级）；June 8-9 Almonty Phase 2投票+Sangdong Q2数据；Centrus DOE续约（June 30到期，约34天）；WF6中断新闻（6-7月临界期，距今约1个月）
 
 ---
 
