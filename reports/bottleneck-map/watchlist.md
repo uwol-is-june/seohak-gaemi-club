@@ -1,7 +1,7 @@
 # 瓶颈猎手观察名单（持续更新）
 
-最后更新：2026-05-27 午后 第二十一轮扫描（无新信号；UAMY和Centrus微小状态确认；全部评级不变；June 9三重催化剂倒计时13天）  
-下次复查：June 9 Chemring半年财报 + Almonty Phase 2投票 + Almonty Sangdong Q2生产数据；Centrus DOE续约（June 30到期前）
+最后更新：2026-05-27 13:11 第二十二轮扫描（⚡Chemring半年财报日期修正：June 9→**June 2**，今日起仅6天；三星芯片厂罢工今日解除；Almonty分析师共识低于现价）  
+下次复查：**June 2 Chemring半年财报**（最紧迫）；June 9 Almonty Phase 2投票 + Sangdong Q2生产数据；Centrus DOE续约（June 30到期前）
 
 ---
 
@@ -88,9 +88,9 @@
 - ⚠️ 公司体量相对小，单一客户依赖需核实
 - ⚠️ **【2026-05-26 16:12 新增风险项】BAE Systems无NC/NG推进剂技术"预计2026年底达工业成熟"**——若成立，Chemring Nobel的NC护城河有长期时间线风险；但BAE目前仍处pilot阶段，2026年底是BAE自我表述，历史上此类技术突破普遍延期；短期（June 9财报）不影响；中长期（2027+）需监控
 **估值状态**：便宜（P/S~2.6x），估值绿灯  
-**近期催化剂**：⚡ **June 9, 2026 半年财报**（约2周后），订单覆盖率+利润率更新  
+**近期催化剂**：⚡ **June 2, 2026 半年财报**（今日2026-05-27起仅**6天**）【⚠️日期修正：此前记录为June 9，实为June 2，来源：Chemring官方financial calendar交叉确认】，订单覆盖率+利润率更新  
 **待验证**：利润率细节（H1 2026 margins）；L3Harris IPO进展；NATO框架合同细节；BAE propellant技术进展  
-**建议动作**：在June 9财报前执行 `/investment-team` 深入研究  
+**建议动作**：在**June 2**财报前完成 `/investment-team` 深入研究  
 **来源**：[Chemring 2025年报](https://www.chemring.com/~/media/Files/C/Chemring-V3/docs/chemring-annual-report-and-accounts-2025-v1.pdf) | [Chemring AGM更新](https://www.chemring.com/media/press-releases/2026/20-02-2026) | [Kyiv Independent 275%扩产](https://kyivindependent.com/like-any-technology-its-a-race-uks-largest-ammo-maker-rebooting-chemistry-to-break-natos-dependence-on-explosive-imports/) | [Rheinmetall抢购NC](https://www.defensenews.com/global/europe/2025/04/07/rheinmetall-secures-nitrocellulose-supply-amid-european-ammo-scramble/)
 
 ---
@@ -348,6 +348,13 @@
 
 **评级维持★★**：前向收入逻辑合理（Forward P/S ~8x），商业化生产已启动；但股价YTD +93%已充分定价；钨价中期走势是最大不确定性；等Q2/Q3产量验证再考虑升级。
 
+**【2026-05-27 13:11 分析师共识低于现价警示】**：
+- 当前价：**C$26.97**（5月25日）
+- 7家分析师平均目标价：**C$20.46**（高端C$28.6，低端C$7.5）
+- DA Davidson：目标$25（Buy）；最新上调至C$22.93的目标仍意味约**15%下行风险**
+- 分析师共识**低于**当前价位，不构成安全边际
+- **建议**：June 9 Phase 2投票通过后若出现回调，关注C$20-22区间是否出现更佳入场点
+
 **加入日期**：2026-05-26  
 **来源**：[InvestingNews Q1](https://investingnews.com/almonty-industries-reports-first-quarter-2026-financial-results/) | [StockAnalysis AII](https://stockanalysis.com/quote/tsx/AII/) | [Almonty TPW offtake](https://almonty.com/binding-offtake-agreement-to-supply-tungsten-oxide-solely-for-us-defense-applications/) | [Almonty Montana HQ](https://www.businesswire.com/news/home/20260413261619/en/Almonty-Industries-Establishes-U.S.-Corporate-Headquarters-Reinforcing-Role-as-Americas-Tungsten-Supplier) | [NBC Montana](https://nbcmontana.com/news/local/almonty-industries-moves-headquarters-to-montana-as-tungsten-push-intensifies)
 
@@ -450,3 +457,7 @@
 | 2026-05-27 午后 | UAMY | **Thompson Falls OEM零件本周到货（评级★★★维持）** | OEM零件5月最后一周开始到货，每周可启动1-2个炉灶；全部9个炉灶预计7月中旬满负荷爬坡——与已知"7月80%目标"一致，时间线获精确确认；不改变评级或投资逻辑 |
 | 2026-05-27 午后 | LEU Centrus | **DOE续约：无新公告（到期倒计时~34天）** | 第二十一轮专项搜索确认：Phase III合同到期6/30/2026；DOE持有后续8年选项块；截止搜索时间尚无DOE行使下一期选项的公告；若June 30前仍无公告则为实质性风险事件；评级★★★维持，紧迫性不变 |
 | 2026-05-27 午后 | 第二十一轮扫描 | **全部瓶颈状态不变** | InP/$S级、EML/S级、变压器/S级、氦气/S级、重稀土/S级、钨/S级、NF3WF6/A级、探针卡/A级、MOCVD/A级、国防能量/A级、锑/A级、HALEU/B+级全部维持；不生成报告文件 |
+| 2026-05-27 13:11 | CHG.L Chemring | **⚡ 半年财报日期重大修正：June 9→June 2（今日起仅6天）** | 多次搜索交叉确认Chemring official financial calendar：2026半年财报日期为**2026-06-02**，而非此前所有记录的"June 9"；前次半年财报（FY25）为2025-06-03，规律一致；所有倒计时记录需更新；"June 9三重催化剂"应拆分为"**June 2 CHG财报 + June 9 AII Phase 2投票**"；评级★★★★维持，逻辑不变，仅时间线修正 |
+| 2026-05-27 13:11 | 背景信号 | **三星50,000工人芯片厂罢工威胁今日（5/27）解除** | 计划5/21起18天罢工（3.4万+5万Samsung+SK Hynix工人）：今日劳资协议73.7%批准（6.2%涨薪+利润分享）；HBM4供应链近期最大操作风险消除；Samsung HBM4 June供货按计划进行；非结构性瓶颈，仅背景记录 |
+| 2026-05-27 13:11 | AII.TO Almonty | **分析师共识低于现价（评级★★维持，加强"不追高"建议）** | 当前价C$26.97（5/25）；7家分析师平均目标C$20.46；高端C$28.6；最新上调目标C$22.93仍意味约15%下行风险；当前价高于绝大多数分析师目标；June 9 Phase 2投票可能是"利好出尽"节点；关注投票后是否出现C$20-22回调机会 |
+| 2026-05-27 13:11 | 光纤11c | **NVIDIA-Corning战略合作（5/6）：美国光纤产能+50%** | B级光纤预制棒瓶颈供给侧响应确认；美国光纤产能+50%、光互联产能+10x；但Corning市值~$30B非标的；预制棒扩产18-24月周期，短期不解决；B级评级不变 |
