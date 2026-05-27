@@ -1,6 +1,6 @@
 # 瓶颈猎手观察名单（持续更新）
 
-最后更新：2026-05-26 19:06（第十五轮扫描 — 2个新信号，watchlist无变化）  
+最后更新：2026-05-27 08:30（第十六轮扫描 — 3项小状态更新）  
 下次复查：下次扫描
 
 ---
@@ -235,6 +235,7 @@
 - ⚠️ **Q1 2026净利润大幅下滑（2026-05-26新增）**：收入$76.7M(+5% YoY)，但净利润从$27.2M降至$10M——同比-63%。需关注盈利质量下降是否结构性
 - ⚠️ SMR 商业化时间线多次延迟（NuScale UAMPS 项目已取消）
 - ❌ 尚无大型商业客户签约（TerraPower、Kairos 等仍在建设阶段）
+- ⚠️ **【2026-05-27 新增】ASP Isotopes (ASPI) 竞争者进入**：子公司QLE于5月11日与欧洲核技术公司签非约束性HALEU供应MOU，2028年开始交付；ASPI市值~$664M，Q1 2026收入仅$4.2M（核医学为主，无HALEU商业收入），P/S~28x，仍属开发阶段。Centrus为唯一当前具备商业HALEU生产的西方公司，近期垄断地位不受实质影响；2028年后竞争格局有所变化，需持续监控。
 **催化剂**：SMR 项目商业化时间确认；Centrus Q2 2026 财报；Oklo JV 签约；DOE 制度性 HALEU 库存政策  
 **建议行动**：持续跟踪，等 SMR 里程碑后评估执行 `/investment-team`；重点关注Q2净利润是否恢复  
 **来源**：[Centrus Q1 2026](https://www.prnewswire.com/news-releases/centrus-reports-first-quarter-2026-results-302763250.html) | [HALEU Nuclear Fuel Deals](https://neutronbytes.com/2026/03/15/nuclear-fuel-deals-take-center-stage-for-smrs/) | [Centrus Oak Ridge扩产 — NEI Magazine](https://www.neimagazine.com/news/centrus-expands-oak-ridge-facility/) | [DOE $900M任务订单](https://investors.centrusenergy.com/news-releases/news-release-details/centrus-awarded-900-million-expand-uranium-enrichment-ohio)
@@ -316,10 +317,10 @@
 
 ---
 
-### 11. L3Harris Missile Solutions（即将IPO） 【更新：旧编号8，顺延】
-**代码**：待定（来自LHX分拆）  
+### 11. L3Harris "Axyz" Missile Solutions（即将IPO） 【2026-05-27 名称确认】
+**代码**：待定（AXYV，来自LHX分拆，将保留~80%股权）  
 **瓶颈环节**：固体火箭发动机（A级）  
-**待验证**：S-1提交进程；IPO估值；DoD $10亿优先股稀释条款；战略自主性  
+**2026-05-27 状态更新**：S-1已于2026-04-29提交SEC（此前记录为"已提交"，现确认具体日期）；品牌名称确认为"Axyz"；DoD $10亿优先股已完成交割（可转换为IPO股权）；H2 2026目标上市；待验证：IPO估值区间（发布S-1公开版本时披露）；稀释条款细节；LHX保留~80%股权后的战略自主性  
 **加入日期**：2026-05-25
 
 ---
@@ -397,3 +398,5 @@
 | 2026-05-26 16:12 | AII.TO | **前向收入重大修正（评级★★维持）** | Sangdong Phase 1目标140,000 MTU/年（>90%已签长期合同）；at $3,140/MTU = ~$440M；加Panasqueira ~$30M = **前向收入~$470M**；前向P/S从51x压缩至**~8x**；Q1操作现金流+$9.7M（已转正）；三大分析师目标价$20-25.80 |
 | 2026-05-26 16:12 | 3110.T | **次代产品路线图确认（评级★★★★维持）** | TrendForce确认Nittobo 2028次代T-glass：CTE 2.8→2.0 ppm（改善30%）；Nvidia/Apple/Google为预期客户；Nan Ya 2027年替代只覆盖旧规格，最先进需求仍需Nittobo；护城河延续至2028+ |
 | 2026-05-26 16:12 | CHG.L | **BAE风险项新增（评级★★★★维持）** | BAE Systems无NC/NG推进剂技术"预计2026年底工业成熟"；若成立则Chemring NC护城河有长期时间线风险；目前仍处pilot阶段，历史上此类时间节点普遍延期；June 9财报前主要是监控项而非威胁 |
+| 2026-05-27 08:30 | LEU | **HALEU竞争者进入——弱信号（评级★★★维持）** | ASP Isotopes (ASPI) 5月11日签非约束性MOU，2028年开始HALEU交付；ASPI市值~$664M，当前无HALEU商业收入，P/S~28x开发阶段；Centrus当前垄断地位不变，2028年后竞争格局需持续关注 |
+| 2026-05-27 08:30 | 待定("Axyz") | **L3Harris Missile Solutions品牌名称确认** | 品牌名"Axyz"（代码AXYV）确认；S-1于2026-04-29提交SEC；DoD $10亿优先股已完成；LHX保留~80%股权；H2 2026目标上市；评级状态待IPO估值披露后重评 |
