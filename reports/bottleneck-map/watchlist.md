@@ -1,6 +1,6 @@
 # 瓶颈猎手观察名单（持续更新）
 
-最后更新：2026-05-27 09:10（第十八轮扫描 — Kanto Denka P/E重大修正：76.3x→35.8x，FY2026 Fine Chemicals高于预期）  
+最后更新：2026-05-27 10:10（第十九轮扫描 — Almonty June 9三重催化剂时间节点确认；Sangdong钼矿新增；光纤军用无人机需求维度新增）  
 下次复查：下次扫描
 
 ---
@@ -311,13 +311,20 @@
 - 10年25xPE退出分析：需$394M净利润，对应~$2B收入，CAGR需38.9%/年 → **当前价格仍无充足安全边际**（但已较前好）
 - 市值TAM检查：全球非中国钨市场（估）~$5B/年，市值$3.8B < 20% × $5B（不触发红灯，但接近）
 
+**【2026-05-27 10:10 重大催化剂时间节点更新】三重催化剂在June 9汇聚**：
+- ⚡ **Phase 2扩产股东投票（June 9，多伦多）**：议案通过则处理产能640万→1,200万吨/年，年产钨精矿2,300→4,600吨，非中国来源全球供应覆盖约40%；forward P/S从~8x降至~4x
+- ⚡ **首批Sangdong实际生产数据（June 9前后）**：Q2为Sangdong商业生产的首个季度，是"叙事→数据"关键转折点；预期数字将决定爬坡节奏
+- ⚡ **新CFO Jorge Beristain（June 1正式就职）**：配合扩产投票时机
+- 📋 **Sangdong钼矿（2026-05-27 首次记录）**：已获全部采矿+环境许可；2026年底投产；60年矿山寿命——此前扫描未追踪的附加资产
+
 **待验证事项**：
-- **Q2/Q3 Sangdong实际产量（最关键）**：H2 2026季度收入>$80M（即Phase 1爬坡至~50%）为升级信号
+- **June 9 Phase 2投票结果（最关键）**：通过→考虑升★★★；未通过→维持★★；要求同步看Sangdong Q2产量
+- **Q2 Sangdong实际产量**：H2 2026季度收入>$80M（Phase 1~50%爬坡）为升级信号
 - Montana Gentung项目H2 2026时间线可信度
-- 钨价能否维持高位（当前+557%）
+- 钨价能否维持高位（当前trailing 12月+900%，APT $3,185/MTU）
 - Phase 2（2027年，460,000 MTU/年）推进进度
 
-**评级维持★★**：前向收入逻辑大幅改善，但股价YTD +544%已充分定价叙事；10年退出仍需高CAGR；等Q2/Q3产量验证再考虑升级。
+**评级维持★★**：叙事进一步升级，June 9三重催化剂是近期最重要监控节点；但股价已充分定价已知信息，无安全边际，不追高。Phase 2获批+Sangdong产量超预期 → 升★★★。
 
 **加入日期**：2026-05-26  
 **来源**：[InvestingNews Q1](https://investingnews.com/almonty-industries-reports-first-quarter-2026-financial-results/) | [StockAnalysis AII](https://stockanalysis.com/quote/tsx/AII/) | [Almonty TPW offtake](https://almonty.com/binding-offtake-agreement-to-supply-tungsten-oxide-solely-for-us-defense-applications/) | [Almonty Montana HQ](https://www.businesswire.com/news/home/20260413261619/en/Almonty-Industries-Establishes-U.S.-Corporate-Headquarters-Reinforcing-Role-as-Americas-Tungsten-Supplier) | [NBC Montana](https://nbcmontana.com/news/local/almonty-industries-moves-headquarters-to-montana-as-tungsten-push-intensifies)
@@ -410,3 +417,5 @@
 | 2026-05-27 09:00 | 全体 | **第十七轮扫描——watchlist无评级变化** | 钇半导体设备涂层新信号（0c2扩展）已记录在master-map；无新可投资标的；Chemring June 9财报倒计时13天；Nittobo拆分7/1确认；UAMY等Q2财报（8月）；Almonty等Q2/Q3 Sangdong产量；Kanto Denka等P/E回调至¥1,800-2,000 |
 | 2026-05-27 09:10 | 4047.T | **⚠️→✅ P/E重大修正（★★★评级维持，论点升级）** | FY2026全年业绩确认（2026-05-15）：净利润¥3.79B（+17%）；**P/E修正：76.3x（原记录计算错误）→ 35.8x（正确值）**；Fine Chemicals"销售超出预期"= NF3瓶颈利润已开始兑现；评级★★★维持但论点更强；等Fine Chemicals>30%收入占比年报确认 → 可升★★★★ |
 | 2026-05-27 09:10 | InP条目 | **Space-BACN → DIU转移背景信号** | DARPA Space-BACN项目移交DIU采购；Mbryonics/RKLB(Mynaric)终端已完成研发，夏季性能验证测试；InP第三需求向量（军用卫星OISL）进入实际采购阶段；S级评级不变 |
+| 2026-05-27 10:10 | AII.TO | **⚡ June 9三重催化剂时间节点确认（评级★★维持）** | Phase 2扩产股东投票（多伦多6/9）+首批Sangdong Q2生产数据+新CFO Jorge Beristain（6/1就职）三重汇聚；Phase 2批准后Forward P/S从~8x→~4x；钼矿资产（60年寿命，2026年底投产）首次记录；评级维持★★但June 9为关键升级触发点 |
+| 2026-05-27 10:10 | 11c光纤 | **军用无人机需求维度新增** | fiber-tethered drones（纤维牵引无人机，FPV无人机）纳入光纤需求计算，进一步强化B级瓶颈论点；无新投资标的 |

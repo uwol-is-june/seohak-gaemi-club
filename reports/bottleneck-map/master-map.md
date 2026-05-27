@@ -1,6 +1,6 @@
 # 供应链瓶颈总地图（持续更新）
 
-最后更新：2026-05-27 09:10（第十八轮扫描 — Kanto Denka P/E修正35.8x，Space-BACN DIU转移确认InP第三需求向量）
+最后更新：2026-05-27 10:10（第十九轮扫描 — Almonty June 9三重催化剂时间节点；Sangdong钼矿首次记录；光纤军用无人机需求维度）
 
 ---
 
@@ -455,3 +455,4 @@
 | 2026-05-27 08:30 | **第十六轮扫描 — 3项小状态更新，无新标的** | ①ASP Isotopes (ASPI, ~$664M市值) 5月11日签非约束性HALEU供应MOU（Quantum Leap Energy子公司与欧洲核技术公司），2028年开始交付——HALEU供应竞争新参与者，但ASPI仍开发阶段（P/S~28x，Q1收入仅$4.2M），不影响Centrus近期垄断地位；②L3Harris Missile Solutions确认品牌名"Axyz"，S-1已于4月29日提交，DoD $10亿优先股已完成，H2 2026目标上市；③钨价补充数据：trailing 12个月+900%（PR Newswire，APT现价$3,185/MTU），YTD+350%，与原记录$3,185/MTU一致，价格基础数字修正（原记录"管制前+557%"更改为"trailing 12个月+900%"）；所有其余监控瓶颈状态不变 |
 | 2026-05-27 09:00 | **第十七轮扫描 — 钇半导体设备涂层新向量（0c2扩展），Trump-Xi峰会无实质协议** | ①**0c2条目新增半导体设备向量**：Y₂O₃腔体涂层/保护件用于等离子蚀刻设备（Lam/AMAT/TEL），与SmCo国防磁体独立但同源于钇管制；美国钇进口-94.9%（333吨→17吨/8个月），价格约70-140x（来源有分歧）；2家北美涂层商已暂停生产（Reuters）；②Trump-Xi北京峰会（5/14-18）结果：白宫称中国"同意解决"钇/钪关切，但中国官方声明未提稀土，Mining.com称"未确认协议"；中国出口管制制度定性为合法且长期；③无新可投资标的（涂层商均非小市值纯正上市标的）；Aixtron AGM通过全部议案（GaN新订单，无新光电子订单）；Nittobo拆分7/1确认，当前¥25,890高于目标入场区间 |
 | 2026-05-27 09:10 | **第十八轮扫描 — Kanto Denka P/E修正，Space-BACN DIU转移** | ①**NF3/WF6（3b条目）Kanto Denka状态更新**：FY2026全年净利润¥3.79B（+17%），Fine Chemicals"销售超出预期"；watchlist 16:12条目P/E 76.3x系计算错误，正确值**35.8x**（¥135.7B/¥3.79B）；NF3瓶颈利润兑现已开始；②**InP S级（条目1）需求向量更新**：DARPA Space-BACN → DIU转移（2026年5月），Mbryonics/RKLB(Mynaric) OISL终端已完成研发，夏季性能验证后DIU招标采购，InP第三需求向量（军用卫星）进入实际采购阶段；③**ATALF新竞争者**：American Tungsten & Antimony（OTCQB，$90M）Cedar City锑加工厂宣布（2026-05-22），首批犹他州锑锭已交付；不在可投资范围，作为UAMY竞争格局监控 |
+| 2026-05-27 10:10 | **第十九轮扫描 — Almonty June 9三重催化剂** | ①**Almonty（钨S级条目0c）状态更新**：June 9三重催化剂汇聚确认——Phase 2股东扩产投票（多伦多）+ 首批Sangdong商业生产Q2数据公布 + 新CFO Jorge Beristain 6月1日就职；若Phase 2获批，产能2,300→4,600 MTU/年，非中国来源覆盖约40%全球非中国需求，Forward P/S从~8x→~4x；②**Sangdong钼矿（首次记录）**：Sangdong Molybdenum Project已获全部许可，2026年底投产，60年矿山寿命；附加资产，不改变近期投资逻辑；③**光纤预制棒（11c）军用维度**：fiber-tethered drones（FPV无人机）纳入光纤需求计算，B级瓶颈论点轻微强化；④**IntelliEPI CEO再次确认**：Q1 2026 ER公开表态"InP衬底短缺是AI基础设施全行业瓶颈"，S级判断交叉验证 |
