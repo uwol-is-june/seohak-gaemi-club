@@ -1,6 +1,6 @@
 # 供应链瓶颈总地图（持续更新）
 
-最后更新：2026-05-28 第三十二轮扫描（增量更新：EML McKinsey量化数据、镓价$2,269/kg、钨APT确认；无新标的；无报告文件）
+最后更新：2026-05-28 第三十三轮（午后扫描）：EML新独立来源（TechTimes 2026-05-27：Nvidia $4B锁仓，非Nvidia买家推至2027年后；InP月需求700-800k vs 供给400k）；钨S级新增哈萨克斯坦Severniy Katpar中期竞争风险（14亿吨资源，12,000 MT/年潜力，5-8年时间线，不影响近期）；Almonty Phase 2投票日期修正：6月8日（非9日）；Centrus续约倒计时33天仍无公告；DRAM缺口创15年新高（Goldman Sachs 4.9%预测）；无新可投资标的；生成2026-05-28-pm.md。本轮之前：第三十二轮（同日早）：EML McKinsey量化数据、镓价$2,269/kg、钨APT确认
 
 ---
 
@@ -84,14 +84,15 @@
 **相关公司**：
 - **Almonty Industries**（TSX:AII / OTC:ALM，市值C$5.22B≈$3.8B）：韩国Sangdong矿Phase 1已量产（2300吨/年），2027年Phase 2（4600吨/年），届时可供全球非中国需求约40%；葡萄牙、西班牙、加拿大，以及**美国Montana（新增，2026-05-26）**多矿区。Q1 2026营收C$25.4M（+221% YoY）。**2026-05-26 13:14 三大新事实确认**：①与Tungsten Parts Wyoming（TPW）签订绑定offtake（15年，每月40吨+，90%+ Sangdong Phase 1产出，专供美国国防导弹/无人机/弹药）；②收购Montana Gentung Browns Lake钨项目（H2 2026可能投产）；③总部迁至Dillon, Montana（2026-04-13），前美军将领进入董事会。**估值状态**：P/S ~51x（基于Q1年化），收入增速+221%（>100%）技术豁免PS红线；但10年25xPE退出需38.9% CAGR，当前价格无安全边际。
 - 其他：American Tungsten Corp（TUNG.CN，加拿大，极早期探矿，市值C$136M，不在主追踪范围）
+- **【2026-05-28 中期竞争风险核实】哈萨克斯坦Severniy Katpar项目（Kaz Resources Inc.）**：14亿吨钨资源（相当于中国总储量55%）；理论年产12,000 MT/年（全球产量约15%）；Trump儿子通过壳公司持有股权；US ExIm Bank/DFC各表示兴趣融资$7-9亿；开发成本$1.1B尚待全额融资。**关键时间线约束**：从开发到投产最少5-8年 → 2031年前无实质供应。**判断**：真实的中期（2031年后）竞争风险，不影响当前S级评级；2031年前Almonty仍是西方唯一规模化运营钨矿供应商。**监控触发点**：若ExIm Bank/DFC实际批贷确认，更新预测时间线。[来源：carboncredits.com](https://carboncredits.com/trump-linked-kazakhstan-tungsten-mega-deal-could-break-chinas-grip-on-critical-minerals/) | [Mining.com](https://www.mining.com/trump-sons-invested-in-us-group-developing-1-1b-tungsten-project-in-kazakhstan-ft/)
 
 **来源**：[GoldInvest钨价+557%](https://goldinvest.de/en/tungsten-price-on-record-course-export-limits-from-china-and-defense-demand-intensify-shortage/) | [TechMacroArchive](https://techmacroarchive.com/semiconductor-supply-chain-2026-the-helium-tungsten-crisis/) | [Almonty Q1 2026](https://investingnews.com/almonty-industries-reports-first-quarter-2026-financial-results/) | [Almonty TPW offtake](https://almonty.com/binding-offtake-agreement-to-supply-tungsten-oxide-solely-for-us-defense-applications/) | [Almonty Montana HQ](https://www.businesswire.com/news/home/20260413261619/en/Almonty-Industries-Establishes-U.S.-Corporate-Headquarters-Reinforcing-Role-as-Americas-Tungsten-Supplier)
 
 ---
 
 ### 1. InP衬底（磷化铟衬底）
-**核心数据**：全球需求260-300M片/年 vs 有效产能约75M片（缺口>70%）  
-**价格数据（2026-05-27新增）**：2英寸光通信级InP衬底从$800/片（2025年初）→$2,300-2,500/片（2026年4月），涨幅约+200%；6英寸从$1,400→$5,000（+250%以上）；行业"零库存、满负荷、订单排至2027年+"  
+**核心数据**：全球需求260-300M片/年 vs 有效产能约75M片（缺口>70%）；**【2026-05-28新增月度数据】**月需求2026年已达700-800k片，全球月产能约400k片（缺口约50%，与年度数据一致）  
+**价格数据（2026-05-27新增）**：2英寸光通信级InP衬底从$800/片（2025年初）→$2,300-2,500/片（2026年4月），涨幅约+200%；6英寸从$1,400→$5,000（+250%以上）；行业"零库存、满负荷、订单排至2027年+"；**AXT已对部分客户提价约70%（2026-05-28新增）**  
 **紧张程度**：最高——2027年前难以逆转  
 **关键原因**：
 - 全球五大供应商（Sumitomo、AXT/Tongmei、Freiberger、JX Nippon、Visual Photonics Epitaxy）集中度极高，合计市占约70%
@@ -114,8 +115,9 @@
 **关键原因**：
 - 生产门槛极高，InP芯片+调制功能单片集成，良率要求苛刻
 - 全球供应商仅Lumentum、Coherent、Mitsubishi Electric、Sumitomo、Broadcom寥寥几家
-- 2026-03-02：Nvidia宣布向Lumentum、Coherent各投资$20亿美元并签署多年采购协议
+- 2026-03-02：Nvidia宣布向Lumentum、Coherent各投资$20亿美元（合计$40亿）并签署多年采购协议
 - Lumentum 2026-05-19再下单多台Aixtron G10-AsP MOCVD系统扩产InP激光器
+- **【2026-05-27 TechTimes独立报道】Nvidia $4B锁仓后续效应**：非Nvidia EML买家交期被推至2027年后；Lumentum是唯一能批量交付200G-per-lane EML的供应商（1.6T光收发关键组件）；分析师预计2026年200G EML双位数价格涨幅；800G+市场2026年达63M units（增2.6x）——供不应求格局持续至2027年以上。[来源：TechTimes 2026-05-27](https://www.techtimes.com/articles/317281/20260527/ai-data-center-optical-component-shortage-nvidias-4b-laser-lockup-pushes-rivals-past-2027.htm)
 
 **2026-05-26 12:13 供给侧更新（Coherent Q3 FY2026财报，5/6）**：
 - Coherent确认InP产能将"下季度翻倍"（Q4 FY2026 ≈ 2026年9月），2027年"再翻倍以上"
@@ -540,3 +542,5 @@
 | 2026-05-28 第三十轮扫描 | **新信号：镓/锗对日断供量化确认，条目14升级B→B+** | ①**条目14（Ga/Ge）重大状态更新**：中国对日镓出口2026年1-2月实测**0 kg**（vs 2025年同期8,007 kg，-100%）；锗同样归零；镓价$2,100/kg（+123% since 2025年初）；日本与美国不同，无11月27日豁免安排；住友/三菱声称库存充足但2个月零进口不可持续。条目14从"B级前瞻"升级为**"B+级（对日已实测断供）"**；②Chemring June 2财报确认无预告（5天后）；③WF6库存临界已入"<4周"窗口，Kanto Denka维持★★★★；④Almonty Phase 2投票June 8-9（11-12天）；⑤Centrus DOE续约33天倒计时无公告；⑥InP/EML/变压器/钨/锑/稀土全部S/A级瓶颈状态不变。**无新可投资标的。生成信号扫描报告：10-00-信号扫描.md** |
 | 2026-05-28 第三十一轮扫描 | **补录：韩国锌$74亿田纳西冶炼厂 + USAR钇首次商业生产** | ①**Korea Zinc Tennessee冶炼厂（2026-04-02宣布，此前扫描遗漏）**：锌/铅/铜/金/银/**锑/铟/镓/锗**等13种战略矿产；DoD 40% JV股权，$47亿政府贷款；2026年场地建设，**2029年分阶段投产**。对锑9b条目（UAMY竞争风险）和Ga/Ge条目14（长期供给缓解路径）均已更新。②**USAR钇首次商业生产（2026-04-15）**：2N-2N5纯度，不达半导体设备4N规格；USAR P/S ~244x不可投资；写入0c2条目。③所有已跟踪S/A/B级瓶颈评级不变。生成信号扫描报告：09-10-信号扫描.md |
 | 2026-05-28 第三十二轮扫描 | **增量数据更新，无新标的，无报告文件** | 覆盖五大超级趋势全部方向（英中文）。扫描结果：①**EML量化精度更新（McKinsey，TechTimes 2026-05-27）**：800G光模块产量比需求低40-60%至2027年；Lumentum是全球唯一量产200G-per-lane EML的供应商（1.6T必需）；分析师预期2026年200G EML双位数涨价；EML S级分类确认，不改变标的判断；②**镓价格更新**：$2,269/kg（4月30日数据，+8% vs上次记录$2,100/kg）；中国对日出口2026年1-2月仍为0；B+级不变；③**钨APT国际价确认**：$3,000-3,280/MTU（与上次跟踪一致，中国国内APT 5/19=RMB 680,000/吨）；④**Almonty AII.TO = C$27.55**（8位分析师全Buy）；Phase 2投票June 9倒计时12天，无新公告；⑤**Chemring June 2财报倒计时5天**，无盈利预警，最新可见价474p（5/19数据，前次5/26记录554p）；⑥**Centrus DOE续约**：Phase III $110M已确认至6/30/2026；DOE持8年续约期权未行使，**32天倒计时**；⑦WF6库存临界（6-7月）状态未变；⑧NF3/WF6/InP/EML/钨/锑/稀土/NC/Nittobo/Kanto Denka等全部已跟踪瓶颈状态不变。**无新可投资标的。不生成报告文件。** |
+
+| 2026-05-28 第三十三轮（午后扫描） | **4项更新：EML新独立来源+InP月度数据+钨Kazakhstan风险核实+Almonty投票日期修正** | ①**EML激光器（条目2）新独立来源**：TechTimes 2026-05-27报道Nvidia $4B锁仓（$2B各给Lumentum和Coherent）；非Nvidia EML买家交期推至2027年后；Lumentum是唯一批量交付200G-per-lane EML供应商；分析师预计2026年200G EML双位数涨价；条目来源更新，S级不变。②**InP衬底（条目1）月度供需量化**：月需求2026年700-800k片 vs 月产能约400k片（缺口约50%）；AXT对部分客户提价~70%；S级不变。③**钨（条目0c）中期竞争风险核实**：哈萨克斯坦Severniy Katpar（Kaz Resources）：14亿吨资源，12,000 MT/年理论产能，$1.1B开发成本，Trump儿子投资，ExIm Bank/DFC融资兴趣。关键：最少5-8年到投产，2031年前不影响S级或Almonty近期护城河；写入0c条目为中期风险注释。④**Almonty Phase 2投票日期修正（master-map 0c及watchlist）**：多来源确认Phase 2投票为6月8日（非9日），AGM为6月9日。⑤背景信号：Goldman Sachs将2026年DRAM供需缺口预测从3.3%升至4.9%（15年最严重短缺）；Centrus续约无新公告（33天倒计时）；Chemring June 2财报5天后（无预告）；全部S/A/B级评级不变。生成daily/2026-05-28-pm.md |
