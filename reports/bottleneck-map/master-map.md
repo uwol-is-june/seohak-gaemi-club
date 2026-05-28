@@ -1,6 +1,6 @@
 # 供应链瓶颈总地图（持续更新）
 
-最后更新：2026-05-27 第二十九轮扫描（全面扫描五大超级趋势，无新信号：WF6临界1-2个月不变、Chemring June 2财报无预告、InP/EML/T-glass/Aixtron/HALEU/钨/锑/稀土全部已跟踪状态确认；无新可投资标的；不生成报告文件）
+最后更新：2026-05-28 第三十轮扫描（新信号：中国对日镓/锗出口归零量化确认—1-2月镓0 kg vs 2025年同期8,007 kg；日本与美国不同无豁免安排；条目14升级B→B+；无新可投资标的；生成信号扫描报告 10-00-信号扫描.md）
 
 ---
 
@@ -406,28 +406,41 @@
 **核心数据**：核电重启面临核级焊工、检测师严重短缺；SMR供应链仍在建立  
 **注意**：劳动力瓶颈不易直接投资；长期趋势，短期催化剂不明确
 
-### 14. 镓(Ga)/锗(Ge) — 出口管制11月2026截止 【2026-05-26 15:26 新增，B级前瞻预警】
+### 14. 镓(Ga)/锗(Ge) — 对美暂停至11月2026，对日本已实质断供 【2026-05-26 15:26 新增，B级 | 2026-05-28 升级：B→B+，对日断供量化确认】
 **核心数据**：
 - 2024年12月：中国正式禁止向美出口镓、锗、锑、超硬材料
-- 2025年11月：双方暂停禁令至**2026-11-27**（出口许可证管理；军事最终用户禁令持续）
+- 2025年11月：对美双方暂停禁令至**2026-11-27**（出口许可证管理；军事最终用户禁令持续）
+- **【2026-05-28 新增量化数据】对日本已实质断供**：
+  - 中国对日镓出口 2026年1-2月：**0 kg**（vs 2025年同期8,007 kg，同比-100%）
+  - 中国对日锗出口 2026年1-2月：**0 kg**（vs 2025年同期400 kg，同比-100%）
+  - 中国2026年1月起对日本实施涵盖镓/锗/锑/石墨/稀土/钨的国家管制出口许可，**无类似对美暂停豁免**
+  - 镓价格：$2,100/kg（+123% since 2025年初）
+  - 住友电工、三菱电机称"库存充足"——但实测已2个月零进口，消耗时间线未披露
 - **中国占全球镓产量99%**（2024年），无西方短期替代来源
 - 应用场景：GaN（氮化镓）→ EV功率芯片、5G RF、数据中心电源转换；GaAs（砷化镓）→ RF前端、光器件
-- 截止日期到来前：出口受许可证管理，GaN/GaAs采购受影响但未断供
-- 截止日期届满后若重启禁令：供应链中断风险极高
 
-**瓶颈判定（若禁令重启）**：
-- 供给集中🔴（99%中国）
-- 扩产周期🔴（镓是铝冶炼副产品，需协同大幅增产铝才能增加副产品镓）
+**对美 vs 对日关键区别**：
+- 对美国：暂停禁令至2026-11-27，以许可证管理，仍有出口
+- **对日本：2026-01起实施管制，实测1-2月已归零，无豁免安排**；日本是全球主要GaN/GaAs半导体制造地（住友电工RF芯片、三菱电机、村田功率器件）
+
+**瓶颈判定（日本供应链）**：
+- 供给集中🔴（99%中国，日本进口零）
+- 扩产周期🔴（镓是铝冶炼副产品，西方新增来源5-10年）
 - 替代难度🟡（GaN可部分被SiC替代，但转换成本高；GaAs在RF暂无替代）
-= **B级（当前，前瞻）**；若禁令重启 → A级
+= **B+级**（升级原因：对日已实测断供，不只是前瞻风险；但日本厂商声称库存充足，暂未构成急性危机）；对美若2026-11-27禁令重启 → A级
 
-**当前评级**：**B级前瞻**（现状：许可证管理，非断供；风险时间窗口：2026-11-27）
+**当前评级**：**B+级**（日本供应链：实测断供但厂商声称有库存；美国：暂停期内有出口，风险时间窗口：2026-11-27）
 
-**监控计划**：每月检查中美贸易谈判进展；接近2026-09起提升监控频率；若重启迹象升至A级
+**升级路径**：
+- 日本GaN/GaAs厂商披露库存不足或减产预警 → A级
+- 中美关系再恶化致美国禁令恢复 → A级（年底前风险窗口）
+- 若2026-11-27前无新一轮暂停 → A级
 
-**可投资标的**：目前无西方上市纯正镓供应商（主要通过铝冶炼副产品获得）；间接受益于替代路线：SiC（Wolfspeed/WOLF，但当前亏损不追踪）
+**监控计划**：持续监控日本厂商库存披露；对美：接近2026-09起提升频率；2026-11-27为硬截止
 
-**来源**：[FastMarkets中国暂停禁令](https://www.fastmarkets.com/insights/china-suspends-export-prohibition-on-superhard-materials-us/) | [Tom's Hardware Ga/Ge出口暂停](https://www.tomshardware.com/tech-industry/china-suspends-ban-on-rare-earth-exports-to-us-but-licensing-remains) | [Compound Semiconductor News](https://compoundsemiconductor.net/article/122926/China_suspends_US_export_ban_on_Ga_and_Ge_and_Sb)
+**可投资标的**：日本GaN/GaAs主要制造商（住友电工5802.T、三菱电机6503.T）均为大市值综合集团，非纯正标的；西方无小市值纯正镓供应商；间接受益替代路线：SiC（Wolfspeed/WOLF，当前亏损不追踪）
+
+**来源**：[Metal Tech News 对日断供 2026-03-25](https://www.metaltechnews.com/story/2026/03/25/tech-metals/china-curbs-tech-metal-exports-to-japan/2695.html) | [FastMarkets中国暂停对美禁令](https://www.fastmarkets.com/insights/china-suspends-export-prohibition-on-superhard-materials-us/) | [Tom's Hardware Ga/Ge出口](https://www.tomshardware.com/tech-industry/china-suspends-ban-on-rare-earth-exports-to-us-but-licensing-remains) | [SCMP 对日Ga/Ge](https://www.scmp.com/economy/global-economy/article/3347567/china-cuts-exports-two-hi-tech-metals-japan-increases-rare-earth-shipments)
 
 ---
 
@@ -512,3 +525,4 @@
 | 2026-05-27 晚 | **第二十七轮扫描 — 无新独立信号，AES背景信号补录** | 扫描覆盖：WF6/NF3临界时间线、Chemring June 2财报前信号、Nittobo/ABF、Almonty Phase 2投票倒计时、Centrus DOE续约、InP/EML、钨/锑/稀土等全部已跟踪方向。**无新信号（过去1-2小时无突破事件）**。补录一项背景信号：**AES Accurate Energetic Systems爆炸（2025-10-10，Tennessee）**——16人死亡，Building 602（唯一铸装引爆装置生产建筑）摧毁，$270M+联邦合同暂停，无重建时间线；TOSHA $3M罚款+$150M诉讼进行中；此前扫描从未记录，补录至条目9国防弹药链；无可投资标的；间接为美国军工能量材料链第三压力点验证。其余状态确认：CHG June 2（6天）催化剂维持；WF6库存耗尽1-2个月临界不变；Almonty Phase 2 June 8-9不变；Centrus DOE续约34天倒计时无新公告；Nittobo ¥25,310-25,890仍高于入场目标区间；钨APT国际价$3,050-3,185/MTU（一致）；所有S/A/B级评级不变。**不生成报告文件**。 |
 | 2026-05-27 第二十八轮扫描 | **细节补录，无新信号，无报告文件** | 覆盖全部五大超级趋势：WF6/NF3临界状态（6-7月，已跟踪）、InP/EML（Digitimes 5/27确认Lumentum-Aixtron MOCVD订单，同一5/19新闻第二来源，非新信号）、变压器（Bloomberg/PwC"5年"系4月旧数据，pv-magazine 5/11的4年仍最新）、Chemring June 2无预告（确认）、Centrus DOE续约无新公告（距6/30约33天）、稀土钇（Trump-Xi峰会"表示关切"无约束性承诺，已记录）、镓/锗（11/27截止无变化）。**新细节补录（Almonty钼矿条目）**：SeAH M&S是SpaceX承包商（此前未记录）；钼矿年收入在地板价$19/lb × 5,600吨满产 = **$234M/年地板价收入**（首次量化）；60年矿山寿命offtake价值$14B+。不影响Almonty ★★评级或June 9 Phase 2投票为关键催化剂的判断。全部S/A/B级瓶颈状态不变。 |
 | 2026-05-27 第二十九轮扫描 | **全面扫描，无新信号，无报告文件** | 覆盖五大超级趋势全部搜索方向（英文+中文）。扫描结果：①WF6临界1-2个月状态确认不变（TrendForce/Central Glass双源已记录）；②Chemring June 2财报无新预告，仅确认AGM January 2026更新为最新公开信息；③InP衬底shortage持续，IntelliEPI CEO Q1 ER"InP shortage is a bottleneck for the entire AI infrastructure"为额外行业来源佐证（非新信号）；④Nittobo T-glass供应紧张确认，扩产2027年H2才落地（已记录）；⑤Almonty June 9 Phase 2投票确认（三重催化剂：Phase 2投票+首批产量数据+新CFO）；⑥Centrus DOE Phase III 6/30到期，8年期选项已存在但DOE尚未宣布行使，无新公告；⑦Ga/Ge/Sb出口禁令暂停确认至2026-11-27；⑧稀土0.1%规则（10月2025管制）暂停确认至2026-11-10（已在0c2条目记录）；⑨Chemring Nobel EU ASAP €66.7M资助为2024/2025旧信息，已知背景；⑩国防弹药链NC缺口>50%、TNT欧洲单一来源——均已跟踪。全部S/A/B级瓶颈状态不变。**无新可投资标的。不生成报告文件。** |
+| 2026-05-28 第三十轮扫描 | **新信号：镓/锗对日断供量化确认，条目14升级B→B+** | ①**条目14（Ga/Ge）重大状态更新**：中国对日镓出口2026年1-2月实测**0 kg**（vs 2025年同期8,007 kg，-100%）；锗同样归零；镓价$2,100/kg（+123% since 2025年初）；日本与美国不同，无11月27日豁免安排；住友/三菱声称库存充足但2个月零进口不可持续。条目14从"B级前瞻"升级为**"B+级（对日已实测断供）"**；②Chemring June 2财报确认无预告（5天后）；③WF6库存临界已入"<4周"窗口，Kanto Denka维持★★★★；④Almonty Phase 2投票June 8-9（11-12天）；⑤Centrus DOE续约33天倒计时无公告；⑥InP/EML/变压器/钨/锑/稀土全部S/A级瓶颈状态不变。**无新可投资标的。生成信号扫描报告：10-00-信号扫描.md** |
