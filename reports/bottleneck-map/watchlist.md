@@ -1,8 +1,8 @@
 # 瓶颈猎手观察名单（持续更新）
 
-最后更新：2026-05-28 第三十三轮（午后扫描）：Kanto Denka新增SWS DCF反向估值警示（¥785 fair value vs ¥2,550）；Almonty Phase 2投票日期修正为6月8日；新增哈萨克斯坦钨竞争风险详情（5-8年时间线，不影响近期）；Centrus续约倒计时33天（无新公告）；全部评级不变。本轮之前第三十二轮（早）：EML McKinsey数据、镓价更新
+最后更新：2026-05-28 第三十四轮（晚间扫描）：Almonty本周-11%至约C$24.35，Sphene Capital新Buy，Diamond Equity Research FY2027 EPS上调至US$1.68；Chemring June 2官方确认（4天后）；全部评级不变。本轮之前第三十三轮（午后）：Kazakhstan钨5-8年时间线；Almonty Phase 2投票6月8日
 
-下次复查：**June 2 Chemring半年财报**（**5天后**，最紧迫）；**本周核实Kanto Denka FY2027指引原始公告**（高优先级）；**WF6中断新闻**（<30天临界，随时可能触发）；**June 8** Almonty Phase 2投票+首批Q2产量数据（非6月9日）；**June 9** Almonty AGM；Centrus DOE续约（June 30到期，33天，若June 15前无公告升为实质风险事件）；日本GaN/GaAs厂商库存消耗时间线披露
+下次复查：**June 2 Chemring半年财报**（**4天后**，最紧迫）；**本周核实Kanto Denka FY2027指引原始公告**（高优先级）；**WF6中断新闻**（<30天临界，随时可能触发）；**June 8** Almonty Phase 2投票+首批Q2产量数据（非6月9日）；**June 9** Almonty AGM；Centrus DOE续约（June 30到期，32天，若June 15前无公告升为实质风险事件）；日本GaN/GaAs厂商库存消耗时间线披露
 
 ---
 
@@ -387,14 +387,16 @@ FY2026全年业绩（2026-05-15发布）同时披露FY2027经营指引：
 - **对Almonty前向收入预测的影响**：若国际APT从$3,140/MTU跌至$2,000/MTU，前向收入从$470M降至约$300M，前向P/S从8x升至12.7x——估值保护减弱
 - **月度监控项**：Fastmarkets欧洲APT月度数据；关注是否有中国供给重回国际市场迹象
 
-**评级维持★★**：前向收入逻辑合理（Forward P/S ~8x），商业化生产已启动；但股价YTD +93%已充分定价；钨价中期走势是最大不确定性；等Q2/Q3产量验证再考虑升级。
+**评级维持★★**：前向收入逻辑合理（Forward P/S ~7.2x，略好于上周~8x），商业化生产已启动；但股价仍高于分析师平均目标约16%；钨价中期走势是最大不确定性；等Q2/Q3产量验证再考虑升级。
 
-**【2026-05-27 13:11 分析师共识低于现价警示】**：
-- 当前价：**C$26.97**（5月25日）
-- 7家分析师平均目标价：**C$20.46**（高端C$28.6，低端C$7.5）
-- DA Davidson：目标$25（Buy）；最新上调至C$22.93的目标仍意味约**15%下行风险**
-- 分析师共识**低于**当前价位，不构成安全边际
-- **建议**：June 9 Phase 2投票通过后若出现回调，关注C$20-22区间是否出现更佳入场点
+**【2026-05-27 13:11 分析师共识低于现价警示（2026-05-28晚间更新）】**：
+- 当前价：**C$24.35**（2026-05-28，本周-11%，近月-20%）
+- **分析师覆盖扩至9家**：Sphene Capital GmbH 2026-05-28新发Buy评级（第9位）；Diamond Equity Research上调FY2027 EPS至US$1.68（前US$1.43，+17.5%）
+- 平均目标价约**C$20-21**（8家分析师共识，含Sphene更新后重新计算）；高端C$28.6
+- 当前价C$24.35 vs 平均目标~C$20：仍有约~20%下行到均值风险
+- **Forward P/S重新计算**：$3.37B USD / $470M ≈ **7.2x**（较上周C$27.55时的8x小幅改善）
+- 10年25xPE退出分析不变：仍无安全边际（CAGR需38.9%）
+- **建议**：June 8 Phase 2投票通过后若出现回调，关注C$20-22区间是否出现更佳入场点；若Phase 2未通过则直接等C$15-18重评
 
 **加入日期**：2026-05-26  
 **来源**：[InvestingNews Q1](https://investingnews.com/almonty-industries-reports-first-quarter-2026-financial-results/) | [StockAnalysis AII](https://stockanalysis.com/quote/tsx/AII/) | [Almonty TPW offtake](https://almonty.com/binding-offtake-agreement-to-supply-tungsten-oxide-solely-for-us-defense-applications/) | [Almonty Montana HQ](https://www.businesswire.com/news/home/20260413261619/en/Almonty-Industries-Establishes-U.S.-Corporate-Headquarters-Reinforcing-Role-as-Americas-Tungsten-Supplier) | [NBC Montana](https://nbcmontana.com/news/local/almonty-industries-moves-headquarters-to-montana-as-tungsten-push-intensifies)
@@ -515,3 +517,5 @@ FY2026全年业绩（2026-05-15发布）同时披露FY2027经营指引：
 | 2026-05-28 午后 | AII.TO Almonty | **Phase 2投票日期修正：6月8日（非9日）+ Kazakhstan中期竞争风险核实** | ①**Phase 2投票日修正**：多来源（ad-hoc-news）确认Phase 2扩产投票为**6月8日**，AGM为6月9日；②**Kazakhstan Severniy Katpar已核实**：14亿吨资源，12,000 MT/年潜力，Trump儿子持股，$1.1B开发成本，ExIm Bank/DFC融资兴趣；**关键：最少5-8年到投产（2031年前无实质供应）**；近期无影响但中期（2031+）是真实竞争者；评级★★维持 |
 | 2026-05-28 午后 | LEU Centrus | **DOE续约倒计时33天（第三十二轮无新公告）** | Phase III $110M到期6/30/2026；DOE已行使1年期选项（Phase III），剩余2年+后续8年期权未行使；无新续约公告；若**6月15日前仍无公告则升为实质风险事件**；评级★★★维持 |
 | 2026-05-28 午后 | 全体 | **第三十二轮扫描（今日午后完整扫描）——4项更新，无新标的，无评级变化** | ①Kanto Denka DCF反向警示新增；②Almonty投票日期修正（6月8日）+Kazakhstan核实（5-8年时间线）；③Centrus续约33天倒计时无公告；④新背景信号：Goldman Sachs DRAM供需缺口4.9%（15年最严重）；TechTimes 2026-05-27确认Nvidia $4B EML锁仓；InP月需求700-800k vs 400k供给；Chemring June 2财报5天（无预告）；生成daily/2026-05-28-pm.md |
+| 2026-05-28 晚间 | AII.TO Almonty | **股价下跌+2位新分析师（评级★★维持）** | 本周-11%至约**C$24.35**（近月-20%，距52周高-25%）；**Sphene Capital GmbH新发Buy评级**（新增第9位分析师）；**Diamond Equity Research上调FY2027 EPS至US$1.68**（前US$1.43，+17.5%）；Forward P/S从~8x改善至**~7.2x**（C$24.35/C$4.62B市值/$470M前向收入）；仍高于分析师平均目标C$20-21约16%；10年25xPE退出无安全边际不变。评级★★维持，June 8投票通过后如出现C$20-22回调则重评 |
+| 2026-05-28 晚间 | 全体 | **第三十四轮扫描（晚间）——无新信号，无新标的，不生成文件** | 覆盖五大超级趋势全部方向。WF6/NF3库存临界（<30天到"2026年中"）不变；InP/EML/Kanto Denka/Chemring/Nittobo/UAMY/Centrus全部已跟踪标的状态不变；变压器补录GSU需求+274%；Almonty价格更新+2位分析师；Chemring June 2确认（4天）；无新可投资标的。 |
