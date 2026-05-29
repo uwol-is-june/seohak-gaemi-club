@@ -1,8 +1,8 @@
 # 瓶颈猎手观察名单（持续更新）
 
-最后更新：2026-05-28 第四十三轮（约19:15扫描）：无新信号。五大超级趋势全面扫描；所有标的评级不变；HALEU背景补录：DOE/NNSA 2026-05-07从日本JAEA转运1.7吨HALEU（一次性事件，不改变Centrus续约必要性，LEU★★★不变）；Kairos Power 2026-01与DOE签约获HALEU（Hermes演示堆，首个SMR商业客户，补录）；九国退出乌克兰弹药供应联盟（政治信号，不影响CHG★★★★）；Kanto Denka ¥3,305/前向P/E ~25.5x绿灯；Nittobo ¥25,310仍高于入场目标；Chemring June 2（4天）、Almonty Phase 2投票June 8（11天）、Centrus DOE续约June 30（33天）均无新公告。本轮之前：第四十二轮（约18:30扫描）：无新信号。Almonty CEO今日CNBC专访（预Phase 2投票PR，非基本面变化）；Kanto Denka确认约¥3,305（forward P/E ~25.5x，绿灯）；WF6"5-6月临界"无breaking news；Chemring June 2财报4天后无预警；所有评级不变。本轮之前：第四十一轮（18:08扫描）：无新信号。Nittobo今日+14.94%（隐含昨日5/27曾约¥22,020再度触及入场区间，今日反弹至¥25,310，区间窗口已关闭）；美国稀土进口恢复至约42-49%水平（仍严重低于管制前）；所有评级不变。本轮之前：第四十轮（17:06扫描）：无新信号，全部评级不变。
+最后更新：2026-05-29 第四十四轮（10:00扫描）：2项新信号（前43轮漏录）捕获——①**China MRL实施条例June 15生效**（战略矿产总量控制法律框架，强化钨/REE/Ga/Ge所有已跟踪瓶颈，无新标的）；②**EU首个联合矿产储备：钨/稀土/镓入选**（需求侧与供给侧收紧双向夹击）。所有watchlist标的评级不变。WF6进入<3周临界（5/29计时）；Almonty CFO Beristain**明日（June 1）正式就职**；Almonty Phase 2投票10天后（June 8）；Chemring H1财报4天后（June 2，最紧迫）；Centrus DOE续约32天（June 30，若June 15前无公告升实质警戒）。**生成信号扫描报告：2026-05-29/10-00-信号扫描.md**。本轮之前：2026-05-28 第四十三轮（约19:15扫描）：无新信号。五大超级趋势全面扫描；所有标的评级不变；HALEU背景补录：DOE/NNSA 2026-05-07从日本JAEA转运1.7吨HALEU（一次性事件，不改变Centrus续约必要性，LEU★★★不变）；Kairos Power 2026-01与DOE签约获HALEU（Hermes演示堆，首个SMR商业客户，补录）；九国退出乌克兰弹药供应联盟（政治信号，不影响CHG★★★★）；Kanto Denka ¥3,305/前向P/E ~25.5x绿灯；Nittobo ¥25,310仍高于入场目标；Chemring June 2（4天）、Almonty Phase 2投票June 8（11天）、Centrus DOE续约June 30（33天）均无新公告。
 
-下次复查：**June 2 Chemring半年财报**（**4天后**，最紧迫）；**WF6中断新闻**（<4周临界，随时可能触发）；**June 1** Almonty新CFO Jorge Beristain就职（4天）；**June 8** Almonty Phase 2投票（11天）；**June 9** Almonty AGM（12天）；**Centrus DOE续约（June 30到期，33天，若June 15前无公告升为实质风险事件）**；日本GaN/GaAs厂商库存消耗时间线披露；UAMY 8-K（000110465926062742）内容核实；Nittobo 5:1拆分记录日2026-06-29（32天）
+下次复查：**⚡June 2 Chemring半年财报**（**4天后**，最紧迫）；**⚡WF6中断新闻**（<3周临界，随时可能触发）；**明日（June 1）** Almonty新CFO Jorge Beristain正式就职；**⚠️June 15 China MRL实施条例生效**（17天，新增，监控实施案例）；**June 8** Almonty Phase 2投票（10天）；**June 9** Almonty AGM（11天）；**Centrus DOE续约（June 30到期，32天，若June 15前无公告升为实质风险事件）**；日本GaN/GaAs厂商库存消耗时间线披露；UAMY 8-K（000110465926062742）内容核实；Nittobo 5:1拆分记录日2026-06-29（31天）
 
 ---
 
