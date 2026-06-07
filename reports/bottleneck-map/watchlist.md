@@ -956,3 +956,43 @@ NF₃主要客户：TSMC、Samsung、Micron、Kioxia、Rapidus——几乎覆盖
 - 三工厂运营5年的量化表述首次出现，比此前的"多年"定性更具说服力
 
 *来源：[ADVFN CHG.L业绩](https://uk.advfn.com/market-news/article/16805/chemring-reports-higher-revenue-and-record-order-book-as-defence-spending-drives-demand-chg) | [Massif Substack战争需求](https://massif.substack.com/p/chemring-war-demand-and-old-lessons)*
+
+---
+
+### ICL Group（NYSE: ICL）★★ — 溴/HBr：地缘风险跟踪（非纯正标的）
+
+**【2026-06-07 23:45 新增观察名单】**
+
+**⚠️ 排除历史**：master-map 2026-05-26 因"溴化物仅占总收入17.3%，不达30%纯正度门槛"正式排除ICL。以下重新评估基于**5/26后新发展**——伊朗导弹已打击距ICL Dead Sea设施35km的Dimona/Arad地区。
+
+**瓶颈定位**：Layer 3，溴→HBr特气，S级瓶颈（物理判定），但ICL业务多元化导致标的纯正度不达标
+
+**关键数据**：
+| 指标 | 数据 | 信号灯 |
+|------|------|-------|
+| 市值 | $8.57B USD | — |
+| 年收入（2025） | $7.15B；Q1 2026 $2.02B（+14% YoY） | — |
+| PS | ~1.06x（年化） | 🟢 绿灯 |
+| 前瞻PE | 13.21x | 🟢 绿灯 |
+| EV/EBITDA | 7.31x | 🟢 绿灯 |
+| 溴业务收入占比 | ~17.5%（Industrial Products $1,254M/总$7,150M） | ⚠️ 低于30%门槛 |
+| 全年EBITDA指引 | $1.5B-$1.7B（上调） | — |
+| 溴价格 | $12,000/MT（+100% vs 正常水平） | — |
+
+**为何重新跟踪（vs. 5/26排除原因）**：
+1. **地缘风险实质化**：伊朗弹道导弹已打击内盖夫（含Dimona核设施区域）——此前5/26的分析未包含这一新发展
+2. **极端下游脆弱性量化**：韩国97.5%溴进口来自以色列，DRAM厂仅2-3周HBr库存，任何中断4-6周内传导至全球DRAM产线
+3. **价格已高度溢价**：$12,000/MT意味着ICL Industrial Products段当前盈利能力远强于历史水平，利润占比可能超过收入占比
+
+**看空逻辑**：
+1. **双刃剑风险**：若导弹直接击中ICL Dead Sea设施，ICL产量中断 → 股价大跌（非利多）
+2. 钾肥/磷酸盐周期下行可能抵消溴价格利好
+3. 纯正度<30%：溴业务即使翻倍，对ICL整体影响仍有限
+
+**评级**：★★（地缘风险溢价跟踪）
+- **升级到★★★的条件**：确认溴分部利润占比≥30%，且伊朗-以色列局势维持或升级而非缓和
+- **降级/移除的条件**：停火协议使地缘风险消退；或溴价格回落至$6,000/MT以下
+
+**下一催化剂**：ICL Q2 2026业绩（约2026年8月）；以色列-伊朗军事动态
+
+*来源：[ICL Q1 2026（TipRanks）](https://www.tipranks.com/news/company-announcements/icl-posts-strong-q1-2026-results-on-higher-bromine-potash-and-phosphate-prices) | [溴DRAM瓶颈（War on the Rocks）](https://warontherocks.com/the-bromine-chokepoint-how-strife-in-the-middle-east-could-halt-production-of-the-worlds-memory-chips/) | [韩国97.5%依赖（BigGo Finance）](https://finance.biggo.com/news/3bPwj50ByH9TLH69g_F-) | [TrendForce中东动荡溴风险（2026-03-09）](https://www.trendforce.com/news/2026/03/09/news-middle-east-energy-turmoil-raises-chip-risks-spotlight-on-tsmc-power-use-and-bromine-for-dram/)*
