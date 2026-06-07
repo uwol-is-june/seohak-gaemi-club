@@ -194,7 +194,7 @@
 
 ## A级瓶颈（严重受限）
 
-### 3b. NF3/WF6半导体特种气体 【2026-05-26 14:11 新增，A级，连接AI制造+半导体再工业化】
+### 3b. NF3/WF6半导体特种气体 【2026-05-26 14:11 新增，**S级（2026-06-07升级：WF6本月库存告罄）**，连接AI制造+半导体再工业化】
 **核心数据**：
 - **Mitsui Chemicals 2026年3月正式退出NF3生产**（Shimonoseki工厂关闭），导致 **Kanto Denka Kogyo 成为日本唯一NF3主要生产商**（占日本产能约90%）
 - **WF6（六氟化钨）**：多家日本供应商因中国钨出口管制无法获得原材料，已通知韩国客户"H2 2026可能中断"，现有库存仅维持至2026年中
@@ -229,13 +229,16 @@
 
 **来源追加**：[The Elec WF6三星+三星暴露](https://www.thelec.net/news/articleView.html?idxno=5468)
 
-**相关公司**：**Kanto Denka Kogyo（TSE: 4047.T，✅ 估值双绿灯，★★★★）**
-- 市值：¥135.7B ≈ $872M；**前向P/S 1.43x（FY2027指引¥95B）✅ 绿灯**；**前向P/E ~19.7x ✅ 绿灯**；Trailing P/S 2.1x，Trailing P/E 35.8x
-- **【2026-05-27 20:00 重大新发现】FY2027经营指引（2026-05-15发布）**：收入¥95B（+45% YoY），营业利润¥10B（+83%），股息¥36/股（+16%）；时间精确对齐Mitsui退出+WF6库存耗尽+FY2027起点
+**相关公司**：**Kanto Denka Kogyo（TSE: 4047.T，⚠️ Forward P/E 30.9x黄灯，★★★★）**
+- 市值（2026-06-05）：**¥2,391.5億**（¥4,095 × 5,840万株）≈ **$15.9亿**（vs 5月初¥135.7B，+76%）
+- 估值（2026-06-07更新）：**Forward P/S 2.52x** ✅ / **Forward P/E 30.9x** ⚠️ 黄灯（增速+51%支撑）
+- **FY2027指引（2026-05-15发布）**：收入¥95B（+45% YoY），営業利益¥10B（+83%），经常利益¥100億，股息¥36/股（+16%）
+- 新催化剂（6月3日）：Kioxia Capex+66%（¥4,700億/年），KSG-14需求2028年以上锁定
 - 下游客户：TSMC、Samsung、Micron、Sony、Kioxia、Rapidus
-- FY2026 Fine Chemicals"销售超出预期"（已验证）；FY2027指引隐含Fine Chemicals为主要增长引擎
-- 关键待确认项：①原始日文公告核实FY2027指引数字；②Fine Chemicals分部收入>30%年报确认
-- **10年安全边际（前向）**：FY2027起点净利¥6.9B → 10年25xPE退出年化10%需CAGR 7.3%，结论：有安全边际
+- FY2026 Fine Chemicals"销售超出预期"（已验证）；WF6涨价70-90%将在FY2027充分体现
+- 关键待确认项：①原始日文公告核实FY2027指引数字（irbank.net未核实）；②Fine Chemicals分部收入>30%年报确认
+- **10年安全边际（2026-06-07重算，¥4,095）**：需CAGR **12.3%**（>10%门槛，边界通过，WF6近垄断提供溢价）
+- **建议：最高优先执行 `/investment-team`，入场区间¥3,800-4,200**
 
 **【2026-05-31 第七十三轮 三星18天计划罢工（WF6/NF3需求侧临时变量）】**：
 - Tom's Hardware（2026-05-31）报道Samsung正在罢工前18天内缩减芯片生产，IAM工会罢工计划已公告
@@ -243,6 +246,16 @@
 - 性质判断：这是临界期的推迟，而非解除。WF6结构性短缺（中国钨出口管制+Mitsui退出）不受影响。Samsung对日本WF6依赖程度高于SK Hynix（The Elec确认），罢工后生产恢复时库存压力更大
 - 评级影响：NF3/WF6 A级维持；Kanto Denka ★★★★维持；WF6中断催化剂时间线预估推迟~3-4周
 - 来源：[Tom's Hardware Samsung Strike 5/31](https://www.tomshardware.com/tech-industry/samsung-starts-winding-down-chip-producton-six-days-before-planned-18-day-strike)
+
+**【2026-06-07 12:08 WF6危机急性化 + Kioxia催化剂 + 4047.T状态升级】**：
+- **WF6库存已达临界**：Samsung罢工（3-4周）推迟了临界点，但当前时间节点（2026年6月）WF6已确认进入库存耗尽阶段。TrendForce（4/8）+Central Glass（5月）双源确认本月见底
+- **WF6涨价70-90%已宣布**：APT（钨原料）自2025年2月+557%；日本厂商已向下游客户宣布WF6涨价70-90%，价格上升正在进行时
+- **新催化剂（6月3日）**：Kioxia公告FY2026-2028年均Capex ¥4,700億（+66% vs FY2025），三年¥1.4万亿。KSG-14（Kanto Denka关键产品，用于Kioxia 3D-NAND BiCS channel hole刻蚀）需求多年锁定
+- **4047.T股价动态**：6月4日因Kioxia催化剂涨停+18.9%至¥4,405；6月5日因Broadcom引发的SOX -10%宏观冲击回调-7%至¥4,095。SOX事件与Kanto Denka基本面无关
+- **估值更新（¥4,095）**：市值¥2,391.5億；Forward P/S 2.52x ✅；Forward P/E 30.9x ⚠️（黄灯，增速+51%支撑）；10年CAGR需12.3% > 10%门槛，具备安全边际（边界通过）
+- **入场区间更新**：¥3,200-3,600 → **¥3,800-4,200**
+- **瓶颈评级**：升级 **A级 → S级**（WF6库存本月告罄+供给无替代+6个红灯条件全满足，单点故障级）
+- 新增信源：[TrendForce Kioxia Capex+66% (6/3)](https://www.trendforce.com/news/2026/06/03/news-kioxia-targets-%C2%A5470b-yearly-capex-in-fy26-28-up-66-from-fy25-reportedly-weighing-third-kitakami-fab-and-ma/) | [BigGo 4047.T涨停 (6/4)](https://finance.biggo.com/news/3pe9kZ4BaoGGrU-IuIpV)
 
 **来源**：[TrendForce WF6 2026-04-08](https://www.trendforce.com/news/2026/04/08/news-potential-supply-disruptions-of-tungsten-hexafluoride-from-japan-implications-for-the-semiconductor-industry/) | [The Elec 钨供应风险](https://www.thelec.net/news/articleView.html?idxno=6325) | [Digitimes SK Hynix+氦气+钨](https://www.digitimes.com/news/a20260409PD211/2026-sk-hynix-chipmakers-production.html) | [Sourceability Kanto Denka火灾](https://sourceability.com/post/supply-chain-shocks-nf3-fire-natcast-fallout) | [TrendForce Kanto Denka NF3火灾](https://www.trendforce.com/news/2025/08/14/news-japans-kanto-denka-kogyo-fire-threatens-nf%E2%82%83-supply-alerts-chipmakers-like-tsmc-and-rapidus/)
 

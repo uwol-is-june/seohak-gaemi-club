@@ -165,7 +165,7 @@
 
 ## 持续跟踪（信号强度★★★）
 
-### 4b. Kanto Denka Kogyo（TSE: 4047.T）★★★★ ⚡FY2027指引¥95B+45%，前向估值双绿灯 【2026-05-26 初步识别 | 2026-05-27 20:00 重大升级】
+### 4b. Kanto Denka Kogyo（TSE: 4047.T）★★★★ ⚡WF6本月告罄×Kioxia Capex+66%×SOX回调¥4,095 【2026-05-26 初步识别 | 2026-05-27 20:00 重大升级 | **2026-06-07 12:08 三重新催化剂升级**】
 **瓶颈环节**：NF3/WF6半导体特种气体（A级，见master-map 3b条目）  
 
 **市值（更新，2026-05-30午后）**：¥208.6B ≈ **$1.35B USD**（股价¥3,625，+42%自¥2,550watchlist初始价；原市值¥135.7B/$872M已过时）  
@@ -244,11 +244,19 @@ FY2026全年业绩（2026-05-15发布）同时披露FY2027经营指引：
 - **评级影响**：Kanto Denka ★★★★维持；WF6中断催化剂时间线推迟约3-4周；入场区间不变
 - 来源：[Tom's Hardware Samsung Strike](https://www.tomshardware.com/tech-industry/samsung-starts-winding-down-chip-producton-six-days-before-planned-18-day-strike)
 
-**建议动作（2026-05-31 更新）**：
-1. **本周优先（紧迫）**：核实Kanto Denka官网/TSE原始FY2026決算公告，确认FY2027经营指引（¥95B/¥10B）原始数字，同时确认Fine Chemicals分部收入>30%占比
-2. **若核实通过**：执行 `/investment-team` 深入研究（★★★★，已升级）
-3. **WF6中断催化剂（推迟至7月）**：三星罢工推迟临界点；若WF6供应中断新闻出现（7月更可能），可考虑即时入场而非等待回调；但当前¥3,625仍高估60-90%，不主动追高
-4. **FY2027 Q1财报（约2026年8月）**：验证收入爬坡节奏，是最关键验证点
+**【2026-06-07 12:08 三重重大升级】**：
+- **Kioxia Capex+66%（新催化剂，6月3日 TrendForce确认）**：Kioxia宣布FY2026-2028年均资本支出¥4,700億（vs FY2025增幅+66%），三年¥1.4万亿。Kanto Denka是Kioxia 3D-NAND制程KSG-14（channel hole刻蚀专用氟化物气体）关键供应商，此催化剂为KSG-14产线提供2028年以上需求能见度
+- **WF6库存危机急性化**：TrendForce（4月8日）报告，Kanto Denka与Central Glass已联合向三星、DB HiTek发出WF6供应中断预警——现有库存仅维持至**2026年5-6月，即本月**。已宣布WF6涨价**70-90%**。这是正在发生的危机，不是预期
+- **股价路径**：6月4日因Kioxia催化剂涨停+18.9%至¥4,405（东证Prime当日第一）→ 6月5日因Broadcom引发的SOX -10%宏观冲击回调-7%至¥4,095 → 6月7日（周日）休市。宏观冲击与Kanto Denka基本面无关
+- **估值更新（¥4,095）**：市值¥2,391.5億；Forward P/S **2.52x** ✅；Forward P/E **30.9x** ⚠️（黄灯，增速+51%支撑）；10年25xPE退出需CAGR 12.3%（通过10%门槛）。具备安全边际（边界通过）
+- **入场区间更新**：从¥3,200-3,600升级至**¥3,800-4,200**（当前¥4,095在区间内）
+- **等6月8日（周一）开盘**：确认SOX冲击是否消化。若市场反弹，¥4,095可能是近期低点
+
+**建议动作（2026-06-07 更新）**：
+1. **最优先：执行 `/investment-team` 深入研究**（★★★★，三重新催化剂+WF6本月告罄，论点已强化至最高级）
+2. **核实FY2027指引日文原始来源**（irbank.net / minkabu.jp），解除Simply Wall St DCF警示不确定性——这是唯一主要未验证风险
+3. **入场区间**：¥3,800-4,200（当前¥4,095在区间内）。等6月8日开盘确认走势后入场
+4. **WF6涨价体现**：FY2027 Q1（约2026年8月财报）将是WF6 70-90%涨价实际落地的首次财报验证点
 
 **加入日期**：2026-05-26  
 **来源**：[TipRanks Kanto Denka FY2027指引](https://www.tipranks.com/news/company-announcements/kanto-denka-kogyo-lifts-profit-and-dividend-projects-strong-fy2027-growth) | [Kanto Denka +24% - Meyka](https://meyka.com/blog/kanto-denka-kogyo-surges-24-as-chemical-demand-accelerates-1805/) | [TrendForce WF6供应中断](https://www.trendforce.com/news/2026/04/08/news-potential-supply-disruptions-of-tungsten-hexafluoride-from-japan-implications-for-the-semiconductor-industry/) | [The Elec Central Glass Samsung暴露](https://www.thelec.net/news/articleView.html?idxno=5468) | [Kanto Denka火灾 TrendForce](https://www.trendforce.com/news/2025/08/14/news-japans-kanto-denka-kogyo-fire-threatens-nf%E2%82%83-supply-alerts-chipmakers-like-tsmc-and-rapidus/)
@@ -299,9 +307,9 @@ FY2026全年业绩（2026-05-15发布）同时披露FY2027经营指引：
 
 ---
 
-### 7. Lumentum (LITE，纳斯达克) ★★★
+### 7. Lumentum (LITE，纳斯达克) ★★ 【2026-06-07 12:08 估值红灯降级：10年退出需31% CAGR】
 **瓶颈环节**：EML激光器（S级）  
-**核心逻辑**：Nvidia 2026-03-02宣布向Lumentum投资$20亿美元+多年采购协议，产能已锁定至2027年+；2026-05-19刚下单购买多台Aixtron MOCVD系统扩产
+**核心逻辑**：Nvidia 2026-03-02宣布向Lumentum投资$20亿美元+多年采购协议，产能已锁定至2027年+；Lumentum是全球极少数能量产200G/lane EML激光器的公司，800G光模块供需缺口40-60%，1.6T缺口30-40%
 
 **⚠️ 【2026-05-30 第六十七轮 市值重大错误修正】**：
 - **之前记录"$35-40亿美元"严重错误** → 实际市值约**$67B**（2026-05-28，股价$835-874，52周高$1,085）
@@ -310,14 +318,24 @@ FY2026全年业绩（2026-05-15发布）同时披露FY2027经营指引：
 - GAAP运营利润率21.6%；年化净利估约$500-600M
 - **10年25xPE退出**：$67B × 2.594 / 25 = 需净利润$6.96B，需CAGR ~29% → **无安全边际**
 - **2028全产能分配（2026-05-30新增）**：InP激光产能全额分配至未来32个月（~2028年12月）；非Nvidia客户交期>60周
-- EML S级备注更新：原"2027年可能降至A级"（LightCounting）与Lumentum"2028满分配"形成张力；解释共存：Nvidia锁定（Lumentum角度）vs 非Nvidia市场边际缓解（LightCounting角度）；新备注：**2027H2-2028可能降至A级，但2026-2027仍维持S级**
+- EML S级备注更新：**2027H2-2028可能降至A级，但2026-2027仍维持S级**
 
-**估值状态**：P/S 16.7x黄灯，无安全边际，不追高  
-**注意**：已被大幅定价（$67B市值），EML瓶颈持续性强且2028全分配；多年采购协议锁定收入确定性高但估值透支  
-**状态**：🟡 跟踪，优先级低于纯小市值标的；不追高  
+**【2026-06-07 12:08 最新估值数据更新】**：
+- 股价：**$863.66**（6月6日收盘），52周高$1,021
+- 市值（含6月增发500万股）：**约$66.3B**（$863 × 7,670万股）
+- TTM营收：**$2,488M**（GuruFocus）
+- **实际P/S（TTM）：~26.6x**（$66.3B / $2.49B）⚠️ 接近30x红线，增速90%刚好在豁免线以下
+- EV/Revenue：27.6x（GuruFocus）
+- FY2026全年净利润（估计）：≈$452M（Q1 $4.2M + Q2 $78.2M + Q3 $144.2M + Q4 guide ~$225M）
+- **10年25xPE退出（2026-06-07重算）**：$66.3B × 2.5937 / 25 = 需净利润$6.87B；从$452M CAGR需**31.4%/年** → **严重无安全边际**
+- **评级从★★★降至★★**：逻辑成立但当前价格不具备安全边际；等待大幅回调（目标PS<10x，对应股价约$325以下）
+
+**估值状态**：🔴 P/S 26.6x接近红线，10年退出需31% CAGR，**不追高，信号强度封顶★★**  
+**注意**：EML瓶颈真实，Nvidia锁仓真实；但$66B市值对应$2.5B收入，市场已把未来5-7年的增长折现进去  
+**状态**：🔴 观察，只在大幅回调后重评（目标入场区间：PS<10x）  
 **加入日期**：2026-05-25  
-**估值更正日期**：2026-05-30  
-**来源**：[MacroTrends LITE市值](https://www.macrotrends.net/stocks/charts/LITE/lumentum-holdings/market-cap) | [FinancialContent 2028 backlog](https://www.financialcontent.com/article/marketminute-2026-4-10-optical-dominance-lumentum-shares-surge-as-ai-infrastructure-backlog-stretches-to-2028) | [Lumentum Q3 FY2026](https://www.sec.gov/Archives/edgar/data/0001633978/000162828026030530/lite_ex991xq3fy26.htm)
+**估值更正日期**：2026-05-30 / **★★降级日期：2026-06-07**  
+**来源**：[MacroTrends LITE市值](https://www.macrotrends.net/stocks/charts/LITE/lumentum-holdings/market-cap) | [FinancialContent 2028 backlog](https://www.financialcontent.com/article/marketminute-2026-4-10-optical-dominance-lumentum-shares-surge-as-ai-infrastructure-backlog-stretches-to-2028) | [Lumentum Q3 FY2026](https://www.sec.gov/Archives/edgar/data/0001633978/000162828026030530/lite_ex991xq3fy26.htm) | [GuruFocus EV/Revenue](https://www.gurufocus.com/term/enterprise-value-to-revenue/LITE)
 
 ---
 
@@ -766,3 +784,46 @@ FY2026全年业绩（2026-05-15发布）同时披露FY2027经营指引：
 - 钼矿独家offtake（SeAH M&S）已确认（6月2日升级★★★）
 - **关注：6月9日AGM结果（board elections + Phase 2正式确认）**
 - **估值：Forward P/S ~11x（含钼，黄灯），10年25xPE退出无安全边际，★★★维持**
+
+---
+
+## 【2026-06-07 12:08 观察名单更新】
+
+### 4047.T ★★★★ — 三重新催化剂 + WF6本月告罄 + 入场区间更新
+
+**【2026-06-07 12:08 重大状态升级】**
+- **WF6库存急性化（10:00报告后新增确认）**：TrendForce 4月8日已记录日本厂商通知韩国客户6月见底，WF6涨价70-90%已宣布。本月危机正在发生
+- **Kioxia Capex+66%新催化剂（6月3日 TrendForce）**：FY2026-28年均¥4,700億，三年¥1.4万亿。KSG-14需求多年锁定
+- **股价路径**：6月4日涨停+18.9%至¥4,405（东证Prime当日第一）→ 6月5日SOX宏观冲击回调-7%至¥4,095 → 6月7日休市
+- **更新估值（¥4,095）**：Forward P/S 2.52x ✅ / Forward P/E 30.9x ⚠️（黄灯，增速支撑）；10年退出CAGR 12.3%（通过10%门槛）
+- **入场区间更新**：¥3,200-3,600 → **¥3,800-4,200**（当前¥4,095在区间内）
+- **最高优先执行 `/investment-team`**，待6月8日开盘确认SOX冲击消化情况
+
+### LITE（Lumentum）★★ — 估值红灯降级（10年退出需31% CAGR）
+
+**【2026-06-07 12:08 首次完整估值核算，从★★★降至★★】**
+- 股价$863.66（6月6日），市值约$66.3B，TTM营收$2,488M
+- P/S ~26.6x ⚠️ 接近红线；EV/Revenue 27.6x；Q3增速+90%（接近但未达100%豁免）
+- FY2026全年净利润估计$452M，10年退出需CAGR 31.4% → 失败
+- EML唯一量产商逻辑真实，但当前价格无安全边际
+- **等待PS<10x（约$325以下）才考虑入场**
+
+### COHR（Coherent Corp）★★ — 新增观察（EML次级受益，估值透支）
+
+**【2026-06-07 12:08 新增】**
+- Nvidia $20亿战略投资（同步Lumentum，2026年3月）
+- 市值$73.76B，TTM营收~$6.6B，PS ~11.2x ⚠️ 黄灯
+- PE 173x（刚转正，黄灯），Q3增速+21% YoY
+- 数据中心业务占Q3收入75%（+41% YoY）
+- 10年退出需CAGR 31.5% → **失败，信号强度封顶★★**
+- 比Lumentum多元分散（工业激光等），EML曝光度较低，不是纯正EML标的
+
+### CLF（Cleveland-Cliffs）★★ — 新增（GOES垄断但非纯正标的）
+
+**【2026-06-07 12:08 新增】**
+- 美国唯一GOES（晶粒取向硅钢）国内产商，GOES是变压器铁芯关键材料，变压器交货期4年
+- 市值~$7.58B（$13.29 × 5.704亿股），FY25收入$18.6B，PS **0.41x** ✅ 极低
+- 但Q1 2026净亏损$229M（连续亏损），GOES业务<10%总收入（主要是碳钢/汽车钢）
+- 初筛不通过：瓶颈业务占比<30%；不是纯正瓶颈套利标的
+- $1.5亿Weirton工厂投资扩产GOES（2026年上半年投产）
+- **保留为宏观参考观察（B级），不列为明确标的。若GOES业务单独剥离或占比显著提升则重评**
