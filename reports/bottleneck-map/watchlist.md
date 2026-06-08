@@ -1243,3 +1243,17 @@ H1 2026完整财报（2026-06-02发布）：
 **结论**：LEU净现金调整后EV/S 3.75x是真实绿灯。PE高于历史均值是因为HALEU商业化刚起步，TTM盈利基期偏低。随Phase IV落地和$900M Piketon量产，盈利有望在2027-2030年快速增长。★★★★维持，最近催化剂：**June 18 AGM（DOE宣布历史窗口）+ June 30 Phase III到期（Phase IV行权决策）**。
 
 *来源：[StockAnalysis LEU](https://stockanalysis.com/stocks/leu/) | [MacroTrends市值](https://www.macrotrends.net/stocks/charts/LEU/centrus-energy/market-cap) | [FullRatio PE](https://fullratio.com/stocks/nysemkt-leu/pe-ratio)*
+
+---
+## 观察名单更新 — 2026-06-08 20:14
+
+| 标的 | 当前评级 | 变化 | 关键数据 | 下一催化剂 |
+|------|---------|------|---------|----------|
+| 3110.T（Nittobo） | ★★★★ | ⚠️ 价格回调至¥20,250（-38.5% from ATH ¥32,900），无基本面负面；ABF 30%涨价强化论点 | PS 3.7x / PE 17.6x 🟢 | 8月5日财报 |
+| ICL Group（ICL） | ★★ | ✅ Q1财务确认：Revenue $2.02B / EPS $0.11；PS~1x / PE~12x 🟢 | 溴业务~17% | Q2财报（8月） |
+| ALM（Almonty） | ★★★ | 📅 明日双重催化剂：$700M CB结算 + AGM 10:00 ET | 股价$16.80，转股$27.40 | 6月9日 |
+| LEU（Centrus） | ★★★ | ⏰ Phase III 6/30到期，Phase IV尚无公告 | $9亿Piketon过渡 | 随时（截止6/30） |
+| 4047.T（关东电化） | ★★★★ | ✅ WF6+NF3双气体S级瓶颈维持 | 股价¥3,560，ATH ¥3,775 | 下次财报 |
+| CHG.L（Chemring） | ★★★★ | ✅ 订单簿£13.64亿，FY2026 85%覆盖 | H1 OP -8%，全年指引维持 | 全年结果 |
+| AXTI（AXT Inc） | ★★ | ✅ InP衬底A级瓶颈，估值红灯（市值>TAM×20%） | PS~13-15x ⚠️ | 7月下旬Q2财报 |
+
