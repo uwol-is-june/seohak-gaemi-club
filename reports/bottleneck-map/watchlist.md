@@ -996,3 +996,52 @@ NF₃主要客户：TSMC、Samsung、Micron、Kioxia、Rapidus——几乎覆盖
 **下一催化剂**：ICL Q2 2026业绩（约2026年8月）；以色列-伊朗军事动态
 
 *来源：[ICL Q1 2026（TipRanks）](https://www.tipranks.com/news/company-announcements/icl-posts-strong-q1-2026-results-on-higher-bromine-potash-and-phosphate-prices) | [溴DRAM瓶颈（War on the Rocks）](https://warontherocks.com/the-bromine-chokepoint-how-strife-in-the-middle-east-could-halt-production-of-the-worlds-memory-chips/) | [韩国97.5%依赖（BigGo Finance）](https://finance.biggo.com/news/3bPwj50ByH9TLH69g_F-) | [TrendForce中东动荡溴风险（2026-03-09）](https://www.trendforce.com/news/2026/03/09/news-middle-east-energy-turmoil-raises-chip-risks-spotlight-on-tsmc-power-use-and-bromine-for-dram/)*
+
+---
+
+## 【2026-06-08 14:30 观察名单更新】
+
+### 3110.T（Nittobo）★★★★ — 首次完整PS/PE核算，全绿灯
+
+**【2026-06-08 14:30 估值核算完成】**
+
+**确认财务数据**（来源：StockAnalysis / companiesmarketcap）：
+- 市值：¥737-756B ≈ **$4.9-5.0B USD**（6月5日确认）
+- 总股本：**36.41M 股**（7月1日5:1拆股后→182M股）
+- TTM 净利润：**¥41.77B，+225% YoY**
+- 年收入（估计）：~¥190-200B
+- **PS ~3.7-4.0x 🟢 绿灯**
+- **PE ~17.6x 🟢 绿灯**
+- 电子材料段 Q3 收入 +19.5% YoY，OP **+39.6% YoY**
+
+**10年25xPE退出（保守10% CAGR）**：年化回报 **13.9%** ✅ 通过
+
+**外部验证升级**：Tom's Hardware（主流技术媒体）+ Nikkei Asia 均独立命名 T-glass 为下一个大型 AI 短缺材料，Apple/Nvidia/Google/Amazon 同时争夺 Nittobo 供货权
+
+**入场区间**（pre-split）：**¥17,500-21,000**（当前¥20,250在区间上半部，可分批入场）
+- 理想入场：¥17,500-19,000（相当于 PE 15-16x）
+- 可接受区间：¥19,000-21,000（PE 16-18x）
+
+**等待催化剂**：
+1. 【6/8 今日】东京开盘确认当前入场价位
+2. 【7/1】5:1股票拆分——流动性催化剂
+3. 【8/5】Q1 FY2027 财报——最高优先级验证节点
+
+**升级至★★★★★ 条件**：①8/5财报确认电子材料段OP增速维持≥20%；②净利润基数从第三方双重验证（目前仅StockAnalysis单一来源）
+
+### 4047.T（Kanto Denka）★★★★ — WF6库存耗尽节点确认（本月）
+
+**【2026-06-08 14:30 实证更新】**
+- WF6库存耗尽节点 = **2026年6月**（已由LDeepAI/Semiconductor Digest独立确认）
+- 涨价70-90%已宣布，三星/Kioxia已收通知
+- 上周五（6/5）收盘¥4,095，在¥3,800-4,200入场区间内
+- 等今日（6/8）东京开盘确认是否维持区间
+
+### ALM（Almonty Industries）★★★ — 明日关键双重事件
+
+**【2026-06-08 14:30 前瞻更新】**
+- **明日（6/9）**：$700M CB结算 + AGM 同日
+- 若AGM无负面意外（董事会、增发上限、管理层变更），稀释恐慌有望消散
+- Russell 1000/3000 纳入 **6月29日**（21天后）
+- 中国MRL矿产资源法 **6月15日** 生效——钨战略矿产管控框架进一步锁死
+
