@@ -2161,3 +2161,40 @@ PE 127.8x，GF内在价值391%溢价，10年退出需CAGR 30%。SiPho A级瓶颈
 | Mitsui Kinzoku | 5706.T | 全球#1但多元化大市值，铜箔非纯正标的 |
 
 **来源**：[Digitimes 6/9](https://www.digitimes.com/news/a20260609PD232/) / [Digitimes 6/11](https://www.digitimes.com/news/a20260611PD218/) / [Goldman Sachs via BigGo](https://finance.biggo.com/news/J84_RZ4BX0tZvRTvZP2h) / [TechTimes Lotte](https://www.techtimes.com/articles/316643/20260516/lotte-energy-materials-bets-big-ai-substrate-circuit-foil-high-value-strategic-pivot.htm)
+
+---
+
+## 瓶颈新增：SiPho代工（Tower Semiconductor）— 2026-06-12 13:07 首次记录
+
+**背景**：AI数据中心从铜互联向光互联全面迁移（800G→1.6T→3.2T），SiPho（硅光子）芯片成为光模块核心。Tower Semiconductor是全球唯一能大规模提供独立SiPho专业代工服务的公司，已签$1.3B 2027年合同+$290M预付款，70%+产能预订至2028年。
+
+**瓶颈评级：A级**（5/6维度受限）
+
+| 维度 | 状态 | 数据 |
+|------|------|------|
+| 供给集中度 | 🔴 ≤2家 | Tower（唯一独立SiPho代工）；TSMC SiPho仅内部供应，不对外服务 |
+| 扩产周期 | 🔴 >2年 | SiPho晶圆fab扩产需18-24+个月 |
+| 替代难度 | 🟡 部分可替代 | InP路线部分场景可替代SiPho，但受中国出口管制限制 |
+| 产能利用率 | 🔴 >90% | 70%+产能已预订至2028年 |
+| 需求增速 | 🔴 >50%/年 | 400G→800G→1.6T升级周期，需求加速 |
+| 验证周期 | 🔴 >1年 | SiPho代工切换需重新设计流片，客户验证>1年 |
+
+**可投资标的**：
+
+| 公司 | 代码 | 状态 |
+|------|------|------|
+| Tower Semiconductor | TSEM | ★★★（监控），当前PS ~16.4x，10yr保守退出~7.8%；等-25-30%入场 |
+
+**来源**：[Digitimes 2026-06-11 InP](https://www.digitimes.com/news/a20260611PD238/beijing-photonics-2025-supply-chain-coherent.html) / [Tower $1.3B 2026-05-13](https://www.stocktitan.net/sec-filings/TSEM/6-k-tower-semiconductor-ltd-current-report-foreign-issuer-497b8af5cee6.html) / [Tower + Coherent 400G 2026-03-23](https://towersemi.com/2026/03/23/03232026/)
+
+---
+
+### 状态更新（2026-06-12 13:07）
+
+| 瓶颈 | 评级 | 变化 | 备注 |
+|------|------|------|------|
+| WF₆（关东电化）| **S级** | **NF₃双垄断确认** | Mitsui退出NF₃（3/2026）→ 关东电化日本唯一NF₃+WF₆供应商；7/1 WF₆垄断T-19天 |
+| HVLP4铜箔 | **S级** | 无变化 | 020150.KS ★★★执行中；8358.TWO监控 |
+| SiPho代工 | **A级（新增）** | **2026-06-12首次记录** | Tower Semiconductor TSEM ★★★（监控） |
+| 弹药供应链 | **A级** | **OBBB立法强化** | $25.3B授权；补库4-5年周期获立法背书；CHG.L ★★★★ |
+

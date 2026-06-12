@@ -3081,3 +3081,60 @@ H1 2026完整财报（2026-06-02发布）：
 | **8/12** | 关东电化Q1 FY2027财报（WF6垄断首季） | 4047.T ★★★★★ | 🔴高 |
 
 *来源：乐天能源材料：[TechTimes](https://www.techtimes.com/articles/316643/20260516/lotte-energy-materials-bets-big-ai-substrate-circuit-foil-high-value-strategic-pivot.htm) / [Yahoo Finance 020150.KS](https://finance.yahoo.com/quote/020150.KS/) / [The Elec](https://www.thelec.net/news/articleView.html?idxno=10066)；Co-Tech：[Digitimes 6/9](https://www.digitimes.com/news/a20260609PD232/co-tech-copper-foil-nvidia-2026-capacity.html)；ICL Q1：[TipRanks](https://www.tipranks.com/news/company-announcements/icl-posts-strong-q1-2026-results-on-higher-bromine-potash-and-phosphate-prices)*
+
+---
+
+## 2026-06-12 13:07 扫描更新
+
+### 新增监控候选：Tower Semiconductor（TSEM）— ★★★（监控，等入场）
+
+| 项目 | 数据（估计） |
+|------|------------|
+| 交易所 | NASDAQ |
+| 市值 | ~$27.1B（估计） |
+| TTM营收 | ~$1.62B（FY2025） |
+| Q1 2026营收 | $413.63M（+15% YoY） |
+| Q2 2026指引 | $455M（记录） |
+| TTM PS | ~16.4x ⚠️ 黄灯 |
+| TTM PE | ~108x ⚠️ 黄灯（前向PE ~69x） |
+| 2028目标 | $2.8B营收 / $750M净利润 |
+| 2028前向PS | ~9.7x ✅ 绿灯 |
+| 10年25xPE保守退出 | ~7.8%（不过10%门槛）❌ |
+| 10年25xPE基准退出 | ~11.5%（20% CAGR，可接受）⚠️ |
+| 信号强度 | ★★★（SiPho A级瓶颈；当前价格无安全边际；等股价-25-30%） |
+
+**瓶颈定位**：Layer 2，SiPho代工，**A级**瓶颈。全球唯一独立SiPho专业代工厂，70%+产能预订至2028，$1.3B 2027合同+$290M预付款。与Coherent合作400Gbps/lane；与Nvidia合作1.6T光模块。
+
+**催化剂**：
+- 近期（2026-07）：Q2 2026财报（验证$455M指引执行）
+- 中期（2027年）：FY2027全年财报，验证SiPho收入向$1.3B目标靠近
+
+**入场条件**：①股价较当前（$258）下跌25-30%（目标$180-195），届时2028前向PS降至~7x；②或2027年财报验证SiPho $1.3B目标路径清晰后重新评估
+
+**来源**：[StockTitan TSEM 2026-05-13](https://www.stocktitan.net/sec-filings/TSEM/6-k-tower-semiconductor-ltd-current-report-foreign-issuer-497b8af5cee6.html) / [Yahoo Finance TSEM](https://finance.yahoo.com/quote/TSEM/) / [Semiconductor Today 2026-05](https://www.semiconductor-today.com/news_items/2026/may/tower-140526.shtml)
+
+---
+
+### 状态变化汇总（2026-06-12 13:07更新）
+
+| 公司 | 代码 | 变化 | 最新评级 |
+|------|------|------|---------|
+| **Tower Semiconductor** | **TSEM** | **新增★★★（监控）**：SiPho A级瓶颈；$1.3B 2027合同+$290M预付款；当前PS ~16.4x，10yr保守退出7.8%不过门槛；等-25-30%入场 | **★★★（新增监控）** |
+| **关东电化** | **4047.T** | **NF₃双垄断确认**：Mitsui于2026年3月退出NF₃，4047.T成日本唯一NF₃+WF₆双特氟气体供应商；早轮扫描未明确记录此角度 | **★★★★★ 维持** |
+| **Chemring** | **CHG.L** | **OBBB立法催化剂**：$25.3B弹药分配+$5B关键矿产；补库周期"4-5年"获立法背书，执行风险下降 | **★★★★ 维持** |
+
+### 催化剂时间表（2026-06-12 13:07版更新）
+
+| 日期 | 事件 | 标的 | 优先级 |
+|------|------|------|--------|
+| **6/29（T-17天）** | Russell 1000纳入（ALM）+ Nittobo分拆 | ALM ★★★★ / 3110.T ★★★★ | 🟡中 |
+| **6/30（T-18天）** | **LEU DOE Option 1b行权截止** | LEU ★★★★★ | 🔴最高 |
+| **7/1（T-19天）** | **Central Glass WF6永久停产** | 4047.T ★★★★★ | 🔴最高 |
+| **7月（TSEM）** | Tower Q2 2026财报（验证$455M指引） | TSEM ★★★ 监控 | 🟡中 |
+| **8/5** | ICL Q2财报（Hormuz+溴素） | ICL ★★★★ | 🔴高 |
+| **8/11** | 美伊停火到期 | ICL ★★★★ | 🔴高 |
+| **8月（020150.KS）** | 乐天能源材料Q2 2026财报 | 020150.KS ★★★ | 🔴高 |
+| **8/12** | 关东电化Q1 FY2027财报（WF₆+NF₃垄断首季） | 4047.T ★★★★★ | 🔴高 |
+| **12月** | Chemring全年财报 | CHG.L ★★★★ | 🟡中 |
+| **2027年Q3** | Tower FY2027全年财报（SiPho $1.3B验证） | TSEM ★★★ 监控 | 🟡中 |
+
