@@ -2253,3 +2253,39 @@ PE 127.8x，GF内在价值391%溢价，10年退出需CAGR 30%。SiPho A级瓶颈
 | Almonty | ALM/AII.TO | Q1 2026收入+221%至$25.4M（Phase 1爬坡最强财务验证），维持 | ★★★★ |
 | Chemring | CHG.L | 新细节：NC-free RDX专利+挪威275%扩产+中国棉短绒依赖暴露，维持 | ★★★★ |
 
+
+---
+
+### 状态更新（2026-06-12 23:59）
+
+**关键补录：关东电化（4047.T）NF₃双垄断**
+
+今日全部19轮扫描均聚焦WF₆，遗漏了4047.T的NF₃垄断维度。现补入：
+
+- 三井化学（Mitsui Chemicals）于2026年3月正式停止NF₃生产
+- 关东电化自此成为日本唯一NF₃供应商（原90%份额→近100%）
+- NF₃是半导体晶圆厂CVD/ALD腔室清洗的关键特气，TSMC/三星/SK海力士/铠侠/Rapidus均依赖
+- 2025年8月工厂火灾损坏一条NF₃产线，修复进度不透明，经产省已介入扩大韩国进口
+- **结论：4047.T在7/1 WF₆垄断生效前，已是日本NF₃唯一供应商（2026年3月已生效）**
+- WF₆+NF₃双垄断已反映在FY2027指引+45%收入增速中
+
+来源：[Sourceability](https://sourceability.com/post/supply-chain-shocks-nf3-fire-natcast-fallout) / [AlchemPro三井退出](https://www.alchempro.com/news/company-news/chemicals-news/japan-s-mitsui-chemicals-plans-nf3-exit-by-march-2026-302927-newsdetails.htm) / [TrendForce火灾分析](https://www.trendforce.com/news/2025/08/14/news-japans-kanto-denka-kogyo-fire-threatens-nf%E2%82%83-supply-alerts-chipmakers-like-tsmc-and-rapidus/)
+
+**4047.T 评级维持★★★★★**
+
+#### 4047.T 更新后的论点结构
+
+| 产品 | 垄断状态 | 生效时间 | 主要客户 |
+|------|---------|---------|---------|
+| WF₆（六氟化钨）| 日本唯一（7/1 Central Glass停产后） | T-19天 | TSMC/三星/SK海力士/Intel |
+| NF₃（三氟化氮）| 日本唯一（三井2026年3月退出） | 已生效 | TSMC/三星/SK海力士/铠侠/Rapidus |
+
+#### 各超级趋势最新瓶颈状态（2026-06-12日终）
+
+| 趋势 | S级瓶颈 | A级瓶颈 | 最新跟踪标的 |
+|------|---------|---------|------------|
+| AI基础设施 | InP衬底/EML激光器、WF₆/NF₃特气、T-Glass | ABF基板、HVLP4铜箔、HBM、MLCC | AXTI ★★（红灯）/ 4047.T ★★★★★ / 3110.T ★★★★ / 020150.KS ★★★ / 2327.TW ★★★★ |
+| 能源转型/核 | HALEU铀浓缩 | 电网变压器 | LEU ★★★★★ |
+| 国防现代化 | 西方钨供应、弹药供应链 | 固体火箭推进剂 | ALM ★★★★ / CHG.L ★★★★ |
+| 半导体再工业化 | 溴化物（ICL） | 特气（已归入AI列） | ICL ★★★★★ |
+| 太空经济 | 无追踪 | — | — |
