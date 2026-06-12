@@ -2373,3 +2373,67 @@ PE 127.8x，GF内在价值391%溢价，10年退出需CAGR 30%。SiPho A级瓶颈
 | 首次进入 | 2026-06-12 21:08 |
 | 来源 | [TrendForce 6/12](https://www.trendforce.com/news/2026/06/12/news-key-semiconductor-gas-wf%E2%82%86-prices-reportedly-surge-over-200-in-china-as-supply-tightens-ahead-of-japan-output-cuts/) / [StockAnalysis 093370](https://stockanalysis.com/quote/krx/093370/) |
 
+---
+
+### 状态更新（2026-06-12 22:05）
+
+**本轮核心：3项今日各轮均未记录的增量信息——IQE ADR注册、CHG.L机构持仓、SRM政府三线注资**
+
+#### 1. IQE plc（IQE.L，★★★）— ADR注册催化剂补录
+
+IQE plc于2026年向美国SEC提交F-6EF文件（外国发行人ADR注册），首次在美国资本市场注册ADR。这是自6/11 ★★★升级（+MACOM £45M战略投资）以来的第一个重要催化剂更新：
+
+- ADR注册消除部分美国机构资金的合规障碍，将IQE带入AI基础设施主题的美国投资者视野
+- FY2026指引>20%收入增长，"InP解决方案的加速需求是2026年及以后的材料性增长驱动力"
+- 前向PS~4.3x ✅绿灯；MACOM客户验证✅
+- 评级★★★维持；下一关键节点：8月FY2026中期报告（Photonics>30%收入占比验证）
+
+来源：[SEC F-6EF](https://www.sec.gov/Archives/edgar/data/1550405/000119380526000476/e665377_f6ef-iqe.htm) / [IQE FY2025](https://www.iqep.com/media/press-releases/2026/full-year-2025-results/) / [IQE 2026更新](https://www.iqep.com/media/press-releases/2026/trading-update/)
+
+#### 2. Chemring（CHG.L，★★★★）— Albion River机构持仓（6月8日）
+
+美国Albion River Management LLC于2026年6月8日跨越Chemring Group PLC重大持仓门槛，6月10日向伦敦证交所提交通知。
+
+- H2 2026收入覆盖率84%（£65M已锁定交付）
+- 分析师22%上行空间（目标约625p，当前510p）
+- 美国专业机构新进入=市场对CHG.L价值认可度提升
+
+评级★★★★维持；全年财报（12月）是下一关键催化剂。
+
+来源：[LSE持仓通知](https://www.londonstockexchange.com/news-article/CHG/interim-results/17618166) / [DirectorsTalk CHG分析](https://www.directorstalkinterviews.com/chemring-group-plc-chg-l-stock-analysis-aerospace-defense-player-with-a-22-upside-potential/4121253281)
+
+#### 3. SRM固体火箭发动机——政府三线注资，结构性瓶颈官方确认
+
+美国国防部2026年1-4月对SRM产能的应对（合计~$10.4亿）：
+
+| 渠道 | 金额 | 时间 | 受益方 |
+|------|------|------|-------|
+| 直接股权投资 | $10亿 | 2026年1月 | L3Harris Missile Solutions（NYSE:LHX）|
+| DPA Title III | $4370万 | 2026年2月 | Anduril Industries（私有）|
+| 私有并购 | $5000万 | 2026年4月 | Exquadrum（被Mach Industries收购）|
+
+背景：国内SRM供应商从1980年代6家萎缩至2家（L3Harris+Northrop Grumman）。三种不同渠道4个月内同步注资，属历史性举措。
+
+**无新上市纯正标的**：L3Harris大市值+非纯正；其他均为私有。CHG.L（★★★★）Energetics部门是最优已追踪上市受益标的，美国SRM扩产需要推进剂供应，Chemring是主要盟国来源。
+
+来源：[TechTimes Mach/Exquadrum](https://www.techtimes.com/articles/317132/20260525/mach-industries-buys-exquadrum-50m-solid-rocket-motor-shortage-drove-deal.htm) / [Breaking Defense SRM](https://breakingdefense.com/2026/01/with-the-boom-for-solid-rocket-motors-for-missiles-a-perilous-crunch-in-the-supply-chain/)
+
+#### 4. IntelliEPI（4971.TWO，★★★条件性）供应链定位澄清
+
+IntelliEPI的Digitimes 5/8预警是InP衬底**买方**呼救（"我们买不到足够InP衬底"），而非epi-wafer卖方断供。这是Layer 3瓶颈（AXTI/住友）的需求侧验证，不独立支撑IntelliEPI作为供给侧瓶颈的论点。评级★★★条件性维持，核心升级触发：FY2026 H1财报收入增速>50%。
+
+#### 标的状态小结（2026-06-12 22:05）
+
+| 标的 | 代码 | 评级 | 本轮变化 |
+|------|------|------|---------|
+| LEU | LEU | ★★★★★ | T-18天，无新变化 |
+| 关东电化 | 4047.T | ★★★★★ | WF₆"继续or停产"待7/1确认；NF₃垄断已生效 |
+| ICL Group | ICL | ★★★★★ | 无新变化 |
+| Almonty | ALM/AII.TO | ★★★★ | T-17天Russell 1000 |
+| Chemring | CHG.L | ★★★★ | **Albion River机构持仓（6/8）** |
+| Nittobo | 3110.T | ★★★★ | ¥18,380（+8%），T-17天分拆 |
+| IQE plc | IQE.L | ★★★ | **ADR注册（F-6EF）——美国资本市场准入** |
+| FormFactor | FORM | ★★★★ | 等$121入场 |
+| IntelliEPI | 4971.TWO | ★★★（条件性） | 供应链定位澄清（InP买方）|
+| AXTI | AXTI | ★★ | PS红灯，等$22-33 |
+

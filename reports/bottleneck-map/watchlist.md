@@ -3342,3 +3342,21 @@ H1 2026完整财报（2026-06-02发布）：
 | **Q2 2026财报（~8月）** | Foosung WF₆涨价效果验证；Lotte HVLP4收入占比验证 | 093370.KS ★★★ / 020150.KS ★★★ | 🟡中 |
 | **12月** | Chemring全年财报 | CHG.L ★★★★ | 🟡中 |
 
+---
+
+### 状态更新（2026-06-12 22:05）
+
+**3项今日各轮均未记录的增量信息**
+
+| 公司 | 代码 | 变化 | 最新评级 |
+|------|------|------|---------|
+| **IQE plc** | **IQE.L** | **ADR注册催化剂补录**：2026年向美国SEC提交F-6EF（ADR注册），首次进入美国资本市场。AI基础设施主题美国机构资金准入打通。FY2026前向PS~4.3x ✅绿灯；MACOM客户验证✅；评级★★★维持 | **★★★ 维持** |
+| **Chemring** | **CHG.L** | **Albion River机构持仓（6/8新增）**：美国Albion River Management LLC于6/8跨越LSE重大持仓门槛（6/10公告）。H2 2026收入覆盖率84%；分析师22%上行（约625p目标）。美国专业机构新进入 = 市场认可度提升。评级★★★★维持 | **★★★★ 维持** |
+| **IntelliEPI** | **4971.TWO** | **供应链定位澄清**：其5/8预警性质为InP衬底买方呼救（"买不到足够底物"），而非epi-wafer卖方断供。是Layer 3瓶颈的需求侧验证，不支撑IntelliEPI作为独立供给瓶颈的论点。评级★★★条件性维持 | **★★★（条件性）维持** |
+
+### SRM政府三线注资（今日新增，背景信号）
+
+2026年1-4月美国国防部对SRM产能注资~$10.4亿（L3Harris $10亿股权 + Anduril $4370万 Title III + Mach/Exquadrum $5000万私有并购）。供应商从6家→2家，政府首次动用多种极端工具。**无新上市纯正标的**；CHG.L（★★★★）Energetics是最优上市受益方。
+
+来源：[TechTimes Mach/Exquadrum](https://www.techtimes.com/articles/317132/20260525/mach-industries-buys-exquadrum-50m-solid-rocket-motor-shortage-drove-deal.htm) / [Breaking Defense SRM](https://breakingdefense.com/2026/01/with-the-boom-for-solid-rocket-motors-for-missiles-a-perilous-crunch-in-the-supply-chain/) / [IQE ADR](https://www.sec.gov/Archives/edgar/data/1550405/000119380526000476/e665377_f6ef-iqe.htm) / [CHG.L持仓通知](https://www.tradingview.com/news/reuters.com,2026-06-10:newsml_RSJ7677Ha:0-reg-chemring-group-plc-holding-s-in-command/)
+
