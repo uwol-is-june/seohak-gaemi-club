@@ -3179,3 +3179,33 @@ H1 2026完整财报（2026-06-02发布）：
 | China InP管控升级 | Digitimes 6/11：6英寸InP晶圆价格已达$5,000/片；800G收发器缺口40-60%持续至2027；Coherent Texas 6英寸厂2026底翻倍→2027底再翻倍（非中国内化加速但周期2-3年）。AXTI Tongmei backlog $100M+，但全部依赖北京出口许可 | AXTI ★★（PS红灯）；JX Advanced Metals（日本TSE，~10%市占，未正式纳入watchlist，需确认InP占比） | 持续强化AXTI瓶颈逻辑，估值门槛不变 |
 | TSMC产能饱和公开承认 | 6/9 TSMC AGM：主席魏哲家"需求已到极限"；Google考虑Samsung补充10代TPU代工 | Layer 2-3全面验证（3110.T/4047.T/2327.TW/LEU均受益） | 验证信号，无新标的 |
 
+
+---
+
+### 状态更新（2026-06-12 17:05）
+
+| 公司 | 代码 | 变化 | 最新评级 |
+|------|------|------|---------|
+| **ICL Group** | **ICL** | **★★★★→★★★★★**：**溴化物/半导体蚀刻供应链新维度首次捕捉**。ICL控制~47%全球溴化物产量；韩国三星/SK海力士97.5%溴来自以色列，用于DRAM/NAND多晶硅蚀刻HBr气体。Q1 2026 Revenue$2.023B(+14%)、EBITDA$412M(+15%)、EPS+22%超预期；FY2026 EBITDA指引上调$100M至$1.5-1.7B；管理层财报电话"溴价格自2022年底以来最强预计全年高位"。估值：PS~0.93x（绿灯极低）、前向PE~13x（vs同行45x）；10年25xPE含股息年化~11-13%，超门槛。升级依据：三重瓶颈叠加（溴化物/磷肥/钾肥）+收入已体现+估值绿灯可加一级 | **★★★★★（升级）** |
+| **Chemring** | **CHG.L** | **论点深化**：ChemRing Nobel持有无硝化棉（NC-free）RDX专利；计划挪威工厂275%扩产；中国控制欧洲弹药生产商70%棉短绒来源——NC-free技术成为脱离中国依赖的战略护城河，护城河比此前认识更深 | **★★★★ 维持** |
+
+### 氦气危机信号记录（新增，B级，暂无可投资标的）
+
+2026年2月28日伊朗打击卡塔尔能源Ras Laffan工业城，~30%全球半导体级氦气下线。韩国半导体厂~6个月库存，**~8月2026为库存耗尽窗口**。无小市值纯正可投资标的（Air Products/Linde大市值L1；Royal Helium等微型探测股不符合策略）。持续观察8月时间窗口。
+
+来源：[Fortune 3/21](https://fortune.com/2026/03/21/iran-war-helium-shortage-qatar-chip-supply-chains-ai-boom/) / [Tom's Hardware](https://www.tomshardware.com/tech-industry/semiconductors/the-global-helium-shortage-is-a-direct-threat-to-chipmaking) / [Caixin Global 3/16](https://www.caixinglobal.com/2026-03-16/qatar-helium-shutdown-adds-new-risk-to-chip-supply-chain-102423361.html)
+
+### 催化剂时间表（2026-06-12 17:05版）
+
+| 日期 | 事件 | 标的 | 优先级 |
+|------|------|------|--------|
+| **6/17（T+5天）** | ICL分红付款日（$0.0535/股，$~69M） | ICL ★★★★★ | 🟡中 |
+| **6/29（T-17天）** | Russell 1000纳入（ALM）+ Nittobo 5:1分拆 | ALM ★★★★ / 3110.T ★★★★ | 🟡中 |
+| **6/30（T-18天）** | **LEU DOE Option 1b行权截止** | LEU ★★★★★ | 🔴最高 |
+| **7/1（T-19天）** | **Central Glass WF6永久停产** + Nittobo分拆 | 4047.T ★★★★★ / 3110.T ★★★★ | 🔴最高 |
+| **~8月2026** | 韩国芯片厂氦气库存耗尽窗口（B级，无标的，持续观察） | 氦气危机信号 | 🟡中 |
+| **8/5** | ICL Q2财报（溴化物+钾肥+地缘风险综合验证） | ICL ★★★★★ | 🔴高 |
+| **8/11** | 美伊停火到期（ICL溴化物/半导体供应链终极测试） | ICL ★★★★★ | 🔴最高 |
+| **8/12** | 关东电化Q1 FY2027财报（WF₆+NF₃垄断首季） | 4047.T ★★★★★ | 🔴高 |
+| **12月** | Chemring全年财报 | CHG.L ★★★★ | 🟡中 |
+
