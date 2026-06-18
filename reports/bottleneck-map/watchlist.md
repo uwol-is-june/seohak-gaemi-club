@@ -116,10 +116,27 @@
 - 意义：政府级战略背书——不只是商业订单，NATO将Chemring Nobel定性为战略级能量材料供应商；与12-15年商业框架合同形成双重锁定；June 2财报将反映此背书带来的订单簿和利润率改善
 - 来源：[EU ASAP Chemring Nobel](https://defence-industry.eu/eu-highlights-progress-in-expanding-ammunition-production-capacity-at-chemring-nobel-in-norway/)
 
-**近期催化剂**：🔴 **June 2, 2026 半年财报明日发布**——触发watchlist关键验证催化剂（EU ASAP资助+NC涨价利润率+净利润+36%验证）  
-**待验证**：官方RNS公告确认具体数字；利润率分部细节；EU ASAP资助是否在资本开支或收入中体现；分析师目标价是否上调；BAE propellant技术进展  
-**建议动作**：**明日June 2财报发布后立即执行 `/investment-team` 深入研究**（EU ASAP资助+NC涨价双重催化剂确认）  
-**来源**：[Chemring 2025年报](https://www.chemring.com/~/media/Files/C/Chemring-V3/docs/chemring-annual-report-and-accounts-2025-v1.pdf) | [Chemring AGM更新](https://www.chemring.com/media/press-releases/2026/20-02-2026) | [Kyiv Independent 275%扩产](https://kyivindependent.com/like-any-technology-its-a-race-uks-largest-ammo-maker-rebooting-chemistry-to-break-natos-dependence-on-explosive-imports/) | [Rheinmetall抢购NC](https://www.defensenews.com/global/europe/2025/04/07/rheinmetall-secures-nitrocellulose-supply-amid-european-ammo-scramble/)
+**【2026-06-02 H1 FY2026官方RNS确认（覆盖早前第三方估算数据）】**：
+- 官方H1营收：**£237.3M**（+6.5% YoY，H1 2025: £222.8M）——注：早前investing.com第三方数据£263.2M有误，以官方RNS为准
+- 底层经营利润：**£24.5M**（-7.5%，H1 2025: £26.5M），底层经营利润率10.3%（H1 2025: 11.9%）
+- **订单簿£1,399M（历史最高）**（H1 2025: £1,296M），全年订单覆盖率91%
+- H2 2026预计贡献全年底层经营利润**70%**——H2利润强加载格局确认
+- **全年FY2026指引不变**；H1表现符合董事会预期
+- H1利润率短期下滑主因：Sensors & Information业务Roke产能利用率低（主动维持以接新机会），非结构性问题
+- 意义：H1"弱H2强"模式符合预期；订单簿创新高+91%覆盖率给H2提供高度可见性
+
+**【2026-06-18 美国DPA Section 708援引——政策层面终极验证】**：
+- Trump 6/11签署行政令（6/16刊入联邦公报，6/18全媒体报道）；援引DPA Section 708自愿协议框架
+- **点名瓶颈：固体火箭发动机（SRM）、点火器（Igniters）、制导系统**——正是Chemring Energetics UK核心业务范围
+- 背景：SRM供应商从1995年6家缩减至2家（L3Harris/Northrop Grumman）；Tomahawk等关键导弹库存或已消耗50%+
+- Chemring受益路径：①客户（五角大楼/英国国防部/NATO）基于DPA紧迫性加快/加大采购；②DPA允许Chemring US子公司与大型承包商协调产能，潜在压缩交付时间线
+- **注意限制**：DPA是自愿框架，不强制命名承包商，直接合同增量需关注后续执行细节
+- 来源：Washington Times 2026-06-18, Washington Examiner 2026-06-16, Grosswald.org
+
+**近期催化剂**：✅ H1 2026官方结果已确认 | 🔴 **2026-06-18 DPA Section 708新信号——SRM/点火器/制导系统政策层面确认瓶颈**  
+**待验证**：DPA协议是否点名Chemring特定子公司；H2 2026订单执行速度；BAE propellant技术进展；NC供应链2026下半年价格趋势  
+**建议动作**：等H2 2026全年业绩（约12月）；监控DPA协议后续执行细节  
+**来源**：[Chemring H1 2026 RNS](https://www.chemring.com/media/press-releases/2026/02-06-2026) | [Chemring 2025年报](https://www.chemring.com/~/media/Files/C/Chemring-V3/docs/chemring-annual-report-and-accounts-2025-v1.pdf) | [Kyiv Independent 275%扩产](https://kyivindependent.com/like-any-technology-its-a-race-uks-largest-ammo-maker-rebooting-chemistry-to-break-natos-dependence-on-explosive-imports/) | [Rheinmetall抢购NC](https://www.defensenews.com/global/europe/2025/04/07/rheinmetall-secures-nitrocellulose-supply-amid-european-ammo-scramble/)
 
 ---
 
