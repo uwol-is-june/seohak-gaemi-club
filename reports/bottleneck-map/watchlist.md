@@ -5590,3 +5590,36 @@ Kanto Denka Kogyo 7/1永久停止WF6生产，**投资论点核心为NF3，而非
 
 *来源：Almonty Industries SEC 6-K FY2026 / Chemring Group interim-results-2026.pdf（LSE:CHG）/ ABC News / Axios / PBS NewsHour（霍尔木兹30天恢复时间线）/ Power Magazine（920 kg）/ TechTimes / AirMag（DPA 2026-15）*
 
+---
+
+## 状态快照（2026-06-18 09:00）
+
+> 第223轮扫描。PMIC行业涨价浪潮升级：Global Mixed-mode Technology（8081.TW）五年首次涨价，PE 12x / PS 2.6x 双绿灯，**新加入观察名单 ★★★**。ICL 72h观察期进行中，溴价稳定。中国InP 4,000片小批量出口，结构性缺口不变。
+
+| 标的 | 代码 | 评级 | 变化 | 关键状态 |
+|------|------|------|------|---------|
+| **Centrus Energy** | LEU | ★★★★★ | 无变化 | AGM今日10:00 EDT（历史全通过）；真正节点 = 6/30 Option 1b |
+| **ICL Group** | ICL | ★★★★ | ⚠️ 72h观察 | 溴价$3,476/MT（SunSirs，未破$2,800红线）；6/20 Geneva典礼T+2 |
+| **Almonty Industries** | ALM | ★★★ | 无变化 | Russell 1000/3000纳入T-11（6/29），被动买入~1,300万股 |
+| **Nittobo** | 3110.T | ★★★★ | 🟢 论点强化 | Ajinomoto ABF薄膜Q3+30%涨价 → T-glass上游链需求进一步锁定；5:1拆股T-11（6/29） |
+| **Yageo** | 2327.TW | ★★★★ | 无变化 | MLCC Q1财报全验证（书积比>1，铅期24周，毛利38.1%，AI占比15%）；Q2财报7月 |
+| **IQE** | IQE.L | ★★★★ | 🟢 小正 | 中国InP 4,000片批量出口（轻微缓解），但结构供需缺口70%+不变；Tower协议6/15已签 |
+| **Chemring** | CHG.L | ★★★★ | 无变化 | — |
+| **Co-Tech** | 8358.TWO | ★★★★ | 无变化 | — |
+| **AXTI（AXT Inc）** | AXTI | ★★ | 🟡 轻微正 | 中国4,000片小批出口（部分减压），Tongmei核心出口许可证仍待批；等Q2财报 |
+| **Foosung** | 093370.KS | ★★★ | 无变化 | WF6 7/1停产T-13天，等CSSC认证进度 |
+| **uPI Semiconductor** | 6719.TW | ★★★（初始） | 无变化 | 铅期35-40周确认；估值待核查 |
+| **🆕 Global Mixed-mode Technology** | **8081.TW** | **★★★（新加入）** | 🆕 新增 | **五年首次PMIC涨价（6月11日）；股价+5.49%；PE 12-14x ✅ / PS 2.6x ✅ 双绿灯；等Q2财报（7-8月）验证涨价→利润率传导** |
+| **Iljin Electric** | 103590.KS | ★★★ | 无变化 | — |
+
+### 8081.TW 新增快照
+
+**瓶颈定位**：AI服务器PMIC，Layer 2，A级瓶颈（铅期35-40周，供需缺口持续扩大）
+**核心信号**：6月11日宣布涨价（5年来首次）；Anpec +15%/uPI预警铅期35周→行业级确认
+**估值**：市值$650M USD / PS 2.6x / PE 12-14x / 台湾半导体行业均值PE 31.7x（明显折价）
+**安全边际**：保守情景（5%增速）年化10.9%；乐观情景（15%增速）年化21.6%
+**主要风险**：①历史收入增速仅5%；②大厂竞争（MPS/TI/ADI）；③台海地缘
+**下一催化剂**：Q2 2026财报（7-8月），观察毛利率提升幅度及铅期变化
+
+*来源：Taiwan News 2026-06-11（GMT涨价）/ Digitimes 2026-06-12（PMIC价格上调）/ Stockopedia / StockAnalysis（8081.TW财务数据）/ Digitimes 2026-06-15（中国InP 4,000片出口）/ SunSirs 2026-06-18（溴价$3,476/MT）*
+
