@@ -5936,3 +5936,43 @@ Kanto Denka Kogyo 7/1永久停止WF6生产，**投资论点核心为NF3，而非
 | IQE AGM | 6/30 | T-11 | IQE.L | 正常AGM，无重大议案（Director Hull不再参选） |
 
 *来源：本轮见 reports/bottleneck-map/2026-06-19/15-00-信号扫描.md；DPA：Washington Times 2026-06-18；USNews 2026-06-16；IQE offer period：Morningstar/semiconductor-today 2026-04/05；CLF GOES：PV Magazine 2026-05-11；Adafruit Blog 2026-04-22*
+
+
+---
+
+## 状态快照（2026-06-19 16:00 — 第239轮扫描）
+
+### 本轮操作
+
+| 时间 | 标的 | 操作 | 说明 |
+|------|------|------|------|
+| 2026-06-19 16:00 | **LEU（Centrus Energy）** | **首次完整4.2.1估值核查（★★★★★⚠️维持）** | $900M DOE HALEU award（谈判中）+ 营收指引$450-500M（中值$475M）+ Q1 EPS $1.05（超预期+228%）。PS 7.9x绿灯 / PE ~55x（无红灯，溢价有据：HALEU垄断+政府背书）。10年25xPE退出：CAGR需15.3%（净利率15%假设），安全边际边界可行。⚠️维持至6/30 Option 1b事件 |
+| 2026-06-19 16:00 | **VECO（Veeco Instruments）** | **Ennostar LUMINA+ MicroLED认证补录（★★★维持）** | 2026-06-11（第233轮10:00扫描前），Ennostar完成LUMINA+ MOCVD商业认证（As/P高容量生产，MicroLED/miniLED用）。10:00扫描聚焦AI/InP，未涵盖此事件。MicroLED = VECO第二增长曲线（独立于AI光子），支撑PS 5.2x估值的TAM扩大论点。★★★维持，升★★★★条件：Q2/Q3 GAAP盈利转正+MicroLED订单规模明确 |
+
+### 全体观察名单状态（16:00快照）
+
+| 标的 | 代码 | 评级 | 本轮状态 | 下一催化剂 |
+|------|------|------|---------|-----------|
+| 关东电化 | 4047.T | ★★★★★ | WF6停产T-11天（7/1）；今日NaturalNews文章引发主流媒体关注 | 7/1停产后价格急涨/急单 |
+| Centrus Energy | LEU | ★★★★★⚠️ | **首次4.2.1估值核查完成**：PS 7.9x绿灯/PE 55x（有据）/安全边际边界可行 | **6/30 Option 1b（T-11天）** |
+| IQE plc | IQE.L | ★★★★ | 无变化 | 8月H1财报 |
+| Yageo | 2327.TW | ★★★★ | Q2指引moderate growth+记录高积压；AI钽电容>30% | 7月Q2财报 |
+| Chemring | CHG.L | ★★★★ | 无变化 | Q3 Trading Update |
+| ICL | ICL | ★★★★ | 无变化 | 监控溴价 |
+| Aixtron | AIXA | ★★★ | UBS >3%投票权披露（6/12-17）；无评级变化 | 等回调至€42 |
+| Veeco | VECO | ★★★ | **Ennostar MicroLED认证补录，第二增长曲线确认** | Q2财报盈利兑现 |
+| Almonty | ALM | ★★ | Russell 1000 T-10天（6/29生效）；无变化 | 6/29指数纳入 |
+| Foosung | 093370.KS | 待评级 | WF6占比待核实 | Q2财报 |
+| Coherent | COHR | ★★ 估值透支 | 无变化 | — |
+| Lumentum | LITE | ★★ 估值透支 | 无变化 | — |
+| AXT Inc | AXTI | ★★ 估值红灯 | 无变化 | — |
+| L3Harris Missile Solutions | 待IPO | 预上市观察 | H2 2026 IPO；机密S-1申报中 | S-1正式提交 |
+
+### 待办事项
+
+1. **6/30 Option 1b（T-11天）**（最高优先级）：每日监控DOE公告，结果出来后立即更新LEU评级
+2. **7/1 WF6停产后（T-11天）**：监控Foosung/SK Specialty急单流向、价格进一步变化
+3. **Foosung WF6业务占比核实**：Q2财报WF6收入占比>30%则执行完整估值检查
+4. **6/29 ALM Russell纳入**：观察被动资金买入效应
+
+*来源：本轮见 reports/bottleneck-map/2026-06-19/16-00-信号扫描.md；SeekingAlpha Q1 Centrus highlights；GlobeNewsWire 2026-06-11（Veeco Ennostar）；NaturalNews 2026-06-19（WF6主流媒体）*
