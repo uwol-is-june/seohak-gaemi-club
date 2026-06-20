@@ -6406,3 +6406,41 @@ H2执行是关键：论点不变，等待H2利润率兑现。
 - **Forward PS（Q1年化）：~3.24x**（更吸引人，绿灯更确定）
 - TTM PS 3.77x不变（与23:00一致）
 - **结论**：WF6合同涨价70-90%已开始进入财务数据；T-11天停产催化剂逻辑完整；★★★维持
+
+
+---
+
+## 更新 2026-06-20 11:06（第254轮）
+
+### 新增：AT&S Austria Technologie（VIE:ATS）★★ — 欧洲纯正AI IC基板标的
+
+**触发事件**：2026年6月16日，AT&S宣布向马来西亚Kulim厂区投资最多€20亿扩建AI芯片基板产能，同步将FY2026/27营收增长指引从+30-35%上调至**+45-55%**，已锁定AMD及另一大型科技公司客户承诺（2028年起量产）。股价单日涨**+29%**。
+
+| 指标 | 数值 | 备注 |
+|------|------|------|
+| 市值 | **€7.75B（约$8.5B）** | companiesmarketcap.com，6月2026 |
+| 当前营收 | **€1.79B（约$1.97B）** | FY2026指引 |
+| **PS（当前）** | **4.33x** | 绿灯 |
+| **PS（FY27 Forward）** | **2.87x** | 绿灯（更具吸引力） |
+| **PE** | **负值（亏损，EPS -€1.67）** | 黄灯（亏损+PS<15x，条件未满，但需盈利路径）|
+| 营收增速（FY26/27指引） | **+45-55%** | 强 |
+| 瓶颈业务占比 | 估计~50-60%（AI基板比重上升中） | 估计 |
+
+**估值结论**：
+- TAM红灯**边界触发**（ABF基板市场$10-15B，20%=$2-3B；AT&S市值$8.5B超过阈值）
+- 股价已+29%消化短期催化剂
+- **信号强度封顶★★**
+
+**10年25xPE退出**：需营收CAGR 13.8%（当前指引+45-55%后正常化至15-20%时可达）；结论：边际具备安全边际，需执行兑现。
+
+**入场条件**：①股价回调至€160-170（PS约3.6x，回吐20%涨幅）；②季报显示AI基板毛利率改善至>30%；③盈利时间线明确（FY2028/29目标）
+
+来源：[Digitimes AT&S €2B 6/16](https://www.digitimes.com/news/a20260616VL200/pcb-ic-substrate-malaysia-plant-capacity-expansion.html) · [Meyka +29% 6/16](https://meyka.com/blog/ats-shares-surge-29-after-announcing-up-to-e2-billion-malaysia-investment-to-capitalize-on-ai-boom/)
+
+### InP需求侧：Google/CSP主动多元化（6月16日新信号）
+
+- Digitimes 6/16：Google领衔CSP将"供应安全优先于价格"，主动扩大对AXT（美）/IntelliEPI（台）的采购比例，目标非中国供应商比例>50%
+- **评级影响**：AXT（AXTI）和IntelliEPI（4971.TWO）需求侧叙事更明确；但估值无变化（AXTI PS 59x+亏损，IntelliEPI PS 28x+PE 144x），均维持★★
+- 与6/15中国批量放行信号并列看：短期供给改善 + 长期需求多元化 → InP瓶颈周期延长对非中国供应商结构性有利
+
+来源：[Digitimes Google CSP InP 6/16](https://www.digitimes.com/news/a20260616PD215/substrate-google-security-price-communications.html)
