@@ -6334,3 +6334,43 @@ H2执行是关键：论点不变，等待H2利润率兑现。
 - ABF基板全线售罄至2027；Ajinomoto 30%提价（Q3 2026）；Unimicron 2026 capex创历史新高（NT$34B）
 - PS 2.6x（绿灯），Forward PE 28x（绿灯），市值~$10.2B USD（偏大）
 - 已被机构广泛覆盖（17家分析师），非新鲜信号；暂列雷达，等Kinsus（3189.TW）数据对比
+
+---
+
+## 更新 2026-06-20 23:00（第252轮）
+
+### FormFactor（FORM）★★★★ — 估值快照更新（Q1 2026）
+
+**补充来源**：Motley Fool Q1 2026 Earnings Transcript（4/29）、Seeking Alpha "HBM4 Earnings Inflection Is Here"、SimplyWallSt "+22.8% 分析师升级"
+
+| 指标 | 数值 | 备注 |
+|------|------|------|
+| 市值 | ~$10.91-11.87B | StockAnalysis/MarketBeat（June 6 = $11.87B） |
+| FY2026E营收 | ~$950M | Q1 $226M + Q2指引$240M，H2加速估 |
+| Forward PS | **11.5x** | 黄灯区，可接受 |
+| Non-GAAP Forward PE | **~61x** | $150/股 ÷ $2.44年化，低于80x红灯 |
+| PEG | **0.43** | 61x ÷ 143% EPS增速，极强支撑 |
+| 10年25xPE退出年化 | **~3-5%**（不足10%） | 需20% CAGR，超公司自身15%引导 |
+
+**结论**：HBM4催化剂真实，近期增速极具吸引力；但长期安全边际有限，当前$150区间价格已定价强劲增长。★★★★维持，入场价目标$110-120（PS 8-9x时安全边际改善）。
+
+### 状态更新：InP地缘武器外交级确认
+
+- Coherent CEO随特朗普访华专项游说InP出口许可延误（2026年5月）
+- 首尔贸易谈判专项讨论InP（Trump-Xi峰会前，5/14）
+- Digitimes 5/15：**"China keeps tight InP export controls despite Trump-Xi talks"**
+- 6/15仅获批第一批：证实中国将InP作为"按需释放的外交筹码"
+- **评级影响**：InP S级瓶颈评级不变；强化"供应安全溢价持续"叙事；强化AXTI/COHR的非中国产能价值
+
+来源：[Digitimes May 15 InP controls](https://www.digitimes.com/news/a20260515PD230/china-rare-earth-materials-semiconductors-substrate-optics.html) · [Kitco InP Trump-Xi](https://www.kitco.com/news/off-the-wire/2026-06-11/chinas-control-over-indium-phosphide-exports-threatens-ai-data-centre) · [Mining.com InP AI data center](https://www.mining.com/web/chinas-control-over-indium-phosphide-exports-threatens-ai-data-centre-rollout/)
+
+### 新量化数据：DRAM价格+90%（Q1 2026 vs Q4 2025）
+
+- DRAM价格Q1 2026 vs Q4 2025：**+90%**（IDC数据）
+- HBM占DRAM晶圆产能：**23%**（2025年为19%）
+- HBM需求增速：+70% YoY（2026E）
+- 内存价格预测：50% spike by mid-2026（Z2Data）
+- **结论**：WF6→DDR5→DRAM价格传导链已量化确认（非假设）；Foosung ★★★ 7/1催化剂逻辑基础更稳固
+
+来源：[IDC Global Memory Shortage](https://www.idc.com/resource-center/blog/global-memory-shortage-crisis-market-analysis-and-the-potential-impact-on-the-smartphone-and-pc-markets-in-2026/) · [Tech-insider HBM 23%](https://tech-insider.org/memory-chip-shortage-2026-ai-consumer-electronics/)
+
