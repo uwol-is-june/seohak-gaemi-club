@@ -6144,3 +6144,43 @@ Kanto Denka Kogyo 7/1永久停止WF6生产，**投资论点核心为NF3，而非
 | HD Hyundai Electric | 267260.KS | 变压器4年交期，市值$257亿/PS~10x偏贵，暂不推荐 | 暂不推进（市值过大）|
 
 *来源：CNBC / Proactive HE1 / Discovery Alert / pv-magazine / Breaking Defense Jun 2026（详见 reports/bottleneck-map/2026-06-20/14-00-HEX.md）*
+
+---
+
+## 状态快照（2026-06-20 10:00 — 第247轮扫描）
+
+> **主要变更**：无新增标的（均已在名单中）。新增数据点：① **InP/EML Nvidia $4B锁定事件**——2026年3月2日Nvidia向Lumentum和Coherent各投$20亿锁定EML产能，全球月需求700-800K units vs 供给400K（缺口50%），EML良率仅15-50%放大基板需求，确认InP/EML供应链S级瓶颈；② **AXT (AXTI) 市值更新**——当前市值~$64亿（股价$88.59，4月增发价$64.25），TTM收入$88.3M，PS升至**72x**（前期"PS>30x"提示已严重低估当前透支程度），Q1收入+39% YoY但亏损$21.3M（TTM），三重红灯全部触发，★★封顶维持；③ **HALEU/Centrus DOE合同**——Phase III延续已确认，★★★★★⚠️维持，6/30 Option 1b节点不变。
+
+| 标的 | 代码 | 评级 | 变化 | 关键状态/下一催化剂 |
+|------|------|------|------|-------------------|
+| **関東電化** | 4047.T | ★★★★★（最紧迫） | 无变化 | **7/1永久停产 T-11天** |
+| **Centrus Energy** | LEU | ★★★★★⚠️ | 无变化 | **6/30 Option 1b T-10天**；Phase III延续已启动 |
+| **ICL Group** | ICL | ★★★★ | 无变化 | **6/25死海续约 T-5天** |
+| **Chemring** | CHG.L | ★★★★ | 无变化 | 等H2结果（11月） |
+| **Nittobo** | 3110.T | ★★★★ | 无变化 | **5:1拆股6/29生效 T-9天** |
+| **Yageo** | 2327.TW | ★★★★ | 无变化 | **Q2财报7月中** |
+| **IQE plc** | IQE.L | ★★★★ | 无变化 | InP S级瓶颈再确认（Nvidia $4B锁定）；**8月H1财报** |
+| **Helix Exploration** | HEX.L / HHEXF | ★★★★ | 无变化（上轮已升级） | 见14:00轮次报告 |
+| **Helium One** | HE1.L / HLOGF | ★★ | 无变化 | 等H2产量数据 |
+| **GMT Global Mixed-mode** | 8081.TW | ★★★ | 无变化 | **Q2财报7-8月** |
+| **Foosung** | 093370.KS | ★★★ | 无变化 | WF6 7/1停产后受益 |
+| **Iljin Electric** | 103590.KS | ★★★ | 无变化 | 等Q2财报 |
+| **Aixtron** | AIXA | ★★★ | 无变化 | InP MOCVD龙头；等€42回调 |
+| **Veeco** | VECO | ★★★ | 无变化 | 等Q2盈利兑现 |
+| **NewMarket/AMPAC** | NYSE: NEU | ★★ | 无变化 | 等纯正代理标的 |
+| **Almonty Industries** | ALM | ★★ | 无变化 | Russell 1000纳入T-9天；估值红灯不变 |
+| **AXT Inc** | AXTI | ★★ | ⬆ **PS更新：72x**（原注"PS>30x"低估当前程度） | 市值$64亿/TTM收入$88.3M；三重红灯全触发；**买入价 <$13（PS<10x）** |
+| **Coherent Corp** | COHR | ★★（估值透支） | 无变化 | Nvidia $4B锁定确认EML战略地位；等PS<8x |
+| **Lumentum Holdings** | LITE | ★★（估值透支） | 无变化 | Nvidia $4B战略投资方；等PS<10x |
+| **Co-Tech Development** | 8358.TWO | ★★（估值修正） | 无变化 | 等PS<13x |
+
+### 下一轮待核查
+
+| 公司 | 代码 | 候选原因 | 预期评级 |
+|------|------|---------|---------|
+| 住友電工（Sumitomo Electric） | 5802.T | EML激光器主要生产商之一，InP外延重要供应商；需核查EML业务占比及估值 | 待核查 |
+| 三菱電機（Mitsubishi Electric） | 6503.T | EML激光器主要生产商之一；需核查业务占比 | 待核查 |
+| DB HiTek | 083450.KS | 8英寸PMIC（来自09:00扫描） | 待核查 |
+
+*来源：TechTimes 2026-05-27 / SDxCentral / SEC AXTI 10-Q 2026-03-31 / Yahoo Finance Centrus DOE*
+
