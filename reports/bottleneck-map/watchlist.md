@@ -452,7 +452,7 @@ FY2026全年业绩（2026-05-15发布）同时披露FY2027经营指引：
 
 ## 观察中（信号强度★★）
 
-### 10. Almonty Industries（TSX:AII / OTC:ALM）★★★ 【2026-05-26午后 新增 | 2026-06-02 升级★★→★★★（SeAH M&S钼矿独家offtake）】
+### 10. Almonty Industries（TSX:AII / NASDAQ:ALM）★★★★ 【2026-05-26午后 新增 | 2026-06-02 升级★★→★★★ | 2026-06-21 升级★★★→★★★★（$800M可转债+钼矿钻探验证+韩国主权需求危机）】
 **代码**：AII.TO（TSX）/ ALM（OTC）  
 **瓶颈环节**：西方钨矿供应（S级跨趋势瓶颈——AI+国防+工业）  
 **市值**：C$5.22B（约$3.8B USD）  
@@ -523,8 +523,20 @@ FY2026全年业绩（2026-05-15发布）同时披露FY2027经营指引：
 - 10年25xPE退出分析不变：仍无安全边际（CAGR需38.9%）
 - **建议**：June 8 Phase 2投票通过后若出现回调，关注C$20-22区间是否出现更佳入场点；若Phase 2未通过则直接等C$15-18重评
 
+**【2026-06-21 第250轮 升级★★★→★★★★：钼项目三重验证完成 + 融资闭合】**
+
+- **$800M可转债（6/9/2026）**：超额认购，净$772.7M，2.25%利息，2031年到期。包含$100M绿鞋。机构超额认购 = 最高级别金融验证。稀释风险：全转股约+15%新股（42.8M股 / ~285M股）。
+- **Sangdong钼矿钻探确认（6/16/2026）**：37%完成，品位0.26% MoS2与历史数据完全一致。品位风险基本消除。
+- **韩国主权需求危机**：韩国政府公告钼供应短缺达到危机水平，公开通知企业建立战略储备。需求侧主权刚性确认。
+- **SpaceX/SeAH背书重确认**：ad-hoc-news补充，SeAH Group是SpaceX钼材供应商，$19/lb底价保底，市价~$37/lb = 接近一倍溢价空间。
+- **估值更新**（6/21）：市值$5.33B（NASDAQ:ALM @$18.71，约285M股）。前向满产收入估计$500-540M（钨~$60-80M + 钼~$456M市价），前向P/S ~10x，黄灯。10年25xPE退出无完整安全边际（需净利润$553M，距满产利润$130-160M仍有4倍差距）。
+- **Russell 1000生效T-8天（6/29）**：指数基金被动增配ALM——短期流动性催化剂，不增加安全边际，注意"sell the news"风险。
+- **中国2025年2月限制导弹用钼粉出口**：供给侧管制持续加码，Sangdong项目战略价值进一步提升。
+
+**升级理由**：融资端（$800M已关闭）+ 资源端（品位确认）+ 需求端（主权危机+SpaceX）三重验证完成。★★★★黄灯：估值前瞻合理但无安全边际，可转债稀释为主要风险。
+
 **加入日期**：2026-05-26  
-**来源**：[InvestingNews Q1](https://investingnews.com/almonty-industries-reports-first-quarter-2026-financial-results/) | [StockAnalysis AII](https://stockanalysis.com/quote/tsx/AII/) | [Almonty TPW offtake](https://almonty.com/binding-offtake-agreement-to-supply-tungsten-oxide-solely-for-us-defense-applications/) | [Almonty Montana HQ](https://www.businesswire.com/news/home/20260413261619/en/Almonty-Industries-Establishes-U.S.-Corporate-Headquarters-Reinforcing-Role-as-Americas-Tungsten-Supplier) | [NBC Montana](https://nbcmontana.com/news/local/almonty-industries-moves-headquarters-to-montana-as-tungsten-push-intensifies)
+**来源**：[InvestingNews Q1](https://investingnews.com/almonty-industries-reports-first-quarter-2026-financial-results/) | [StockAnalysis AII](https://stockanalysis.com/quote/tsx/AII/) | [Almonty TPW offtake](https://almonty.com/binding-offtake-agreement-to-supply-tungsten-oxide-solely-for-us-defense-applications/) | [Almonty Montana HQ](https://www.businesswire.com/news/home/20260413261619/en/Almonty-Industries-Establishes-U.S.-Corporate-Headquarters-Reinforcing-Role-as-Americas-Tungsten-Supplier) | [NBC Montana](https://nbcmontana.com/news/local/almonty-industries-moves-headquarters-to-montana-as-tungsten-push-intensifies) | [TipRanks $800M可转债](https://www.tipranks.com/news/company-announcements/almonty-industries-closes-oversubscribed-us800-million-convertible-notes-to-fund-tungsten-expansion) | [BusinessWire 钻探更新 6/16](https://www.businesswire.com/news/home/20260616660383/en/Almonty-Industries-Provides-Update-on-Large-Scale-Drilling-Program-at-Sangdong-Molybdenum-Project)
 
 ---
 
