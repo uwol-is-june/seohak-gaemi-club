@@ -7439,3 +7439,41 @@ Q1 2026已验证：收入$226.1M(+32%)，HBM4探针卡Q2指引再创新高。估
 
 *来源（本轮新增）：Simply Wall St（4047.T FY2026估值分析，DCF价值¥994）、Stockopedia（4047.T财务指标）、Yahoo Finance（4047.T 30天/1年涨幅）、Reuters via Smith（三星/SK海力士库存数据，4/9/2026）、Fortune 4/22（"AI economy runs on helium"）、Santiago & Company（6/2026 氦气修复时间线）*
 
+
+
+---
+
+## 观察名单更新 — 2026-06-22 14:05（第268轮）
+
+### Unimicron（3037.TW）— 估值核查完成，排除
+
+**背景**：09:07扫描列入"下轮必做"，ABF S级瓶颈，本轮完成估值核查。
+
+**财务快照**：
+| 指标 | 数值 | 来源 |
+|------|------|------|
+| 市值 | NTD 1.34T ≈ **$42.1B USD** | Yahoo Finance |
+| TTM营收 | $3.91B USD | CompaniesMarketCap |
+| Q1毛利率 | 18% | MS研报 |
+| **PS** | **10.7x** 🟡 | 计算 |
+| **PE（估算）** | **~150x** 🔴 | 估算 |
+| 利润CAGR预测 | 105%（2025-2028，Morgan Stanley） | MS via Investing.com |
+| NVIDIA GPU ABF份额 | ~35% | MS |
+
+**估值红灯：TAM条件触发** — 全球ABF基板TAM约$8-15B（2026），20%=$1.6-3B；市值$42B >> 阈值。即使以2030年乐观TAM $25B计，20%=$5B，$42B仍触发。
+
+**10年25xPE退出**：需营收CAGR 27.3%，超出合理假设范围，不具备安全边际。
+
+**信号强度**：★★（TAM红灯封顶）— 排除为明确标的，ABF瓶颈已被充分定价为Layer 1信号。
+
+---
+
+### 变更日志（2026-06-22 14:05 第268轮）
+
+| 日期 | 标的 | 变化 | 内容 |
+|------|------|------|------|
+| 2026-06-22 14:05 | **Unimicron 3037.TW** | 🆕 **新评，★★排除** | 市值$42B，PS 10.7x，PE~150x，TAM红灯触发。09:07必做任务完成，结论：已被充分定价，不追踪。 |
+| 2026-06-22 14:05 | **TGB** | 📊 **Section 232机制更清晰** | Commerce Secretary 6/30须向Trump提交精炼铜报告，可能触发2027年15%/2028年30%关税。Florence（ISL，无进口依赖）竞争力直接受益。★★★★维持。 |
+| 2026-06-22 14:05 | **IQE.L** | ⚡ **Nvidia $4B EML锁定强化IQE逻辑** | Nvidia锁定Lumentum/Coherent产能，非Nvidia云商须寻替代EML路径。IQE-Tower协议（6/15）覆盖200G/400G，战略价值上升。★★★★维持，等8月H1中报。 |
+
+*来源（本轮新增）：Yahoo Finance/Roic.ai/CompaniesMarketCap（Unimicron财务）、Morgan Stanley（ABF CAGR预测）、Crane Worldwide Logistics（Section 232 6月更新）、EY Tax News（精炼铜6/30截止）、TechTimes 5/27（Nvidia $4B EML锁定）、EE Times Asia（EML激光短缺）、Wukong Substack（InP供需数据）*
