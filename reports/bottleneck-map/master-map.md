@@ -8,14 +8,20 @@
 
 ## 地缘政治S级瓶颈（战争/政治驱动，区别于结构性产能瓶颈）
 
-### 0a. 半导体级氦气（Qatar/伊朗战争 + 俄罗斯出口管制）【2026-05-26 新增 | 2026-05-26午后 状态更新】
+### 0a. 半导体级氦气（Qatar/伊朗战争 + 俄罗斯出口管制）【2026-05-26 新增 | 2026-05-26午后 状态更新 | 2026-06-23 20:05 缓冲耗尽窗口激活】
 **核心数据**：Qatar占全球氦气33%供应（USGS）；2026-02-28伊朗导弹打击Ras Laffan，Qatar停产；韩国65%氦气进口依赖Qatar；修复周期3-5年；晶圆制造中氦气冷却**无可替代**  
 **2026-05-26午后 重大更新（两个新事实）**：
 - 🔴 **俄罗斯2026-04-14对氦气实施出口管制，有效期至2027年底**——任何向欧亚经济联盟外出口均须总理级审批；俄对华氦气出口2025年+60% YoY，供应重定向中国，西方可获取量进一步收窄。"仅约一半Qatar缺口可被替代"（前期市场假设更乐观）
 - 🟢 **Samsung和SK Hynix已于2026年4月与Linde+Air Products签长期美国供应合同**——两家最大DRAM厂商急性断供风险已解除；但成本大幅上升（已接受高价锁定合同）；台积电/其他晶圆厂状态仍须监控
 
-**紧张程度**：从"潜在灾难性断供"→**"高成本强制约束"**，S级分类维持，性质已转变  
-**当前状态**：Samsung/SK Hynix已自保；整体行业氦气成本上升10-30%（估计）；台积电/美光的合约状态待核实  
+**2026-06-23 20:05 状态激活更新**：
+- 🔴 **缓冲库存耗尽窗口已到**：分析师预测韩国FAB缓冲库存耗竭区间2026年5-7月；今日6/23处于窗口中段
+- 🔴 **战争结束≠供应恢复**：伊朗战争6/17/2026结束，但Ras Laffan南站"2026年夏末前不会重启"（QatarEnergy CEO），全量修复2029-2031年；"危机在停火后才真正开始"（Santiago & Company，Fortune，Moody's共识）
+- ⚠️ **Q3 2026 HBM/DRAM出货压力**：FAB配给→晶圆投产下滑→8-12周后出货承压；Q3 2026为风险窗口
+- 🟡 Samsung/SK Hynix长期合同锁定成本可控；台积电/美光合约状态仍待确认
+
+**紧张程度**：从"高成本强制约束"→**"实际生产影响开始显现"**，S级分类维持，进入影响窗口  
+**当前状态**：缓冲耗尽窗口激活；Samsung/SK Hynix已自保但成本大幅上升；台积电/美光状态待确认；Q3 2026为关键观察窗口  
 **投资意义**：无纯正小市值标的（Air Products、Linde太大）；间接影响：DRAM成本上升→HBM涨价压力→AI基础设施成本上升  
 **来源**：[Fortune](https://fortune.com/2026/03/21/iran-war-helium-shortage-qatar-chip-supply-chains-ai-boom/) | [CNBC](https://www.cnbc.com/2026/03/19/the-iran-war-is-threatening-supply-helium-what-it-means-for-markets.html) | [俄罗斯出口管制](https://www.themoscowtimes.com/2026/04/14/russia-introduces-helium-export-controls-amid-global-shortage-a92496) | [Samsung/SK US合同](https://www.chemanalyst.com/NewsAndDeals/NewsDetails/samsung-and-sk-hynix-finalize-long-term-helium-supply-agreements-41751)
 
