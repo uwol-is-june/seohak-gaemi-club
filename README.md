@@ -1,3 +1,5 @@
+[English](README_EN.md) | 中文
+
 # AI Berkshire - AI 时代的价值投资研究框架
 
 > "Price is what you pay, value is what you get." — Warren Buffett
