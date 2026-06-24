@@ -7904,3 +7904,26 @@ ALM、Nittobo 3110.T、IQE.L、CHG.L、HPS.A、ICL Group、Iljin Electric、FORM
 | 2026-06-24 13:05 | **固体火箭发动机 — 新增监控** | **新增背景信号（暂无标的）** | 美国仅2家主要供应商（Aerojet Rocketdyne/L3Harris + Northrop Grumman）；五角大楼DPA $4370万授权Anduril扩产（2026-02）、$7300万3D打印测试。**Chemring（CHG.L）已在库，逻辑强化**。私有公司（Anduril、Mach Industries）暂无投资路径。搜索Ducommun（DCO）/ Kratos（KTOS）纯正度>30%可能性——列为下轮任务。来源：Breaking Defense 6/2026 |
 | 2026-06-24 13:05 | **卫星光学互联 — 新增监控** | **新增背景信号（暂无标的）** | SDA Tranche 1因激光星间链路不足受阻；GaAs太阳电池年产~2MW vs 行业需求倍增；辐射加固微电子全面短缺。潜在标的：II-VI/Coherent（但市值过大）。列为下轮深挖任务。来源：SpaceNews/Space Daily 5-6/2026 |
 | 2026-06-24 13:05 | **其他所有标的** | **无变化** | ICL/Foosung/Nittobo/ALM/AXTI/AIXA/Chemring/Sivers——均无新信号 |
+
+---
+
+## 观察名单更新 — 2026-06-24 14:07
+
+### 新增 ★★★ — KTOS（Kratos Defense & Security Solutions）
+- **瓶颈**：固体火箭发动机（SRM），A级
+- **市值**：$9.53B | **PS**：5.5x | **前向PE**：68.9x（黄灯）
+- **纯正度**：~23%（2026），预计2027年35-40%
+- **催化剂**：DPA 6/11援引；Prometheus新厂2027投产；Q2财报（~7月底）
+- **加入条件**：SRM纯正度>30%时升级至★★★★
+- **退出条件**：Prometheus投产延迟>6月，或市值涨至>$15B（PS>8.7x）
+
+### 新增 ★★ — UUUU（Energy Fuels）
+- **瓶颈**：稀土永磁体（mine-to-magnet供应链）
+- **事件**：$1.9B收购VAC（6/23/2026宣布），DoD $725M支持，交易2027年初完成
+- **状态**：合并前无有效财务数据（当前亏损，EPS -$0.04 Q1 2026）
+- **下一步**：交易完成后重新计算合并PS/PE；追踪VAC收入/EBITDA细节
+
+### 升级 — LEU（Centrus Energy）★★★ → ★★★★
+- **完整估值核查**：PS 7.6x（绿灯），前向PE ~90x（黄灯，积压支撑），TAM黄灯（模糊）
+- **安全边际**：乐观HALEU情景下可达10%年化
+- **下一步**：核实$2.3B积压中确定性（非条件性）合同比例；Q2 2026财报收入增速验证

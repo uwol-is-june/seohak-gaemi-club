@@ -4661,3 +4661,36 @@ Layer 3-4（铟金属）：中国占70%全球产量，出口管制收紧
 2. **WF6 4047.T（T=7天，7/1）**：永久停产日逼近，★★★★已建仓/持续跟踪
 3. **IQE.L AGM（6/30）**：执行/investment-research，确认PE和合同规模
 4. **ICL（ICL）**：估值绿灯已确认，执行/investment-research
+
+---
+
+## 更新日志 — 2026-06-24 14:07
+
+### 新增标的
+
+**KTOS（Kratos Defense）** — 固体火箭发动机，A级瓶颈
+- 市值 $9.53B / 收入 2026E $1.73B / PS 5.5x / 前向PE 68.9x
+- SRM纯正度：~23%（2026），预计2027年达35-40%（Prometheus新厂）
+- 信号强度：★★★（观察名单，等待纯正度>30%）
+- 估值：黄灯（PE 68.9x，行业中位30.3x），PS绿灯
+- 催化剂：DPA 6/11援引；Prometheus 2027投产
+
+**UUUU（Energy Fuels）** — 稀土永磁体供应链，M&A转型
+- $1.9B收购VAC（德国Vacuumschmelze）6/23宣布，2027年初完成
+- DoD $725M有条件融资
+- 信号强度：★★（交易待完成，当前财务不可计算）
+
+### 升级
+
+**LEU（Centrus Energy）** ★★★ → **★★★★**
+- 完整估值核查：PS 7.6x（绿灯），前向PE ~90x（黄灯，$2.3B积压支撑）
+- 安全边际：乐观情景下（HALEU 15% CAGR + 20%净利率）10年25xPE退出可达10%年化
+
+### 固体火箭发动机供应链补充
+
+| 环节 | 供应商 | 状态 |
+|------|------|------|
+| SRM整机 | Northrop Grumman, Aerojet Rocketdyne（整合为一体） | A级瓶颈，上市但过度多元化 |
+| SRM整机（创新） | KTOS（Zeus/Oriole SRM，+Prometheus合资） | ★★★（最佳上市纯正度） |
+| SRM IPO | L3Harris Missile Solutions | 计划H2 2026独立上市，届时评估 |
+| 铵高氯酸盐（AP） | AMPAC（属NewMarket/NEU），Cedar City, Utah | 北美唯一，但NEU整体纯正度8%，不达标 |
