@@ -4823,3 +4823,42 @@ Layer 3-4（铟金属）：中国占70%全球产量，出口管制收紧
 | 2026-06-25 10:07 | **EML激光器（AI基础设施光互连）** | **🔧 Lumentum PS估值修正** | Lumentum Q3 FY2026收入$808.4M（+90% YoY）。FY2026全年收入估计$3.0-3.2B，市值$65B，PS约20-21x（低于30x红线，修正05:05报告中"PS~31x"数据）。但TAM红灯仍触发（市值$65B >> AI光模块TAM $26B×20%=$5.2B）。LITE信号强度仍封顶★★，结论不变。瓶颈（EML S级）等级不变 |
 | 2026-06-25 10:07 | **铜供应链（AI基础设施/能源/国防基础材料）** | **📊 缺口数据量化** | J.P. Morgan量化：美国精炼铜2026年缺口33万吨，全年均价$12,075/吨。AI数据中心+EV+军事基础设施同步需求，24个月内无解。主要受益：Freeport-McMoRan（FCX）等铜矿大市值（已被充分定价）；下游线缆/连接器市场分散。记录为宏观成本压力，暂无Layer 2-3纯正可投资标的 |
 | 2026-06-25 10:07 | **关键倒计时更新** | — | LEU DOE Option 1b **T=5天**（6/30，无新公告）；WF6永久停产 **T=6天**（7/1）；ALM Russell 1000 **T=4天**（6/29）；4047.T AGM **T=1天**（6/26日本时间）；3110.T拆股 **T=4天**（6/29）；AAOI Q2财报 T=42天（8/6）；Lumentum Q4财报 T=54天（8/18）；AXYV S-1公开预计Q3 2026 |
+
+## 2026-06-25 午后增量更新
+
+**更新来源**：午后交叉验证扫描
+
+### 新增S级瓶颈（2026-06-25）
+
+#### AP1000核重锻件
+**核心数据**：
+- Doosan Enerbility（KRX:034020）是全球唯一AP1000反应堆压力容器+蒸汽发生器大规模锻件供应商
+- DOE 2026-06-22宣布$175亿AP1000长周期物项条件贷款
+- Fermi America已与Doosan签约（反应堆压力容器+蒸汽发生器锻件启动生产）
+- Sheffield Forgemasters（英国国有）理论备选，但无大规模商用核锻件量产历史
+- 制造周期4-7年（从开始锻造到交货）
+
+**瓶颈判定**：
+- 供给集中🔴（全球仅1家大规模供应商）
+- 扩产周期🔴（4-7年）
+- 替代难度🔴（核级认证需15+年，无法快速替代）
+- 需求增速🔴（AP1000新建潮 + DOE激活）
+= **S级候选**（已确认机制，暂列候选因AP1000项目历史延期率高）
+
+**相关公司**：
+- Doosan Enerbility（KRX:034020，市值~$450亿，P/E~142x）→ 瓶颈真实但**估值红灯+超大市值，不可追踪**
+- 待寻找：Doosan上游核级特殊钢供应商（小市值候选）
+
+**来源**：[BusinessWire DOE $175亿](https://www.businesswire.com/news/home/20260622876311/en/US-Department-of-Energy-to-Jumpstart-Nuclear-Supply-Chain-and-Accelerate-Deployment-of-Westinghouse-AP1000-reactors) | [World Nuclear News Fermi-Doosan](https://www.world-nuclear-news.org/articles/fermi-enlists-korean-firms-for-texan-reactors)
+
+---
+
+### 状态更新（2026-06-25）
+
+| 瓶颈 | 本次更新 |
+|------|---------|
+| **WF6六氟化钨** | **更正**：停产方为关东电化+中央硝子（日本，占全球25%产能），非Foosung。Foosung是韩国受益方（价格提70-90%），PE 93x + KRX投资警示不可追踪。S级维持，T-5天激活。 |
+| **InP衬底** | Tower Semi $13亿2027年SiPho合同承诺 = 需求侧量化验证升级；IQE-Tower多年协议 = 供给侧战略验证。S级维持，缺口未改善。 |
+| **重稀土（Dy/Tb）** | S级确认；UUUU首批Dy/Tb生产（小批量）；ALOY-Patriot LOI（6/14）；Russell 3000 T-4天。可投资替代供给仍处于萌芽阶段。 |
+| **EUV光刻胶** | TOK 4186光刻胶业务纯正度确认（电子功能材料52.6%总收入，光刻胶主要驱动），PS 1.7-2.0x绿灯。从A级候选升格为A级确认，TOK升★★★★。 |
+| **PJM/ERCOT电网** | Bloomberg 6/24 PJM容量警告2027年缺6GW确认；从B级升为A级。 |
