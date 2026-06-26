@@ -613,12 +613,6 @@ cp ai-berkshire/skills/*.md ~/.claude/commands/
 
 ---
 
-## Star History
-
-如果这个项目对你有帮助，请给一个 Star 支持！
-
-[![Star History Chart](https://api.star-history.com/svg?repos=xbtlin/ai-berkshire&type=Date)](https://star-history.com/#xbtlin/ai-berkshire&Date)
-
 ## License
 
 MIT License
@@ -628,3 +622,9 @@ MIT License
 > "The best investment you can make is in yourself." — Warren Buffett
 >
 > AI Berkshire：让每个人都拥有自己的投研团队。
+
+## Star History
+
+如果这个项目对你有帮助，请给一个 Star 支持！
+
+[![Star History Chart](https://api.star-history.com/svg?repos=xbtlin/ai-berkshire&type=Date)](https://star-history.com/#xbtlin/ai-berkshire&Date)
