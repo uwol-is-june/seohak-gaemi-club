@@ -21,6 +21,16 @@ $ARGUMENTS 에 대해 열등주 제거 지표 스크리닝을 실행하여, 1류
 
 ---
 
+## ⓪ 사전 점검: 데이터 소스 접근 확인
+
+```bash
+python3 ~/Desktop/reality-escape-device/tools/site_preflight.py quality-screen
+```
+
+차단된 소스가 있으면 스크립트가 대체 소스를 출력한다. **차단 여부와 관계없이 스크리닝을 계속 진행한다.**
+
+---
+
 ## 7가지 열등주 제거 지표
 
 | # | 지표 | 탈락 기준 | 무엇을 측정하는가 |

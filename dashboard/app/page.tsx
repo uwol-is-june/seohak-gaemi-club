@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { skills, tools, type DashboardItem, type Tag, type RiskSeverity } from "@/lib/data";
+import { skills, tools, flowGroupLabels, type DashboardItem, type FlowGroup, type Tag, type RiskSeverity } from "@/lib/data";
 import { flows, type Flow, type FlowStep } from "@/lib/flows";
 
 // ─── Color config ──────────────────────────────────────────────────────────
@@ -71,7 +71,12 @@ function DashboardCard({ item }: { item: DashboardItem }) {
   return (
     <div className={`flex flex-col gap-3 rounded-xl border ${s.border} bg-zinc-900 p-4`}>
       <div className="flex items-start justify-between gap-2">
-        <h3 className="font-mono text-sm font-semibold text-white">{item.name}</h3>
+        <div className="flex items-center gap-2">
+          <span className="shrink-0 rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-zinc-400">
+            {item.code}
+          </span>
+          <h3 className="font-mono text-sm font-semibold text-white">{item.name}</h3>
+        </div>
         <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${s.bg} ${s.text}`}>
           {s.label}
         </span>
@@ -100,9 +105,12 @@ function DashboardCard({ item }: { item: DashboardItem }) {
   );
 }
 
+const flowGroupOrder: FlowGroup[] = ["A", "B", "C", "S", "T"];
+
 function AdminModal({ onClose }: { onClose: () => void }) {
-  const [tab, setTab] = useState<"skills" | "tools">("skills");
-  const items = tab === "skills" ? skills : tools;
+  const [tab, setTab] = useState<FlowGroup>("A");
+  const allItems = [...skills, ...tools];
+  const items = allItems.filter((i) => i.flowGroup === tab);
   const counts = {
     ok: items.filter((i) => i.status === "ok").length,
     warning: items.filter((i) => i.status === "warning").length,
@@ -121,7 +129,8 @@ function AdminModal({ onClose }: { onClose: () => void }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 shrink-0">
           <div>
             <h2 className="font-semibold text-white">Skills & Tools 현황</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">모든 Skill과 Python Tool의 동작 상태</p>
+            <p className="text-xs text-zinc-500 mt-0.5">플로우별 Skill과 Python Tool의 동작 상태</p>
+            <p className="text-xs text-amber-400/80 mt-1">⏱ 산업/섹터 데이터는 3개월 기준으로 신선도를 점검·정제합니다 (기준일 초과 시 자동 갱신)</p>
           </div>
           <button
             onClick={onClose}
@@ -131,17 +140,18 @@ function AdminModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <div className="flex items-center gap-4 px-6 py-3 border-b border-zinc-800 shrink-0">
-          <div className="flex gap-1 rounded-lg bg-zinc-900 p-1">
-            {(["skills", "tools"] as const).map((t) => (
+        <div className="flex items-center justify-between gap-4 px-6 py-3 border-b border-zinc-800 shrink-0 flex-wrap">
+          <div className="flex gap-1 rounded-lg bg-zinc-900 p-1 overflow-x-auto">
+            {flowGroupOrder.map((g) => (
               <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-                  tab === t ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
+                key={g}
+                onClick={() => setTab(g)}
+                className={`shrink-0 rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+                  tab === g ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
                 }`}
               >
-                {t === "skills" ? "Skills" : "Python Tools"}
+                {flowGroupLabels[g].label}
+                <span className="ml-1.5 text-xs text-zinc-500">{flowGroupLabels[g].subtitle}</span>
               </button>
             ))}
           </div>

@@ -2,6 +2,18 @@
 
 $ARGUMENTS 에 대해 체계적인 투자 리서치 분석을 수행한다.
 
+---
+
+## ⓪ 사전 점검: 데이터 소스 접근 확인
+
+```bash
+python3 ~/Desktop/reality-escape-device/tools/site_preflight.py investment-research {분석할 티커}
+```
+
+차단된 소스가 있으면 스크립트가 대체 소스를 출력한다. **차단 여부와 관계없이 리서치를 계속 진행한다.**
+
+---
+
 ## 리서치 프레임워크
 
 워런 버핏, 찰리 멍거, 단융핑(Duan Yongping), 리루(Li Lu) 4인의 투자 방법론에 기반하여 다음 8개 모듈을 순서대로 실행한다.

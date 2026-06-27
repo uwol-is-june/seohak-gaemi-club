@@ -19,6 +19,18 @@ $ARGUMENTS 에 대한 실적 보고서 정밀 분석을 수행한다.
 
 이 Skill은 1차 자료를 직접 해석하며, 버핏과 이 루가 실제로 주목하는 내용에 집중한다.
 
+---
+
+## ⓪ 사전 점검: 데이터 소스 접근 확인
+
+```bash
+python3 ~/Desktop/reality-escape-device/tools/site_preflight.py earnings-review {분석할 티커}
+```
+
+SEC EDGAR는 거의 차단되지 않으나 Seeking Alpha 어닝스 콜 트랜스크립트는 유료 장벽 가능성이 있다. 차단 시 스크립트가 SEC 8-K 대체 경로를 안내한다. **차단 여부와 관계없이 리서치를 계속 진행한다.**
+
+---
+
 ## 실행 절차
 
 ### 사전 단계: 자료 확보 가능성 등급 판정
