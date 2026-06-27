@@ -11,10 +11,10 @@ $ARGUMENTS 에 대해 팀 기반 투자 리서치 분석을 수행합니다. Tea
 | 역할 | 담당 업무 | 분석 프레임워크 |
 |------|----------|----------------|
 | **team-lead** (본인) | 총괄 조율, 보고서 통합, 최종 보고서 출력 | 4대 거장 종합 프레임워크 |
-| **business-analyst** | 비즈니스 모델 & MOAT 분석 | 단융핑(段永平) 시각 |
+| **business-analyst** | 비즈니스 모델 & MOAT 분석 | 단융핑(Duan Yongping) 시각 |
 | **financial-analyst** | 재무제표 & 밸류에이션 분석 | 워런 버핏(Warren Buffett) 시각 |
 | **industry-researcher** | 산업 구도 & 경쟁 구도 분석 | 찰리 멍거(Charlie Munger) 시각 |
-| **risk-assessor** | 리스크 평가 & 경영진 판단 | 리루(李录) 시각 |
+| **risk-assessor** | 리스크 평가 & 경영진 판단 | 리루(Li Lu) 시각 |
 
 ### 1.5단계: AI 리서치 편향 평가
 

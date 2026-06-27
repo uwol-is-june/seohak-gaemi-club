@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""A股数据工具 — 腾讯行情 + 东方财富搜索/财务，零外部依赖（仅 stdlib）。
+"""A-Share Data Tool — Tencent quotes + East Money financials, zero external dependencies (stdlib only).
 
-为 Claude Code Skills 提供 A 股实时行情、财务数据等数据。
-设计原则：独立模块，不影响现有工具；使用 curl 直连绕过系统代理。
+Provides A-share real-time quotes and financial data for Claude Code Skills.
+Design: standalone module, does not affect existing tools; uses curl with --noproxy to bypass system proxy.
 
-用法（由 Skills 自动调用）：
-    python3.11 tools/ashare_data.py quote 600519                    # 实时行情
-    python3.11 tools/ashare_data.py financials 600519               # 核心财务数据（近5年）
-    python3.11 tools/ashare_data.py valuation 600519                # 估值指标
-    python3.11 tools/ashare_data.py search 茅台                      # 搜索股票代码
+Usage (called automatically by Skills):
+    python3.11 tools/ashare_data.py quote 600519                    # Real-time quote
+    python3.11 tools/ashare_data.py financials 600519               # Core financials (last 5 years)
+    python3.11 tools/ashare_data.py valuation 600519                # Valuation metrics
+    python3.11 tools/ashare_data.py search keyword                  # Search ticker by name
 
-需要 Python >= 3.8，零外部依赖。
+Requires Python >= 3.8, no external dependencies.
 """
 
 import argparse
@@ -24,7 +24,7 @@ _TIMEOUT = 15
 
 
 def _curl(url):
-    """用 curl --noproxy 直连，绕过系统代理。"""
+    """Fetch URL via curl --noproxy to bypass system proxy."""
     result = subprocess.run(
         ["/usr/bin/curl", "-s", "--noproxy", "*",
          "-H", "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
@@ -32,8 +32,8 @@ def _curl(url):
         capture_output=True, timeout=_TIMEOUT,
     )
     if result.returncode != 0 or not result.stdout.strip():
-        raise ConnectionError(f"请求失败: {url}")
-    # 腾讯行情 API 返回 GBK 编码，其他返回 UTF-8
+        raise ConnectionError(f"Request failed: {url}")
+    # Tencent quote API returns GBK; others return UTF-8
     try:
         return result.stdout.decode("utf-8")
     except UnicodeDecodeError:
@@ -41,7 +41,7 @@ def _curl(url):
 
 
 def _curl_json(url, params=None):
-    """curl 获取 JSON。"""
+    """Fetch JSON via curl."""
     if params:
         from urllib.parse import urlencode
         url = f"{url}?{urlencode(params)}"
@@ -49,11 +49,11 @@ def _curl_json(url, params=None):
 
 
 # ---------------------------------------------------------------------------
-# 腾讯行情 API（稳定可靠，无需鉴权）
+# Tencent Quote API (stable, no auth required)
 # ---------------------------------------------------------------------------
 
 def _qq_code(code: str) -> str:
-    """将股票代码转为腾讯行情格式。"""
+    """Convert stock code to Tencent quote format."""
     code = code.strip().replace(".SH", "").replace(".SZ", "").replace(".BJ", "")
     if code.startswith(("6", "9", "5")):
         return f"sh{code}"
@@ -65,7 +65,7 @@ def _qq_code(code: str) -> str:
 
 
 def _parse_qq_quote(raw: str) -> dict:
-    """解析腾讯行情数据。格式：v_shXXXXXX="字段1~字段2~..."; """
+    """Parse Tencent quote response. Format: v_shXXXXXX="field1~field2~..."; """
     start = raw.find('"')
     end = raw.rfind('"')
     if start < 0 or end <= start:
@@ -79,7 +79,7 @@ def _parse_qq_quote(raw: str) -> dict:
         "price": fields[3],
         "prev_close": fields[4],
         "open": fields[5],
-        "volume": fields[6],         # 手
+        "volume": fields[6],         # lots
         "buy_vol": fields[7],
         "sell_vol": fields[8],
         "high": fields[33] if len(fields) > 33 else fields[3],
@@ -89,8 +89,8 @@ def _parse_qq_quote(raw: str) -> dict:
         "turnover_amt": fields[37] if len(fields) > 37 else "-",
         "turnover_rate": fields[38] if len(fields) > 38 else "-",
         "pe": fields[39] if len(fields) > 39 else "-",
-        "market_cap": fields[45] if len(fields) > 45 else "-",    # 总市值（亿）
-        "float_cap": fields[44] if len(fields) > 44 else "-",     # 流通市值（亿）
+        "market_cap": fields[45] if len(fields) > 45 else "-",   # total market cap (100M RMB)
+        "float_cap": fields[44] if len(fields) > 44 else "-",    # float market cap (100M RMB)
         "pb": fields[46] if len(fields) > 46 else "-",
         "high_52w": fields[47] if len(fields) > 47 else "-",
         "low_52w": fields[48] if len(fields) > 48 else "-",
@@ -98,7 +98,7 @@ def _parse_qq_quote(raw: str) -> dict:
     }
 
 
-def _fmt_yi(value) -> str:
+def _fmt_large(value) -> str:
     if value is None or value == "-" or value == "":
         return "-"
     try:
@@ -106,9 +106,9 @@ def _fmt_yi(value) -> str:
     except (ValueError, TypeError):
         return str(value)
     if abs(v) >= 1e8:
-        return f"{v / 1e8:.2f}亿"
+        return f"{v / 1e8:.2f}00M"
     if abs(v) >= 1e4:
-        return f"{v / 1e4:.2f}万"
+        return f"{v / 1e4:.2f}0K"
     return f"{v:.2f}"
 
 
@@ -122,78 +122,78 @@ def _fmt_pct(value) -> str:
 
 
 # ---------------------------------------------------------------------------
-# 命令实现
+# Commands
 # ---------------------------------------------------------------------------
 
 def cmd_quote(code: str):
-    """实时行情快照。"""
+    """Real-time quote snapshot."""
     qq_code = _qq_code(code)
     raw = _curl(f"https://qt.gtimg.cn/q={qq_code}")
     d = _parse_qq_quote(raw)
     if not d:
-        print(f"❌ 未找到股票 {code}")
+        print(f"❌ Stock not found: {code}")
         return
 
     print("=" * 60)
-    print(f"实时行情: {d['name']} ({d['code']})")
+    print(f"Real-time Quote: {d['name']} ({d['code']})")
     print("=" * 60)
-    print(f"  当前价:     {d['price']}")
-    print(f"  涨跌幅:     {d['change_pct']}%")
-    print(f"  涨跌额:     {d['change_amt']}")
-    print(f"  今开:       {d['open']}")
-    print(f"  最高:       {d['high']}")
-    print(f"  最低:       {d['low']}")
-    print(f"  昨收:       {d['prev_close']}")
-    print(f"  成交量:     {d['volume']} 手")
-    print(f"  成交额:     {d['turnover_amt']}万")
-    print(f"  总市值:     {d['market_cap']}亿")
-    print(f"  流通市值:   {d['float_cap']}亿")
-    print(f"  PE(动):     {d['pe']}")
-    print(f"  PB:         {d['pb']}")
-    print(f"  换手率:     {d['turnover_rate']}%")
-    print(f"  52周最高:   {d['high_52w']}")
-    print(f"  52周最低:   {d['low_52w']}")
+    print(f"  Price:          {d['price']}")
+    print(f"  Change %:       {d['change_pct']}%")
+    print(f"  Change:         {d['change_amt']}")
+    print(f"  Open:           {d['open']}")
+    print(f"  High:           {d['high']}")
+    print(f"  Low:            {d['low']}")
+    print(f"  Prev Close:     {d['prev_close']}")
+    print(f"  Volume:         {d['volume']} lots")
+    print(f"  Turnover:       {d['turnover_amt']} 10K RMB")
+    print(f"  Market Cap:     {d['market_cap']} 100M RMB")
+    print(f"  Float Cap:      {d['float_cap']} 100M RMB")
+    print(f"  PE (TTM):       {d['pe']}")
+    print(f"  PB:             {d['pb']}")
+    print(f"  Turnover Rate:  {d['turnover_rate']}%")
+    print(f"  52W High:       {d['high_52w']}")
+    print(f"  52W Low:        {d['low_52w']}")
 
 
 def cmd_valuation(code: str):
-    """估值指标汇总。"""
+    """Valuation metrics summary."""
     qq_code = _qq_code(code)
     raw = _curl(f"https://qt.gtimg.cn/q={qq_code}")
     d = _parse_qq_quote(raw)
     if not d:
-        print(f"❌ 未找到股票 {code}")
+        print(f"❌ Stock not found: {code}")
         return
 
     price = d["price"]
     market_cap_yi = d["market_cap"]
 
     print("=" * 60)
-    print(f"估值指标: {d['name']} ({d['code']})")
+    print(f"Valuation Metrics: {d['name']} ({d['code']})")
     print("=" * 60)
-    print(f"  当前价:     {price}")
-    print(f"  总市值:     {market_cap_yi}亿")
-    print(f"  流通市值:   {d['float_cap']}亿")
-    print(f"  PE(动):     {d['pe']}")
-    print(f"  PB:         {d['pb']}")
-    print(f"  52周最高:   {d['high_52w']}")
-    print(f"  52周最低:   {d['low_52w']}")
+    print(f"  Price:          {price}")
+    print(f"  Market Cap:     {market_cap_yi} 100M RMB")
+    print(f"  Float Cap:      {d['float_cap']} 100M RMB")
+    print(f"  PE (TTM):       {d['pe']}")
+    print(f"  PB:             {d['pb']}")
+    print(f"  52W High:       {d['high_52w']}")
+    print(f"  52W Low:        {d['low_52w']}")
 
-    # 市值验算
+    # Market cap verification
     try:
         p = Decimal(price)
         cap = Decimal(market_cap_yi) * Decimal("1e8")
         shares = cap / p
-        print(f"\n  推算总股本: {_fmt_yi(float(shares))}股")
+        print(f"\n  Implied shares: {_fmt_large(float(shares))}")
         calc_cap = p * shares
         reported_cap = Decimal(market_cap_yi) * Decimal("1e8")
         diff = abs(calc_cap - reported_cap) / reported_cap * 100
-        print(f"  市值验算:   ✅ 一致（推算法，偏差 {float(diff):.1f}%）")
+        print(f"  Market cap check: ✅ Consistent (deviation {float(diff):.1f}%)")
     except Exception:
         pass
 
 
 def cmd_financials(code: str):
-    """近5年核心财务数据。"""
+    """Core financial data for last 5 years."""
     qq_code = _qq_code(code)
     raw = _curl(f"https://qt.gtimg.cn/q={qq_code}")
     d = _parse_qq_quote(raw)
@@ -202,7 +202,7 @@ def cmd_financials(code: str):
     code_clean = code.strip().replace(".SH", "").replace(".SZ", "").replace(".BJ", "")
     market = "SH" if code_clean.startswith(("6", "9", "5")) else "SZ"
 
-    # 东方财富 datacenter API（年报数据）
+    # East Money datacenter API (annual report data)
     fin_url = "https://datacenter.eastmoney.com/securities/api/data/get"
     params = {
         "type": "RPT_F10_FINANCE_MAINFINADATA",
@@ -222,7 +222,7 @@ def cmd_financials(code: str):
     except Exception:
         pass
 
-    # 如果年报筛选无结果，去掉年报限制
+    # If annual-only filter returns nothing, remove it
     if not reports:
         params["filter"] = f'(SECUCODE="{code_clean}.{market}")'
         try:
@@ -232,11 +232,11 @@ def cmd_financials(code: str):
             pass
 
     print("=" * 60)
-    print(f"核心财务数据: {name} ({code_clean})")
+    print(f"Core Financials: {name} ({code_clean})")
     print("=" * 60)
 
     if not reports:
-        print("  ⚠️ 未能获取财务数据，建议通过 WebSearch 补充")
+        print("  ⚠️ Unable to fetch financial data — suggest using WebSearch to supplement")
         return
 
     for r in reports[:5]:
@@ -252,23 +252,23 @@ def cmd_financials(code: str):
 
         print(f"\n  --- {date} {report_name} ---")
         if revenue is not None:
-            print(f"  营收:           {_fmt_yi(revenue)}")
+            print(f"  Revenue:          {_fmt_large(revenue)}")
         if rev_growth is not None:
-            print(f"  营收增速:       {_fmt_pct(rev_growth)}")
+            print(f"  Revenue YoY:      {_fmt_pct(rev_growth)}")
         if net_profit is not None:
-            print(f"  归母净利润:     {_fmt_yi(net_profit)}")
+            print(f"  Net Profit:       {_fmt_large(net_profit)}")
         if profit_growth is not None:
-            print(f"  净利润增速:     {_fmt_pct(profit_growth)}")
+            print(f"  Net Profit YoY:   {_fmt_pct(profit_growth)}")
         if eps is not None:
-            print(f"  基本每股收益:   {eps}")
+            print(f"  Basic EPS:        {eps}")
         if bps is not None:
-            print(f"  每股净资产:     {bps:.2f}")
+            print(f"  Book Value/Share: {bps:.2f}")
         if roe is not None:
-            print(f"  ROE(加权):      {_fmt_pct(roe)}")
+            print(f"  ROE (weighted):   {_fmt_pct(roe)}")
 
 
 def cmd_search(keyword: str):
-    """搜索股票代码。"""
+    """Search for stock by name or keyword."""
     url = "https://searchadapter.eastmoney.com/api/suggest/get"
     params = {
         "input": keyword,
@@ -280,42 +280,42 @@ def cmd_search(keyword: str):
     results = data.get("QuotationCodeTable", {}).get("Data", [])
 
     if not results:
-        print(f"❌ 未找到匹配 '{keyword}' 的股票")
+        print(f"❌ No results found for '{keyword}'")
         return
 
     print("=" * 60)
-    print(f"搜索结果: '{keyword}'")
+    print(f"Search Results: '{keyword}'")
     print("=" * 60)
     for r in results:
         code = r.get("Code", "")
         name = r.get("Name", "")
         market = r.get("MktNum", "")
-        mkt_label = {"1": "沪", "2": "深", "3": "北"}.get(str(market), "")
+        mkt_label = {"1": "SH", "2": "SZ", "3": "BJ"}.get(str(market), "")
         print(f"  {code} {name} [{mkt_label}]")
 
 
 # ---------------------------------------------------------------------------
-# CLI 入口
+# CLI entry point
 # ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(
-        description="A股数据工具 — 腾讯行情 + 东方财富财务数据",
+        description="A-Share Data Tool — Tencent quotes + East Money financials",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     sub = parser.add_subparsers(dest="command")
 
-    p_quote = sub.add_parser("quote", help="实时行情")
-    p_quote.add_argument("code", help="股票代码，如 600519")
+    p_quote = sub.add_parser("quote", help="Real-time quote")
+    p_quote.add_argument("code", help="Stock code, e.g. 600519")
 
-    p_fin = sub.add_parser("financials", help="核心财务数据（近5年）")
-    p_fin.add_argument("code", help="股票代码")
+    p_fin = sub.add_parser("financials", help="Core financials (last 5 years)")
+    p_fin.add_argument("code", help="Stock code")
 
-    p_val = sub.add_parser("valuation", help="估值指标")
-    p_val.add_argument("code", help="股票代码")
+    p_val = sub.add_parser("valuation", help="Valuation metrics")
+    p_val.add_argument("code", help="Stock code")
 
-    p_search = sub.add_parser("search", help="搜索股票代码")
-    p_search.add_argument("keyword", help="公司名或关键词")
+    p_search = sub.add_parser("search", help="Search stock by name or keyword")
+    p_search.add_argument("keyword", help="Company name or keyword")
 
     args = parser.parse_args()
 
