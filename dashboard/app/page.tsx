@@ -185,6 +185,7 @@ function StepCard({
   index,
   isActive,
   isCompleted,
+  isSkipped,
   input,
   onInputChange,
   onDone,
@@ -194,6 +195,7 @@ function StepCard({
   index: number;
   isActive: boolean;
   isCompleted: boolean;
+  isSkipped?: boolean;
   input: string;
   onInputChange: (val: string) => void;
   onDone: () => void;
@@ -208,6 +210,18 @@ function StepCard({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (isSkipped) {
+    return (
+      <div className="flex items-center gap-3 px-2 py-2.5 opacity-40">
+        <div className="h-6 w-6 shrink-0 rounded-full border border-dashed border-zinc-600 flex items-center justify-center text-xs text-zinc-500">
+          –
+        </div>
+        <span className="text-sm text-zinc-500 flex-1">{step.title}</span>
+        <span className="text-xs text-zinc-600">건너뜀</span>
+      </div>
+    );
+  }
 
   if (isCompleted) {
     return (
@@ -266,6 +280,11 @@ function StepCard({
             {copied ? "복사됨 ✓" : "복사"}
           </button>
         </div>
+        {step.requiresCli && (
+          <p className="mt-1.5 text-xs text-amber-500">
+            ⚠️ Claude Code CLI에서 직접 실행해야 합니다 (Agent SDK 필요 — 일반 API 호출로는 동작하지 않음)
+          </p>
+        )}
       </div>
 
       {(step.outputFiles.length > 0 || step.outputNote) && (
@@ -285,8 +304,8 @@ function StepCard({
   );
 }
 
-function FlowView({ flow, onBack }: { flow: Flow; onBack: () => void }) {
-  const [currentStep, setCurrentStep] = useState(0);
+function FlowView({ flow, onBack, initialStep = 0 }: { flow: Flow; onBack: () => void; initialStep?: number }) {
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [stepInputs, setStepInputs] = useState<Record<number, string>>({});
 
   const colors = colorConfig[flow.color as ColorKey];
@@ -339,7 +358,8 @@ function FlowView({ flow, onBack }: { flow: Flow; onBack: () => void }) {
                 step={step}
                 index={i}
                 isActive={i === currentStep}
-                isCompleted={i < currentStep}
+                isCompleted={i < currentStep && i >= initialStep}
+                isSkipped={i < initialStep}
                 input={stepInputs[i] || ""}
                 onInputChange={(val) => setStepInputs((prev) => ({ ...prev, [i]: val }))}
                 onDone={() => setCurrentStep(i + 1)}
@@ -348,6 +368,33 @@ function FlowView({ flow, onBack }: { flow: Flow; onBack: () => void }) {
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function StartPointModal({ flow, onChoose, onClose }: { flow: Flow; onChoose: (fromStep: number) => void; onClose: () => void }) {
+  const c = colorConfig[flow.color as ColorKey];
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-lg rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="font-bold text-white text-lg mb-1">{flow.title}</h2>
+        <p className="text-sm text-zinc-500 mb-6">어디서부터 시작할까요?</p>
+        <div className="flex flex-col gap-3">
+          {flow.startPoints?.map((sp) => (
+            <button
+              key={sp.id}
+              onClick={() => onChoose(sp.fromStep)}
+              className={`text-left rounded-xl border ${c.border} bg-zinc-900 p-4 hover:bg-zinc-800/80 transition-colors`}
+            >
+              <div className={`text-sm font-semibold mb-1 ${c.text}`}>{sp.label}</div>
+              <p className="text-xs text-zinc-400 leading-relaxed">{sp.description}</p>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -414,6 +461,8 @@ function HomeView({
 export default function Home() {
   const [view, setView] = useState<"home" | "flow">("home");
   const [selectedFlow, setSelectedFlow] = useState<Flow | null>(null);
+  const [pickingStartFor, setPickingStartFor] = useState<Flow | null>(null);
+  const [startStep, setStartStep] = useState(0);
   const [adminOpen, setAdminOpen] = useState(false);
 
   return (
@@ -421,8 +470,13 @@ export default function Home() {
       {view === "home" ? (
         <HomeView
           onSelectFlow={(f) => {
-            setSelectedFlow(f);
-            setView("flow");
+            if (f.startPoints && f.startPoints.length > 0) {
+              setPickingStartFor(f);
+            } else {
+              setStartStep(0);
+              setSelectedFlow(f);
+              setView("flow");
+            }
           }}
           onOpenAdmin={() => setAdminOpen(true)}
         />
@@ -430,12 +484,25 @@ export default function Home() {
         selectedFlow && (
           <FlowView
             flow={selectedFlow}
+            initialStep={startStep}
             onBack={() => {
               setView("home");
               setSelectedFlow(null);
             }}
           />
         )
+      )}
+      {pickingStartFor && (
+        <StartPointModal
+          flow={pickingStartFor}
+          onChoose={(fromStep) => {
+            setStartStep(fromStep);
+            setSelectedFlow(pickingStartFor);
+            setPickingStartFor(null);
+            setView("flow");
+          }}
+          onClose={() => setPickingStartFor(null)}
+        />
       )}
       {adminOpen && <AdminModal onClose={() => setAdminOpen(false)} />}
     </>

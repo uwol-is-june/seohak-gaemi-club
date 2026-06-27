@@ -6,6 +6,14 @@ export interface FlowStep {
   commandTemplate: string;
   outputFiles: string[];
   outputNote?: string;
+  requiresCli?: boolean;
+}
+
+export interface FlowStartPoint {
+  id: string;
+  label: string;
+  description: string;
+  fromStep: number;
 }
 
 export interface Flow {
@@ -14,6 +22,7 @@ export interface Flow {
   subtitle: string;
   color: string;
   steps: FlowStep[];
+  startPoints?: FlowStartPoint[];
 }
 
 export const flows: Flow[] = [
@@ -22,6 +31,20 @@ export const flows: Flow[] = [
     title: "종목 발굴",
     subtitle: "섹터 아이디어 → 후보 압축 → 논제 수립",
     color: "emerald",
+    startPoints: [
+      {
+        id: "sector",
+        label: "시작점 A: 섹터 아이디어가 있을 때",
+        description: "섹터 구조부터 파악해 후보 종목을 압축합니다.",
+        fromStep: 0,
+      },
+      {
+        id: "stock",
+        label: "시작점 B: 특정 종목이 있을 때",
+        description: "이미 살펴볼 종목이 있다면 열등주 제거부터 바로 시작합니다.",
+        fromStep: 2,
+      },
+    ],
     steps: [
       {
         title: "섹터 구조 파악",
@@ -55,6 +78,7 @@ export const flows: Flow[] = [
         inputPlaceholder: "NVDA, AMD",
         commandTemplate: "/investment-checklist {input}",
         outputFiles: ["reports/{회사}/{회사}-checklist-{날짜}.md"],
+        requiresCli: true,
       },
       {
         title: "심층 분석",
@@ -111,6 +135,7 @@ export const flows: Flow[] = [
         inputPlaceholder: "AAPL 30%, MSFT 20%, NVDA 20%, Cash 30%",
         commandTemplate: "/portfolio-review {input}",
         outputFiles: ["reports/portfolio-latest.md"],
+        requiresCli: true,
       },
       {
         title: "개별 종목 논제 확인",
