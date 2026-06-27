@@ -1,38 +1,60 @@
 {
+  "us_mega_cap": [
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "META",
+    "BRK.B",
+    "JPM",
+    "V",
+    "MA"
+  ],
   "us_ai_chip": [
     "NVDA",
     "AMD",
-    "MU",
     "AVGO",
     "MRVL",
+    "MU",
     "TSM"
   ],
-  "us_ai_app": [
+  "us_ai_software": [
+    "MSFT",
     "GOOG",
     "META",
-    "MSFT",
-    "AMZN",
     "CRM",
     "NOW",
-    "PLTR"
+    "PLTR",
+    "AMZN"
   ],
   "us_ai_infra": [
     "ETN",
     "PWR",
     "VRT",
-    "CRWV"
+    "CRWV",
+    "NEE"
   ],
-  "us_crypto": [
+  "us_consumer": [
+    "COST",
+    "NKE",
+    "SBUX",
+    "MCD",
+    "WMT"
+  ],
+  "us_healthcare": [
+    "UNH",
+    "LLY",
+    "JNJ",
+    "ABBV",
+    "TMO"
+  ],
+  "us_fintech": [
+    "V",
+    "MA",
     "COIN",
     "HOOD",
-    "MSTR",
-    "CRCL"
+    "SQ",
+    "PYPL"
   ],
-  "hk_internet": [
-    "0700.HK",
-    "9888.HK",
-    "1024.HK",
-    "9992.HK"
-  ],
-  "a_share": []
+  "us_watchlist": []
 }

@@ -1,103 +1,154 @@
-# 财务数据获取与交叉验证规范
+# 재무 데이터 수집 및 교차 검증 기준
 
-本规范适用于所有涉及企业财务数据的研究。**每个关键数据必须来自两个独立来源，误差>1%须标记。**
-
----
-
-## 数据源优先级
-
-### 美股（PDD、腾讯ADR、网易ADR等）
-
-| 优先级 | 来源 | URL | 获取方式 |
-|--------|------|-----|---------|
-| 1（主） | **macrotrends** | macrotrends.net/stocks/charts/{ticker} | 直接访问，无需注册 |
-| 2（副） | **stockanalysis** | stockanalysis.com/stocks/{ticker}/financials | 直接访问，无需注册 |
-| 原始一手 | SEC EDGAR | sec.gov/cgi-bin/browse-edgar | 10-K / 10-Q 原文 |
-
-### 港股（腾讯0700、网易9999、美团3690等）
-
-| 优先级 | 来源 | URL | 获取方式 |
-|--------|------|-----|---------|
-| 1（主） | **aastocks** | aastocks.com/tc/stocks/analysis/company-fundamental | 直接访问 |
-| 2（副） | **macrotrends**（ADR代码） | 腾讯用TCEHY，网易用NTES | 直接访问 |
-| 原始一手 | HKEX披露易 | hkexnews.hk | 年报PDF |
-
-### A股（三七互娱、吉比特等）
-
-| 优先级 | 来源 | URL | 获取方式 |
-|--------|------|-----|---------|
-| 1（主） | **东方财富** | eastmoney.com → 搜股票代码 → 财务报表 | 直接访问 |
-| 2（副） | **巨潮资讯** | cninfo.com.cn | 原始年报/季报PDF |
+본 기준은 기업 재무 데이터를 다루는 모든 투자 리서치에 적용된다. **핵심 데이터는 반드시 2개 이상의 독립 출처에서 확인하며, 오차 >1%인 경우 반드시 표시한다.**
 
 ---
 
-## 执行规范
+## 데이터 출처 우선순위
 
-### 第一步：获取数据
+### 미국 주식 (NYSE / NASDAQ — S&P 500 전 종목)
 
-对每个财务指标（收入、净利润、毛利率、经营现金流、资产负债率等），分别从**来源1**和**来源2**取数。
+| 우선순위 | 출처 | URL | 접근 방법 |
+|----------|------|-----|-----------|
+| 1 (주) | **Macrotrends** | macrotrends.net/stocks/charts/{TICKER} | 무료 직접 접근, 회원가입 불필요 |
+| 2 (부) | **Stock Analysis** | stockanalysis.com/stocks/{ticker}/financials | 무료 직접 접근, 회원가입 불필요 |
+| 원본 1차 | **SEC EDGAR** | sec.gov/cgi-bin/browse-edgar | 10-K / 10-Q / 8-K 원문 |
+| 스크리닝 | **Finviz** | finviz.com/screener | 초기 종목 필터링 및 밸류에이션 스냅샷 |
+| 뉴스·논평 | **Yahoo Finance / SeekingAlpha / WSJ** | finance.yahoo.com / seekingalpha.com / wsj.com | 실적 발표, 경영진 코멘트, 애널리스트 반응 |
 
-### 第二步：误差计算与标记
+> **제거된 출처 (사용 금지):** aastocks.com, eastmoney.com (동방재부), cninfo.com.cn, xueqiu.com (설구), hkexnews.hk — 미국 주식 리서치에는 해당 없음
+
+---
+
+## 실행 절차
+
+### 1단계: 데이터 수집
+
+각 재무 지표(매출, 순이익, 매출총이익률, 영업현금흐름, 부채비율 등)를 **출처 1 (Macrotrends)**과 **출처 2 (Stock Analysis)**에서 각각 수집한다.
+
+수집 대상 핵심 지표:
+
+| 지표 | 영문 약어 | 비고 |
+|------|-----------|------|
+| 매출 | Revenue | GAAP 기준 |
+| 영업이익 | Operating Income | GAAP 기준 |
+| 순이익 | Net Income | GAAP 기준 |
+| 주당순이익 | EPS | Diluted EPS 기준 |
+| 매출총이익률 | Gross Margin % | — |
+| 영업이익률 | Operating Margin % | — |
+| 순이익률 | Net Margin % | — |
+| 자기자본이익률 | ROE | — |
+| 잉여현금흐름 | FCF | Operating CF − CapEx |
+| 총부채 | Total Debt | 단기 + 장기 |
+| 자기자본 | Shareholders' Equity | — |
+| 주당장부가치 | Book Value per Share | — |
+
+### 2단계: 오차 계산 및 표시
 
 ```
-误差率 = |来源1数值 - 来源2数值| / 来源1数值 × 100%
+오차율 = |출처1 수치 − 출처2 수치| / 출처1 수치 × 100%
 ```
 
-| 误差 | 处理方式 |
-|------|---------|
-| ≤ 1% | ✅ 一致，取来源1数值，标注两个来源 |
-| 1% ~ 5% | ⚠️ 标记"数据存在差异"，注明两个数值，说明可能原因（汇率/会计口径） |
-| > 5% | ❌ 标记"数据存在重大差异"，必须查原始财报核实，不得直接使用 |
+| 오차 범위 | 처리 방법 |
+|-----------|-----------|
+| ≤ 1% | ✅ 일치 — 출처1 수치 사용, 두 출처 모두 표기 |
+| 1% ~ 5% | ⚠️ "데이터 불일치" 표시 — 두 수치를 병기하고 원인 설명 (환율/회계 기준 차이 등) |
+| > 5% | ❌ "중대한 데이터 불일치" 표시 — SEC 원본 재무제표로 반드시 검증, 미검증 수치는 사용 금지 |
 
-### 第三步：数据呈现格式
+### 3단계: 데이터 표기 형식
 
-每个关键数据必须按以下格式标注：
+핵심 데이터는 반드시 다음 형식으로 표기한다:
 
+**일치 사례:**
 ```
-收入：1,239亿元 ✅
-  - macrotrends: 1,241亿元
-  - stockanalysis: 1,237亿元
-  - 误差: 0.3%
+매출: $383.3B ✅
+  - Macrotrends: $383.3B
+  - Stock Analysis: $383.1B
+  - 오차: 0.05%
+  - 출처: AAPL FY2023 10-K
 ```
 
-差异示例：
+**불일치 사례:**
 ```
-净利润：245亿元 ⚠️ 数据存在差异
-  - macrotrends: 245亿元（GAAP）
-  - stockanalysis: 278亿元（Non-GAAP）
-  - 误差: 13.5% — 原因：会计口径不同（GAAP vs Non-GAAP）
+순이익: $97.0B ⚠️ 데이터 불일치
+  - Macrotrends: $97.0B (GAAP)
+  - Stock Analysis: $113.7B (Non-GAAP 조정 후)
+  - 오차: 17.2% — 원인: GAAP vs Non-GAAP (주식보상비용, 상각 제외 여부)
+  - → SEC 10-K 원문 확인 필요
 ```
 
 ---
 
-## 常见差异原因（不一定是数据错误）
+## 자주 발생하는 불일치 원인
 
-| 原因 | 说明 |
+| 원인 | 설명 |
 |------|------|
-| GAAP vs Non-GAAP | 最常见，尤其是利润类数据 |
-| 汇率换算 | 港币/人民币/美元换算时间点不同 |
-| 财年定义 | 自然年 vs 财年（如苹果财年10月结束） |
-| 合并口径 | 是否含少数股东权益 |
-| 数据更新滞后 | 某平台尚未更新最新一期财报 |
+| GAAP vs Non-GAAP | 가장 흔한 원인. 특히 이익 관련 지표에서 빈번. 주식보상(SBC), 상각(D&A), 구조조정 비용 처리 방식 차이 |
+| 회계연도 정의 | 자연년도(1~12월) vs 회계연도 (예: Apple FY는 9월 마감, Microsoft FY는 6월 마감) |
+| 희석 주식수 | Basic EPS vs Diluted EPS, 스톡옵션·전환사채 포함 여부 |
+| 소수지분 처리 | 연결 기준 포함 여부 (비지배지분 포함/제외) |
+| 데이터 업데이트 지연 | 실적 발표 직후 일부 플랫폼이 수치를 아직 반영하지 못한 경우 |
+| 분기 vs 연간 집계 | TTM (Trailing Twelve Months) 계산 방식 차이 |
 
 ---
 
-## 特别规则
+## 특별 규칙
 
-1. **未上市公司**（米哈游、莉莉丝等）：只有一手数据来源时，数据前标记 `[估计]`，不执行交叉验证
-2. **季度数据 vs 年度数据**：优先使用年度数据做交叉验证，季度数据部分来源可能有滞后
-3. **原始财报优先**：若两个来源均与原始财报（10-K/年报PDF）不符，以原始财报为准，标记来源错误
+1. **비상장 기업** (SpaceX, Stripe 등): 단일 출처만 존재하는 경우 수치 앞에 `[추정]` 표기, 교차 검증 생략 가능
+2. **분기 데이터 vs 연간 데이터**: 교차 검증은 연간 데이터 기준 우선. 분기 데이터는 일부 플랫폼에서 업데이트 지연이 발생할 수 있음
+3. **원본 재무제표 우선**: 두 출처 모두 SEC 원본과 불일치할 경우, SEC 10-K / 10-Q를 최우선 기준으로 삼고 플랫폼 오류로 표기
+4. **통화 단위**: USD 단일 기준. 금액 표기는 B (십억 달러 / billion), T (조 달러 / trillion) 사용. CNY / HKD 표기 금지
+5. **거래소 표기**: NYSE 또는 NASDAQ 명시. 홍콩증권거래소(HKEX) / 상하이·선전 거래소(A주) 참조 금지
 
 ---
 
-## 快速索引
+## 빠른 참조 색인 — 주요 종목
 
-| 场景 | 主要来源 | 备用来源 |
-|------|---------|---------|
-| PDD / 拼多多 | macrotrends.net/stocks/charts/PDD | stockanalysis.com/stocks/pdd |
-| 腾讯 | macrotrends.net/stocks/charts/TCEHY | aastocks（0700.HK） |
-| 网易 | macrotrends.net/stocks/charts/NTES | aastocks（9999.HK） |
-| 三七互娱 | eastmoney.com（002555） | cninfo.com.cn |
-| 吉比特 | eastmoney.com（603444） | cninfo.com.cn |
-| Nintendo | macrotrends.net/stocks/charts/NTDOY | stockanalysis.com/stocks/ntdoy |
-| Capcom | macrotrends（CCOEY） | stockanalysis（CCOEY） |
+| 종목 | 티커 | 주요 출처 | 보조 출처 |
+|------|------|-----------|-----------|
+| Apple | AAPL | macrotrends.net/stocks/charts/AAPL | stockanalysis.com/stocks/aapl |
+| Microsoft | MSFT | macrotrends.net/stocks/charts/MSFT | stockanalysis.com/stocks/msft |
+| Alphabet (Google) | GOOGL | macrotrends.net/stocks/charts/GOOGL | stockanalysis.com/stocks/googl |
+| Amazon | AMZN | macrotrends.net/stocks/charts/AMZN | stockanalysis.com/stocks/amzn |
+| NVIDIA | NVDA | macrotrends.net/stocks/charts/NVDA | stockanalysis.com/stocks/nvda |
+| Meta | META | macrotrends.net/stocks/charts/META | stockanalysis.com/stocks/meta |
+| Berkshire Hathaway | BRK.B | macrotrends.net/stocks/charts/BRK.B | stockanalysis.com/stocks/brk.b |
+| JPMorgan Chase | JPM | macrotrends.net/stocks/charts/JPM | stockanalysis.com/stocks/jpm |
+| Visa | V | macrotrends.net/stocks/charts/V | stockanalysis.com/stocks/v |
+| Costco | COST | macrotrends.net/stocks/charts/COST | stockanalysis.com/stocks/cost |
+| Netflix | NFLX | macrotrends.net/stocks/charts/NFLX | stockanalysis.com/stocks/nflx |
+| Tesla | TSLA | macrotrends.net/stocks/charts/TSLA | stockanalysis.com/stocks/tsla |
+| UnitedHealth | UNH | macrotrends.net/stocks/charts/UNH | stockanalysis.com/stocks/unh |
+
+---
+
+## SEC EDGAR 활용 가이드
+
+원본 재무제표가 필요한 경우 아래 절차를 따른다:
+
+```
+1. sec.gov/cgi-bin/browse-edgar 접속
+2. "Company name" 또는 티커 입력 후 검색
+3. Filing type 선택:
+   - 10-K  → 연간 보고서 (가장 중요)
+   - 10-Q  → 분기 보고서
+   - 8-K   → 중요 공시 (실적 발표, M&A, 경영진 변경 등)
+   - DEF 14A → 주주총회 위임장 (경영진 보수, 주요 안건)
+4. 해당 보고서 → "Documents" 탭 → 10-K.htm 또는 10-K.pdf 열기
+5. Ctrl+F로 "Revenue", "Net income", "Cash flows from operations" 검색하여 수치 직접 확인
+```
+
+---
+
+## tools/financial_rigor.py 연동
+
+교차 검증 후 수집된 수치는 `tools/financial_rigor.py`를 통해 다음 지표를 정밀 계산한다:
+
+- PER (주가수익비율)
+- ROE (자기자본이익률)
+- FCF Yield (잉여현금흐름 수익률)
+- EV/EBITDA
+- 부채비율 (Debt-to-Equity)
+- 내재가치 (DCF 기반 추정)
+
+> **주의:** 플랫폼 제공 비율 지표(PER, ROE 등)는 계산 기준이 서로 다를 수 있다. 반드시 원본 수치를 수집한 뒤 직접 계산하여 사용한다.
