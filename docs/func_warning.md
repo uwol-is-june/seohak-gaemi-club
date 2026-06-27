@@ -16,11 +16,29 @@
 
 ### 사이트 접근 차단 사전 점검 도구 추가 ✅
 
-[T3] `tools/site_preflight.py` 신설 — [A1] `/industry-research`, [A2] `/industry-funnel`, [A3] `/quality-screen`, [A5] `/investment-research`, [B1] `/earnings-review`, [S1] `/management-deep-dive` 6개 Skill의 실행 0단계에 사전 접근 점검을 삽입. macrotrends, Seeking Alpha, WSJ, finviz, Glassdoor, LinkedIn 등 차단 가능 사이트를 HTTP 상태 코드로 사전 확인하고, 차단 시 대체 소스를 즉시 안내한다.
+[T3] `tools/site_preflight.py` 신설 — [A1] `/industry-research`, [A2] `/industry-funnel`, [A3] `/quality-screen`, [B1] `/earnings-review` 4개 Skill의 실행 0단계에 사전 접근 점검을 삽입. macrotrends, Seeking Alpha, WSJ, finviz 등 차단 가능 사이트를 HTTP 상태 코드로 사전 확인하고, 차단 시 대체 소스를 즉시 안내한다. (`/investment-research`는 폐지되어 `/investment-team`으로 통합됨 — `/investment-team`은 site_preflight 적용 대상이 아니다.)
 
 ### 대시보드 가이드 플로우에 CLI 필수 경고 추가 ✅
 
-`dashboard/lib/flows.ts`에 `requiresCli` 플래그 신설 — [A4] `/investment-checklist`, [C1] `/portfolio-review` 단계 카드에 "⚠️ Claude Code CLI에서 직접 실행해야 합니다 (Agent SDK 필요 — 일반 API 호출로는 동작하지 않음)" 경고를 표시한다. Task 도구가 없는 환경(일반 대화 등)에서 실행해 단일 분석으로 조용히 대체되는 위험을 사전에 차단한다.
+`dashboard/lib/flows.ts`에 `requiresCli` 플래그 신설 — [A4] `/investment-checklist`, [C1] `/portfolio-review`, [A5+] `/investment-team` 단계 카드에 "⚠️ Claude Code CLI에서 직접 실행해야 합니다 (Agent SDK 필요 — 일반 API 호출로는 동작하지 않음)" 경고를 표시한다. Task 도구가 없는 환경(일반 대화 등)에서 실행해 단일 분석으로 조용히 대체되는 위험을 사전에 차단한다.
+
+### `/investment-team` 부분 실패·타임아웃 가드 추가 ✅
+
+`skills/investment-team.md` 4~5단계에 `date` 기반 경과 시간 추적을 추가 — 4개 Agent 시작 시각을 기록하고, 진행 상황 업데이트마다 경과 분을 계산해 표시한다. 특정 Agent가 10분 이상 무응답이면 무한 대기 대신 사용자에게 재시도/제외 진행/전체 중단을 선택하게 한다. TeamCreate 자체가 실패하는 경우(Agent SDK 없는 환경)도 즉시 사용자에게 CLI 환경 확인을 요청하도록 안내 문구를 추가했다.
+
+### [T2] `report_audit.py` 숫자 파싱 한계 해결 ✅
+
+파싱 실패를 유발하던 세 가지 케이스를 `tools/report_audit.py`에서 직접 수정:
+
+1. **괄호형 음수 미처리** — `_clean_num()`이 `(123.4)` 형식을 `None`으로 반환하던 문제 수정. 10-K/10-Q에서 손실 항목을 이 형식으로 표기하는 경우가 많아 실전에서 가장 빈번하게 발생하던 파싱 실패였음. 이제 `(123.4)` → `-123.4`로 정상 처리.
+2. **영문 축약 단위 누락** — `K`(천), `mn`(백만), `bn`(십억) 단위가 `_PATTERNS`, `_KV_LABEL_RE`, `_KV_TABLE_RE` 세 곳 모두에 없었음. `_UNIT_PAT` 공통 상수로 추출해 일관되게 적용.
+3. **비표준 테이블 구조** — `_parse_md_tables()`가 "헤더 + `---` 구분행 + 데이터" 구조만 인식해, 구분행 없는 테이블이나 멀티레벨 헤더를 통째로 스킵하던 문제 수정. 구분행 및 숫자 없는 2차 헤더 행을 건너뛰는 방어 로직 추가.
+
+---
+
+### [T1] `financial_rigor.py` benford 사용 조건 문서화 ✅
+
+`benford` 명령은 통계적으로 50개 이상 표본이 있어야 신뢰할 수 있는데, 단일 보고서의 핵심 수치(매출·EPS·FCF 등)만으로는 보통 그 수에 못 미쳐 실전에서 못 쓰는 경우가 많았다. 코드 자체를 바꾸는 대신 적용 범위를 명확히 해서 해결 — `tools/financial_rigor.py` 모듈 docstring과 `benford` 서브커맨드의 argparse `--help`에 "단일 보고서가 아니라 한 종목의 다년치 10-K + 다분기 실적 등 누적 데이터에만 사용" 조건을 명시했다. 표본 부족 시 코드가 이미 경고를 출력하고 `None`을 반환하던 동작(`n < 50` 체크)은 그대로 유지.
 
 ---
 
@@ -48,23 +66,36 @@
 |------|------|------|
 | 사이트 접근 차단 | macrotrends, stockanalysis 봇 차단 가능 | ✅ 완화됨 — `site_preflight.py` 사전 점검 추가 |
 
+### [T2] `report_audit.py`
+
+| 위험 | 내용 | 상태 |
+|------|------|------|
+| 숫자 파싱 한계 | 괄호형 음수 `(123.4)`, 영문 단위 `K/mn/bn`, 비표준 테이블 구조 파싱 실패 | ✅ 해결됨 — `tools/report_audit.py` 직접 수정 (§1 상세) |
+
+---
+
 ### [B1] `/earnings-review`
 
 | 위험 | 내용 | 상태 |
 |------|------|------|
 | Seeking Alpha 유료 장벽 | 어닝스 콜 녹취록 전문이 유료 구독 필요한 경우 존재 | ✅ 완화됨 — `site_preflight.py` 사전 점검 추가, 차단 시 SEC 8-K 대체 경로 자동 안내 |
 
-### [S1] `/management-deep-dive`
-
-| 위험 | 내용 | 상태 |
-|------|------|------|
-| Earnings call 트랜스크립트 | Seeking Alpha 유료 장벽 가능 | ✅ 완화됨 — 사전 점검으로 차단 여부 확인 후 대체 소스 안내 |
-
 ### [A6] `/thesis-tracker` (논제 수립 모드)
 
 | 위험 | 내용 | 상태 |
 |------|------|------|
 | 선행 파일 의존 (오기재) | `/investment-research` 먼저 실행해야 한다고 문서에 잘못 기재돼 있었음 | ✅ 원래부터 위험 아님 — `skills/thesis-tracker.md` A0 단계는 선행 보고서가 "있으면 우선 참조"할 뿐, 없으면 macrotrends/stockanalysis/SEC에서 자체적으로 데이터를 수집한다. 단독 실행 가능 |
+
+### [A5+] `/investment-team`
+
+| 위험 | 내용 | 상태 |
+|------|------|------|
+| Agent SDK 제한 | TeamCreate/TaskCreate는 Claude Agent SDK 전용 — 일반 대화 모드(API 단독 호출 등)에서는 호출 자체가 실패하며 대체 경로 없음 | 🔶 부분 완화됨 — 대시보드 `requiresCli` 경고 + 스킬 자체에 "TeamCreate 실패 시 CLI 환경 확인 요청" 안내 추가. 환경 제약 자체는 구조적으로 해소 불가, 사전 인지로만 완화 |
+| 실행 시간 / 타임아웃 | 4개 병렬 Agent 완료까지 3~10분 소요, 타임아웃 위험 | 🔶 부분 완화됨 — `date` 기반 경과 시간 추적 추가로 무한 대기는 방지. 소요 시간 자체는 줄지 않음 |
+| 부분 실패 (Agent 무응답) | 4개 Agent 중 하나가 에러·무응답이어도 기존에는 복구 경로 없음 | 🔶 부분 완화됨 — 10분 무응답 시 재시도/제외 진행/전체 중단 선택 가드 추가. 단, 실제 멀티에이전트 환경에서의 동작은 별도 실사용 검증 필요 |
+| 비용 (토큰·시간 4배) | 단일 Agent 분석 대비 토큰·시간 4배 이상 소요 | ✅ 트레이드오프로 수용 — 4개 시각 병렬 분석이라는 스킬의 핵심 가치와 직결되어 추가 조치 대상 아님 |
+
+> report_audit.py Step 2 수동 입력 항목은 [`backlog.md`](backlog.md)로 이동 (보류, 우선순위 낮음) — 완화/해결 항목이 아니라 별도 트래킹.
 
 ---
 
@@ -77,8 +108,8 @@
 | macrotrends.net | 봇 탐지 가능 (상대적으로 안정) | 종목 발굴, 실적 점검 | ✅ 완화됨 |
 | SEC EDGAR | 공식 서비스, 안정적 | 전 플로우 | ✅ (원래 위험 낮음) |
 
-> **완화의 한계**: `site_preflight.py`는 차단 자체를 우회하지 않고, HTTP 상태 코드로 차단 여부를 탐지해 대체 소스를 안내하는 수준이다. finviz.com Elite 전용 필터 제한은 [A2]에서 SEC EDGAR SIC 코드 전체 스캔으로 부분 완화됐으나(🔶), Glassdoor/LinkedIn(봇 탐지 빈도 높음)은 여전히 완전히 해소되지 않아 `docs/function.md`에 미해결 위험으로 남아있다.
+> **완화의 한계**: `site_preflight.py`는 차단 자체를 우회하지 않고, HTTP 상태 코드로 차단 여부를 탐지해 대체 소스를 안내하는 수준이다. finviz.com Elite 전용 필터 제한은 [A2]에서 SEC EDGAR SIC 코드 전체 스캔으로 부분 완화됐으나(🔶) 완전히 해소되지 않아 `docs/function.md`에 미해결 위험으로 남아있다.
 
 ---
 
-> 최종 갱신: 2026-06-27. 향후 새로운 위험이 완화되면 `docs/function.md`에서 이 파일로 옮겨 기록한다.
+> 최종 갱신: 2026-06-27 (T2 파싱 수정 추가). 향후 새로운 위험이 완화되면 `docs/function.md`에서 이 파일로 옮겨 기록한다.

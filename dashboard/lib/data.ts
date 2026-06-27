@@ -1,7 +1,7 @@
 export type Status = "ok" | "warning" | "danger";
 export type Tag = "agent-sdk" | "manual";
 export type RiskSeverity = "high" | "medium" | "low" | "manual";
-export type FlowGroup = "A" | "B" | "C" | "S" | "T";
+export type FlowGroup = "B" | "C" | "S" | "T";
 
 export interface Risk {
   label: string;
@@ -19,7 +19,6 @@ export interface DashboardItem {
 }
 
 export const flowGroupLabels: Record<FlowGroup, { label: string; subtitle: string }> = {
-  A: { label: "플로우 A", subtitle: "종목 발굴" },
   B: { label: "플로우 B", subtitle: "실적 점검" },
   C: { label: "플로우 C", subtitle: "포트폴리오 점검" },
   S: { label: "단독 Skills", subtitle: "플로우 외 단독 사용" },
@@ -28,81 +27,11 @@ export const flowGroupLabels: Record<FlowGroup, { label: string; subtitle: strin
 
 export const skills: DashboardItem[] = [
   {
-    code: "A1",
-    flowGroup: "A",
-    name: "/industry-research",
-    status: "warning",
-    description: "섹터 가치사슬 전체 스캔 → TAM, 주요 플레이어, 포트폴리오 배분 제안",
-    tags: [],
-    risks: [
-      { label: "Seeking Alpha / WSJ 페이월 — site_preflight.py로 완화", severity: "medium" },
-      { label: "WebSearch 결과 최신성 한계 — 보고서에 데이터 기준일 표기 + 3개월 기준 정제", severity: "medium" },
-    ],
-  },
-  {
-    code: "A2",
-    flowGroup: "A",
-    name: "/industry-funnel",
-    status: "warning",
-    description: "전체 시장 30~60종목 → 5개 지표 스크리닝 → 최종 3종목",
-    tags: [],
-    risks: [
-      { label: "macrotrends/finviz 차단 — site_preflight.py로 완화", severity: "medium" },
-      { label: "finviz Elite 전용 필터 제한", severity: "medium" },
-      { label: "소형주·ADR 자동 누락 가능", severity: "medium" },
-      { label: "선행 industry-research 데이터 — 기준일 3개월 초과 시 자동 갱신", severity: "medium" },
-    ],
-  },
-  {
-    code: "A3",
-    flowGroup: "A",
-    name: "/quality-screen",
-    status: "ok",
-    description: "7가지 하드 기준 (ROE, FCF, 이자커버리지 등)으로 열등주 필터링",
-    tags: [],
-    risks: [],
-  },
-  {
-    code: "A4",
-    flowGroup: "A",
-    name: "/investment-checklist",
-    status: "warning",
-    description: "버핏 6-게이트 순차 검증. 종목마다 독립 Agent 실행",
-    tags: ["agent-sdk"],
-    risks: [
-      { label: "Agent SDK Task 도구 필요", severity: "medium" },
-    ],
-  },
-  {
-    code: "A5",
-    flowGroup: "A",
-    name: "/investment-research",
-    status: "warning",
-    description: "8단계 순차 분석 (데이터 수집 → 사업분석 → MOAT → 리스크 → 경영진 → 트렌드 → 밸류에이션 → 종합)",
-    tags: [],
-    risks: [
-      { label: "macrotrends / Seeking Alpha 차단 — site_preflight.py로 완화", severity: "medium" },
-      { label: "report_audit Step 2 수동 입력 필요", severity: "manual" },
-    ],
-  },
-  {
-    code: "A5+",
-    flowGroup: "A",
-    name: "/investment-team",
-    status: "warning",
-    description: "A5 심화 대안. 4개 Agent 병렬 실행 → Team Lead 통합 보고서",
-    tags: ["agent-sdk"],
-    risks: [
-      { label: "Agent SDK 전용 — 일반 대화 모드 실행 불가", severity: "high" },
-      { label: "4개 Agent 타임아웃 위험 (3~10분)", severity: "medium" },
-    ],
-  },
-  {
-    code: "A6 / B2 / C2",
-    flowGroup: "A",
+    code: "B2 / C2",
+    flowGroup: "B",
     name: "/thesis-tracker",
     status: "warning",
-    description: "투자 논제 수립(A6) 및 분기별 논제 건강도 점검(B2 실적 점검, C2 포트폴리오 점검에서 재사용)",
+    description: "분기별 논제 건강도 점검(B2 실적 점검, C2 포트폴리오 점검에서 재사용). 초기 논제 수립(A6)은 종목 발굴 플로우에서 수행.",
     tags: ["manual"],
     risks: [
       { label: "선행 보고서 파일 먼저 존재해야 함", severity: "manual" },
@@ -143,18 +72,6 @@ export const skills: DashboardItem[] = [
     ],
   },
   {
-    code: "S1",
-    flowGroup: "S",
-    name: "/management-deep-dive",
-    status: "warning",
-    description: "CEO/경영진 공개 발언 추적, 자본 배분 결정 수익률 분석",
-    tags: ["agent-sdk"],
-    risks: [
-      { label: "Glassdoor / LinkedIn 봇 차단 강함 (대체 경로는 자동 안내)", severity: "high" },
-      { label: "Earnings call 트랜스크립트 페이월 — site_preflight.py로 완화", severity: "medium" },
-    ],
-  },
-  {
     code: "S2",
     flowGroup: "S",
     name: "/news-pulse",
@@ -176,17 +93,6 @@ export const skills: DashboardItem[] = [
     risks: [
       { label: "시간별 폴더 자동 생성 — 파일 관리 복잡", severity: "medium" },
       { label: "Layer 2/3 소형 공급업체 데이터 부족", severity: "medium" },
-    ],
-  },
-  {
-    code: "S4",
-    flowGroup: "S",
-    name: "/deep-company-series",
-    status: "warning",
-    description: "단일 기업 8편 장문 시리즈 (~120,000자 이상)",
-    tags: [],
-    risks: [
-      { label: "120,000자 초과 — 단일 세션 완료 불가", severity: "high" },
     ],
   },
   {
@@ -249,7 +155,7 @@ export const tools: DashboardItem[] = [
     flowGroup: "T",
     name: "site_preflight.py",
     status: "ok",
-    description: "데이터 소스 사전 접근 점검. A1·A2·A3·A5·B1·S1의 0단계에서 사이트 차단 여부 확인 후 대체 소스 안내",
+    description: "데이터 소스 사전 접근 점검. A1·A2·A3·B1의 0단계에서 사이트 차단 여부 확인 후 대체 소스 안내",
     tags: [],
     risks: [],
   },
@@ -276,18 +182,6 @@ export const tools: DashboardItem[] = [
     risks: [
       { label: "하드코딩 세션 키 klr5zyak8x — 만료 시 즉시 사용 불가", severity: "high" },
       { label: "비공식 내부 API — URL 구조 언제든 변경 가능", severity: "high" },
-    ],
-  },
-  {
-    code: "T6",
-    flowGroup: "T",
-    name: "momentum_backtest.py",
-    status: "warning",
-    description: "NVDA/AMD/MU 3종목 모멘텀+가치 프레임워크 백테스트 (2022~2025). 연구용",
-    tags: [],
-    risks: [
-      { label: "Yahoo Finance 비공식 API — 언제든 차단 가능", severity: "high" },
-      { label: "NVDA/AMD/MU 3종목에만 최적화, 범용성 없음", severity: "low" },
     ],
   },
 ];

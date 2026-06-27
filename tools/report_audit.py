@@ -46,24 +46,33 @@ _PATTERNS = [
     (r'([\d,，\.]+)\s*[xX倍]',                   'x',    'multiple'),
     # Trillions (Chinese unit)
     (r'([\d,，\.]+)\s*万亿',                      '万亿', 'trillion'),
-    # USD absolute (B/T)
-    (r'\$\s*([\d,，\.]+)\s*([BMT亿])',             '$',    'usd_abs'),
+    # USD absolute (B/T/K/mn/bn)
+    (r'\$\s*([\d,，\.]+)\s*([BMTKk]|mn|bn|亿)',   '$',    'usd_abs'),
     # Plain integers in table cells
     (r'\|\s*[~约]?\$?([\d,，\.]+)\s*\|',          '',     'table_num'),
 ]
 
+_UNIT_PAT = r'亿[元美港]?元?|万亿|[xX倍]|%|[BMTKk]|mn|bn'
+
 _LABEL_RE = re.compile(
-    r'(?P<label>[^\|\n：:]{2,25})[：:\s]+[~约]?\$?(?P<num>[\d,，\.]+)\s*(?P<unit>亿[元美港]?元?|万亿|[xX倍]|%|[BMT])?'
+    r'(?P<label>[^\|\n：:]{2,25})[：:\s]+[~约]?\$?(?P<num>[\d,，\.]+)\s*(?P<unit>' + _UNIT_PAT + r')?'
 )
 
 _TABLE_ROW_RE = re.compile(
-    r'\|\s*(?P<label>[^|]{1,40})\s*\|\s*[~约]?\$?(?P<num>[\d,，\.]+)\s*(?P<unit>亿[元美港]?元?|万亿|[xX倍]|%|[BMT])?\s*\|'
+    r'\|\s*(?P<label>[^|]{1,40})\s*\|\s*[~约]?\$?(?P<num>[\d,，\.]+)\s*(?P<unit>' + _UNIT_PAT + r')?\s*\|'
 )
 
 
 def _clean_num(s: str) -> float:
     """Convert a number string with commas (including full-width) to float."""
     s = s.replace(',', '').replace('，', '').strip()
+    # Parenthesized negatives: (123.4) → -123.4
+    m = re.fullmatch(r'\((\d+(?:\.\d+)?)\)', s)
+    if m:
+        try:
+            return -float(m.group(1))
+        except ValueError:
+            return None
     try:
         return float(s)
     except ValueError:
@@ -93,14 +102,18 @@ def _is_valid_label(label: str) -> bool:
 # Two-column table row: | label | value unit |
 _KV_TABLE_RE = re.compile(
     r'^\|\s*(?P<label>[^|*\n]{2,40}?)\s*\|\s*[~约]?\$?(?P<num>[\d,，\.]+)\s*'
-    r'(?P<unit>亿[元美港]?元?|万亿|[xX倍]|%|[BMT亿])?\s*[\|（\(]'
+    r'(?P<unit>' + _UNIT_PAT + r'亿)?\s*[\|（\(]'
 )
 
 # Label KV row: label：value unit
 _KV_LABEL_RE = re.compile(
     r'(?P<label>[一-龥A-Za-z][^\|\n：:*]{1,30})[：:]\s*[~约]?\$?'
-    r'(?P<num>[\d,，\.]+)\s*(?P<unit>亿[元美港]?元?|万亿|[xX倍]|%|[BMT])?'
+    r'(?P<num>[\d,，\.]+)\s*(?P<unit>' + _UNIT_PAT + r')?'
 )
+
+
+def _is_separator_line(line: str) -> bool:
+    return bool(re.match(r'^\|[\-\s\|:]+\|$', line.strip()))
 
 
 def _parse_md_tables(lines: list) -> list:
@@ -109,35 +122,57 @@ def _parse_md_tables(lines: list) -> list:
     i = 0
     while i < len(lines):
         line = lines[i].strip()
-        if '|' in line and not re.match(r'^\|[\-\s\|:]+\|$', line):
-            headers_raw = [h.strip().strip('*_').strip() for h in line.split('|')]
-            headers_raw = [h for h in headers_raw if h]
-            if i + 1 < len(lines) and re.match(r'^\|[\-\s\|:]+\|$', lines[i+1].strip()):
-                i += 2
-                while i < len(lines):
-                    dline = lines[i].strip()
-                    if not dline or not dline.startswith('|'):
-                        break
-                    cells = [c.strip().strip('*_~').strip() for c in dline.split('|')]
-                    cells = [c for c in cells if c != '']
-                    if len(cells) < 2:
-                        i += 1
-                        continue
-                    row_label = cells[0]
-                    for col_idx, cell in enumerate(cells[1:], start=1):
-                        col_header = headers_raw[col_idx] if col_idx < len(headers_raw) else f'Col{col_idx}'
-                        m = re.search(
-                            r'[~约]?\$?([\d,，\.]+)\s*(亿[元美港]?元?|万亿|[xX倍]|%|[BMT])?',
-                            cell
-                        )
-                        if m:
-                            val = _clean_num(m.group(1))
-                            unit = (m.group(2) or '').strip()
-                            if val and val != 0 and val < 1e15:
-                                results.append((row_label, col_header, val, unit, i + 1, dline))
-                    i += 1
+        if '|' not in line or _is_separator_line(line):
+            i += 1
+            continue
+
+        headers_raw = [h.strip().strip('*_').strip() for h in line.split('|') if h.strip()]
+
+        # Advance past optional separator row(s) and secondary header rows
+        j = i + 1
+        while j < len(lines) and (
+            _is_separator_line(lines[j])
+            or ('|' in lines[j] and not re.search(r'[\d,，\.]+', lines[j]))
+        ):
+            j += 1
+
+        # j now points to first data row; require at least one data row with numbers
+        if j == i + 1 and not (j < len(lines) and '|' in lines[j] and re.search(r'[\d,，\.]+', lines[j])):
+            i += 1
+            continue
+
+        i = j
+        while i < len(lines):
+            dline = lines[i].strip()
+            if not dline or not dline.startswith('|'):
+                break
+            if _is_separator_line(dline):
+                i += 1
                 continue
-        i += 1
+            cells = [c.strip().strip('*_~').strip() for c in dline.split('|')]
+            cells = [c for c in cells if c != '']
+            if len(cells) < 2:
+                i += 1
+                continue
+            row_label = cells[0]
+            for col_idx, cell in enumerate(cells[1:], start=1):
+                col_header = headers_raw[col_idx] if col_idx < len(headers_raw) else f'Col{col_idx}'
+                # Support parenthesized negatives in table cells
+                neg_m = re.search(r'\((\d[\d,，\.]*)\)\s*(' + _UNIT_PAT + r')?', cell)
+                pos_m = re.search(r'[~约]?\$?([\d,，\.]+)\s*(' + _UNIT_PAT + r')?', cell)
+                if neg_m:
+                    val = _clean_num(f'({neg_m.group(1)})')
+                    unit = (neg_m.group(2) or '').strip()
+                elif pos_m:
+                    val = _clean_num(pos_m.group(1))
+                    unit = (pos_m.group(2) or '').strip()
+                else:
+                    i += 1
+                    continue
+                if val is not None and val != 0 and abs(val) < 1e15:
+                    results.append((row_label, col_header, val, unit, i + 1, dline))
+            i += 1
+        continue
     return results
 
 
@@ -204,7 +239,12 @@ def extract_data_points(md_text: str) -> list:
 
         for m in _KV_LABEL_RE.finditer(stripped):
             label = m.group('label')
-            val = _clean_num(m.group('num'))
+            num_str = m.group('num')
+            # Check if the match is preceded by '(' indicating a parenthesized negative
+            start = m.start('num')
+            if start > 0 and stripped[start - 1] == '(':
+                num_str = f'({num_str})'
+            val = _clean_num(num_str)
             unit = (m.group('unit') or '').strip()
             _add(label, val, unit, lineno, stripped)
 

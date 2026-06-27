@@ -24,11 +24,11 @@ proj_report/     — 프로젝트 자체 분석 문서
 ```
 reports/
 ├── Apple/
-│   ├── Apple-research-20260627.md
+│   ├── FinalReport.md
 │   ├── Apple-earnings-2025Q4.md
 │   └── Apple-thesis.md
 ├── NVIDIA/
-│   ├── NVIDIA-research-20260627.md
+│   ├── FinalReport.md
 │   └── NVIDIA-checklist-20260627.md
 ├── AI-Semiconductors-industry-20260627.md   — 섹터 보고서 (루트)
 ├── SP500-funnel-20260627.md                 — 스크리닝 보고서 (루트)
@@ -39,15 +39,13 @@ reports/
 
 | Skill | 파일명 형식 | 예시 |
 |-------|-----------|------|
-| /investment-team | `{회사명}/` 폴더 내 4개 분석 + 최종보고서 | `reports/Apple/` |
-| /investment-research | `{회사명}-research-{YYYYMMDD}.md` | `reports/Apple/Apple-research-20260627.md` |
-| /investment-checklist | `{회사명}-checklist-{YYYYMMDD}.md` | `reports/NVIDIA/NVIDIA-checklist-20260627.md` |
+| /investment-team | `{회사명}/` 폴더 내 README + 4개 서브보고서 + FinalReport | `reports/Apple/` |
+| /investment-checklist | `{회사명}/{회사명}-checklist-{YYYYMMDD}.md` | `reports/NVIDIA/NVIDIA-checklist-20260627.md` |
 | /industry-research | `{섹터명}-industry-{YYYYMMDD}.md` (루트) | `reports/AI-Semiconductors-industry-20260627.md` |
 | /industry-funnel | `{섹터명}-funnel-{YYYYMMDD}.md` (루트) | `reports/SP500-Fintech-funnel-20260627.md` |
-| /earnings-review | `{회사명}-earnings-{기간}.md` | `reports/Apple/Apple-earnings-2025Q4.md` |
-| /thesis-tracker | `{회사명}-thesis.md` (장기 유지) | `reports/Apple/Apple-thesis.md` |
+| /earnings-review | `{회사명}/{회사명}-earnings-{기간}.md` | `reports/Apple/Apple-earnings-2025Q4.md` |
+| /thesis-tracker | `{회사명}/{회사명}-thesis.md` (장기 유지) | `reports/Apple/Apple-thesis.md` |
 | /portfolio-review | `portfolio-latest.md` (루트, 지속 업데이트) | `reports/portfolio-latest.md` |
-| /management-deep-dive | `{회사명}-management-{YYYYMMDD}.md` | `reports/Apple/Apple-management-20260627.md` |
 
 ## /investment-team 파일 구조
 

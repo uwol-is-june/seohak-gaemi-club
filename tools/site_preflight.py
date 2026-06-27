@@ -6,11 +6,9 @@
   python3 ~/Desktop/reality-escape-device/tools/site_preflight.py <프로파일> [티커]
 
 프로파일:
-  investment-research    macrotrends / stockanalysis / sec / yahoo / seekingalpha
   industry-research      macrotrends / sec / yahoo / seekingalpha / wsj / finviz
   industry-funnel        finviz / macrotrends / stockanalysis / sec
   quality-screen         macrotrends / stockanalysis
-  management-deep-dive   glassdoor / linkedin / seekingalpha / sec
   earnings-review        sec / seekingalpha
   all                    전체 사이트
 
@@ -92,11 +90,9 @@ SITES = {
 }
 
 PROFILES = {
-    "investment-research":  ["macrotrends", "stockanalysis", "sec", "yahoo", "seekingalpha"],
     "industry-research":    ["macrotrends", "sec", "yahoo", "seekingalpha", "wsj", "finviz"],
     "industry-funnel":      ["finviz", "macrotrends", "stockanalysis", "sec"],
     "quality-screen":       ["macrotrends", "stockanalysis"],
-    "management-deep-dive": ["glassdoor", "linkedin", "seekingalpha", "sec"],
     "earnings-review":      ["sec", "seekingalpha"],
     "all":                  list(SITES.keys()),
 }

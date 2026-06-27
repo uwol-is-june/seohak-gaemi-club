@@ -37,6 +37,8 @@ TeamCreate를 사용해 팀을 생성합니다:
 - team_name: `{기업명}-research` (영문 소문자, 예: `apple-research`)
 - agent_type: `team-lead`
 
+**TeamCreate 실패 시**: 이 도구는 Claude Agent SDK 전용이라 일반 대화 모드(API 단독 호출 등)에서는 호출 자체가 실패한다. 실패하면 즉시 사용자에게 "Claude Code CLI 환경에서 실행 중인지" 확인을 요청하고, 대체 실행 경로 없이 중단한다.
+
 ### 3단계: 4개 태스크 생성
 
 TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject, description, activeForm 포함):
@@ -97,6 +99,8 @@ TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject
 
 ### 4단계: 4개 Agent 동시 실행
 
+4개 Agent를 시작하기 직전에 `date`를 실행해 리서치 시작 시각을 기록합니다 (경과 시간 계산의 기준점).
+
 Task 도구를 사용해 4개 Agent를 동시에 시작합니다 (**반드시 같은 메시지에서 병렬 호출**):
 
 각 Agent 설정:
@@ -131,15 +135,26 @@ Task 도구를 사용해 4개 Agent를 동시에 시작합니다 (**반드시 �
 - 보고서 말미에 해당 차원의 종합 결론을 작성합니다
 
 **완료 후**:
-1. TaskUpdate로 태스크 #{번호}를 completed로 표시합니다
-2. SendMessage로 완성된 분석 보고서 전체를 team-lead에게 전송합니다 (type: "message", recipient: "team-lead")
+1. 완성된 분석 보고서를 아래 경로에 파일로 저장합니다:
+   - business-analyst  → `reports/{기업명}/01-BusinessModel-DYP-Perspective.md`
+   - financial-analyst → `reports/{기업명}/02-FinancialValuation-Buffett-Perspective.md`
+   - industry-researcher → `reports/{기업명}/03-IndustryCompetition-Munger-Perspective.md`
+   - risk-assessor     → `reports/{기업명}/04-RiskManagement-LiLu-Perspective.md`
+   (회사 폴더가 없으면 먼저 생성)
+2. TaskUpdate로 태스크 #{번호}를 completed로 표시합니다
+3. SendMessage로 완성된 분석 보고서 전체를 team-lead에게 전송합니다 (type: "message", recipient: "team-lead")
 ```
 
 ### 5단계: 보고서 수신 및 진행 상황 추적
 
 - 사용자에게 실시간으로 진행 상황 표를 보여줍니다 (완료된 Agent, 아직 분석 중인 Agent)
-- 보고서를 받을 때마다 진행 상황을 업데이트하고 해당 보고서의 핵심 포인트 3~5가지를 보여줍니다
+- 보고서를 받을 때마다, 또는 사용자와 상호작용이 발생할 때마다 `date`를 다시 실행해 4단계 시작 시각과 비교한 **경과 시간(분)**을 계산하고 진행 상황 표에 함께 표시합니다 (예: "경과 8분 / 완료 3, 대기 1")
 - 4개의 보고서가 모두 도착할 때까지 대기합니다
+
+**부분 실패 가드**: 경과 시간이 10분을 넘었는데 특정 Agent로부터 SendMessage가 도착하지 않았다면(무응답·에러 추정), 대기를 멈추고 사용자에게 "{역할명} Agent 무응답 (경과 N분)" 상태를 알린 뒤 다음 중 하나를 선택하도록 묻습니다:
+1. **재시도** — 해당 Agent만 TaskCreate로 다시 시작
+2. **제외하고 진행** — 해당 관점 없이 나머지 보고서로 7단계 통합 진행 (FinalReport.md에 "⚠️ {역할명} 관점 누락 (Agent 무응답)" 명시, 종합 평점에서 해당 차원은 "데이터 부족"으로 표기)
+3. **전체 중단**
 
 ### 6단계: 팀원 종료
 
@@ -186,7 +201,24 @@ Task 도구를 사용해 4개 Agent를 동시에 시작합니다 (**반드시 �
 
 ### 8단계: 보고서 저장
 
-완성된 최종 보고서를 `reports/{기업명}/최종보고서_{날짜}.md` (날짜 형식: YYYYMMDD)에 저장합니다.
+완성된 최종 보고서를 `reports/{기업명}/FinalReport.md` 에 저장합니다.
+
+추가로 `reports/{기업명}/README.md` 를 생성합니다. 포함 내용:
+- 리서치 수행 날짜
+- 4개 서브 보고서 링크 (01-04.md)
+- 4차원 평점 총괄표 (한 눈에 핵심 확인용)
+- 최종 결론 1~2문장
+
+이로써 `reports/{기업명}/` 폴더 구조가 완성됩니다:
+```
+reports/{기업명}/
+├── README.md                                  ← 개요 + 핵심 결론
+├── 01-BusinessModel-DYP-Perspective.md        ← business-analyst 저장
+├── 02-FinancialValuation-Buffett-Perspective.md ← financial-analyst 저장
+├── 03-IndustryCompetition-Munger-Perspective.md ← industry-researcher 저장
+├── 04-RiskManagement-LiLu-Perspective.md     ← risk-assessor 저장
+└── FinalReport.md                             ← team-lead 최종 통합 보고서
+```
 
 ### 9단계: 데이터 검수 (준출 프로세스)
 

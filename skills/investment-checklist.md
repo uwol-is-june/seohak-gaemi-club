@@ -6,6 +6,16 @@ $ARGUMENTS 에 대해 버핏 가치투자 매수 전 체크리스트 분석을 �
 
 ## 실행 절차
 
+### ⓪ 사전 점검: 데이터 소스 접근 확인
+
+```bash
+python3 ~/Desktop/reality-escape-device/tools/site_preflight.py quality-screen
+```
+
+차단된 소스가 있으면 스크립트가 대체 소스를 출력한다. **차단 여부와 관계없이 분석을 계속 진행한다.**
+
+---
+
 ### 1단계: 입력 파싱 — 분석 대상 종목 확인
 
 $ARGUMENTS 에서 모든 종목명/티커를 파싱한다. 각 종목에 대해 확인:
@@ -227,7 +237,7 @@ python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario 
 - ❓ **회색지대** — 핵심 논쟁 포인트가 무엇인지, 투자자가 직접 판단해야 할 사항이 무엇인지 명시
 - N/A — 비상장 / 매수 불가
 
-완성된 보고서를 `reports/{종목명 또는 "복수종목비교"}-checklist-{YYYYMMDD}.md` 에 저장한다.
+완성된 보고서를 `reports/{회사명}/{회사명}-checklist-{YYYYMMDD}.md` 에 저장한다. 회사 폴더가 없으면 먼저 생성한다. 복수 종목 비교 시 주요 종목 이름을 대표 폴더명으로 사용하고, 파일명에 전체 종목을 명기한다 (예: `reports/Apple/Apple-MSFT-GOOGL-checklist-20260627.md`).
 
 ## 출력 형식 요건
 

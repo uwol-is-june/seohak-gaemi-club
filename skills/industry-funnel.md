@@ -337,6 +337,5 @@ python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
 퍼널 최종 3개 종목 선정 후, 각 종목에 대해 개별적으로 실행 가능:
 - `/investment-team` — 완전한 4대 대가 병렬 심층 연구 (독립 서브디렉토리 + 5개 문서)
 - `/investment-checklist` — 버핏 매수 전 체크리스트 시스템 전체 점검
-- `/management-deep-dive` — 경영진 심층 연구
 
 `industry-funnel`은 입구이고, 후속 스킬들이 심층 굴착 도구다.

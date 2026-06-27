@@ -12,6 +12,9 @@ Usage (called automatically by Skills, no manual execution needed):
     python3 tools/financial_rigor.py verify-valuation --price 510 --eps 23.5 --bvps 120 --fcf-per-share 18 --dividend 2.4
     python3 tools/financial_rigor.py cross-validate --field revenue --values '{"Annual Report": 7518, "Yahoo": 7500, "StockAnalysis": 7520}' --unit B
     python3 tools/financial_rigor.py benford --values '[1234, 2345, 3456, ...]'
+        # benford requires >=50 values for a statistically valid check — use multi-year/
+        # multi-quarter cumulative data (e.g. several 10-Ks + earnings reports for one
+        # ticker), not a single report's handful of headline figures.
     python3 tools/financial_rigor.py calc --expr '510 * 9.11e9'
 """
 
@@ -386,7 +389,10 @@ Examples:
     cv.add_argument("--tolerance", type=float, default=2.0, help="Tolerance percentage")
 
     # benford
-    bf = sub.add_parser("benford", help="Benford's Law integrity check")
+    bf = sub.add_parser(
+        "benford",
+        help="Benford's Law integrity check (needs >=50 values — use multi-year/quarter cumulative data, not a single report)",
+    )
     bf.add_argument("--values", required=True, help="JSON array of numbers")
 
     # calc

@@ -21,18 +21,16 @@ npm install -g @anthropic-ai/claude-code
 ### 2. Install Skills
 
 ```bash
-git clone https://github.com/xbtlin/ai-berkshire.git
+git clone https://github.com/uwol-is-june/reality-escape-device.git
 mkdir -p ~/.claude/commands
-cp ai-berkshire/skills/*.md ~/.claude/commands/
+cp reality-escape-device/skills/*.md ~/.claude/commands/
 ```
 
 ### 3. Use
 
 ```bash
 # Deep research
-/investment-research Apple
-/investment-team NVIDIA
-/management-deep-dive Tim Cook Apple
+/investment-team Apple
 /private-company-research SpaceX
 
 # Earnings
@@ -50,7 +48,8 @@ cp ai-berkshire/skills/*.md ~/.claude/commands/
 /thesis-tracker Apple
 /news-pulse NVIDIA
 
-# Thinking tools
+# Idea generation & thinking tools
+/bottleneck-hunter AI infrastructure
 /dyp-ask What is Apple's real moat?
 ```
 
@@ -75,16 +74,14 @@ AI Berkshire solves the problem of **analysis quality and decision discipline**:
 
 ---
 
-## 16 Skills
+## 15 Skills
 
 ### Research
 | Skill | Use Case |
 |-------|----------|
-| `/investment-research` | 4-masters comprehensive single-stock analysis |
-| `/investment-team` | 4 agents in parallel — fastest, most thorough |
-| `/management-deep-dive` | CEO/management deep research |
+| `/investment-team` | 4 agents in parallel — 4-masters comprehensive analysis |
 | `/private-company-research` | Pre-IPO companies (SpaceX, Stripe, OpenAI, etc.) |
-| `/deep-company-series` | 8-article series, full company teardown |
+| `/bottleneck-hunter` | Megatrend supply chain bottleneck → listed company discovery |
 
 ### Earnings
 | Skill | Use Case |
@@ -112,6 +109,7 @@ AI Berkshire solves the problem of **analysis quality and decision discipline**:
 |-------|----------|
 | `/dyp-ask` | Duan Yongping-style thinking on any question |
 | `/financial-data` | Data sourcing and cross-validation standards |
+| `/investment-article` | Convert a finished research report into a publishable blog/newsletter article |
 
 ---
 
@@ -147,13 +145,15 @@ All data sources are **free and publicly accessible** — no API keys required.
 ```
 
 **Three-layer design:**
-- **Skill Layer**: 16 entry points covering the full investment lifecycle
+- **Skill Layer**: 15 entry points covering the full investment lifecycle
 - **Agent Layer**: 4 independent agents per skill — they research, argue, and challenge each other
-- **Tool Layer**: Precise calculation, data audit, stock screening
+- **Tool Layer**: Precise calculation (`financial_rigor.py`), pre-publish data audit (`report_audit.py`), stock screening
 
 ---
 
-## Financial Rigor Tool (`tools/financial_rigor.py`)
+## Python Tools
+
+### Financial Rigor (`tools/financial_rigor.py`)
 
 LLM mental math is unreliable. AI Berkshire calls Python for all calculations:
 
@@ -178,6 +178,22 @@ python3 tools/financial_rigor.py three-scenario \
 ```
 
 All calculations use Python `decimal.Decimal` — no floating-point drift.
+
+### Report Audit (`tools/report_audit.py`)
+
+Pre-publish data verification: randomly samples 15% of financial figures in a report and issues a pass/fail verdict after cross-checking against external sources.
+
+```bash
+# Step 1 — extract checklist
+python3 tools/report_audit.py extract --report reports/Apple/FinalReport.md
+
+# Step 2 — manually fill in fetched_value from macrotrends / stockanalysis / SEC
+
+# Step 3 — verdict
+python3 tools/report_audit.py verdict --results '[...]'
+```
+
+Handles parenthesized negatives `(123.4)`, English scale units `K / mn / bn`, and non-standard table structures. Zero external dependencies.
 
 ---
 
@@ -209,8 +225,7 @@ The four masters are designed to **challenge each other**:
 
 ## Roadmap
 
-- [x] 4-masters comprehensive analysis (`/investment-research`)
-- [x] Multi-agent parallel research team (`/investment-team`)
+- [x] Multi-agent parallel research team — 4-masters comprehensive analysis (`/investment-team`)
 - [x] Buffett pre-buy checklist (`/investment-checklist`)
 - [x] Sector research & funnel (`/industry-research` + `/industry-funnel`)
 - [x] Pre-IPO company research (`/private-company-research`)
@@ -219,7 +234,6 @@ The four masters are designed to **challenge each other**:
 - [x] Earnings analysis (`/earnings-review` + `/earnings-team`)
 - [x] Portfolio management (`/portfolio-review`)
 - [x] Thesis tracking (`/thesis-tracker`)
-- [x] Management deep research (`/management-deep-dive`)
 - [x] Quality screen — 7 hard criteria (`/quality-screen`)
 - [ ] Real-time price alerts (smartphone push notifications)
 - [ ] SEC EDGAR direct integration
