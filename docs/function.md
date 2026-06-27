@@ -68,17 +68,13 @@
 
 ---
 
-### Step 2 [A2] — `/industry-funnel` ⚠️
+### Step 2 [A2] — `/industry-funnel` ✅
 
 **동작**: 전체 시장(30~60종목) → 5개 지표 스크리닝(≤10종목) → 정밀 분석 → 최종 3종목
 
 **의존성**: WebSearch (finviz screener, macrotrends, stockanalysis, SEC), `tools/site_preflight.py` (0단계 사전 접근 점검)
 
-**위험 요소**:
-| 위험 | 내용 | 심각도 |
-|------|------|--------|
-| finviz 스크리닝 제한 | finviz.com Elite가 아니면 일부 필터 제한 → 1단계 후보 풀에서 중소형 니치 종목이 처음부터 누락될 수 있음 | ⚠️ 중간 — `skills/industry-funnel.md` 1.2에 ETF 다변화·stockanalysis/Yahoo Screener 교차검증·정성 키워드 검색·SEC 13F 참고 보강 절차 추가 (잔여 위험은 5.4에 명시 기재) |
-| 종목 누락 | 소형주나 ADR 종목은 WebSearch에서 자동으로 누락될 수 있음 | ⚠️ 중간 |
+> 해결·완화된 위험은 [`func_warning.md`](func_warning.md) 참조
 
 ---
 
@@ -92,7 +88,7 @@
 
 ---
 
-### Step 4 [A4] — `/investment-checklist` ⚠️ 🔧
+### Step 4 [A4] — `/investment-checklist` ✅ 🔧
 
 **동작**: 각 종목마다 독립 백그라운드 Agent 실행 → 버핏 6-게이트 순차 검증
 
@@ -100,10 +96,7 @@
 - Claude Agent SDK: `Task` 도구
 - WebSearch (macrotrends, stockanalysis, finviz, Yahoo Finance, SEC)
 
-**위험 요소**:
-| 위험 | 내용 | 심각도 |
-|------|------|--------|
-| Agent SDK 제한 | Task 도구 필요 — 일반 대화에서 단일 분석으로 대체될 수 있음 | ⚠️ 중간 |
+**위험 요소**: 해결됨 — [`func_warning.md`](func_warning.md) §2 [A4] 참조
 
 ---
 
@@ -208,6 +201,7 @@
 | 위험 | 내용 | 심각도 |
 |------|------|--------|
 | 실시간 주가 미반영 | WebSearch로 수집되는 주가는 실시간이 아닐 수 있음 | ⚠️ 중간 |
+| Agent SDK 제한 | Task 도구 필요 | 해결됨 — [`func_warning.md`](func_warning.md) §2 [C1] 참조 |
 
 ---
 
@@ -431,10 +425,10 @@ Step 3: python3 report_audit.py verdict --results '{채운 JSON}'
 | 코드 | Skill | 사용 플로우 |
 |------|-------|------------|
 | A5+ | `/investment-team` | 종목 발굴 Step 5 (심화 대안) |
-| A4 | `/investment-checklist` | 종목 발굴 Step 4 |
 | B1+ | `/earnings-team` | 실적 점검 Step 1 (심화 대안) |
-| C1 | `/portfolio-review` | 포트폴리오 점검 Step 1 |
 | S2 | `/news-pulse` | 단독 사용 |
+
+> [A4] `/investment-checklist`, [C1] `/portfolio-review`는 해결됨 — 대시보드 가이드 플로우에서 `requiresCli` 경고("Claude Code CLI에서 직접 실행해야 합니다")로 사전 안내. [`func_warning.md`](func_warning.md) §2 참조.
 
 Claude Code CLI 환경에서만 동작. 일반 API 호출로는 실행 불가.
 

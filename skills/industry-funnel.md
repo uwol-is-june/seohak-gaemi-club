@@ -84,13 +84,14 @@ python3 ~/Desktop/reality-escape-device/tools/site_preflight.py industry-funnel
 | 비상장 기업 | "미래 IPO 후보" 별도 항목으로 정리, 최신 밸류에이션과 예상 IPO 시기 기재 |
 
 **finviz 무료(비-Elite) 스크리닝 제한 보강**: finviz 무료 계정은 일부 세부 필터가 제한되어, 거래대금·시총 상위에 들지 않는 중소형 니치 종목이 1단계 스캔에서 처음부터 누락될 수 있다. 이를 보강하기 위해 다음을 추가로 수행한다.
+- **SEC EDGAR SIC 코드 전체 스캔 (핵심 보강)**: `sec.gov/cgi-bin/browse-edgar?action=getcompany&SIC={코드}&type=10-K&dateb=&owner=include&count=300` 으로 해당 산업의 SIC 코드에 등록된 **전체** 상장사를 조회한다. finviz와 달리 거래대금·시총으로 거르지 않고 등록된 모든 기업을 보여주므로, Elite 제한과 무관하게 니치·소형주 누락을 구조적으로 줄인다. SIC 코드를 모르면 먼저 WebSearch로 "{산업명} SIC code" 또는 대표 기업의 EDGAR 프로필에서 SIC 코드를 확인한다. (주의: 다수 외국 민간 발행사(ADR)는 10-K 대신 20-F를 제출하므로 `type=20-F`로 추가 조회해야 하며, 그래도 일부 ADR 누락은 남을 수 있다)
 - 다양한 섹터 themed ETF(예: SOXX, SMH, ARKK 등 산업에 맞는 ETF)를 폭넓게 합집합에 포함
 - stockanalysis.com 스크리너로 finviz와 다른 필터 기준으로 교차 스캔
 - Yahoo Finance Screener로 보조 교차검증
 - WebSearch로 "저평가 + 소형주 + 산업명" 등 정성적 키워드 검색을 병행해 정량 필터가 놓친 종목 보충
 - SEC EDGAR 13F 공시(저명 가치투자 펀드)를 참고해 후보군에 강제 포함할 종목 확인
 
-위 보강을 거쳐도 finviz 제한으로 인한 누락 가능성은 5.4(정보 충분도 자가 평가)에 명시적으로 기재한다.
+위 보강을 거쳐도 (특히 20-F 미조회 시) 잔여 누락 가능성은 5.4(정보 충분도 자가 평가)에 명시적으로 기재한다.
 
 ### 1.3 출력 형식
 
