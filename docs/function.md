@@ -1,6 +1,8 @@
 # 함수·Skill 전체 목록 및 위험 요소 분석
 
 > 모든 Skill과 Python Tool의 동작 방식, 수동 입력 필요 여부, 의존성, 잠재적 장애 지점을 정리한 기술 문서.
+>
+> **해결되었거나 완화된 위험 요소는 [`func_warning.md`](func_warning.md)로 분리해서 기록한다. 이 문서에는 미해결 위험만 남긴다.**
 
 ---
 
@@ -56,17 +58,13 @@
 
 ---
 
-### Step 1 [A1] — `/industry-research` ⚠️
+### Step 1 [A1] — `/industry-research` ✅
 
 **동작**: 섹터 가치사슬 전체 스캔 → TAM, 주요 플레이어, 기술 트렌드, 포트폴리오 배분 제안
 
-**의존성**: WebSearch (finviz, Yahoo Finance, Seeking Alpha, WSJ, SEC EDGAR), `tools/site_preflight.py` (신규: 0단계 사전 접근 점검)
+**의존성**: WebSearch (finviz, Yahoo Finance, Seeking Alpha, WSJ, SEC EDGAR), `tools/site_preflight.py` (0단계 사전 접근 점검)
 
-**위험 요소**:
-| 위험 | 내용 | 심각도 |
-|------|------|--------|
-| 사이트 접근 차단 | Seeking Alpha, WSJ는 구독 벽(paywall) 존재 → 일부 기사 접근 제한 가능 | ✅ 완화됨 — `site_preflight.py` 사전 점검 추가, 차단 시 대체 소스 자동 안내 |
-| 데이터 최신성 | WebSearch 결과에 최신 데이터가 포함되지 않을 수 있음 | ⚠️ 중간 → 🔶 부분 완화됨 — 보고서 상단·핵심 수치마다 "데이터 기준일(YYYY-MM)" 표기 의무화 (출력 요건 #10). 후속 Step 2가 이 기준일을 읽어 3개월 초과 시 재검색·갱신 |
+> 해결·완화된 위험은 [`func_warning.md`](func_warning.md) 참조
 
 ---
 
@@ -74,15 +72,13 @@
 
 **동작**: 전체 시장(30~60종목) → 5개 지표 스크리닝(≤10종목) → 정밀 분석 → 최종 3종목
 
-**의존성**: WebSearch (finviz screener, macrotrends, stockanalysis, SEC), `tools/site_preflight.py` (신규: 0단계 사전 접근 점검)
+**의존성**: WebSearch (finviz screener, macrotrends, stockanalysis, SEC), `tools/site_preflight.py` (0단계 사전 접근 점검)
 
 **위험 요소**:
 | 위험 | 내용 | 심각도 |
 |------|------|--------|
-| 사이트 접근 차단 | macrotrends, finviz 등 봇 접근 차단 가능 | ✅ 완화됨 — `site_preflight.py` 사전 점검 추가, 차단 시 대체 소스 자동 안내 |
-| finviz 스크리닝 제한 | finviz.com Elite가 아니면 일부 필터 제한 | ⚠️ 중간 (접근 차단과 별개 — Elite 기능 자체의 제한) |
+| finviz 스크리닝 제한 | finviz.com Elite가 아니면 일부 필터 제한 → 1단계 후보 풀에서 중소형 니치 종목이 처음부터 누락될 수 있음 | ⚠️ 중간 — `skills/industry-funnel.md` 1.2에 ETF 다변화·stockanalysis/Yahoo Screener 교차검증·정성 키워드 검색·SEC 13F 참고 보강 절차 추가 (잔여 위험은 5.4에 명시 기재) |
 | 종목 누락 | 소형주나 ADR 종목은 WebSearch에서 자동으로 누락될 수 있음 | ⚠️ 중간 |
-| 선행 데이터 노후화 | Step 1(`/industry-research`) 보고서의 가치사슬·TAM 데이터를 그대로 재사용 시 오래된 수치를 쓸 위험 | ✅ 완화됨 — ⓪-2 단계에서 선행 보고서 기준일 확인, 3개월 초과 시 자동 재검색·갱신 |
 
 ---
 
@@ -90,9 +86,9 @@
 
 **동작**: 7가지 하드 기준 (ROE, FCF, 이자커버리지, Gross Margin, OCF/NI, Net Margin, 주식희석)으로 열등주 필터링
 
-**의존성**: WebSearch (macrotrends, stockanalysis), `tools/site_preflight.py` (신규: 0단계 사전 접근 점검)
+**의존성**: WebSearch (macrotrends, stockanalysis), `tools/site_preflight.py` (0단계 사전 접근 점검)
 
-**위험 요소**: 사이트 접근 차단 위험은 `site_preflight.py` 사전 점검으로 완화됨 (✅). 결과를 파일로 저장하지 않으므로 재실행 필요.
+**위험 요소**: 결과를 파일로 저장하지 않으므로 재실행 필요 (위험이라기보다 운영 특성).
 
 ---
 
@@ -111,7 +107,7 @@
 
 ---
 
-### Step 5 [A5] — `/investment-research` ⚠️
+### Step 5 [A5] — `/investment-research` 🤚
 
 **동작**: 8단계 순차 분석 (데이터 수집 → 사업분석 → MOAT → 리스크 → 경영진 → 트렌드 → 밸류에이션 → 종합)
 
@@ -119,12 +115,11 @@
 - WebSearch → macrotrends.net, stockanalysis.com, SEC EDGAR, Yahoo Finance, Seeking Alpha
 - `tools/financial_rigor.py` (Bash 호출)
 - `tools/report_audit.py` (보고서 발행 전 데이터 검증)
-- `tools/site_preflight.py` (신규: 0단계 사전 접근 점검)
+- `tools/site_preflight.py` (0단계 사전 접근 점검)
 
 **위험 요소**:
 | 위험 | 내용 | 심각도 |
 |------|------|--------|
-| 사이트 접근 차단 | macrotrends.net, Seeking Alpha는 봇 접근 차단 가능 | ✅ 완화됨 — `site_preflight.py` 사전 점검 추가, 차단 시 대체 소스 자동 안내 |
 | report_audit.py Step 2 | 보고서 검증 2단계는 사람이 직접 값을 채워야 함 (자동화 불가) | 🤚 수동 |
 
 > **심화 대안 [A5+] — `/investment-team` ⚠️ 🔧**: 4개 Agent 병렬 실행 → Team Lead 통합 보고서. 정보량은 4배이나 3~10분 소요, Agent SDK 필수.
@@ -136,7 +131,7 @@
 
 ---
 
-### Step 6 [A6] — `/thesis-tracker` ⚠️ (논제 수립 모드)
+### Step 6 [A6] — `/thesis-tracker` 🤚 (논제 수립 모드)
 
 **동작**: 매수 후 최초 실행 → 5문장 투자 논제 수립 + 핵심 가정 목록 + 레드라인 조건 설정
 
@@ -165,12 +160,11 @@
 **의존성**:
 - WebSearch (SEC EDGAR, Seeking Alpha earnings call transcript)
 - `tools/financial_rigor.py`
-- `tools/site_preflight.py` (신규: 0단계 사전 접근 점검)
+- `tools/site_preflight.py` (0단계 사전 접근 점검)
 
 **위험 요소**:
 | 위험 | 내용 | 심각도 |
 |------|------|--------|
-| Seeking Alpha 유료 장벽 | 어닝스 콜 녹취록 전문이 유료 구독 필요한 경우 존재 | ✅ 완화됨 — `site_preflight.py` 사전 점검 추가, 차단 시 SEC 8-K 대체 경로 자동 안내 |
 | SEC EDGAR 응답 지연 | 특정 시간대 EDGAR 서버 느림 | ⚠️ 낮음 |
 | 상대경로 사용 | `tools/financial_rigor.py` 상대경로 사용 — 프로젝트 루트 외에서 실행 시 실패 | ⚠️ 낮음 |
 
@@ -178,7 +172,7 @@
 
 ---
 
-### Step 2 [B2] — `/thesis-tracker` ⚠️ (분기검토 모드)
+### Step 2 [B2] — `/thesis-tracker` 🤚 (분기검토 모드)
 
 **동작**: 기존 논제의 각 가정을 최신 실적 데이터로 검증 → 논제 건강도 점수(10점) 업데이트
 
@@ -237,13 +231,12 @@
 
 **동작**: CEO/경영진 공개 발언 추적, 자본 배분 결정 수익률 분석, 직원·고객 피드백 측면 검증
 
-**의존성**: 백그라운드 Agent 병렬 실행 (Task 도구), WebSearch (LinkedIn, Glassdoor, SEC proxy statement), `tools/site_preflight.py` (신규: 0단계 사전 접근 점검)
+**의존성**: 백그라운드 Agent 병렬 실행 (Task 도구), WebSearch (LinkedIn, Glassdoor, SEC proxy statement), `tools/site_preflight.py` (0단계 사전 접근 점검)
 
 **위험 요소**:
 | 위험 | 내용 | 심각도 |
 |------|------|--------|
-| Glassdoor/LinkedIn 차단 | 봇 탐지가 강함 | ⚠️ 중간으로 완화 — `site_preflight.py`가 차단을 사전 감지하고 웹 검색 대체 경로 자동 안내 (차단 자체는 해소되지 않음, 대응만 자동화) |
-| Earnings call 트랜스크립트 | Seeking Alpha 유료 장벽 가능 | ✅ 완화됨 — 사전 점검으로 차단 여부 확인 후 대체 소스 안내 |
+| Glassdoor/LinkedIn 차단 | 봇 탐지가 강함. `site_preflight.py`가 차단을 사전 감지해 대체 경로를 안내하지만, 차단 자체는 해소되지 않음 | ⚠️ 중간 |
 
 ---
 
@@ -279,7 +272,7 @@
 
 ---
 
-### [S4] `/deep-company-series` ⚠️
+### [S4] `/deep-company-series` 🔴
 
 **언제**: 단일 기업을 8편 장문 시리즈로 완전히 해부할 때
 
@@ -295,8 +288,6 @@
 **언제**: 투자 아이디어나 결정을 단융핑의 시각으로 검토받고 싶을 때
 
 **동작**: 단융핑 본인으로서 어떤 질문에도 답변 (순수 추론, 외부 의존 없음, 파일 저장 없음)
-
-**위험 요소**: 없음.
 
 ---
 
@@ -316,8 +307,6 @@
 ### [S7] `/financial-data` ✅
 
 **동작**: 재무 데이터 수집·교차검증 기준 참조 문서. 실행이 아닌 표준 정의용.
-
-**위험 요소**: 없음.
 
 ---
 
@@ -451,18 +440,14 @@ Claude Code CLI 환경에서만 동작. 일반 API 호출로는 실행 불가.
 
 ---
 
-### ✅ 위험 3 (완화됨): 외부 사이트 접근 제한
+### ⚠️ 위험 3: 외부 사이트 접근 제한 (잔여)
 
 | 사이트 | 위험 | 영향 플로우 |
 |--------|------|------------|
-| Seeking Alpha | 유료 구독 필요 기사 존재 | 종목 발굴, 실적 점검 |
-| WSJ.com | 유료 구독 기사 다수 | 종목 발굴 |
-| macrotrends.net | 봇 탐지 가능 (상대적으로 안정) | 종목 발굴, 실적 점검 |
-| SEC EDGAR | 공식 서비스, 안정적 | 전 플로우 |
-| finviz.com | Elite 전용 필터 일부 | 종목 발굴 |
-| Glassdoor / LinkedIn | 봇 탐지 강함 | 단독 `/management-deep-dive` |
+| finviz.com | Elite 전용 필터 일부 — 사전 접근 점검으로는 해소되지 않는 기능 자체의 제한 | 종목 발굴 [A2] |
+| Glassdoor / LinkedIn | 봇 탐지 강함, 접근 차단 자체는 미해소 | 단독 `/management-deep-dive` [S1] |
 
-**완화 조치 (신규)**: [T3] `tools/site_preflight.py` 추가. [A1] `/industry-research`, [A2] `/industry-funnel`, [A3] `/quality-screen`, [A5] `/investment-research`, [B1] `/earnings-review`, [S1] `/management-deep-dive` 6개 Skill의 0단계에 사전 접근 점검을 삽입하여, HTTP 상태 코드로 차단 여부를 미리 확인하고 차단 시 대체 소스를 즉시 안내한다. 단, 차단 자체를 우회하지는 않으며 탐지·대응 프로세스만 자동화한다는 점에 유의 — Glassdoor/LinkedIn처럼 차단 빈도가 높은 사이트는 여전히 ⚠️로 남는다.
+> 완화 조치(접근 차단 사전 점검, `site_preflight.py`)와 이미 해소된 사이트 목록은 [`func_warning.md`](func_warning.md) §3 참조.
 
 ---
 
@@ -478,14 +463,6 @@ Claude Code CLI 환경에서만 동작. 일반 API 호출로는 실행 불가.
 
 ## 7. 우선순위별 대응 권고
 
-### 완료됨
-
-**0. 사이트 접근 차단 사전 점검 도구 추가** ✅
-
-[T3] `tools/site_preflight.py` 신설 — [A1] `/industry-research`, [A2] `/industry-funnel`, [A3] `/quality-screen`, [A5] `/investment-research`, [B1] `/earnings-review`, [S1] `/management-deep-dive` 6개 Skill의 실행 0단계에 사전 접근 점검을 삽입. macrotrends, Seeking Alpha, WSJ, finviz, Glassdoor, LinkedIn 등 차단 가능 사이트를 HTTP 상태 코드로 사전 확인하고, 차단 시 대체 소스를 즉시 안내한다.
-
----
-
 ### 단기 (언제든 막힐 수 있는 것)
 
 **1. [T5] `morningstar_fair_value.py` API 키 점검**
@@ -496,14 +473,18 @@ Claude Code CLI 환경에서만 동작. 일반 API 호출로는 실행 불가.
 
 `yfinance` 라이브러리로 전환 시 비공식 API 의존도 제거 가능. 외부 패키지 도입 필요.
 
+**3. [A2] `/industry-funnel` finviz 스크리닝 제한 잔여 위험**
+
+ETF 다변화·대체 스크리너 보강 절차는 추가했으나(`skills/industry-funnel.md` 1.2), 여전히 finviz Elite 미보유로 인한 부분 누락 가능성은 구조적으로 남아있다. 무료 대안 조합(① ETF 확대 ② stockanalysis ③ Yahoo Screener ④ 정성 키워드 검색 ⑤ SEC 13F)의 실효성을 주기적으로 재검토.
+
 ---
 
 ### 장기 개선
 
-**3. [T2] `report_audit.py` Step 2 반자동화**
+**4. [T2] `report_audit.py` Step 2 반자동화**
 
 현재 완전 수동인 Step 2를 WebSearch 또는 공개 API로 자동화하면 감사 프로세스가 실용적으로 변함.
 
 ---
 
-> **핵심 요약** (2026-06-27 기준): Skills 17개 설치 완료. 절대경로 통일 완료. 중국 관련 도구 제거. `tools/site_preflight.py` 신설로 6개 Skill의 외부 사이트 접근 차단 위험을 사전 점검·대체 소스 자동 안내로 완화. 남은 가장 큰 위험은 비공식 API 역엔지니어링이며, `morningstar_fair_value.py`의 하드코딩 세션 키 `klr5zyak8x`가 가장 취약한 지점.
+> **핵심 요약** (2026-06-27 기준): Skills 17개 설치 완료. 절대경로 통일 완료. 중국 관련 도구 제거. 외부 사이트 접근 차단 위험은 `tools/site_preflight.py`로 대부분 완화되었음 — 상세 내역은 [`func_warning.md`](func_warning.md) 참조. 남은 가장 큰 위험은 ① 비공식 API 역엔지니어링(`morningstar_fair_value.py`의 하드코딩 세션 키 `klr5zyak8x`가 가장 취약), ② finviz Elite 필터 제한으로 인한 [A2] 종목 풀 잔여 누락 가능성.
