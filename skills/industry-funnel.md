@@ -286,13 +286,13 @@ A = 데이터 충분하고 신뢰 가능; B = 일부 누락이 있으나 주요 
 
 ```bash
 # Step 1 — 검증 목록 추출 (15% 무작위 샘플링)
-python3 ~/ai-berkshire/tools/report_audit.py extract \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
   --report <보고서 파일 경로>
 
 # Step 2 — 목록의 각 항목을 신뢰 가능한 출처에서 수치 확인 (skills/financial-data.md 참조)
 
 # Step 3 — 통과/반려 판정 출력
-python3 ~/ai-berkshire/tools/report_audit.py verdict \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
   --results '<작성된 JSON>' \
   --report <보고서 파일명>
 ```

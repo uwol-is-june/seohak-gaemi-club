@@ -1,0 +1,126 @@
+export interface FlowStep {
+  title: string;
+  description: string;
+  inputLabel: string;
+  inputPlaceholder: string;
+  commandTemplate: string;
+  outputFiles: string[];
+  outputNote?: string;
+}
+
+export interface Flow {
+  id: string;
+  title: string;
+  subtitle: string;
+  color: string;
+  steps: FlowStep[];
+}
+
+export const flows: Flow[] = [
+  {
+    id: "discovery",
+    title: "종목 발굴",
+    subtitle: "섹터 아이디어 → 후보 압축 → 논제 수립",
+    color: "emerald",
+    steps: [
+      {
+        title: "섹터 구조 파악",
+        description: "관심 섹터의 밸류체인, TAM, 주요 플레이어를 전체적으로 파악합니다.",
+        inputLabel: "섹터명",
+        inputPlaceholder: "AI Semiconductors",
+        commandTemplate: "/industry-research {input}",
+        outputFiles: ["reports/{input}-industry-{날짜}.md"],
+      },
+      {
+        title: "후보 종목 압축",
+        description: "섹터 내 30~60개 종목을 5개 핵심 지표로 스크리닝해 최종 3종목을 선정합니다.",
+        inputLabel: "섹터명",
+        inputPlaceholder: "AI Semiconductors",
+        commandTemplate: "/industry-funnel {input}",
+        outputFiles: ["reports/{input}-funnel-{날짜}.md"],
+      },
+      {
+        title: "열등주 제거",
+        description: "ROE, FCF, 이자커버리지 등 7가지 하드 기준으로 확실한 열등주를 걸러냅니다.",
+        inputLabel: "후보 종목들",
+        inputPlaceholder: "NVDA, AMD, INTC",
+        commandTemplate: "/quality-screen {input}",
+        outputFiles: [],
+        outputNote: "화면 출력 (파일 저장 없음)",
+      },
+      {
+        title: "버핏 6-게이트 체크",
+        description: "통과한 종목들을 버핏 방식 6개 게이트로 매수 전 최종 검증합니다.",
+        inputLabel: "통과한 종목들",
+        inputPlaceholder: "NVDA, AMD",
+        commandTemplate: "/investment-checklist {input}",
+        outputFiles: ["reports/{회사}/{회사}-checklist-{날짜}.md"],
+      },
+      {
+        title: "심층 분석",
+        description: "최종 선정 종목을 4대 마스터 8단계 통합 분석 프레임워크로 깊이 분석합니다.",
+        inputLabel: "최종 종목",
+        inputPlaceholder: "NVDA",
+        commandTemplate: "/investment-research {input}",
+        outputFiles: ["reports/{input}/{input}-research-{날짜}.md"],
+      },
+      {
+        title: "투자 논제 수립",
+        description: "매수 이유를 5문장으로 정의하고, 핵심 가정과 레드라인 조건을 설정합니다.",
+        inputLabel: "종목명",
+        inputPlaceholder: "NVDA",
+        commandTemplate: "/thesis-tracker {input}",
+        outputFiles: ["reports/{input}/{input}-thesis.md"],
+      },
+    ],
+  },
+  {
+    id: "earnings",
+    title: "실적 점검",
+    subtitle: "실적 발표 후 → 원본 분석 → 논제 업데이트",
+    color: "blue",
+    steps: [
+      {
+        title: "실적 정밀 분석",
+        description: "SEC 10-K/10-Q 원문과 어닝스 콜을 직접 독해해 숨겨진 신호를 발굴합니다.",
+        inputLabel: "종목명 + 분기",
+        inputPlaceholder: "Apple 2025Q4",
+        commandTemplate: "/earnings-review {input}",
+        outputFiles: ["reports/{회사}/{회사}-earnings-{기간}.md"],
+      },
+      {
+        title: "논제 건강도 점검",
+        description: "기존 투자 논제의 각 가정을 최신 실적 데이터로 검증하고 점수를 업데이트합니다.",
+        inputLabel: "종목명",
+        inputPlaceholder: "Apple",
+        commandTemplate: "/thesis-tracker {input} 분기검토",
+        outputFiles: ["reports/{input}/{input}-thesis.md (업데이트)"],
+      },
+    ],
+  },
+  {
+    id: "portfolio",
+    title: "포트폴리오 점검",
+    subtitle: "분기 1회 → 전체 점검 → 각 종목 논제 확인",
+    color: "violet",
+    steps: [
+      {
+        title: "전체 포트폴리오 점검",
+        description: "보유 종목 밸류에이션 수집, 집중도·상관관계·리밸런싱 분석을 수행합니다.",
+        inputLabel: "보유 내역",
+        inputPlaceholder: "AAPL 30%, MSFT 20%, NVDA 20%, Cash 30%",
+        commandTemplate: "/portfolio-review {input}",
+        outputFiles: ["reports/portfolio-latest.md"],
+      },
+      {
+        title: "개별 종목 논제 확인",
+        description: "각 보유 종목의 투자 논제를 최신 데이터로 검증합니다. 보유 종목마다 반복 실행합니다.",
+        inputLabel: "종목명",
+        inputPlaceholder: "AAPL",
+        commandTemplate: "/thesis-tracker {input} 분기검토",
+        outputFiles: ["reports/{input}/{input}-thesis.md (업데이트)"],
+        outputNote: "보유 종목마다 반복 실행",
+      },
+    ],
+  },
+];

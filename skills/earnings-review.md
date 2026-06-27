@@ -205,14 +205,14 @@ VII. 결론: 이번 실적이 바꾼 것은 무엇인가?
 
 ```bash
 # Step 1 — 검증 체크리스트 추출
-python3 ~/ai-berkshire/tools/report_audit.py extract \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
   --report reports/{종목명}/{종목명}-earnings-{기간}.md
 
 # Step 2 — 체크리스트 각 항목을 신뢰할 수 있는 출처에서 재확인
 #           (macrotrends.net, stockanalysis.com, SEC EDGAR 활용)
 
 # Step 3 — 검증 결과 판정 출력
-python3 ~/ai-berkshire/tools/report_audit.py verdict \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
   --results '<작성된 JSON>' \
   --report {보고서 파일명}
 ```

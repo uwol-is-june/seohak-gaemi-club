@@ -311,13 +311,13 @@ Task 도구를 사용해 백그라운드 Agent를 실행하고, 해당 산업의
 
 ```bash
 # Step 1 — 샘플 검사 목록 추출 (15% 무작위 샘플링)
-python3 ~/ai-berkshire/tools/report_audit.py extract \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
   --report <보고서 파일 경로>
 
 # Step 2 — 목록의 각 항목을 신뢰할 수 있는 출처에서 데이터 확인 (skills/financial-data.md 참고)
 
 # Step 3 — 통과/반려 판정 출력
-python3 ~/ai-berkshire/tools/report_audit.py verdict \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
   --results '<작성된 JSON>' \
   --report <보고서 파일명>
 ```

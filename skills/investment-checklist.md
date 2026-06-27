@@ -76,7 +76,7 @@ Task 도구를 사용해 **각 종목마다** 독립 백그라운드 에이전�
 데이터로 말한다. **핵심 지표는 반드시 도구로 정확히 계산**한다:
 
 ```bash
-python3 ~/ai-berkshire/tools/financial_rigor.py verify-valuation \
+python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-valuation \
   --price {주가} --eps {EPS} --bvps {주당순자산} --fcf-per-share {주당FCF} --dividend {주당배당}
 ```
 
@@ -152,7 +152,7 @@ python3 ~/ai-berkshire/tools/financial_rigor.py verify-valuation \
 
 추가 검증 (**반드시 도구로 정확히 계산, 암산 금지**):
 ```bash
-python3 ~/ai-berkshire/tools/financial_rigor.py three-scenario \
+python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario \
   --price {주가} --eps {EPS} --shares {발행주식수B} \
   --growth {낙관} {중립} {비관} --pe {낙관PE} {중립PE} {비관PE} --currency USD
 ```

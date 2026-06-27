@@ -63,10 +63,10 @@ TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject
   5. 밸류에이션: PER(P/E), P/S, P/B, EV/EBITDA 등 — 과거 평균 및 동종 기업 대비
   6. 안전마진(Margin of Safety) 평가: 내재가치(Intrinsic Value) vs 현재 주가
   7. **금융 정확성 검증 (반드시 Bash로 도구 실행, 암산 금지)**:
-     - 시가총액 검증: `python3 ~/ai-berkshire/tools/financial_rigor.py verify-market-cap --price {주가} --shares {발행주식수} --reported {보고된 시가총액} --currency USD`
-     - 밸류에이션 검증: `python3 ~/ai-berkshire/tools/financial_rigor.py verify-valuation --price {주가} --eps {EPS} --bvps {BPS}`
-     - 핵심 데이터 교차검증: `python3 ~/ai-berkshire/tools/financial_rigor.py cross-validate --field {항목} --values '{JSON}' --unit {단위}`
-     - 3시나리오 밸류에이션: `python3 ~/ai-berkshire/tools/financial_rigor.py three-scenario --price {주가} --eps {EPS} --shares {발행주식수(B)} --growth {낙관} {중립} {비관} --pe {낙관PER} {중립PER} {비관PER}`
+     - 시가총액 검증: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-market-cap --price {주가} --shares {발행주식수} --reported {보고된 시가총액} --currency USD`
+     - 밸류에이션 검증: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-valuation --price {주가} --eps {EPS} --bvps {BPS}`
+     - 핵심 데이터 교차검증: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py cross-validate --field {항목} --values '{JSON}' --unit {단위}`
+     - 3시나리오 밸류에이션: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario --price {주가} --eps {EPS} --shares {발행주식수(B)} --growth {낙관} {중립} {비관} --pe {낙관PER} {중립PER} {비관PER}`
      - 도구 출력 결과를 보고서에 그대로 삽입하여 검증 기록으로 남길 것
   8. 데이터 출처: macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials, SEC EDGAR 10-K/10-Q
 
@@ -192,14 +192,14 @@ Task 도구를 사용해 4개 Agent를 동시에 시작합니다 (**반드시 �
 
 ```bash
 # Step 1 — 검수 목록 추출 (15% 무작위 샘플링)
-python3 ~/ai-berkshire/tools/report_audit.py extract \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
   --report <보고서 파일 경로>
 
 # Step 2 — 목록의 각 항목을 신뢰할 수 있는 출처에서 직접 확인
 #           (macrotrends.net, stockanalysis.com, SEC EDGAR)
 
 # Step 3 — 준출/반려 판정 출력
-python3 ~/ai-berkshire/tools/report_audit.py verdict \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
   --results '<완성된 JSON>' \
   --report <보고서 파일명>
 ```

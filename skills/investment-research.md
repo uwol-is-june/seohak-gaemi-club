@@ -77,20 +77,20 @@ $ARGUMENTS 에 대해 체계적인 투자 리서치 분석을 수행한다.
 
 Step 1 — 시가총액 검증 (정밀 십진수, 부동소수점 아님):
 ```bash
-python3 ~/ai-berkshire/tools/financial_rigor.py verify-market-cap \
+python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-market-cap \
   --price {주가} --shares {총주식수} --reported {보고 시가총액} --currency USD
 ```
 
 Step 2 — 핵심 데이터 다중 소스 교차 검증:
 ```bash
-python3 ~/ai-berkshire/tools/financial_rigor.py cross-validate \
+python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py cross-validate \
   --field {필드명} --values '{"소스1": 수치, "소스2": 수치}' --unit {단위}
 ```
 매출, 순이익, 현금 보유액 각각 실행.
 
 Step 3 — 밸류에이션 지표 정밀 검증 (PER/PBR/ROE/FCF Yield 등):
 ```bash
-python3 ~/ai-berkshire/tools/financial_rigor.py verify-valuation \
+python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-valuation \
   --price {주가} --eps {EPS} --bvps {주당순자산} --fcf-per-share {주당FCF} --dividend {주당배당}
 ```
 
@@ -191,7 +191,7 @@ MOAT 추이 분석: 지난 5년간 넓어졌는가, 좁아졌는가? 향후 5년
 - 역방향 DCF: 현재 주가가 내포하는 성장 기대치는?
 - 3가지 시나리오 밸류에이션 — **반드시 도구로 정밀 계산, 암산 금지**:
 ```bash
-python3 ~/ai-berkshire/tools/financial_rigor.py three-scenario \
+python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario \
   --price {주가} --eps {EPS} --shares {총주식수(B단위)} \
   --growth {낙관성장률} {중립성장률} {비관성장률} \
   --pe {낙관PER} {중립PER} {비관PER} --years 3 --currency USD
@@ -263,7 +263,7 @@ python3 ~/ai-berkshire/tools/financial_rigor.py three-scenario \
 
 **Step 1 — 표본 검사 목록 추출 (15% 랜덤 샘플링)**:
 ```bash
-python3 ~/ai-berkshire/tools/report_audit.py extract \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
   --report <보고서 파일 경로>
 ```
 출력: JSON 템플릿, 각 항목에 `fetched_value`(미입력) 포함.
@@ -278,7 +278,7 @@ python3 ~/ai-berkshire/tools/report_audit.py extract \
 
 **Step 3 — 판정 출력**:
 ```bash
-python3 ~/ai-berkshire/tools/report_audit.py verdict \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
   --results '<완성된 JSON>' \
   --report <보고서 파일명>
 ```

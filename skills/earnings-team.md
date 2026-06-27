@@ -110,7 +110,7 @@ Agent 도구를 사용해 **같은 메시지 내**에서 4개의 백그라운드
    - 핵심 데이터는 최소 2개 출처 교차 검증 (macrotrends.net + stockanalysis.com)
 
    ```bash
-   python3 ~/ai-berkshire/tools/financial_rigor.py cross-validate \
+   python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py cross-validate \
      --metric "revenue" --values {value1} {value2} --sources "macrotrends" "stockanalysis"
    ```
 
@@ -135,11 +135,11 @@ Agent 도구를 사용해 **같은 메시지 내**에서 4개의 백그라운드
 5. **밸류에이션 및 안전 마진 업데이트**
 
    ```bash
-   python3 ~/ai-berkshire/tools/financial_rigor.py verify-market-cap \
+   python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-market-cap \
      --price {price} --shares {shares} --reported {reported_market_cap} --currency USD
-   python3 ~/ai-berkshire/tools/financial_rigor.py verify-valuation \
+   python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-valuation \
      --price {price} --eps {EPS} --bvps {book_value_per_share}
-   python3 ~/ai-berkshire/tools/financial_rigor.py three-scenario \
+   python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario \
      --price {price} --eps {EPS} --shares {shares_billions} \
      --growth {bull} {base} {bear} --pe {bull_PE} {base_PE} {bear_PE}
    ```
@@ -416,10 +416,10 @@ reports/{회사명}/
 최종 아티클에 대해 점검을 수행한다:
 
 ```bash
-python3 ~/ai-berkshire/tools/report_audit.py extract \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
   --report reports/{회사명}/{회사명}-earnings-{기간}.md
 
-python3 ~/ai-berkshire/tools/report_audit.py verdict \
+python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
   --results '<입력된 JSON>' \
   --report {리포트 파일명}
 ```
