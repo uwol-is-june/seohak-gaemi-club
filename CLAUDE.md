@@ -4,7 +4,7 @@
 
 Claude Code 기반 미국 주식 가치투자 리서치 Skill 모음.
 4대가 프레임워크: 버핏(Buffett), 멍거(Munger), 단융핑(Duan Yongping), 리루(Li Lu).
-GitHub: xbtlin/ai-berkshire
+GitHub: uwol-is-june/reality-escape-device
 
 ## 프로젝트 구조
 
@@ -93,8 +93,8 @@ reports/{회사명}/
 
 ## GitHub 운영
 
-- 로컬 클론 경로: `~/Desktop/ai-berkshire/`
-- 원격 저장소: `https://github.com/xbtlin/ai-berkshire.git`
+- 로컬 클론 경로: `~/Desktop/reality-escape-device/`
+- 원격 저장소: `https://github.com/uwol-is-june/reality-escape-device.git`
 - 푸시 전 반드시 `git pull --rebase origin main`
 - 커밋 메시지: 영어 또는 한국어, 변경 내용 명확히 기술
 - 중간 과정 파일 푸시 금지, 최종 보고서만 푸시
@@ -104,10 +104,10 @@ reports/{회사명}/
 ```bash
 # Skills 설치 (최초 1회)
 mkdir -p ~/.claude/commands
-cp ~/Desktop/ai-berkshire/skills/*.md ~/.claude/commands/
+cp ~/Desktop/reality-escape-device/skills/*.md ~/.claude/commands/
 
 # 보고서 GitHub에 푸시
-cd ~/Desktop/ai-berkshire
+cd ~/Desktop/reality-escape-device
 git add reports/xxx.md
 git commit -m "Add Apple investment research report"
 git pull --rebase origin main
