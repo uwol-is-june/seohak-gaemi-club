@@ -381,7 +381,15 @@ function StartPointModal({ flow, onChoose, onClose }: { flow: Flow; onChoose: (f
         className="w-full max-w-lg rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-bold text-white text-lg mb-1">{flow.title}</h2>
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h2 className="font-bold text-white text-lg">{flow.title}</h2>
+          <button
+            onClick={onClose}
+            className="h-8 w-8 shrink-0 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+          >
+            ✕
+          </button>
+        </div>
         <p className="text-sm text-zinc-500 mb-6">어디서부터 시작할까요?</p>
         <div className="flex flex-col gap-3">
           {flow.startPoints?.map((sp) => (
