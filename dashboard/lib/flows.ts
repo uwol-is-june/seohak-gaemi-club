@@ -1,3 +1,8 @@
+export interface SectorGroup {
+  label: string;
+  sectors: string[];
+}
+
 export interface FlowStep {
   title: string;
   description: string;
@@ -7,6 +12,7 @@ export interface FlowStep {
   outputFiles: string[];
   outputNote?: string;
   requiresCli?: boolean;
+  sectorPicker?: { groups: SectorGroup[] };
 }
 
 export interface FlowStartPoint {
@@ -53,6 +59,17 @@ export const flows: Flow[] = [
         inputPlaceholder: "AI Semiconductors",
         commandTemplate: "/industry-research {input}",
         outputFiles: ["reports/{input}-industry-{날짜}.md"],
+        sectorPicker: {
+          groups: [
+            { label: "테크/AI",  sectors: ["AI Semiconductors", "AI Infrastructure", "Cloud Computing", "Cybersecurity", "Enterprise Software"] },
+            { label: "금융",     sectors: ["Fintech Payments", "Digital Asset", "Insurance", "Investment Banking"] },
+            { label: "헬스케어", sectors: ["GLP-1 / Obesity Drugs", "Medical Devices", "Biotech", "Health Insurance"] },
+            { label: "소비",     sectors: ["Luxury / Brand", "E-commerce", "Warehouse Retail"] },
+            { label: "에너지",   sectors: ["Nuclear Power", "Renewable Energy", "Oil & Gas"] },
+            { label: "산업재",   sectors: ["Defense", "Electrical Equipment", "Aerospace"] },
+            { label: "소재",     sectors: ["Copper / Mining", "Logistics", "Real Estate"] },
+          ],
+        },
       },
       {
         title: "후보 종목 압축",
@@ -61,6 +78,17 @@ export const flows: Flow[] = [
         inputPlaceholder: "AI Semiconductors",
         commandTemplate: "/industry-funnel {input}",
         outputFiles: ["reports/{input}-funnel-{날짜}.md"],
+        sectorPicker: {
+          groups: [
+            { label: "테크/AI",  sectors: ["AI Semiconductors", "AI Infrastructure", "Cloud Computing", "Cybersecurity", "Enterprise Software"] },
+            { label: "금융",     sectors: ["Fintech Payments", "Digital Asset", "Insurance", "Investment Banking"] },
+            { label: "헬스케어", sectors: ["GLP-1 / Obesity Drugs", "Medical Devices", "Biotech", "Health Insurance"] },
+            { label: "소비",     sectors: ["Luxury / Brand", "E-commerce", "Warehouse Retail"] },
+            { label: "에너지",   sectors: ["Nuclear Power", "Renewable Energy", "Oil & Gas"] },
+            { label: "산업재",   sectors: ["Defense", "Electrical Equipment", "Aerospace"] },
+            { label: "소재",     sectors: ["Copper / Mining", "Logistics", "Real Estate"] },
+          ],
+        },
       },
       {
         title: "열등주 제거",

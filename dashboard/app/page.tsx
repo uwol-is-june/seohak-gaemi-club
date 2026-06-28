@@ -317,6 +317,7 @@ function StepCard({
   colors: (typeof colorConfig)[ColorKey];
 }) {
   const [copied, setCopied] = useState(false);
+  const [sectorTab, setSectorTab] = useState(0);
   const displayInput = input || step.inputPlaceholder;
   const command = step.commandTemplate.replace("{input}", displayInput);
 
@@ -387,6 +388,38 @@ function StepCard({
 
       <div className="mb-3">
         <label className="block text-xs text-zinc-500 mb-1.5">{step.inputLabel}</label>
+        {step.sectorPicker && (
+          <div className="mb-2">
+            <div className="flex gap-1 overflow-x-auto pb-1 mb-2">
+              {step.sectorPicker.groups.map((g, i) => (
+                <button
+                  key={g.label}
+                  onClick={() => setSectorTab(i)}
+                  className={`shrink-0 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+                    sectorTab === i ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {step.sectorPicker.groups[sectorTab]?.sectors.map((sector) => (
+                <button
+                  key={sector}
+                  onClick={() => onInputChange(sector)}
+                  className={`rounded-full px-3 py-1 text-xs transition-colors border ${
+                    input === sector
+                      ? `${colors.bg} ${colors.text} border-transparent`
+                      : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white hover:bg-zinc-700"
+                  }`}
+                >
+                  {sector}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <input
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
@@ -835,6 +868,34 @@ function HomeView({
   onOpenAdmin: () => void;
   onOpenReports: () => void;
 }) {
+  const [files, setFiles] = useState<ReportFile[] | null>(null);
+  const [reportTab, setReportTab] = useState<string | null>(null);
+  const [modalPath, setModalPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/reports")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!d.error) {
+          setFiles(d.files);
+          const companies = Array.from(
+            new Set((d.files as ReportFile[]).map((f) => f.company).filter((c): c is string => c !== null))
+          ).sort() as string[];
+          setReportTab(companies[0] ?? "root");
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const companies = files
+    ? (Array.from(new Set(files.map((f) => f.company).filter((c): c is string => c !== null))).sort() as string[])
+    : [];
+  const rootFiles = files ? files.filter((f) => f.company === null) : [];
+  const tabs = [...companies, ...(rootFiles.length > 0 ? ["root"] : [])];
+  const rawCurrentFiles =
+    reportTab === "root" ? rootFiles : (files?.filter((f) => f.company === reportTab) ?? []);
+  const currentFiles = reportTab !== "root" ? sortCompanyFiles(rawCurrentFiles) : rawCurrentFiles;
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-4xl px-6 py-10">
@@ -843,23 +904,15 @@ function HomeView({
             <h1 className="text-2xl font-bold">현생 탈출 장치</h1>
             <p className="mt-1 text-sm text-zinc-500">어떤 플로우를 시작할까요?</p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={onOpenReports}
-              className="px-3 py-1.5 rounded-lg bg-zinc-800 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
-            >
-              보고서
-            </button>
-            <button
-              onClick={onOpenAdmin}
-              className="px-3 py-1.5 rounded-lg bg-zinc-800 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
-            >
-              관리자
-            </button>
-          </div>
+          <button
+            onClick={onOpenAdmin}
+            className="px-3 py-1.5 rounded-lg bg-zinc-800 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
+          >
+            관리자
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
           {flows.map((flow) => {
             const c = colorConfig[flow.color as ColorKey];
             return (
@@ -887,7 +940,64 @@ function HomeView({
             );
           })}
         </div>
+
+        {/* ── Reports inline section ── */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">보고서</h2>
+            <button
+              onClick={onOpenReports}
+              className="text-xs text-zinc-500 hover:text-white transition-colors"
+            >
+              전체 보기 →
+            </button>
+          </div>
+
+          {!files && <p className="text-xs text-zinc-600">불러오는 중...</p>}
+
+          {files && tabs.length === 0 && (
+            <p className="text-xs text-zinc-600">아직 보고서가 없습니다.</p>
+          )}
+
+          {files && tabs.length > 0 && (
+            <>
+              <div className="flex gap-1 overflow-x-auto pb-1 mb-4">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setReportTab(tab)}
+                    className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                      reportTab === tab ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    {tab === "root" ? "섹터/포트폴리오" : tab}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {currentFiles.map((f) => {
+                  const badge = getFileBadge(f.name);
+                  return (
+                    <button
+                      key={f.path}
+                      onClick={() => setModalPath(f.path)}
+                      className="flex items-center gap-1.5 rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-2 hover:bg-zinc-800 hover:border-zinc-700 transition-colors"
+                    >
+                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
+                        {badge.label}
+                      </span>
+                      <span className="text-xs font-mono text-zinc-400">{f.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
       </div>
+
+      {modalPath && <ReportModal path={modalPath} onClose={() => setModalPath(null)} />}
     </div>
   );
 }
