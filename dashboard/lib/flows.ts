@@ -13,6 +13,9 @@ export interface FlowStep {
   outputNote?: string;
   requiresCli?: boolean;
   sectorPicker?: { groups: SectorGroup[] };
+  // true면 이 스텝 입력칸 위에 "내 보유 종목" 칩을 노출한다 (티커 입력 스텝).
+  // 티커 입력 스텝끼리는 앞 스텝 값이 다음 스텝에 미리 채워진다.
+  holdingsPicker?: boolean;
 }
 
 export interface FlowStartPoint {
@@ -106,6 +109,7 @@ export const flows: Flow[] = [
         commandTemplate: "/quality-screen {input}",
         outputFiles: [],
         outputNote: "화면 출력 (파일 저장 없음)",
+        holdingsPicker: true,
       },
       {
         title: "버핏 6-게이트 체크",
@@ -115,6 +119,7 @@ export const flows: Flow[] = [
         commandTemplate: "/investment-checklist {input}",
         outputFiles: ["reports/{input}/{input}-checklist-{날짜}.md"],
         requiresCli: true,
+        holdingsPicker: true,
       },
       {
         title: "심층 분석",
@@ -124,6 +129,7 @@ export const flows: Flow[] = [
         commandTemplate: "/investment-team {input}",
         outputFiles: ["reports/{input}/FinalReport.md", "reports/{input}/01~04-*.md"],
         requiresCli: true,
+        holdingsPicker: true,
       },
       {
         title: "투자 논제 수립",
@@ -132,6 +138,7 @@ export const flows: Flow[] = [
         inputPlaceholder: "NVDA",
         commandTemplate: "/thesis-tracker {input}",
         outputFiles: ["reports/{input}/{input}-thesis.md"],
+        holdingsPicker: true,
       },
     ],
   },
