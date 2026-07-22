@@ -13,11 +13,54 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* 브랜드 키컬러 팔레트 (key = #6A39C0, brand-500) */
+@theme {
+  --color-brand-50: #f3effb;
+  --color-brand-100: #e7def7;
+  --color-brand-200: #cfbdef;
+  --color-brand-300: #b295e5;
+  --color-brand-400: #8e67d6;
+  --color-brand-500: #6a39c0;
+  --color-brand-600: #582ca3;
+  --color-brand-700: #46237f;
+  --color-brand-800: #351a5f;
+  --color-brand-900: #251242;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
+}
+
+/* 탭 전환 애니메이션 — 콘텐츠에 key를 바꿔 재생 */
+@keyframes tab-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-panel {
+  animation: tab-fade-in 0.22s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-panel {
+    animation: none;
+  }
+}
+
+/* 스크롤바 공간을 항상 예약해, 탭 전환으로 콘텐츠 높이가 바뀌어도
+   세로 스크롤바 유무에 따라 가운데 정렬(mx-auto) 레이아웃이 옆으로
+   밀리는(뒤틀리는) 현상을 방지한다. */
+html {
+  scrollbar-gutter: stable;
 }
 
 body {

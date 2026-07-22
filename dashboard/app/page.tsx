@@ -9,33 +9,16 @@ import type { Holding } from "@/lib/toss";
 
 // ─── Color config ──────────────────────────────────────────────────────────
 
+// 모든 플로우가 브랜드 키컬러(#6A39C0) 하나로 통일됨.
 const colorConfig = {
-  emerald: {
-    border: "border-emerald-500/30",
-    bg: "bg-emerald-500/10",
-    text: "text-emerald-400",
-    button: "bg-emerald-700 hover:bg-emerald-600",
-    progress: "bg-emerald-500",
-    command: "text-emerald-300",
-    dot: "bg-emerald-400",
-  },
-  blue: {
-    border: "border-blue-500/30",
-    bg: "bg-blue-500/10",
-    text: "text-blue-400",
-    button: "bg-blue-700 hover:bg-blue-600",
-    progress: "bg-blue-500",
-    command: "text-blue-300",
-    dot: "bg-blue-400",
-  },
-  violet: {
-    border: "border-violet-500/30",
-    bg: "bg-violet-500/10",
-    text: "text-violet-400",
-    button: "bg-violet-700 hover:bg-violet-600",
-    progress: "bg-violet-500",
-    command: "text-violet-300",
-    dot: "bg-violet-400",
+  brand: {
+    border: "border-brand-500/30",
+    bg: "bg-brand-500/15",
+    text: "text-brand-300",
+    button: "bg-brand-600 hover:bg-brand-500",
+    progress: "bg-brand-500",
+    command: "text-brand-300",
+    dot: "bg-brand-400",
   },
 } as const;
 
@@ -467,18 +450,15 @@ function StepCard({
 function FlowView({
   flow,
   onBack,
-  onViewReports,
   initialStep = 0,
 }: {
   flow: Flow;
   onBack: () => void;
-  onViewReports: (company?: string) => void;
   initialStep?: number;
 }) {
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [stepInputs, setStepInputs] = useState<Record<number, string>>({});
   const [modalPath, setModalPath] = useState<string | null>(null);
-  const lastInput = [...Object.values(stepInputs)].reverse().find((v) => v.trim().length > 0);
 
   const colors = colorConfig[flow.color as ColorKey];
   const isDone = currentStep >= flow.steps.length;
@@ -553,16 +533,10 @@ function FlowView({
 
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <button
-                onClick={() => onViewReports(lastInput)}
+                onClick={onBack}
                 className={`px-5 py-2.5 rounded-lg text-white transition-colors text-sm ${colors.button}`}
               >
-                전체 보고서 보기 →
-              </button>
-              <button
-                onClick={onBack}
-                className="px-5 py-2.5 rounded-lg bg-zinc-800 text-white hover:bg-zinc-700 transition-colors text-sm"
-              >
-                처음으로 돌아가기
+                홈으로 (보고서 보기) →
               </button>
             </div>
           </div>
@@ -627,239 +601,6 @@ function StartPointModal({ flow, onChoose, onClose }: { flow: Flow; onChoose: (f
   );
 }
 
-function ReportsView({
-  onBack,
-  initialCompany,
-}: {
-  onBack: () => void;
-  initialCompany?: string;
-}) {
-  const [files, setFiles] = useState<ReportFile[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(initialCompany ?? null);
-  const [selectedPath, setSelectedPath] = useState<string | null>(null);
-  const [content, setContent] = useState<string | null>(null);
-  const [contentError, setContentError] = useState<string | null>(null);
-  const [loadingContent, setLoadingContent] = useState(false);
-  const [modalPath, setModalPath] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/reports")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.error) setError(data.error);
-        else setFiles(data.files);
-      })
-      .catch((e) => setError(String(e)));
-  }, []);
-
-  useEffect(() => {
-    if (!selectedPath) {
-      setContent(null);
-      return;
-    }
-    setLoadingContent(true);
-    setContentError(null);
-    fetch(`/api/reports/content?path=${encodeURIComponent(selectedPath)}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.error) setContentError(data.error);
-        else setContent(data.content);
-      })
-      .catch((e) => setContentError(String(e)))
-      .finally(() => setLoadingContent(false));
-  }, [selectedPath]);
-
-  const companies = files
-    ? Array.from(new Set(files.map((f) => f.company).filter((c): c is string => c !== null))).sort()
-    : [];
-  const rootFiles = files ? files.filter((f) => f.company === null) : [];
-  const rawCompanyFiles = files && selectedCompany ? files.filter((f) => f.company === selectedCompany) : [];
-  const companyFiles = sortCompanyFiles(rawCompanyFiles);
-
-  return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="mx-auto max-w-5xl px-6 py-8">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white mb-6 transition-colors"
-        >
-          ← 뒤로
-        </button>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-xl font-bold mb-1">보고서 열람</h1>
-            <p className="text-sm text-zinc-500">종목별 보고서를 탐색하고 내용을 확인합니다.</p>
-          </div>
-          <button
-            onClick={() => { setFiles(null); setError(null); fetch("/api/reports").then(r => r.json()).then(d => { if (d.error) setError(d.error); else setFiles(d.files); }).catch(e => setError(String(e))); }}
-            className="text-xs px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
-          >
-            새로고침
-          </button>
-        </div>
-
-        {error && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300 mb-4">
-            보고서를 불러오지 못했습니다: {error}
-          </div>
-        )}
-
-        {!files && !error && <p className="text-sm text-zinc-500">불러오는 중...</p>}
-
-        {files && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* ── Left panel ── */}
-            <div className="md:col-span-1 flex flex-col gap-5">
-              {/* Companies */}
-              <div>
-                <div className="text-xs text-zinc-500 mb-2 uppercase tracking-wide font-medium">종목별 폴더</div>
-                <div className="flex flex-col gap-0.5">
-                  {companies.map((c) => {
-                    const cFiles = files.filter((f) => f.company === c);
-                    return (
-                      <button
-                        key={c}
-                        onClick={() => {
-                          setSelectedCompany(c);
-                          setSelectedPath(null);
-                          setContent(null);
-                        }}
-                        className={`text-left rounded-lg px-3 py-2 text-sm transition-colors flex items-center justify-between gap-2 ${
-                          selectedCompany === c
-                            ? "bg-zinc-800 text-white"
-                            : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
-                        }`}
-                      >
-                        <span className="font-medium">{c}</span>
-                        <span className="text-xs text-zinc-600">{cFiles.length}개</span>
-                      </button>
-                    );
-                  })}
-                  {companies.length === 0 && (
-                    <p className="text-xs text-zinc-600 px-1">아직 종목별 보고서가 없습니다.</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Company files */}
-              {selectedCompany && companyFiles.length > 0 && (
-                <div>
-                  <div className="text-xs text-zinc-500 mb-2 uppercase tracking-wide font-medium">
-                    {selectedCompany} 보고서
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    {companyFiles.map((f) => {
-                      const badge = getFileBadge(f.name);
-                      return (
-                        <button
-                          key={f.path}
-                          onClick={() => setSelectedPath(f.path)}
-                          className={`text-left rounded-lg px-3 py-2 transition-colors ${
-                            selectedPath === f.path
-                              ? "bg-emerald-700/40 border border-emerald-600/30"
-                              : "hover:bg-zinc-900"
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
-                              {badge.label}
-                            </span>
-                          </div>
-                          <span className="text-xs font-mono text-zinc-400 truncate block">{f.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Root files */}
-              <div>
-                <div className="text-xs text-zinc-500 mb-2 uppercase tracking-wide font-medium">
-                  섹터 / 포트폴리오
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  {rootFiles.map((f) => {
-                    const badge = getFileBadge(f.name);
-                    return (
-                      <button
-                        key={f.path}
-                        onClick={() => {
-                          setSelectedCompany(null);
-                          setSelectedPath(f.path);
-                        }}
-                        className={`text-left rounded-lg px-3 py-2 transition-colors ${
-                          selectedPath === f.path
-                            ? "bg-emerald-700/40 border border-emerald-600/30"
-                            : "hover:bg-zinc-900"
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
-                            {badge.label}
-                          </span>
-                        </div>
-                        <span className="text-xs font-mono text-zinc-400 truncate block">{f.name}</span>
-                      </button>
-                    );
-                  })}
-                  {rootFiles.length === 0 && (
-                    <p className="text-xs text-zinc-600 px-1">아직 보고서가 없습니다.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* ── Right panel ── */}
-            <div className="md:col-span-2">
-              {!selectedPath && (
-                <div className="flex flex-col items-center justify-center h-64 text-center">
-                  <p className="text-zinc-600 text-sm">왼쪽에서 보고서를 선택하세요</p>
-                  <p className="text-zinc-700 text-xs mt-1">종목 폴더 → 파일 순으로 클릭</p>
-                </div>
-              )}
-              {loadingContent && <p className="text-sm text-zinc-500">불러오는 중...</p>}
-              {contentError && (
-                <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
-                  {contentError}
-                </div>
-              )}
-              {content && selectedPath && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    {(() => {
-                      const fn = selectedPath.split("/").pop() ?? "";
-                      const b = getFileBadge(fn);
-                      return (
-                        <>
-                          <span className={`rounded px-2 py-0.5 text-xs font-medium ${b.color}`}>{b.label}</span>
-                          <span className="text-xs font-mono text-zinc-500">{selectedPath}</span>
-                        </>
-                      );
-                    })()}
-                    <button
-                      onClick={() => setModalPath(selectedPath)}
-                      className="ml-auto text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
-                    >
-                      전체화면
-                    </button>
-                  </div>
-                  <article className="prose prose-invert prose-sm max-w-none rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-                  </article>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {modalPath && <ReportModal path={modalPath} onClose={() => setModalPath(null)} />}
-    </div>
-  );
-}
-
 function fmtUsd(n: number, digits = 2) {
   return n.toLocaleString("en-US", {
     style: "currency",
@@ -908,8 +649,27 @@ function HoldingsBanner() {
             </span>
           )}
         </div>
-        <button onClick={load} className="text-xs text-zinc-500 hover:text-white transition-colors">
-          새로고침
+        <button
+          onClick={load}
+          aria-label="새로고침"
+          title="새로고침"
+          className="text-zinc-500 hover:text-white transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={loading ? "animate-spin" : ""}
+          >
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+            <path d="M21 3v6h-6" />
+          </svg>
         </button>
       </div>
 
@@ -968,15 +728,14 @@ function HoldingsBanner() {
 function HomeView({
   onSelectFlow,
   onOpenAdmin,
-  onOpenReports,
 }: {
   onSelectFlow: (f: Flow) => void;
   onOpenAdmin: () => void;
-  onOpenReports: () => void;
 }) {
   const [files, setFiles] = useState<ReportFile[] | null>(null);
   const [reportTab, setReportTab] = useState<string | null>(null);
   const [modalPath, setModalPath] = useState<string | null>(null);
+  const [flowTab, setFlowTab] = useState<string>("reports");
 
   useEffect(() => {
     fetch("/api/reports")
@@ -1005,12 +764,10 @@ function HomeView({
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-4xl px-6 py-10">
-        <HoldingsBanner />
-        <div className="flex items-start justify-between mb-14">
-          <div>
-            <h1 className="text-2xl font-bold">현생 탈출 장치</h1>
-            <p className="mt-1 text-sm text-zinc-500">어떤 플로우를 시작할까요?</p>
-          </div>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-white to-brand-200 bg-clip-text text-transparent">
+            현생 탈출 장치
+          </h1>
           <div className="flex items-center gap-2">
             <button
               onClick={onOpenAdmin}
@@ -1030,88 +787,166 @@ function HomeView({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
-          {flows.map((flow) => {
-            const c = colorConfig[flow.color as ColorKey];
-            return (
-              <button
-                key={flow.id}
-                onClick={() => onSelectFlow(flow)}
-                className={`text-left rounded-2xl border ${c.border} bg-zinc-900 p-6 hover:bg-zinc-800/80 transition-all group`}
-              >
-                <div className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium mb-4 ${c.bg} ${c.text}`}>
-                  {flow.steps.length}단계
-                </div>
-                <h2 className="text-lg font-bold text-white mb-1">{flow.title}</h2>
-                <p className="text-xs text-zinc-400 leading-relaxed">{flow.subtitle}</p>
+        <HoldingsBanner />
 
-                <div className="flex items-center gap-1 mt-5">
-                  {flow.steps.map((_, i) => (
-                    <div key={i} className={`h-1 rounded-full flex-1 ${c.bg}`} />
-                  ))}
-                </div>
-
-                <div className={`mt-4 text-xs ${c.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
-                  시작하기 →
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ── Reports inline section ── */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">보고서</h2>
+        <div className="mb-16">
+          {/* 탭 바 + 새 종목 발굴 버튼 (같은 row) */}
+          <div className="flex items-center justify-between gap-3 mb-6">
+            <div className="flex gap-1 rounded-lg bg-zinc-900 p-1 w-fit">
             <button
-              onClick={onOpenReports}
-              className="text-xs text-zinc-500 hover:text-white transition-colors"
+              onClick={() => setFlowTab("reports")}
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                flowTab === "reports" ? "bg-brand-500/15 text-brand-300" : "text-zinc-400 hover:text-white"
+              }`}
             >
-              전체 보기 →
+              보고서
+            </button>
+            {flows
+              .filter((flow) => flow.id !== "discovery")
+              .map((flow) => {
+                const active = flowTab === flow.id;
+                const c = colorConfig[flow.color as ColorKey];
+                return (
+                  <button
+                    key={flow.id}
+                    onClick={() => setFlowTab(flow.id)}
+                    className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                      active ? `${c.bg} ${c.text}` : "text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    {flow.title}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => {
+                const d = flows.find((f) => f.id === "discovery");
+                if (d) onSelectFlow(d);
+              }}
+              aria-label="새 종목 발굴"
+              title="새 종목 발굴"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-xl leading-none text-white hover:bg-brand-500 transition-colors"
+            >
+              +
             </button>
           </div>
 
-          {!files && <p className="text-xs text-zinc-600">불러오는 중...</p>}
-
-          {files && tabs.length === 0 && (
-            <p className="text-xs text-zinc-600">아직 보고서가 없습니다.</p>
-          )}
-
-          {files && tabs.length > 0 && (
-            <>
-              <div className="flex gap-1 overflow-x-auto pb-1 mb-4">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setReportTab(tab)}
-                    className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                      reportTab === tab ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
-                    }`}
-                  >
-                    {tab === "root" ? "섹터/포트폴리오" : tab}
-                  </button>
-                ))}
+          {/* ── 탭 콘텐츠 (전환 애니메이션) ── */}
+          <div key={flowTab} className="tab-panel">
+          {flowTab === "reports" ? (
+            <div>
+              <div className="mb-4">
+                <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">
+                  종목별 보고서
+                </h2>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {currentFiles.map((f) => {
-                  const badge = getFileBadge(f.name);
-                  return (
-                    <button
-                      key={f.path}
-                      onClick={() => setModalPath(f.path)}
-                      className="flex items-center gap-1.5 rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-2 hover:bg-zinc-800 hover:border-zinc-700 transition-colors"
-                    >
-                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
-                        {badge.label}
-                      </span>
-                      <span className="text-xs font-mono text-zinc-400">{f.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </>
+              {!files && <p className="text-xs text-zinc-600">불러오는 중...</p>}
+
+              {files && tabs.length === 0 && (
+                <p className="text-xs text-zinc-600">
+                  아직 보고서가 없습니다. <span className="text-zinc-500">+ 새 종목 발굴</span>로 시작하세요.
+                </p>
+              )}
+
+              {files && tabs.length > 0 && (
+                <>
+                  <div className="flex gap-1 overflow-x-auto pb-1 mb-4">
+                    {tabs.map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setReportTab(tab)}
+                        className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                          reportTab === tab ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        {tab === "root" ? "섹터/포트폴리오" : tab}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {currentFiles.map((f) => {
+                      const badge = getFileBadge(f.name);
+                      return (
+                        <button
+                          key={f.path}
+                          onClick={() => setModalPath(f.path)}
+                          className="flex items-center gap-1.5 rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-2 hover:bg-zinc-800 hover:border-zinc-700 transition-colors"
+                        >
+                          <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
+                            {badge.label}
+                          </span>
+                          <span className="text-xs font-mono text-zinc-400">{f.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            /* ── 플로우 탭 ── */
+            (() => {
+              const flow = flows.find((f) => f.id === flowTab) ?? flows[0];
+              const c = colorConfig[flow.color as ColorKey];
+
+              // 포폴 점검: 분기별 카드
+              if (flow.quarters) {
+                return (
+                  <div>
+                    <p className="text-sm text-zinc-400 mb-4 leading-relaxed">{flow.subtitle}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {flow.quarters.map((q) => (
+                        <button
+                          key={q.label}
+                          onClick={() => onSelectFlow(flow)}
+                          className={`text-left rounded-xl border ${c.border} bg-zinc-900 p-5 hover:bg-zinc-800/80 transition-all group`}
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <h3 className="text-base font-bold text-white">{q.label}</h3>
+                            <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${c.bg} ${c.text}`}>
+                              {q.timing}
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-400 leading-relaxed">{q.note}</p>
+                          <div className={`mt-3 text-xs ${c.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                            시작하기 →
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+
+              // 일반 플로우: 단일 카드
+              return (
+                <button
+                  onClick={() => onSelectFlow(flow)}
+                  className={`w-full text-left rounded-2xl border ${c.border} bg-zinc-900 p-6 hover:bg-zinc-800/80 transition-all group`}
+                >
+                  <div className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium mb-4 ${c.bg} ${c.text}`}>
+                    {flow.steps.length}단계
+                  </div>
+                  <h2 className="text-lg font-bold text-white mb-1">{flow.title}</h2>
+                  <p className="text-xs text-zinc-400 leading-relaxed">{flow.subtitle}</p>
+
+                  <div className="flex items-center gap-1 mt-5">
+                    {flow.steps.map((_, i) => (
+                      <div key={i} className={`h-1 rounded-full flex-1 ${c.bg}`} />
+                    ))}
+                  </div>
+
+                  <div className={`mt-4 text-xs ${c.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                    시작하기 →
+                  </div>
+                </button>
+              );
+            })()
           )}
+          </div>
         </div>
       </div>
 
@@ -1123,12 +958,11 @@ function HomeView({
 // ─── Main ──────────────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [view, setView] = useState<"home" | "flow" | "reports">("home");
+  const [view, setView] = useState<"home" | "flow">("home");
   const [selectedFlow, setSelectedFlow] = useState<Flow | null>(null);
   const [pickingStartFor, setPickingStartFor] = useState<Flow | null>(null);
   const [startStep, setStartStep] = useState(0);
   const [adminOpen, setAdminOpen] = useState(false);
-  const [reportsCompany, setReportsCompany] = useState<string | undefined>(undefined);
 
   return (
     <>
@@ -1144,10 +978,6 @@ export default function Home() {
             }
           }}
           onOpenAdmin={() => setAdminOpen(true)}
-          onOpenReports={() => {
-            setReportsCompany(undefined);
-            setView("reports");
-          }}
         />
       )}
       {view === "flow" && selectedFlow && (
@@ -1158,17 +988,6 @@ export default function Home() {
             setView("home");
             setSelectedFlow(null);
           }}
-          onViewReports={(company) => {
-            setReportsCompany(company);
-            setSelectedFlow(null);
-            setView("reports");
-          }}
-        />
-      )}
-      {view === "reports" && (
-        <ReportsView
-          initialCompany={reportsCompany}
-          onBack={() => setView("home")}
         />
       )}
       {pickingStartFor && (

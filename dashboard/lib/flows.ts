@@ -22,6 +22,13 @@ export interface FlowStartPoint {
   fromStep: number;
 }
 
+// 분기별로 나눠 실행하는 플로우(포폴 점검)의 각 분기 정보
+export interface FlowQuarter {
+  label: string; // "1분기 점검"
+  timing: string; // 권장 시기 "5월 중순"
+  note: string; // 어떤 실적을 반영하는지
+}
+
 export interface Flow {
   id: string;
   title: string;
@@ -29,6 +36,7 @@ export interface Flow {
   color: string;
   steps: FlowStep[];
   startPoints?: FlowStartPoint[];
+  quarters?: FlowQuarter[]; // 있으면 분기별 카드로 표시 (포폴 점검)
 }
 
 export const flows: Flow[] = [
@@ -36,7 +44,7 @@ export const flows: Flow[] = [
     id: "discovery",
     title: "종목 발굴",
     subtitle: "섹터 아이디어 → 후보 압축 → 논제 수립",
-    color: "emerald",
+    color: "brand",
     startPoints: [
       {
         id: "sector",
@@ -131,7 +139,7 @@ export const flows: Flow[] = [
     id: "earnings",
     title: "실적 점검",
     subtitle: "실적 발표 후 → 원본 분석 → 논제 업데이트",
-    color: "blue",
+    color: "brand",
     steps: [
       {
         title: "실적 정밀 분석",
@@ -154,8 +162,14 @@ export const flows: Flow[] = [
   {
     id: "portfolio",
     title: "포트폴리오 점검",
-    subtitle: "분기 1회 → 전체 점검 → 각 종목 논제 확인",
-    color: "violet",
+    subtitle: "분기 1회, 실적 시즌 끝난 뒤(분기말 + 약 6주) 전체 보유를 점검합니다.",
+    color: "brand",
+    quarters: [
+      { label: "1분기 점검", timing: "5월 중순", note: "Q1(1~3월) 실적 반영 후" },
+      { label: "2분기 점검", timing: "8월 중순", note: "Q2(4~6월) 실적 반영 후" },
+      { label: "3분기 점검", timing: "11월 중순", note: "Q3(7~9월) 실적 반영 후" },
+      { label: "4분기·연간 점검", timing: "2월 말~3월 초", note: "Q4·연간(10~12월) 실적 반영 후" },
+    ],
     steps: [
       {
         title: "전체 포트폴리오 점검",

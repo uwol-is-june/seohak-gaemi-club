@@ -52,10 +52,11 @@ async function getAccessToken(): Promise<string> {
   return cachedToken.value;
 }
 
-// 계좌가 하나뿐이면 X-Tossinvest-Account에 넣을 계좌 식별자를 자동으로 가져온다.
-// env(TOSS_ACCOUNT_NO)가 있으면 그것을 우선 사용.
-async function resolveAccountId(token: string): Promise<string | null> {
-  const fromEnv = process.env.TOSS_ACCOUNT_NO;
+// X-Tossinvest-Account 헤더에 넣을 accountSeq를 가져온다.
+// (accountNo가 아니라 accountSeq를 넣어야 함 — GET /api/v1/accounts 응답의 accountSeq)
+// env(TOSS_ACCOUNT_SEQ)가 있으면 그것을 우선 사용.
+async function resolveAccountSeq(token: string): Promise<string | null> {
+  const fromEnv = process.env.TOSS_ACCOUNT_SEQ;
   if (fromEnv) return fromEnv;
 
   const res = await fetch(`${BASE}/api/v1/accounts`, {
@@ -64,12 +65,10 @@ async function resolveAccountId(token: string): Promise<string | null> {
   });
   if (!res.ok) return null;
   const data = await res.json();
-  const list: unknown[] = Array.isArray(data) ? data : (data.accounts ?? data.data ?? []);
+  const list: unknown[] = Array.isArray(data?.result) ? data.result : [];
   const first = list[0] as Record<string, unknown> | undefined;
-  if (!first) return null;
-  // ⚠️ 실제 필드명 확정 필요 (accountNo / accountNumber / id 등 후보)
-  const id = first.accountNo ?? first.accountNumber ?? first.number ?? first.id;
-  return id != null ? String(id) : null;
+  const seq = first?.accountSeq;
+  return seq != null ? String(seq) : null;
 }
 
 function num(v: unknown): number {
@@ -77,47 +76,42 @@ function num(v: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-// ⚠️ 실제 응답 구조 확정 후 매핑 수정 필요.
-function normalizeHolding(raw: Record<string, unknown>): Holding {
-  const quantity = num(raw.quantity ?? raw.qty ?? raw.balanceQuantity);
-  const avgPrice = num(raw.avgPrice ?? raw.averagePrice ?? raw.purchasePrice);
-  const currentPrice = num(raw.currentPrice ?? raw.price ?? raw.lastPrice);
-  const marketValue = num(raw.marketValue ?? raw.evaluationAmount ?? quantity * currentPrice);
-  const cost = avgPrice * quantity;
-  const profitLoss = num(raw.profitLoss ?? raw.evaluationProfitLoss ?? marketValue - cost);
-  const profitLossPct = num(
-    raw.profitLossRate ?? raw.returnRate ?? (cost > 0 ? (profitLoss / cost) * 100 : 0)
-  );
+// 실제 응답의 items[] 한 항목을 정규화.
+// rate는 소수(예: -0.0606 = -6.06%)로 오므로 100을 곱한다.
+function normalizeHolding(raw: any): Holding {
   return {
-    ticker: String(raw.ticker ?? raw.symbol ?? raw.code ?? ""),
-    name: String(raw.name ?? raw.stockName ?? raw.ticker ?? raw.symbol ?? ""),
-    quantity,
-    avgPrice,
-    currentPrice,
-    marketValue,
-    profitLoss,
-    profitLossPct,
+    ticker: String(raw.symbol ?? ""),
+    name: String(raw.name ?? raw.symbol ?? ""),
+    quantity: num(raw.quantity),
+    avgPrice: num(raw.averagePurchasePrice),
+    currentPrice: num(raw.lastPrice),
+    marketValue: num(raw.marketValue?.amount),
+    profitLoss: num(raw.profitLoss?.amount),
+    profitLossPct: num(raw.profitLoss?.rate) * 100,
     currency: String(raw.currency ?? "USD"),
   };
 }
 
-// 해외(비 KRW) 보유 종목만 반환.
+// 해외(비 KR) 보유 종목만 반환.
 export async function getHoldings(): Promise<Holding[]> {
   const token = await getAccessToken();
-  const accountId = await resolveAccountId(token);
+  const accountSeq = await resolveAccountSeq(token);
+  if (!accountSeq) {
+    throw new TossError("계좌를 찾을 수 없습니다 (accountSeq 조회 실패).");
+  }
 
-  const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
-  if (accountId) headers["X-Tossinvest-Account"] = accountId;
-
-  const res = await fetch(`${BASE}/api/v1/holdings`, { headers, cache: "no-store" });
+  const res = await fetch(`${BASE}/api/v1/holdings`, {
+    headers: { Authorization: `Bearer ${token}`, "X-Tossinvest-Account": accountSeq },
+    cache: "no-store",
+  });
   if (!res.ok) {
     throw new TossError(`잔고 조회 실패: ${res.status} ${await res.text()}`);
   }
   const data = await res.json();
-  const list: unknown[] = Array.isArray(data) ? data : (data.holdings ?? data.data ?? []);
-  return list
-    .map((r) => normalizeHolding(r as Record<string, unknown>))
-    .filter((h) => h.currency !== "KRW" && h.quantity > 0);
+  const items: any[] = data?.result?.items ?? [];
+  return items
+    .filter((r) => r?.marketCountry !== "KR" && num(r?.quantity) > 0)
+    .map((r) => normalizeHolding(r));
 }
 
 // ─── UI 개발용 목업 (TOSS_MOCK=1 일 때 라우트가 반환) ────────────────
