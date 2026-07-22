@@ -62,6 +62,7 @@ function getFileBadge(filename: string): FileBadge {
   if (/^03-/i.test(filename)) return { label: "멍거 관점", color: "text-violet-400 bg-violet-500/10" };
   if (/^04-/i.test(filename)) return { label: "리루 관점", color: "text-amber-400 bg-amber-500/10" };
   if (filename === "FinalReport.md") return { label: "최종보고서", color: "text-emerald-300 bg-emerald-500/20" };
+  if (filename.includes("-quality-screen-")) return { label: "열등주스크리닝", color: "text-fuchsia-400 bg-fuchsia-500/10" };
   if (filename.includes("-checklist-")) return { label: "체크리스트", color: "text-blue-400 bg-blue-500/10" };
   if (filename.endsWith("-thesis.md")) return { label: "투자논제", color: "text-violet-400 bg-violet-500/10" };
   if (filename.includes("-earnings-")) return { label: "실적분석", color: "text-orange-400 bg-orange-500/10" };
@@ -69,6 +70,15 @@ function getFileBadge(filename: string): FileBadge {
   if (filename.includes("-funnel-")) return { label: "퍼널", color: "text-teal-400 bg-teal-500/10" };
   if (filename === "portfolio-latest.md") return { label: "포트폴리오", color: "text-rose-400 bg-rose-500/10" };
   return { label: "MD", color: "text-zinc-500 bg-zinc-800" };
+}
+
+// 보고서 결과 개요(합격/불합격) pill. summary가 없으면 표시하지 않는다.
+function getResultPill(summary?: string | null): FileBadge | null {
+  if (!summary) return null;
+  if (summary.includes("면제")) return { label: "면제 통과", color: "text-amber-300 bg-amber-500/15" };
+  if (summary.includes("탈락")) return { label: "탈락", color: "text-red-300 bg-red-500/15" };
+  if (summary.includes("통과")) return { label: "통과", color: "text-emerald-300 bg-emerald-500/15" };
+  return { label: summary, color: "text-zinc-300 bg-zinc-700/50" };
 }
 
 const FILE_ORDER = ["README.md", "01-", "02-", "03-", "04-", "FinalReport.md"];
@@ -82,6 +92,24 @@ function sortCompanyFiles(files: ReportFile[]): ReportFile[] {
     if (bi !== -1) return 1;
     return a.name.localeCompare(b.name);
   });
+}
+
+// 쉼표로 구분된 티커 입력을 정규화된 배열로 (대문자, 공백/빈값 제거).
+function parseTickers(input: string): string[] {
+  return input
+    .split(",")
+    .map((t) => t.trim().toUpperCase())
+    .filter(Boolean);
+}
+
+// 티커를 입력 문자열에 토글(있으면 제거, 없으면 추가)해 다시 "A, B" 형태로 반환.
+function toggleTicker(input: string, ticker: string): string {
+  const t = ticker.trim().toUpperCase();
+  const list = parseTickers(input);
+  const idx = list.indexOf(t);
+  if (idx >= 0) list.splice(idx, 1);
+  else list.push(t);
+  return list.join(", ");
 }
 
 function resolveOutputPaths(step: FlowStep, input: string): string[] {
@@ -288,6 +316,7 @@ function StepCard({
   onDone,
   onOpenReport,
   colors,
+  holdings,
 }: {
   step: FlowStep;
   index: number;
@@ -299,6 +328,7 @@ function StepCard({
   onDone: () => void;
   onOpenReport: (path: string) => void;
   colors: (typeof colorConfig)[ColorKey];
+  holdings: Holding[];
 }) {
   const [copied, setCopied] = useState(false);
   const [sectorTab, setSectorTab] = useState(0);
@@ -410,6 +440,33 @@ function StepCard({
             </div>
           </div>
         )}
+        {step.holdingsPicker && holdings.length > 0 && (
+          <div className="mb-2">
+            <div className="text-[11px] text-zinc-500 mb-1.5">내 보유 종목 (클릭해서 추가/제거)</div>
+            <div className="flex flex-wrap gap-1.5">
+              {holdings.map((h) => {
+                const selected = parseTickers(input).includes(h.ticker.toUpperCase());
+                return (
+                  <button
+                    key={h.ticker}
+                    type="button"
+                    onClick={() => onInputChange(toggleTicker(input, h.ticker))}
+                    title={h.name}
+                    aria-pressed={selected}
+                    className={`rounded-full px-3 py-1 text-xs transition-colors border ${
+                      selected
+                        ? `${colors.bg} ${colors.text} border-transparent`
+                        : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white hover:bg-zinc-700"
+                    }`}
+                  >
+                    {selected ? "✓ " : "+ "}
+                    {h.ticker}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <input
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
@@ -465,6 +522,18 @@ function FlowView({
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [stepInputs, setStepInputs] = useState<Record<number, string>>({});
   const [modalPath, setModalPath] = useState<string | null>(null);
+  const [holdings, setHoldings] = useState<Holding[]>([]);
+
+  // 티커 입력 스텝이 하나라도 있으면 보유 종목을 불러와 칩으로 노출한다.
+  // 실패해도(토스 미설정 등) 칩만 안 뜨고 직접 입력은 그대로 동작.
+  const needsHoldings = flow.steps.some((s) => s.holdingsPicker);
+  useEffect(() => {
+    if (!needsHoldings) return;
+    fetch("/api/holdings")
+      .then((r) => r.json())
+      .then((d) => setHoldings(Array.isArray(d.holdings) ? d.holdings : []))
+      .catch(() => {});
+  }, [needsHoldings]);
 
   const colors = colorConfig[flow.color as ColorKey];
   const isDone = currentStep >= flow.steps.length;
@@ -558,9 +627,27 @@ function FlowView({
                 isSkipped={i < initialStep}
                 input={stepInputs[i] || ""}
                 onInputChange={(val) => setStepInputs((prev) => ({ ...prev, [i]: val }))}
-                onDone={() => setCurrentStep(i + 1)}
+                onDone={() => {
+                  // 미리 채워주기: 티커 입력 스텝끼리는 앞 스텝 값을 다음 스텝에 이어받는다.
+                  // 다음 스텝을 사용자가 이미 입력했다면 덮어쓰지 않는다.
+                  const next = i + 1;
+                  setStepInputs((prev) => {
+                    const cur = (prev[i] || "").trim();
+                    if (
+                      cur &&
+                      flow.steps[i]?.holdingsPicker &&
+                      flow.steps[next]?.holdingsPicker &&
+                      !(prev[next] || "").trim()
+                    ) {
+                      return { ...prev, [next]: cur };
+                    }
+                    return prev;
+                  });
+                  setCurrentStep(next);
+                }}
                 onOpenReport={(path) => setModalPath(path)}
                 colors={colors}
+                holdings={holdings}
               />
             ))}
           </div>
@@ -959,19 +1046,27 @@ function HomeView({
                     ))}
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {currentFiles.map((f) => {
                       const badge = getFileBadge(f.name);
+                      const pill = getResultPill(f.summary);
                       return (
                         <button
                           key={f.path}
                           onClick={() => setModalPath(f.path)}
-                          className="flex items-center gap-1.5 rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-2 hover:bg-zinc-800 hover:border-zinc-700 transition-colors"
+                          className="flex flex-col gap-2 rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-2.5 text-left hover:bg-zinc-800 hover:border-zinc-700 transition-colors"
                         >
-                          <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
-                            {badge.label}
-                          </span>
-                          <span className="text-xs font-mono text-zinc-400">{f.name}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
+                              {badge.label}
+                            </span>
+                            {pill && (
+                              <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${pill.color}`}>
+                                {pill.label}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs font-mono text-zinc-400 break-all">{f.name}</span>
                         </button>
                       );
                     })}
