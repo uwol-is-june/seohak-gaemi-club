@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import { skills, tools, flowGroupLabels, type DashboardItem, type FlowGroup, type Tag, type RiskSeverity } from "@/lib/data";
 import { flows, type Flow, type FlowStep } from "@/lib/flows";
 import type { ReportFile } from "@/lib/github";
+import type { Holding } from "@/lib/toss";
 
 // ─── Color config ──────────────────────────────────────────────────────────
 
@@ -859,6 +860,111 @@ function ReportsView({
   );
 }
 
+function fmtUsd(n: number, digits = 2) {
+  return n.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  });
+}
+
+function HoldingsBanner() {
+  const [holdings, setHoldings] = useState<Holding[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isMock, setIsMock] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const load = () => {
+    setLoading(true);
+    setError(null);
+    fetch("/api/holdings")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) setError(d.error);
+        setHoldings(d.holdings ?? []);
+        setIsMock(!!d.mock);
+      })
+      .catch((e) => setError(String(e)))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(load, []);
+
+  const list = holdings ?? [];
+  const total = list.reduce((s, h) => s + h.marketValue, 0);
+  const totalPL = list.reduce((s, h) => s + h.profitLoss, 0);
+  const totalCost = total - totalPL;
+  const totalPLPct = totalCost > 0 ? (totalPL / totalCost) * 100 : 0;
+
+  return (
+    <section className="mb-10 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">내 해외주식</h2>
+          {isMock && (
+            <span className="rounded px-1.5 py-0.5 text-[10px] font-medium text-amber-400 bg-amber-500/10">
+              목업
+            </span>
+          )}
+        </div>
+        <button onClick={load} className="text-xs text-zinc-500 hover:text-white transition-colors">
+          새로고침
+        </button>
+      </div>
+
+      {loading && <p className="text-xs text-zinc-600">불러오는 중...</p>}
+
+      {!loading && error && (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && list.length === 0 && (
+        <p className="text-xs text-zinc-600">보유한 해외주식이 없습니다.</p>
+      )}
+
+      {!loading && list.length > 0 && (
+        <>
+          <div className="flex items-end gap-3 mb-4">
+            <span className="text-2xl font-bold text-white">{fmtUsd(total)}</span>
+            <span className={`text-sm font-medium ${totalPL >= 0 ? "text-red-400" : "text-blue-400"}`}>
+              {totalPL >= 0 ? "+" : ""}
+              {fmtUsd(totalPL)} ({totalPL >= 0 ? "+" : ""}
+              {totalPLPct.toFixed(2)}%)
+            </span>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {list.map((h) => {
+              const up = h.profitLoss >= 0;
+              return (
+                <div
+                  key={h.ticker}
+                  className="shrink-0 min-w-[150px] rounded-xl border border-zinc-800 bg-zinc-950 p-3"
+                >
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="font-mono text-sm font-bold text-white">{h.ticker}</span>
+                    <span className={`text-xs font-medium ${up ? "text-red-400" : "text-blue-400"}`}>
+                      {up ? "+" : ""}
+                      {h.profitLossPct.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-zinc-500 truncate mb-2">{h.name}</div>
+                  <div className="text-sm font-semibold text-zinc-200">{fmtUsd(h.marketValue)}</div>
+                  <div className="text-[11px] text-zinc-600 mt-0.5">
+                    {h.quantity}주 · 평단 {fmtUsd(h.avgPrice)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
 function HomeView({
   onSelectFlow,
   onOpenAdmin,
@@ -899,6 +1005,7 @@ function HomeView({
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-4xl px-6 py-10">
+        <HoldingsBanner />
         <div className="flex items-start justify-between mb-14">
           <div>
             <h1 className="text-2xl font-bold">현생 탈출 장치</h1>
