@@ -5,3 +5,9 @@ reports/.DS_Store
 
 # 雪球爬虫登录态缓存（含 cookies，本地使用）
 /tmp/xueqiu_state.json
+
+# Claude Code 개인 설정 (로컬 전용 hook 등)
+.claude/settings.local.json
+
+# Claude Code 에이전트 메모리 (로컬 전용)
+memory/

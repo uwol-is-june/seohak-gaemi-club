@@ -227,7 +227,7 @@ function AdminModal({ onClose }: { onClose: () => void }) {
           <div>
             <h2 className="font-semibold text-white">Skills & Tools 현황</h2>
             <p className="text-xs text-zinc-500 mt-0.5">플로우별 Skill과 Python Tool의 동작 상태</p>
-            <p className="text-xs text-amber-400/80 mt-1">⏱ 산업/섹터 데이터는 3개월 기준으로 신선도를 점검·정제합니다 (기준일 초과 시 자동 갱신)</p>
+            <p className="text-xs text-amber-400/80 mt-1">⏱ 산업/섹터 데이터는 3개월 기준으로 신선도를 점검·정제합니다 (갱신은 수동 실행)</p>
           </div>
           <button
             onClick={onClose}
@@ -305,10 +305,14 @@ function StepCard({
   const displayInput = input || step.inputPlaceholder;
   const command = step.commandTemplate.replace("{input}", displayInput);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(command);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(command);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // 클립보드 API 미지원/거부 시: 성공으로 표시하지 않는다.
+    }
   };
 
   if (isSkipped) {
@@ -324,7 +328,9 @@ function StepCard({
   }
 
   if (isCompleted) {
-    const resolvedFiles = resolveOutputPaths(step, input || step.inputPlaceholder);
+    // 사용자가 값을 입력하지 않고 완료한 경우, 플레이스홀더(예: NVDA)로
+    // 존재하지 않는 보고서 경로를 열지 않도록 실제 입력이 있을 때만 계산한다.
+    const resolvedFiles = input.trim() ? resolveOutputPaths(step, input.trim()) : [];
     return (
       <div className="flex items-center gap-3 px-2 py-2.5">
         <div className={`h-6 w-6 shrink-0 rounded-full flex items-center justify-center text-xs ${colors.bg} ${colors.text}`}>
@@ -610,11 +616,21 @@ function fmtUsd(n: number, digits = 2) {
   });
 }
 
+function fmtKrw(n: number) {
+  // 원화는 소수점 없이 천단위 콤마. (예: ₩1,234,567)
+  return "₩" + Math.round(n).toLocaleString("en-US");
+}
+
+const CCY_STORAGE_KEY = "holdings-ccy";
+type Ccy = "USD" | "KRW";
+
 function HoldingsBanner() {
   const [holdings, setHoldings] = useState<Holding[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isMock, setIsMock] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [ccy, setCcy] = useState<Ccy>("USD");
+  const [fx, setFx] = useState<number | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -632,6 +648,35 @@ function HoldingsBanner() {
 
   useEffect(load, []);
 
+  // 저장된 통화 선호를 복원 (SSR 하이드레이션 불일치 방지 위해 마운트 후 읽음).
+  useEffect(() => {
+    const saved = localStorage.getItem(CCY_STORAGE_KEY);
+    if (saved === "USD" || saved === "KRW") setCcy(saved);
+  }, []);
+
+  // USD→KRW 환율을 마운트 시 미리 로드해 토글이 즉시 반응하도록.
+  useEffect(() => {
+    fetch("/api/fx")
+      .then((r) => r.json())
+      .then((d) => {
+        if (typeof d.rate === "number") setFx(d.rate);
+      })
+      .catch(() => {});
+  }, []);
+
+  const setCurrency = (next: Ccy) => {
+    setCcy(next);
+    try {
+      localStorage.setItem(CCY_STORAGE_KEY, next);
+    } catch {
+      // 로컬 저장 실패는 무시 (프라이빗 모드 등).
+    }
+  };
+
+  // KRW 선택 && 환율 로드 완료일 때만 원화로 변환·표시. 아니면 달러 유지.
+  const money = (n: number, digits = 2) =>
+    ccy === "KRW" && fx != null ? fmtKrw(n * fx) : fmtUsd(n, digits);
+
   const list = holdings ?? [];
   const total = list.reduce((s, h) => s + h.marketValue, 0);
   const totalPL = list.reduce((s, h) => s + h.profitLoss, 0);
@@ -642,19 +687,44 @@ function HoldingsBanner() {
     <section className="mb-10 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">내 해외주식</h2>
+          <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">보유 자산</h2>
           {isMock && (
             <span className="rounded px-1.5 py-0.5 text-[10px] font-medium text-amber-400 bg-amber-500/10">
               목업
             </span>
           )}
         </div>
-        <button
-          onClick={load}
-          aria-label="새로고침"
-          title="새로고침"
-          className="text-zinc-500 hover:text-white transition-colors"
-        >
+        <div className="flex items-center gap-3">
+          <div
+            role="group"
+            aria-label="통화 선택"
+            className="flex rounded-lg border border-zinc-800 bg-zinc-950 p-0.5"
+          >
+            {(["USD", "KRW"] as const).map((c) => {
+              const active = ccy === c;
+              const disabled = c === "KRW" && fx == null;
+              return (
+                <button
+                  key={c}
+                  onClick={() => setCurrency(c)}
+                  disabled={disabled}
+                  aria-pressed={active}
+                  title={disabled ? "환율 불러오는 중..." : `${c}로 표시`}
+                  className={`rounded-md px-2 py-0.5 text-[11px] font-semibold transition-colors ${
+                    active ? "bg-brand-600 text-white" : "text-zinc-500 hover:text-white"
+                  } ${disabled ? "cursor-not-allowed opacity-40 hover:text-zinc-500" : ""}`}
+                >
+                  {c === "USD" ? "$ USD" : "₩ KRW"}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={load}
+            aria-label="새로고침"
+            title="새로고침"
+            className="text-zinc-500 hover:text-white transition-colors"
+          >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="15"
@@ -670,7 +740,8 @@ function HoldingsBanner() {
             <path d="M21 12a9 9 0 1 1-2.64-6.36" />
             <path d="M21 3v6h-6" />
           </svg>
-        </button>
+          </button>
+        </div>
       </div>
 
       {loading && <p className="text-xs text-zinc-600">불러오는 중...</p>}
@@ -686,10 +757,10 @@ function HoldingsBanner() {
       {!loading && list.length > 0 && (
         <>
           <div className="flex items-end gap-3 mb-4">
-            <span className="text-2xl font-bold text-white">{fmtUsd(total)}</span>
+            <span className="text-2xl font-bold text-white">{money(total)}</span>
             <span className={`text-sm font-medium ${totalPL >= 0 ? "text-red-400" : "text-blue-400"}`}>
               {totalPL >= 0 ? "+" : ""}
-              {fmtUsd(totalPL)} ({totalPL >= 0 ? "+" : ""}
+              {money(totalPL)} ({totalPL >= 0 ? "+" : ""}
               {totalPLPct.toFixed(2)}%)
             </span>
           </div>
@@ -709,9 +780,9 @@ function HoldingsBanner() {
                     </span>
                   </div>
                   <div className="text-[11px] text-zinc-500 truncate mb-2">{h.name}</div>
-                  <div className="text-sm font-semibold text-zinc-200">{fmtUsd(h.marketValue)}</div>
+                  <div className="text-sm font-semibold text-zinc-200">{money(h.marketValue)}</div>
                   <div className="text-[11px] text-zinc-600 mt-0.5">
-                    {h.quantity}주 · 평단 {fmtUsd(h.avgPrice)}
+                    {h.quantity}주 · 평단 {money(h.avgPrice)}
                   </div>
                 </div>
               );
@@ -734,21 +805,33 @@ function HomeView({
   const [reportTab, setReportTab] = useState<string | null>(null);
   const [modalPath, setModalPath] = useState<string | null>(null);
   const [flowTab, setFlowTab] = useState<string>("reports");
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoadError(false);
     fetch("/api/reports")
       .then((r) => r.json())
       .then((d) => {
-        if (!d.error) {
-          setFiles(d.files);
-          const companies = Array.from(
-            new Set((d.files as ReportFile[]).map((f) => f.company).filter((c): c is string => c !== null))
-          ).sort() as string[];
-          setReportTab(companies[0] ?? "root");
+        if (cancelled) return;
+        if (d.error) {
+          setLoadError(true);
+          return;
         }
+        setFiles(d.files);
+        const companies = Array.from(
+          new Set((d.files as ReportFile[]).map((f) => f.company).filter((c): c is string => c !== null))
+        ).sort() as string[];
+        setReportTab(companies[0] ?? "root");
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => {
+        if (!cancelled) setLoadError(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   const companies = files
     ? (Array.from(new Set(files.map((f) => f.company).filter((c): c is string => c !== null))).sort() as string[])
@@ -840,7 +923,19 @@ function HomeView({
                 </h2>
               </div>
 
-              {!files && <p className="text-xs text-zinc-600">불러오는 중...</p>}
+              {!files && !loadError && <p className="text-xs text-zinc-600">불러오는 중...</p>}
+
+              {!files && loadError && (
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="text-red-400">보고서를 불러오지 못했습니다.</span>
+                  <button
+                    onClick={() => setReloadKey((k) => k + 1)}
+                    className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                  >
+                    다시 시도
+                  </button>
+                </div>
+              )}
 
               {files && tabs.length === 0 && (
                 <p className="text-xs text-zinc-600">

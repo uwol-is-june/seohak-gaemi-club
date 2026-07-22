@@ -1,12 +1,13 @@
 import { cookies } from "next/headers";
-import { AUTH_COOKIE, expectedToken } from "@/lib/auth";
+import { AUTH_COOKIE, expectedToken, safeEqual } from "@/lib/auth";
 import { getHoldings, MOCK_HOLDINGS } from "@/lib/toss";
 
 export async function GET() {
   // 금융 데이터이므로 로그인 쿠키를 검증한다 (fail-closed).
   const token = expectedToken();
   const cookieStore = await cookies();
-  if (!token || cookieStore.get(AUTH_COOKIE)?.value !== token) {
+  const cookie = cookieStore.get(AUTH_COOKIE)?.value;
+  if (!token || !cookie || !safeEqual(cookie, token)) {
     return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   }
 

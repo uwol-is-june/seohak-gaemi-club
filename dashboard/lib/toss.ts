@@ -46,9 +46,14 @@ async function getAccessToken(): Promise<string> {
     cache: "no-store",
   });
   if (!res.ok) {
-    throw new TossError(`토큰 발급 실패: ${res.status} ${await res.text()}`);
+    console.error(`토큰 발급 실패: ${res.status} ${await res.text()}`);
+    throw new TossError("토스 인증에 실패했습니다.");
   }
   const data = await res.json();
+  if (typeof data.access_token !== "string" || !data.access_token) {
+    console.error("토큰 응답에 access_token이 없습니다:", JSON.stringify(data));
+    throw new TossError("토스 토큰 응답이 올바르지 않습니다.");
+  }
   const expiresInSec = typeof data.expires_in === "number" ? data.expires_in : 3600;
   cachedToken = { value: data.access_token, expiresAt: Date.now() + expiresInSec * 1000 };
   return cachedToken.value;
@@ -107,7 +112,8 @@ export async function getHoldings(): Promise<Holding[]> {
     cache: "no-store",
   });
   if (!res.ok) {
-    throw new TossError(`잔고 조회 실패: ${res.status} ${await res.text()}`);
+    console.error(`잔고 조회 실패: ${res.status} ${await res.text()}`);
+    throw new TossError("보유 종목을 불러오지 못했습니다.");
   }
   const data = await res.json();
   const items: any[] = data?.result?.items ?? [];

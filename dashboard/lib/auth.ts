@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 
 // 로그인 쿠키 이름
 export const AUTH_COOKIE = "dash_auth";
@@ -16,4 +16,14 @@ export function expectedToken(): string | null {
   const pw = process.env.SITE_PASSWORD;
   if (!pw) return null;
   return createHash("sha256").update(pw + PEPPER).digest("hex");
+}
+
+/**
+ * 두 비밀 문자열을 상수 시간에 비교한다 (타이밍 공격 방지).
+ * 길이 차이로 인한 조기 종료도 막기 위해 양쪽을 먼저 sha256(32B)로 해시한 뒤 비교.
+ */
+export function safeEqual(a: string, b: string): boolean {
+  const ha = createHash("sha256").update(a).digest();
+  const hb = createHash("sha256").update(b).digest();
+  return timingSafeEqual(ha, hb);
 }

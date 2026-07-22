@@ -25,7 +25,8 @@ export async function listReportFiles(): Promise<ReportFile[]> {
     { headers: authHeaders(), cache: "no-store" }
   );
   if (!res.ok) {
-    throw new Error(`GitHub API 오류: ${res.status} ${await res.text()}`);
+    console.error(`GitHub API 오류(트리): ${res.status} ${await res.text()}`);
+    throw new Error("보고서 목록을 불러오지 못했습니다.");
   }
   const data = await res.json();
   const tree: { path: string; type: string }[] = data.tree || [];
@@ -51,7 +52,8 @@ export async function getReportContent(path: string): Promise<string> {
     { headers: authHeaders(), cache: "no-store" }
   );
   if (!res.ok) {
-    throw new Error(`GitHub API 오류: ${res.status} ${await res.text()}`);
+    console.error(`GitHub API 오류(내용): ${res.status} ${await res.text()}`);
+    throw new Error("보고서를 불러오지 못했습니다.");
   }
   const data = await res.json();
   if (!data.content) {
