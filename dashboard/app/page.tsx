@@ -676,9 +676,7 @@ function HoldingsBanner() {
       {loading && <p className="text-xs text-zinc-600">불러오는 중...</p>}
 
       {!loading && error && (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-          {error}
-        </div>
+        <p className="text-xs text-zinc-600">보유 정보를 일시적으로 불러올 수 없습니다.</p>
       )}
 
       {!loading && !error && list.length === 0 && (

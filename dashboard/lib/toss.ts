@@ -1,6 +1,9 @@
 // 토스증권 Open API 클라이언트 (server-only)
 // 인증: OAuth2 Client Credentials. Base URL: https://openapi.tossinvest.com
-// ⚠️ 잔고 응답 필드명은 실제 연결(IP 허용) 후 확정해야 함 — normalizeHolding의 TODO 참고.
+//
+// 토스는 IP 허용목록을 요구한다. Vercel 서버리스는 IP가 고정되지 않으므로,
+// TOSS_PROXY_URL(고정 IP 프록시)이 설정돼 있으면 모든 토스 호출을 그 프록시로
+// 우회시킨다. 프록시의 고정 IP를 토스 허용목록에 등록해두면 배포본에서도 동작.
 
 const BASE = "https://openapi.tossinvest.com";
 
@@ -18,6 +21,31 @@ export interface Holding {
 
 export class TossError extends Error {}
 
+// ─── 프록시 경유 fetch ──────────────────────────────────────────────
+// TOSS_PROXY_URL이 있으면 undici ProxyAgent로 우회(고정 IP), 없으면 직접 호출.
+let proxyDispatcher: unknown = null;
+let proxyInit = false;
+
+async function getProxyDispatcher(): Promise<unknown> {
+  const url = process.env.TOSS_PROXY_URL;
+  if (!url) return null;
+  if (proxyInit) return proxyDispatcher;
+  proxyInit = true;
+  try {
+    const { ProxyAgent } = await import("undici");
+    proxyDispatcher = new ProxyAgent(url);
+  } catch {
+    proxyDispatcher = null; // undici 미설치 등 → 직접 호출로 폴백
+  }
+  return proxyDispatcher;
+}
+
+async function tossFetch(url: string, opts: RequestInit): Promise<Response> {
+  const dispatcher = await getProxyDispatcher();
+  // dispatcher는 global fetch(undici)의 RequestInit 확장이라 타입에 없음 → any 캐스팅.
+  return fetch(url, (dispatcher ? { ...opts, dispatcher } : opts) as RequestInit);
+}
+
 // ─── 토큰 캐시 (모듈 메모리) ────────────────────────────────────────
 // 서버리스에서는 인스턴스마다 캐시가 따로지만, 한 인스턴스가 살아있는 동안
 // 반복 발급을 막아 rate limit을 줄인다. 만료 60초 전 갱신.
@@ -34,7 +62,7 @@ async function getAccessToken(): Promise<string> {
   }
 
   const basic = Buffer.from(`${key}:${secret}`).toString("base64");
-  const res = await fetch(`${BASE}/oauth2/token`, {
+  const res = await tossFetch(`${BASE}/oauth2/token`, {
     method: "POST",
     headers: {
       Authorization: `Basic ${basic}`,
@@ -59,7 +87,7 @@ async function resolveAccountSeq(token: string): Promise<string | null> {
   const fromEnv = process.env.TOSS_ACCOUNT_SEQ;
   if (fromEnv) return fromEnv;
 
-  const res = await fetch(`${BASE}/api/v1/accounts`, {
+  const res = await tossFetch(`${BASE}/api/v1/accounts`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
@@ -100,7 +128,7 @@ export async function getHoldings(): Promise<Holding[]> {
     throw new TossError("계좌를 찾을 수 없습니다 (accountSeq 조회 실패).");
   }
 
-  const res = await fetch(`${BASE}/api/v1/holdings`, {
+  const res = await tossFetch(`${BASE}/api/v1/holdings`, {
     headers: { Authorization: `Bearer ${token}`, "X-Tossinvest-Account": accountSeq },
     cache: "no-store",
   });
