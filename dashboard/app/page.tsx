@@ -904,12 +904,23 @@ function HomeView({
             <h1 className="text-2xl font-bold">현생 탈출 장치</h1>
             <p className="mt-1 text-sm text-zinc-500">어떤 플로우를 시작할까요?</p>
           </div>
-          <button
-            onClick={onOpenAdmin}
-            className="px-3 py-1.5 rounded-lg bg-zinc-800 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
-          >
-            관리자
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onOpenAdmin}
+              className="px-3 py-1.5 rounded-lg bg-zinc-800 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
+            >
+              관리자
+            </button>
+            <button
+              onClick={async () => {
+                await fetch("/api/logout", { method: "POST" });
+                window.location.href = "/login";
+              }}
+              className="px-3 py-1.5 rounded-lg bg-zinc-800 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
+            >
+              로그아웃
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
