@@ -17,14 +17,14 @@ export type ConfidenceVerdict = "높음" | "보통" | "낮음";
 
 // 같은 종목이 서로 다른 폴더명(티커/영문명/한글명)으로 저장돼 보고서 탭에서 별개
 // 종목으로 분리 표시되는 문제를 막는 별칭 테이블. 각 그룹의 첫 항목이 표시명(canonical).
-// 매칭은 대소문자·공백·하이픈·언더스코어를 무시하고 비교한다.
+// 매칭은 대소문자·공백·하이픈·언더스코어·점을 무시하고 비교한다(BRK.B/BRK-B/BRKB 동일 취급).
 // 근본 예방책은 폴더명을 회사명으로 고정하는 것(CLAUDE.md 규칙) — 이 테이블은 보완책.
 const COMPANY_ALIAS_GROUPS: string[][] = [
   ["QUBT", "QuantumComputing", "Quantum Computing", "퀀텀컴퓨팅"],
 ];
 
 function normalizeCompanyKey(s: string): string {
-  return s.toLowerCase().replace(/[\s_-]/g, "");
+  return s.toLowerCase().replace(/[\s_.-]/g, "");
 }
 
 const ALIAS_LOOKUP: Map<string, string> = (() => {
@@ -159,4 +159,25 @@ export async function getReportContent(path: string): Promise<string> {
     throw new Error("잘못된 경로입니다.");
   }
   return fetchReportContent(path);
+}
+
+// 보고서의 마지막 커밋 시각(ISO 문자열). 파일명에 박힌 날짜가 아니라 저장소에 실제
+// 반영된 시점 = 신선도(as-of) 기준. 실패하면 null(신선도 표기를 숨긴다).
+export async function getReportCommitDate(path: string): Promise<string | null> {
+  if (!path.startsWith("reports/") || !path.endsWith(".md") || path.includes("..")) {
+    return null;
+  }
+  try {
+    const encoded = path.split("/").map(encodeURIComponent).join("/");
+    const res = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/commits?path=${encoded}&sha=${BRANCH}&per_page=1`,
+      { headers: authHeaders(), cache: "no-store" }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const date = data?.[0]?.commit?.committer?.date ?? data?.[0]?.commit?.author?.date;
+    return typeof date === "string" ? date : null;
+  } catch {
+    return null;
+  }
 }

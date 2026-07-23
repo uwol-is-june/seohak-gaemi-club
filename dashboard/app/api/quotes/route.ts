@@ -17,6 +17,12 @@ const TTL_MS = 60 * 1000; // 1분 — 온디맨드 버튼용이라 짧게
 const MAX_TICKERS = 50;
 const cache = new Map<string, { quote: Quote; expiresAt: number }>();
 
+// 토스/보고서 티커 → Yahoo 심볼 형식으로 정규화.
+// Yahoo는 클래스주에 대시를 쓴다(BRK.B/BRK B → BRK-B). 대소문자·공백 정리 포함.
+function toYahooSymbol(ticker: string): string {
+  return ticker.trim().toUpperCase().replace(/[.\s]/g, "-");
+}
+
 // 티커 하나의 시세를 Yahoo chart 메타에서 뽑아 온다. 실패는 null 필드로 graceful.
 async function fetchQuote(ticker: string): Promise<Quote> {
   const cached = cache.get(ticker);
@@ -25,7 +31,7 @@ async function fetchQuote(ticker: string): Promise<Quote> {
   const empty: Quote = { ticker, price: null, prevClose: null, changePct: null };
   try {
     const res = await fetch(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=1d&interval=1d`,
+      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(toYahooSymbol(ticker))}?range=1d&interval=1d`,
       { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }
     );
     if (!res.ok) throw new Error(`quote ${res.status}`);

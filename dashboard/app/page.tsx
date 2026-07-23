@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkSentenceBreaks from "@/lib/remark-sentence-breaks";
 import { flows, type Flow, type FlowStep } from "@/lib/flows";
 import type { ReportFile } from "@/lib/github";
 import type { Holding } from "@/lib/toss";
@@ -165,21 +166,38 @@ function resolveOutputPaths(step: FlowStep, input: string): string[] {
 
 // ─── ReportModal ───────────────────────────────────────────────────────────
 
+// 보고서 as-of(마지막 커밋 시각) → 표시 라벨 + 오래됨 여부. 분기(90일) 넘으면 stale.
+// 투자 리서치는 실적 시즌마다 낡으므로, 실시간 가격 옆의 정적 보고서에 신선도 신호를 준다.
+const REPORT_STALE_DAYS = 90;
+function reportAsOf(iso: string): { text: string; stale: boolean } | null {
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return null;
+  const days = Math.floor((Date.now() - t) / 86_400_000);
+  const ymd = new Date(t).toISOString().slice(0, 10);
+  const rel = days <= 0 ? "오늘" : days === 1 ? "어제" : `${days}일 전`;
+  return { text: `${ymd} · ${rel}`, stale: days >= REPORT_STALE_DAYS };
+}
+
 // 보고서 본문 fetch + 마크다운 렌더. 모달·인라인 뷰 양쪽에서 재사용한다.
 function ReportContentView({ path }: { path: string }) {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [commitDate, setCommitDate] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
     setContent(null);
+    setCommitDate(null);
     fetch(`/api/reports/content?path=${encodeURIComponent(path)}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.error) setError(d.error);
-        else setContent(d.content);
+        else {
+          setContent(d.content);
+          setCommitDate(typeof d.commitDate === "string" ? d.commitDate : null);
+        }
       })
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
@@ -193,10 +211,27 @@ function ReportContentView({ path }: { path: string }) {
       </div>
     );
   if (!content) return null;
+  const asOf = commitDate ? reportAsOf(commitDate) : null;
   return (
-    <article className="report-prose">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-    </article>
+    <>
+      {asOf && (
+        <div
+          className={`mb-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs ${
+            asOf.stale
+              ? "border-sunset/30 bg-sunset/10 text-sunset-soft"
+              : "border-hairline bg-canvas-soft text-mute"
+          }`}
+        >
+          <span className="eyebrow text-[10px]">AS-OF</span>
+          <span className="font-mono">{asOf.text}</span>
+          <span>· 작성 시점의 스냅샷입니다. 실시간 가격·최신 실적과 다를 수 있습니다.</span>
+          {asOf.stale && <span className="font-medium">— 오래된 분석(재검토 권장)</span>}
+        </div>
+      )}
+      <article className="report-prose">
+        <ReactMarkdown remarkPlugins={[remarkGfm, remarkSentenceBreaks]}>{content}</ReactMarkdown>
+      </article>
+    </>
   );
 }
 

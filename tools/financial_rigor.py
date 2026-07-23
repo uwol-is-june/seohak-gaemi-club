@@ -86,7 +86,7 @@ def verify_market_cap(price, shares, reported_cap, currency=""):
         print(f"  ⚠️  Deviation {deviation:.1f}% within acceptable range — may be due to price movement or share count change")
         return True
     else:
-        print(f"  ✅ Verified — deviation only {deviation:.2f}%")
+        print(f"  ✅ 산술 일치 — 편차 {deviation:.2f}% (주의: 입력값이 옳다는 전제하의 계산 검증일 뿐, 사실 정확성 보장 아님)")
         return True
 
 
@@ -154,7 +154,8 @@ def verify_valuation(price, eps=None, bvps=None, fcf_per_share=None,
             results["PS"] = float(ps)
 
     print()
-    print("  ✅ All metrics calculated with exact decimal arithmetic — no floating-point error")
+    print("  ✅ 모든 지표를 정확 십진 연산으로 계산 — 부동소수점 오차 없음")
+    print("     (주의: '산술의 정확성'만 보장. 입력한 가격·EPS 등이 실제와 맞는지는 검증하지 않음)")
     return results
 
 

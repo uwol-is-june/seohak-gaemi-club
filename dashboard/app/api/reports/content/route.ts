@@ -1,4 +1,4 @@
-import { getReportContent } from "@/lib/github";
+import { getReportContent, getReportCommitDate } from "@/lib/github";
 import { requireAuth } from "@/lib/api-auth";
 
 export async function GET(request: Request) {
@@ -10,8 +10,12 @@ export async function GET(request: Request) {
     return Response.json({ error: "path 쿼리 파라미터가 필요합니다." }, { status: 400 });
   }
   try {
-    const content = await getReportContent(path);
-    return Response.json({ content });
+    // 본문 + 마지막 커밋 시각(as-of). 커밋 시각 조회 실패는 null로 graceful.
+    const [content, commitDate] = await Promise.all([
+      getReportContent(path),
+      getReportCommitDate(path),
+    ]);
+    return Response.json({ content, commitDate });
   } catch (err) {
     return Response.json({ error: (err as Error).message }, { status: 500 });
   }

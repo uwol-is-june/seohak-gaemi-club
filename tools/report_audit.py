@@ -383,7 +383,9 @@ def render_verdict(results: list, report_name: str = "") -> dict:
     print()
 
     if fail_count == 0:
-        print(f'{BOLD}{GREEN}[APPROVED] All sampled data passed — report may be published.{RESET}')
+        print(f'{BOLD}{GREEN}[SELF-AUDIT PASS] 표본 데이터가 자가 감사를 통과 — 발행 가능.{RESET}')
+        print(f'{YELLOW}  주의: 이 감사의 대조 기준(ground truth)도 동일 모델이 채운 값입니다.')
+        print(f'  독립 감사가 아니며, 표본(15%) 밖 수치와 [추정] 항목은 검증되지 않았습니다.{RESET}')
         verdict = 'PASS'
     else:
         print(f'{BOLD}{RED}[REJECTED] {fail_count} data point(s) failed verification — report must be corrected and re-audited.{RESET}')
