@@ -201,9 +201,10 @@ components:
     padding: "{spacing.xl}"
     item-divider: "{colors.hairline}"
   ex-app-shell-row:
-    description: "Sidebar nav row inside the App Shell example. Active state uses brand primary as the indicator."
+    description: "Sidebar nav row inside the App Shell example. Active state is a white-fill row (brand primary background + near-black text), matching the mobile tab pills."
     backgroundColor: "{colors.canvas}"
-    activeIndicator: "{colors.primary}"
+    activeBackground: "{colors.primary}"
+    activeText: "{colors.on-primary}"
     rounded: "{rounded.sm}"
     padding: "{spacing.md} {spacing.lg}"
   ex-data-table-cell:
@@ -429,8 +430,8 @@ The brand uses no shadows. Hairline borders carry all elevation cues.
 **`ex-cart-drawer`** — Subscription summary — re-purposed for SaaS / B2B (line items per add-on, not literal cart).
 - Properties: `backgroundColor`, `rounded`, `padding`, `item-divider`
 
-**`ex-app-shell-row`** — Sidebar nav row inside the App Shell example. Active state uses brand primary as the indicator.
-- Properties: `backgroundColor`, `activeIndicator`, `rounded`, `padding`
+**`ex-app-shell-row`** — Sidebar nav row inside the App Shell example. Active state is a white-fill row (brand primary background + near-black text), matching the mobile tab pills.
+- Properties: `backgroundColor`, `activeBackground`, `activeText`, `rounded`, `padding`
 
 **`ex-data-table-cell`** — Default data-table th + td chrome. Header uses mono-caps eyebrow typography; body uses body-sm.
 - Properties: `headerBackground`, `headerTypography`, `bodyTypography`, `cellPadding`, `rowBorder`

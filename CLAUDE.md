@@ -19,17 +19,24 @@ proj_report/     — 프로젝트 자체 분석 문서
 
 ## 보고서 디렉토리 구조
 
-모든 보고서는 **회사명**으로 폴더를 만들고 관련 보고서를 그 안에 저장:
+모든 보고서는 **미국 주식 티커**로 폴더를 만들고 관련 보고서를 그 안에 저장.
+
+> **폴더 명명 규칙 (필수)**: 한 종목의 폴더명은 **미국 상장 티커로 통일**하며 **하나로 고정**한다
+> (예: `AAPL`, `NVDA`, `QUBT`, `SPCX`). 티커·영문명(`QuantumComputing`)·한글명(`퀀텀컴퓨팅`)을
+> 섞어 쓰면 대시보드 보고서 탭에서 별개 종목으로 분리 표시된다. 폴더 안 파일명 접두사도
+> 동일 티커를 사용한다(예: `SPCX/SPCX-checklist-20260723.md`). 기존 폴더가 티커가 아닌
+> 이름으로 있으면 티커로 정리하고, 부득이하게 폴더명이 갈린 경우 대시보드
+> `dashboard/lib/github.ts`의 `COMPANY_ALIAS_GROUPS`에 별칭을 등록해 병합한다.
 
 ```
 reports/
-├── Apple/
+├── AAPL/
 │   ├── FinalReport.md
-│   ├── Apple-earnings-2025Q4.md
-│   └── Apple-thesis.md
-├── NVIDIA/
+│   ├── AAPL-earnings-2025Q4.md
+│   └── AAPL-thesis.md
+├── NVDA/
 │   ├── FinalReport.md
-│   └── NVIDIA-checklist-20260627.md
+│   └── NVDA-checklist-20260627.md
 ├── AI-Semiconductors-industry-20260627.md   — 섹터 보고서 (루트)
 ├── SP500-funnel-20260627.md                 — 스크리닝 보고서 (루트)
 └── portfolio-latest.md                      — 포트폴리오 보고서 (루트)
@@ -39,18 +46,18 @@ reports/
 
 | Skill | 파일명 형식 | 예시 |
 |-------|-----------|------|
-| /investment-team | `{회사명}/` 폴더 내 README + 4개 서브보고서 + FinalReport | `reports/Apple/` |
-| /investment-checklist | `{회사명}/{회사명}-checklist-{YYYYMMDD}.md` | `reports/NVIDIA/NVIDIA-checklist-20260627.md` |
+| /investment-team | `{티커}/` 폴더 내 README + 4개 서브보고서 + FinalReport | `reports/AAPL/` |
+| /investment-checklist | `{티커}/{티커}-checklist-{YYYYMMDD}.md` | `reports/NVDA/NVDA-checklist-20260627.md` |
 | /industry-research | `{섹터명}-industry-{YYYYMMDD}.md` (루트) | `reports/AI-Semiconductors-industry-20260627.md` |
 | /industry-funnel | `{섹터명}-funnel-{YYYYMMDD}.md` (루트) | `reports/SP500-Fintech-funnel-20260627.md` |
-| /earnings-review | `{회사명}/{회사명}-earnings-{기간}.md` | `reports/Apple/Apple-earnings-2025Q4.md` |
-| /thesis-tracker | `{회사명}/{회사명}-thesis.md` (장기 유지) | `reports/Apple/Apple-thesis.md` |
+| /earnings-review | `{티커}/{티커}-earnings-{기간}.md` | `reports/AAPL/AAPL-earnings-2025Q4.md` |
+| /thesis-tracker | `{티커}/{티커}-thesis.md` (장기 유지) | `reports/AAPL/AAPL-thesis.md` |
 | /portfolio-review | `portfolio-latest.md` (루트, 지속 업데이트) | `reports/portfolio-latest.md` |
 
 ## /investment-team 파일 구조
 
 ```
-reports/{회사명}/
+reports/{티커}/
 ├── README.md                               — 리서치 프레임워크 개요 + 핵심 결론
 ├── 01-BusinessModel-DYP-Perspective.md
 ├── 02-FinancialValuation-Buffett-Perspective.md

@@ -3,6 +3,8 @@
 // 라우트 핸들러는 기본 비캐시이므로 모듈 메모리에 12시간 캐시한다
 // (toss.ts의 토큰 캐시와 동일한 방식).
 
+import { requireAuth } from "@/lib/api-auth";
+
 const FX_API = "https://api.frankfurter.dev/v1/latest?base=USD&symbols=KRW";
 const FALLBACK_RATE = 1450; // API 실패 시 대략치. 필요하면 수동으로 갱신.
 const TTL_MS = 12 * 60 * 60 * 1000; // 12시간
@@ -11,6 +13,9 @@ let cache: { rate: number; source: "api" | "fallback"; asOf: string; expiresAt: 
   null;
 
 export async function GET() {
+  const unauth = await requireAuth();
+  if (unauth) return unauth;
+
   if (cache && cache.expiresAt > Date.now()) {
     return Response.json({ rate: cache.rate, source: cache.source, asOf: cache.asOf });
   }

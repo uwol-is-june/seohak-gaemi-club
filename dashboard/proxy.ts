@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { AUTH_COOKIE, expectedToken } from "@/lib/auth";
+import { AUTH_COOKIE, expectedToken, safeEqual } from "@/lib/auth";
 
 // 로그인 없이 접근 가능한 경로 (로그인 화면 + 인증 API)
 const PUBLIC_PATHS = ["/login", "/api/login", "/api/logout"];
@@ -16,8 +16,8 @@ export function proxy(request: NextRequest) {
   const token = request.cookies.get(AUTH_COOKIE)?.value;
   const expected = expectedToken();
 
-  // 인증됨 → 통과
-  if (expected && token === expected) {
+  // 인증됨 → 통과 (상수 시간 비교로 통일, 코드베이스의 다른 인증 경로와 일관)
+  if (expected && token && safeEqual(token, expected)) {
     return NextResponse.next();
   }
 

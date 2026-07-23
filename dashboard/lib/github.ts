@@ -15,6 +15,32 @@ function authHeaders(): Record<string, string> {
 
 export type ConfidenceVerdict = "높음" | "보통" | "낮음";
 
+// 같은 종목이 서로 다른 폴더명(티커/영문명/한글명)으로 저장돼 보고서 탭에서 별개
+// 종목으로 분리 표시되는 문제를 막는 별칭 테이블. 각 그룹의 첫 항목이 표시명(canonical).
+// 매칭은 대소문자·공백·하이픈·언더스코어를 무시하고 비교한다.
+// 근본 예방책은 폴더명을 회사명으로 고정하는 것(CLAUDE.md 규칙) — 이 테이블은 보완책.
+const COMPANY_ALIAS_GROUPS: string[][] = [
+  ["QUBT", "QuantumComputing", "Quantum Computing", "퀀텀컴퓨팅"],
+];
+
+function normalizeCompanyKey(s: string): string {
+  return s.toLowerCase().replace(/[\s_-]/g, "");
+}
+
+const ALIAS_LOOKUP: Map<string, string> = (() => {
+  const m = new Map<string, string>();
+  for (const group of COMPANY_ALIAS_GROUPS) {
+    const canonical = group[0];
+    for (const name of group) m.set(normalizeCompanyKey(name), canonical);
+  }
+  return m;
+})();
+
+// 폴더명을 표준 표시명으로 정규화. 별칭 테이블에 없으면 폴더명을 그대로 반환.
+function canonicalCompany(folder: string): string {
+  return ALIAS_LOOKUP.get(normalizeCompanyKey(folder)) ?? folder;
+}
+
 export interface ReportFile {
   path: string; // e.g. "reports/Apple/Apple-thesis.md"
   company: string | null; // e.g. "Apple", null for root-level reports
@@ -50,7 +76,9 @@ function parseConfidenceVerdict(md: string): ConfidenceVerdict | null {
   return m ? (m[1] as ConfidenceVerdict) : null;
 }
 
-export async function listReportFiles(): Promise<ReportFile[]> {
+// 저장소 트리에서 보고서 .md 경로 목록만 가져온다(본문 fetch 없음).
+// listReportFiles(목록 구성)와 getReportContent(경로 화이트리스트 검증)가 공유한다.
+async function fetchReportTreePaths(): Promise<string[]> {
   const res = await fetch(
     `https://api.github.com/repos/${OWNER}/${REPO}/git/trees/${BRANCH}?recursive=1`,
     { headers: authHeaders(), cache: "no-store" }
@@ -61,15 +89,22 @@ export async function listReportFiles(): Promise<ReportFile[]> {
   }
   const data = await res.json();
   const tree: { path: string; type: string }[] = data.tree || [];
-
-  const files: ReportFile[] = tree
+  return tree
     .filter((item) => item.type === "blob" && item.path.startsWith("reports/") && item.path.endsWith(".md"))
-    .map((item) => {
-      const parts = item.path.split("/");
+    .map((item) => item.path);
+}
+
+export async function listReportFiles(): Promise<ReportFile[]> {
+  const paths = await fetchReportTreePaths();
+
+  const files: ReportFile[] = paths
+    .map((path) => {
+      const parts = path.split("/");
       // reports/{file}.md -> root-level, reports/{company}/{file}.md -> company-level
-      const company = parts.length > 2 ? parts[1] : null;
+      // 폴더명은 canonicalCompany로 정규화해 동일 종목의 폴더명 차이를 하나로 병합한다.
+      const company = parts.length > 2 ? canonicalCompany(parts[1]) : null;
       const name = parts[parts.length - 1];
-      return { path: item.path, company, name };
+      return { path, company, name };
     })
     .sort((a, b) => a.path.localeCompare(b.path));
 
@@ -77,10 +112,11 @@ export async function listReportFiles(): Promise<ReportFile[]> {
   // 한 번의 fetch로 두 신호를 함께 뽑아 중복 호출을 피한다.
   // 참고: 신뢰도 블록은 대부분의 보고서 유형에 실리므로 전 파일 본문을 받는다. 로컬 단일
   // 사용자 대시보드 + 보고서 수가 적어 허용 가능. 보고서가 크게 늘면 캐싱/온디맨드 파싱으로 최적화.
+  // 경로는 트리에서 온 신뢰 가능한 값이므로 검증을 건너뛰는 내부 함수로 받는다.
   return Promise.all(
     files.map(async (f) => {
       try {
-        const content = await getReportContent(f.path);
+        const content = await fetchReportContent(f.path);
         const summary = f.name.includes("-quality-screen-")
           ? parseQualityScreenResult(content)
           : null;
@@ -92,12 +128,12 @@ export async function listReportFiles(): Promise<ReportFile[]> {
   );
 }
 
-export async function getReportContent(path: string): Promise<string> {
-  if (!path.startsWith("reports/") || !path.endsWith(".md") || path.includes("..")) {
-    throw new Error("잘못된 경로입니다.");
-  }
+// 실제 본문 fetch. 경로 세그먼트를 인코딩해 URL에 안전하게 보간한다(슬래시는 보존).
+// 검증은 호출부(getReportContent) 또는 신뢰 가능한 출처(listReportFiles)가 책임진다.
+async function fetchReportContent(path: string): Promise<string> {
+  const encoded = path.split("/").map(encodeURIComponent).join("/");
   const res = await fetch(
-    `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`,
+    `https://api.github.com/repos/${OWNER}/${REPO}/contents/${encoded}?ref=${BRANCH}`,
     { headers: authHeaders(), cache: "no-store" }
   );
   if (!res.ok) {
@@ -109,4 +145,18 @@ export async function getReportContent(path: string): Promise<string> {
     throw new Error("파일 내용을 가져올 수 없습니다.");
   }
   return Buffer.from(data.content, "base64").toString("utf-8");
+}
+
+export async function getReportContent(path: string): Promise<string> {
+  // 1차 형식 가드
+  if (!path.startsWith("reports/") || !path.endsWith(".md") || path.includes("..")) {
+    throw new Error("잘못된 경로입니다.");
+  }
+  // 2차 화이트리스트: 실제 저장소 트리에 존재하는 보고서 경로만 허용한다.
+  // 퍼센트 인코딩된 점·`?`/`#` 등 우회를 원천 차단(정확 일치만 통과).
+  const allowed = await fetchReportTreePaths();
+  if (!allowed.includes(path)) {
+    throw new Error("잘못된 경로입니다.");
+  }
+  return fetchReportContent(path);
 }

@@ -6,6 +6,21 @@ import { flows, type Flow, type FlowStep } from "@/lib/flows";
 import type { ReportFile } from "@/lib/github";
 import type { Holding } from "@/lib/toss";
 
+// ─── Hooks ───────────────────────────────────────────────────────────────────
+
+// 모달이 열려 있는 동안 배경(body) 스크롤을 잠근다. 모달 내부가 overflow-y-auto라
+// 스크롤 체이닝으로 뒤 페이지가 함께 스크롤되는 것을 막는다. 언마운트 시 원복.
+// 중첩 모달도 안전: 각 인스턴스가 마운트 시점의 값을 캡처해 복원한다.
+function useBodyScrollLock() {
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+}
+
 // ─── Color config ──────────────────────────────────────────────────────────
 
 // xAI 원칙: 인터랙티브 어휘는 '화이트 pill' 하나. 주요 액션은 화이트-필 pill,
@@ -39,6 +54,7 @@ function getFileBadge(filename: string): FileBadge {
   if (filename.includes("-checklist-")) return { label: "체크리스트", color: "text-breeze bg-breeze/10" };
   if (filename.endsWith("-thesis.md")) return { label: "투자논제", color: "text-twilight bg-dusk/20" };
   if (filename.includes("-earnings-")) return { label: "실적분석", color: "text-sunset-soft bg-sunset/10" };
+  if (filename.includes("-news-")) return { label: "급변동", color: "text-sunset bg-sunset/10" };
   if (filename.includes("-industry-")) return { label: "산업리서치", color: "text-cyan-300 bg-cyan-500/10" };
   if (filename.includes("-funnel-")) return { label: "퍼널", color: "text-teal-300 bg-teal-500/10" };
   if (filename === "portfolio-latest.md") return { label: "포트폴리오", color: "text-rose-300 bg-rose-500/10" };
@@ -76,6 +92,46 @@ function sortCompanyFiles(files: ReportFile[]): ReportFile[] {
   });
 }
 
+// 종목 상세에서 보고서를 유형별 구획으로 나누기 위한 분류.
+type ReportCategory = "quality-screen" | "checklist" | "deep-dive" | "thesis" | "news" | "other";
+
+function getReportCategory(name: string): ReportCategory {
+  if (name.includes("-quality-screen-")) return "quality-screen";
+  if (name.includes("-checklist-")) return "checklist";
+  if (name.endsWith("-thesis.md")) return "thesis";
+  // 급변동 분석 = /news-pulse 산출물({회사}-news-{YYYYMMDD}.md)
+  if (name.includes("-news-")) return "news";
+  // 심층분석 = /investment-team 산출물(README + 01~04-*-Perspective + FinalReport) + 실적분석
+  if (
+    name === "README.md" ||
+    /^0[1-4]-/.test(name) ||
+    name === "FinalReport.md" ||
+    name.includes("-earnings-")
+  )
+    return "deep-dive";
+  return "other";
+}
+
+// 구획 표시 순서·라벨. 빈 구획은 렌더 단계에서 숨긴다.
+const REPORT_SECTIONS: { id: ReportCategory; label: string }[] = [
+  { id: "quality-screen", label: "열등주 스크리닝" },
+  { id: "checklist", label: "버핏 6-게이트 체크" },
+  { id: "deep-dive", label: "심층분석" },
+  { id: "thesis", label: "투자 논제 수립" },
+  { id: "news", label: "급변동 분석" },
+  { id: "other", label: "기타" },
+];
+
+// 3차(생성일자) 탭 라벨. 파일명 속 YYYYMMDD → 'YYYY-MM-DD', YYYYQ# → 분기 그대로.
+// 날짜가 없는 유형(README/01~04/FinalReport 등)은 유형 배지 라벨로 개별 구분한다.
+function reportDateLabel(name: string): string {
+  const d = name.match(/(\d{4})(\d{2})(\d{2})/);
+  if (d) return `${d[1]}-${d[2]}-${d[3]}`;
+  const q = name.match(/\d{4}Q\d/);
+  if (q) return q[0];
+  return getFileBadge(name).label;
+}
+
 // 쉼표로 구분된 티커 입력을 정규화된 배열로 (대문자, 공백/빈값 제거).
 function parseTickers(input: string): string[] {
   return input
@@ -109,12 +165,11 @@ function resolveOutputPaths(step: FlowStep, input: string): string[] {
 
 // ─── ReportModal ───────────────────────────────────────────────────────────
 
-function ReportModal({ path, onClose }: { path: string; onClose: () => void }) {
+// 보고서 본문 fetch + 마크다운 렌더. 모달·인라인 뷰 양쪽에서 재사용한다.
+function ReportContentView({ path }: { path: string }) {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const filename = path.split("/").pop() ?? path;
-  const badge = getFileBadge(filename);
 
   useEffect(() => {
     setLoading(true);
@@ -129,6 +184,26 @@ function ReportModal({ path, onClose }: { path: string; onClose: () => void }) {
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
   }, [path]);
+
+  if (loading) return <p className="text-sm text-mute">불러오는 중...</p>;
+  if (error)
+    return (
+      <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+        {error}
+      </div>
+    );
+  if (!content) return null;
+  return (
+    <article className="report-prose">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+    </article>
+  );
+}
+
+function ReportModal({ path, onClose }: { path: string; onClose: () => void }) {
+  useBodyScrollLock();
+  const filename = path.split("/").pop() ?? path;
+  const badge = getFileBadge(filename);
 
   return (
     <div
@@ -154,20 +229,44 @@ function ReportModal({ path, onClose }: { path: string; onClose: () => void }) {
           </button>
         </div>
         <div className="overflow-y-auto scroll-slim flex-1 px-8 py-7">
-          {loading && <p className="text-sm text-mute">불러오는 중...</p>}
-          {error && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
-              {error}
-            </div>
-          )}
-          {content && (
-            <article className="report-prose">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-            </article>
-          )}
+          <ReportContentView path={path} />
         </div>
       </div>
     </div>
+  );
+}
+
+// ─── ReportCard ────────────────────────────────────────────────────────────
+// 보고서 목록 카드 하나. 플랫 그리드와 유형별 구획 양쪽에서 재사용한다.
+function ReportCard({ file, onOpen }: { file: ReportFile; onOpen: (path: string) => void }) {
+  const badge = getFileBadge(file.name);
+  const pill = getResultPill(file.summary);
+  const conf = getConfidencePill(file.confidence);
+  return (
+    <button
+      onClick={() => onOpen(file.path)}
+      className="flex flex-col gap-2 rounded-lg bg-canvas-card border border-hairline px-4 py-3 text-left hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99]"
+    >
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
+          {badge.label}
+        </span>
+        {pill && (
+          <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${pill.color}`}>
+            {pill.label}
+          </span>
+        )}
+        {conf && (
+          <span
+            title="데이터 신뢰도 (투자 매력도 아님)"
+            className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${conf.color}`}
+          >
+            {conf.label}
+          </span>
+        )}
+      </div>
+      <span className="text-xs font-mono text-body break-all">{file.name}</span>
+    </button>
   );
 }
 
@@ -185,6 +284,7 @@ function StepCard({
   onOpenReport,
   colors,
   holdings,
+  doneLabel = "완료, 다음 단계로 →",
 }: {
   step: FlowStep;
   index: number;
@@ -197,6 +297,8 @@ function StepCard({
   onOpenReport: (path: string) => void;
   colors: (typeof colorConfig)[ColorKey];
   holdings: Holding[];
+  // 액티브 스텝 하단 버튼 라벨. 단일-스텝 모달에선 "닫기" 등으로 대체.
+  doneLabel?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const [sectorTab, setSectorTab] = useState(0);
@@ -372,7 +474,7 @@ function StepCard({
         onClick={onDone}
         className={`w-full rounded-full py-2.5 text-sm font-medium transition-colors active:scale-[0.98] ${colors.button}`}
       >
-        완료, 다음 단계로 →
+        {doneLabel}
       </button>
     </div>
   );
@@ -527,7 +629,136 @@ function FlowView({
   );
 }
 
+// 프로세스 가이드에서 특정 단계를 눌렀을 때, 그 단계 하나의 정보만 보여주는 모달.
+// 전체 플로우 맥락(진행률 바·다른 단계 카드·완료 화면)은 렌더하지 않는다.
+function ProcessStepModal({
+  flow,
+  stepIndex,
+  onClose,
+}: {
+  flow: Flow;
+  stepIndex: number;
+  onClose: () => void;
+}) {
+  useBodyScrollLock();
+  const step = flow.steps[stepIndex];
+  const [input, setInput] = useState("");
+  const [modalPath, setModalPath] = useState<string | null>(null);
+  const colors = colorConfig[flow.color as ColorKey];
+
+  if (!step) return null;
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[60] flex items-start justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto"
+        onClick={onClose}
+      >
+        <div
+          className="w-full max-w-2xl my-8 rounded-lg bg-canvas border border-hairline overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between px-6 py-4 border-b border-hairline">
+            <div className="eyebrow text-[10px]">STEP {stepIndex + 1} / {flow.steps.length}</div>
+            <button
+              onClick={onClose}
+              className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="px-6 py-6">
+            <StepCard
+              step={step}
+              index={stepIndex}
+              isActive
+              isCompleted={false}
+              input={input}
+              onInputChange={setInput}
+              onDone={onClose}
+              onOpenReport={setModalPath}
+              colors={colors}
+              /* 프로세스 가이드 모달은 보유 종목 칩 선택을 쓰지 않는다 —
+                 종목은 사용자가 입력창에 직접 입력. (holdings 비워 칩 숨김) */
+              holdings={[]}
+              doneLabel="닫기"
+            />
+          </div>
+        </div>
+      </div>
+      {modalPath && <ReportModal path={modalPath} onClose={() => setModalPath(null)} />}
+    </>
+  );
+}
+
+// 플로우 전체(모든 단계)를 모달로 보여준다. 포트폴리오 점검 탭에서 분기 카드를
+// 눌렀을 때 전체화면 전환 대신 이 모달로 단계를 실행한다.
+// 모든 단계를 active 카드로 펼쳐(순서 강제 없음) 필요한 단계부터 바로 복사·실행.
+function FlowModal({ flow, onClose }: { flow: Flow; onClose: () => void }) {
+  useBodyScrollLock();
+  const [stepInputs, setStepInputs] = useState<Record<number, string>>({});
+  const [modalPath, setModalPath] = useState<string | null>(null);
+  const [holdings, setHoldings] = useState<Holding[]>([]);
+  const colors = colorConfig[flow.color as ColorKey];
+
+  const needsHoldings = flow.steps.some((s) => s.holdingsPicker);
+  useEffect(() => {
+    if (!needsHoldings) return;
+    fetch("/api/holdings")
+      .then((r) => r.json())
+      .then((d) => setHoldings(Array.isArray(d.holdings) ? d.holdings : []))
+      .catch(() => {});
+  }, [needsHoldings]);
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[60] flex items-start justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto"
+        onClick={onClose}
+      >
+        <div
+          className="w-full max-w-2xl my-8 rounded-lg bg-canvas border border-hairline overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between px-6 py-4 border-b border-hairline">
+            <div className="eyebrow text-[10px]">{flow.title}</div>
+            <button
+              onClick={onClose}
+              className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="px-6 py-6">
+            <p className="text-sm text-mute mb-4 leading-relaxed">{flow.subtitle}</p>
+            <div className="flex flex-col gap-2">
+              {flow.steps.map((step, i) => (
+                <StepCard
+                  key={i}
+                  step={step}
+                  index={i}
+                  isActive
+                  isCompleted={false}
+                  input={stepInputs[i] || ""}
+                  onInputChange={(val) => setStepInputs((prev) => ({ ...prev, [i]: val }))}
+                  onDone={onClose}
+                  onOpenReport={setModalPath}
+                  colors={colors}
+                  holdings={holdings}
+                  doneLabel="닫기"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      {modalPath && <ReportModal path={modalPath} onClose={() => setModalPath(null)} />}
+    </>
+  );
+}
+
 function StartPointModal({ flow, onChoose, onClose }: { flow: Flow; onChoose: (fromStep: number) => void; onClose: () => void }) {
+  useBodyScrollLock();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div
@@ -790,15 +1021,265 @@ function HoldingsBanner() {
   );
 }
 
+// ─── DailyCheckView ──────────────────────────────────────────────────────
+// 보유 종목의 '당일 등락'을 온디맨드로 조회해 /news-pulse 대상을 선별한다.
+// 백그라운드 상시 감시는 로컬 전용(토스 IP 허용목록 + localhost) 제약상 불가하므로
+// 버튼 트리거 방식. 당일 등락은 /api/quotes(Yahoo)에서 가져온다(holdings의
+// profitLossPct는 누적 손익률이라 당일 등락이 아님).
+
+interface Quote {
+  ticker: string;
+  price: number | null;
+  prevClose: number | null;
+  changePct: number | null;
+}
+
+// news-pulse 기본 탐색기간(붙여넣은 뒤 사용자가 조정 가능). 임계값 프리셋(%).
+const PULSE_PERIOD = "7일";
+const CHECK_THRESHOLDS = [3, 5, 10];
+
+function DailyCheckView() {
+  const [holdings, setHoldings] = useState<Holding[] | null>(null);
+  const [holdingsError, setHoldingsError] = useState<string | null>(null);
+  const [holdingsLoading, setHoldingsLoading] = useState(true);
+  const [autoTries, setAutoTries] = useState(0);
+  const [quotes, setQuotes] = useState<Record<string, Quote> | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
+  const [threshold, setThreshold] = useState(5);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  // 등락 체크 대상이 될 보유 목록을 로드. 토스 API는 첫 호출에 비어 오는 경우가
+  // 잦아(HoldingsBanner와 동일) 에러/빈 목록이면 자동으로 재시도한다.
+  const loadHoldings = useCallback(() => {
+    setHoldingsLoading(true);
+    fetch("/api/holdings")
+      .then((r) => r.json())
+      .then((d) => {
+        setHoldingsError(d.error ?? null);
+        setHoldings(Array.isArray(d.holdings) ? d.holdings : []);
+      })
+      .catch((e) => setHoldingsError(String(e)))
+      .finally(() => setHoldingsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    loadHoldings();
+  }, [loadHoldings]);
+
+  // 자동 재시도: 로딩이 끝났는데 아직 안 떴으면(에러 또는 빈 목록) 잠시 후 다시.
+  // 정상 표시 중이거나 상한 도달 시 종료(백오프 2s→최대 10s).
+  useEffect(() => {
+    if (holdingsLoading) return;
+    if ((holdings?.length ?? 0) > 0) return;
+    if (autoTries >= MAX_AUTO_RELOADS) return;
+    const delay = Math.min(2000 * (autoTries + 1), 10000);
+    const timer = setTimeout(() => {
+      setAutoTries((n) => n + 1);
+      loadHoldings();
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [holdingsLoading, holdings, holdingsError, autoTries, loadHoldings]);
+
+  const runCheck = async () => {
+    if (!holdings || holdings.length === 0) return;
+    setChecking(true);
+    setCheckError(null);
+    try {
+      const tickers = holdings.map((h) => h.ticker).join(",");
+      const res = await fetch(`/api/quotes?tickers=${encodeURIComponent(tickers)}`);
+      const d = await res.json();
+      const map: Record<string, Quote> = {};
+      for (const q of (d.quotes ?? []) as Quote[]) map[q.ticker] = q;
+      setQuotes(map);
+    } catch {
+      setCheckError("시세를 불러오지 못했습니다.");
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const copyCmd = async (ticker: string, changePct: number | null) => {
+    const move =
+      changePct != null ? `당일 ${changePct >= 0 ? "+" : ""}${changePct.toFixed(1)}%` : "";
+    const cmd = `/news-pulse ${ticker} ${move} 탐색기간 ${PULSE_PERIOD}`.replace(/\s+/g, " ").trim();
+    try {
+      await navigator.clipboard.writeText(cmd);
+      setCopied(ticker);
+      setTimeout(() => setCopied((c) => (c === ticker ? null : c)), 2000);
+    } catch {
+      // 클립보드 API 미지원/거부 시 무시(성공 표시 안 함).
+    }
+  };
+
+  // 체크 후에는 당일 등락 절대값 큰 순으로 정렬(데이터 없는 항목은 뒤로).
+  const rows = (holdings ?? []).map((h) => ({ h, q: quotes?.[h.ticker] ?? null }));
+  if (quotes) {
+    rows.sort((a, b) => {
+      const av = a.q?.changePct == null ? -Infinity : Math.abs(a.q.changePct);
+      const bv = b.q?.changePct == null ? -Infinity : Math.abs(b.q.changePct);
+      return bv - av;
+    });
+  }
+  const flaggedCount = quotes
+    ? rows.filter((r) => r.q?.changePct != null && Math.abs(r.q.changePct as number) >= threshold)
+        .length
+    : 0;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <p className="text-sm text-mute leading-relaxed">
+        보유 종목의 <span className="text-body">당일 등락</span>을 조회해 급변동 종목을 선별합니다.
+        기준을 넘는 종목은 <span className="font-mono text-body">/news-pulse</span> 명령을 복사해
+        Claude Code에서 직접 실행하세요 (대시보드는 스킬을 대신 실행하지 않습니다).
+      </p>
+
+      {/* 컨트롤: 기준 임계값 + 체크 버튼 */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <span className="eyebrow text-[10px]">기준</span>
+          <div
+            role="group"
+            aria-label="급변동 기준"
+            className="flex rounded-full border border-hairline bg-canvas-soft p-0.5"
+          >
+            {CHECK_THRESHOLDS.map((t) => {
+              const active = threshold === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => setThreshold(t)}
+                  aria-pressed={active}
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors active:scale-95 ${
+                    active ? "bg-white text-canvas" : "text-mute hover:text-ink"
+                  }`}
+                >
+                  ±{t}%
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <button
+          onClick={runCheck}
+          disabled={checking || !holdings || holdings.length === 0}
+          className="rounded-full bg-white text-canvas px-4 py-1.5 text-sm font-medium hover:bg-white/90 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {checking ? "체크 중…" : quotes ? "다시 체크" : "등락 체크"}
+        </button>
+        {quotes && (
+          <span className="text-xs text-mute">
+            기준(±{threshold}%) 초과 <span className="text-body">{flaggedCount}종목</span>
+          </span>
+        )}
+      </div>
+
+      {/* 상태 메시지 (배너와 동일한 자동 재시도 흐름) */}
+      {holdingsLoading && (holdings?.length ?? 0) === 0 && (
+        <p className="text-xs text-mute">보유 정보를 불러오는 중...</p>
+      )}
+      {!holdingsLoading && holdingsError && (
+        <p className="text-xs text-mute">
+          보유 정보를 일시적으로 불러올 수 없습니다.
+          {autoTries < MAX_AUTO_RELOADS && " 자동으로 다시 시도 중…"}
+        </p>
+      )}
+      {!holdingsLoading && !holdingsError && holdings && holdings.length === 0 && (
+        <p className="text-xs text-mute">
+          {autoTries < MAX_AUTO_RELOADS
+            ? "보유 정보를 불러오는 중… 자동으로 다시 시도합니다."
+            : "보유한 해외주식이 없습니다."}
+        </p>
+      )}
+      {checkError && <p className="text-xs text-mute">{checkError}</p>}
+
+      {/* 표 */}
+      {holdings && holdings.length > 0 && (
+        <div className="rounded-lg border border-hairline bg-canvas-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-hairline">
+                  <th className="text-left px-4 py-2.5 eyebrow text-[10px]">종목</th>
+                  <th className="text-right px-4 py-2.5 eyebrow text-[10px]">현재가</th>
+                  <th className="text-right px-4 py-2.5 eyebrow text-[10px]">당일</th>
+                  <th className="text-right px-4 py-2.5 eyebrow text-[10px]">PULSE</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(({ h, q }) => {
+                  const chg = q?.changePct ?? null;
+                  const flag = chg != null && Math.abs(chg) >= threshold;
+                  const up = chg != null && chg >= 0;
+                  return (
+                    <tr
+                      key={h.ticker}
+                      className={`border-b border-hairline last:border-0 ${flag ? "bg-white/[0.03]" : ""}`}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-ink">{h.ticker}</span>
+                          {flag && (
+                            <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-medium text-sunset-soft bg-sunset/10">
+                              급변동
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-mute truncate max-w-[180px]">{h.name}</div>
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-body">
+                        {q?.price != null ? fmtUsd(q.price) : quotes ? "—" : ""}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono">
+                        {chg != null ? (
+                          <span className={up ? "text-red-400" : "text-breeze"}>
+                            {up ? "+" : ""}
+                            {chg.toFixed(2)}%
+                          </span>
+                        ) : quotes ? (
+                          <span className="text-mute">N/A</span>
+                        ) : (
+                          <span className="text-mute">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => copyCmd(h.ticker, chg)}
+                          title="/news-pulse 명령 복사"
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors active:scale-95 ${
+                            flag
+                              ? "border-white/40 text-ink hover:bg-white hover:text-canvas"
+                              : "border-hairline text-mute hover:text-ink hover:bg-canvas-soft"
+                          }`}
+                        >
+                          {copied === h.ticker ? "복사됨" : "명령 복사"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function HomeView({
   onSelectFlow,
   onLaunchStep,
+  onOpenFlowModal,
 }: {
   onSelectFlow: (f: Flow) => void;
   onLaunchStep: (f: Flow, step: number) => void;
+  onOpenFlowModal: (f: Flow) => void;
 }) {
   const [files, setFiles] = useState<ReportFile[] | null>(null);
   const [reportTab, setReportTab] = useState<string | null>(null);
+  // 종목 탭 하위 2차 탭에서 선택된 보고서(경로). 종목 탭이 바뀌면 첫 보고서로 리셋.
+  const [selectedReport, setSelectedReport] = useState<string | null>(null);
   const [modalPath, setModalPath] = useState<string | null>(null);
   const [flowTab, setFlowTab] = useState<string>("portfolio-overview");
   const [loadError, setLoadError] = useState(false);
@@ -832,7 +1313,7 @@ function HomeView({
   const companies = files
     ? (Array.from(new Set(files.map((f) => f.company).filter((c): c is string => c !== null))).sort() as string[])
     : [];
-  // 포트폴리오 보고서(portfolio-latest.md)는 전용 '포트폴리오' 탭에서 보여주므로
+  // 포트폴리오 보고서(portfolio-latest.md)는 '포트폴리오 점검' 탭에서 보여주므로
   // 보고서 탭의 루트 목록에서는 제외한다.
   const rootFiles = files ? files.filter((f) => f.company === null && f.name !== "portfolio-latest.md") : [];
   const portfolioReport = files?.find((f) => f.company === null && f.name === "portfolio-latest.md") ?? null;
@@ -841,9 +1322,24 @@ function HomeView({
     reportTab === "root" ? rootFiles : (files?.filter((f) => f.company === reportTab) ?? []);
   const currentFiles = reportTab !== "root" ? sortCompanyFiles(rawCurrentFiles) : rawCurrentFiles;
 
+  // 종목 탭이 바뀌거나 목록이 로드되면 2차 탭 선택을 첫 보고서로 맞춘다.
+  // (현재 선택이 이 종목에 속해 있으면 유지.)
+  useEffect(() => {
+    if (reportTab === "root") {
+      setSelectedReport(null);
+      return;
+    }
+    setSelectedReport((prev) =>
+      prev && currentFiles.some((f) => f.path === prev) ? prev : (currentFiles[0]?.path ?? null)
+    );
+    // currentFiles는 reportTab·files에서 파생되므로 이 둘만 의존성으로 둔다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reportTab, files]);
+
   // 사이드바/모바일 공용 네비 항목: 포트폴리오 · 프로세스 가이드 · 보고서 · 실적 점검 · 포트폴리오 점검
   const contentTabs = [
     { id: "portfolio-overview", label: "포트폴리오" },
+    { id: "daily-check", label: "Daily check" },
     { id: "process-guide", label: "프로세스 가이드" },
     { id: "reports", label: "보고서" },
     ...flows.filter((f) => f.id !== "discovery").map((f) => ({ id: f.id, label: f.title })),
@@ -854,21 +1350,21 @@ function HomeView({
       ? "REPORTS"
       : flowTab === "portfolio-overview"
         ? "PORTFOLIO"
-        : flowTab === "process-guide"
-          ? "PROCESS"
-          : flowTab.toUpperCase();
+        : flowTab === "daily-check"
+          ? "DAILY CHECK"
+          : flowTab === "process-guide"
+            ? "PROCESS"
+            : flowTab.toUpperCase();
   const headerTitle =
     flowTab === "reports"
       ? "종목별 보고서"
       : flowTab === "portfolio-overview"
         ? "포트폴리오"
-        : flowTab === "process-guide"
-          ? "프로세스 가이드"
-          : (activeFlow?.title ?? "");
-  const launchDiscovery = () => {
-    const d = flows.find((f) => f.id === "discovery");
-    if (d) onSelectFlow(d);
-  };
+        : flowTab === "daily-check"
+          ? "당일 등락 체크"
+          : flowTab === "process-guide"
+            ? "프로세스 가이드"
+            : (activeFlow?.title ?? "");
   const logout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
@@ -889,23 +1385,16 @@ function HomeView({
               <button
                 key={t.id}
                 onClick={() => setFlowTab(t.id)}
-                className={`text-left rounded-lg px-3 py-2 text-sm transition-colors border-l-2 ${
+                className={`text-left rounded-lg px-3 py-2 text-sm transition-colors ${
                   active
-                    ? "bg-canvas-soft text-ink border-white"
-                    : "text-body hover:text-ink hover:bg-canvas-soft border-transparent"
+                    ? "bg-white text-canvas"
+                    : "text-body hover:text-ink hover:bg-canvas-soft"
                 }`}
               >
                 {t.label}
               </button>
             );
           })}
-          <div className="my-2 border-t border-hairline" />
-          <button
-            onClick={launchDiscovery}
-            className="text-left rounded-lg px-3 py-2 text-sm text-body hover:text-ink hover:bg-canvas-soft transition-colors border-l-2 border-transparent"
-          >
-            ＋ 새 종목 추가
-          </button>
         </nav>
         <div className="p-3 border-t border-hairline">
           <button
@@ -960,21 +1449,9 @@ function HomeView({
           {flowTab === "portfolio-overview" ? (
             <div>
               <HoldingsBanner />
-              {portfolioReport ? (
-                <button
-                  onClick={() => setModalPath(portfolioReport.path)}
-                  className="w-full flex items-center gap-2 rounded-lg bg-canvas-card border border-hairline px-4 py-3 text-left hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99]"
-                >
-                  <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-rose-300 bg-rose-500/10">
-                    포트폴리오
-                  </span>
-                  <span className="text-xs font-mono text-body flex-1 truncate">{portfolioReport.name}</span>
-                  <span className="shrink-0 text-xs text-mute">보기 →</span>
-                </button>
-              ) : (
-                <p className="text-xs text-mute">아직 포트폴리오 점검 보고서가 없습니다.</p>
-              )}
             </div>
+          ) : flowTab === "daily-check" ? (
+            <DailyCheckView />
           ) : flowTab === "process-guide" ? (
             /* ── 프로세스 가이드: 발굴 6단계를 개별 선택·실행 ── */
             (() => {
@@ -1054,40 +1531,118 @@ function HomeView({
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                    {currentFiles.map((f) => {
-                      const badge = getFileBadge(f.name);
-                      const pill = getResultPill(f.summary);
-                      const conf = getConfidencePill(f.confidence);
-                      return (
-                        <button
-                          key={f.path}
-                          onClick={() => setModalPath(f.path)}
-                          className="flex flex-col gap-2 rounded-lg bg-canvas-card border border-hairline px-4 py-3 text-left hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99]"
-                        >
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
-                              {badge.label}
-                            </span>
-                            {pill && (
-                              <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${pill.color}`}>
-                                {pill.label}
-                              </span>
-                            )}
-                            {conf && (
-                              <span
-                                title="데이터 신뢰도 (투자 매력도 아님)"
-                                className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${conf.color}`}
-                              >
-                                {conf.label}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-xs font-mono text-body break-all">{f.name}</span>
-                        </button>
+                  {reportTab === "root" ? (
+                    /* 섹터/스크리닝: 유형 구획 없이 평면 그리드 */
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                      {currentFiles.map((f) => (
+                        <ReportCard key={f.path} file={f} onOpen={setModalPath} />
+                      ))}
+                    </div>
+                  ) : (
+                    /* 종목 상세: 보고서 유형(2차) → 생성일자(3차) 위계 + 선택 보고서 인라인 표시 */
+                    (() => {
+                      const selFile = currentFiles.find((f) => f.path === selectedReport) ?? null;
+                      const activeCategory = selFile ? getReportCategory(selFile.name) : null;
+                      // 파일이 있는 유형만 2차 탭으로 노출(순서는 REPORT_SECTIONS).
+                      const activeSections = REPORT_SECTIONS.filter((s) =>
+                        currentFiles.some((f) => getReportCategory(f.name) === s.id)
                       );
-                    })}
-                  </div>
+                      // 선택된 유형의 보고서들(생성일자 = 3차). 하나뿐이면 3차 탭은 생략.
+                      const categoryFiles = activeCategory
+                        ? currentFiles.filter((f) => getReportCategory(f.name) === activeCategory)
+                        : [];
+                      const badge = selFile ? getFileBadge(selFile.name) : null;
+                      const resultPill = getResultPill(selFile?.summary);
+                      const confPill = getConfidencePill(selFile?.confidence);
+                      return (
+                        <div className="flex flex-col gap-4">
+                          {/* 2차: 보고서 유형 */}
+                          <div className="flex flex-wrap gap-1.5">
+                            {activeSections.map((section) => {
+                              const active = section.id === activeCategory;
+                              return (
+                                <button
+                                  key={section.id}
+                                  onClick={() => {
+                                    const first = currentFiles.find(
+                                      (f) => getReportCategory(f.name) === section.id
+                                    );
+                                    if (first) setSelectedReport(first.path);
+                                  }}
+                                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors active:scale-95 ${
+                                    active
+                                      ? "bg-white text-canvas border-white"
+                                      : "border-hairline text-body hover:text-ink hover:bg-canvas-soft"
+                                  }`}
+                                >
+                                  {section.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {/* 3차: 생성일자(같은 유형에 보고서가 둘 이상일 때만) */}
+                          {categoryFiles.length > 1 && (
+                            <div className="flex flex-wrap items-center gap-1.5 border-l-2 border-hairline pl-3">
+                              {categoryFiles.map((f) => {
+                                const active = selectedReport === f.path;
+                                return (
+                                  <button
+                                    key={f.path}
+                                    onClick={() => setSelectedReport(f.path)}
+                                    title={f.name}
+                                    className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors active:scale-95 ${
+                                      active
+                                        ? "bg-white text-canvas border-white"
+                                        : "border-hairline text-mute hover:text-ink hover:bg-canvas-soft"
+                                    }`}
+                                  >
+                                    {reportDateLabel(f.name)}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* 선택 보고서 인라인 패널 */}
+                          {selFile ? (
+                            <div className="rounded-lg border border-hairline bg-canvas-card overflow-hidden">
+                              <div className="flex items-center gap-1.5 flex-wrap px-5 py-3 border-b border-hairline">
+                                {badge && (
+                                  <span
+                                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${badge.color}`}
+                                  >
+                                    {badge.label}
+                                  </span>
+                                )}
+                                {resultPill && (
+                                  <span
+                                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${resultPill.color}`}
+                                  >
+                                    {resultPill.label}
+                                  </span>
+                                )}
+                                {confPill && (
+                                  <span
+                                    title="데이터 신뢰도 (투자 매력도 아님)"
+                                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${confPill.color}`}
+                                  >
+                                    {confPill.label}
+                                  </span>
+                                )}
+                                <span className="text-xs font-mono text-body truncate">{selFile.name}</span>
+                              </div>
+                              <div className="px-6 py-5">
+                                <ReportContentView path={selFile.path} />
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-mute">표시할 보고서가 없습니다.</p>
+                          )}
+                        </div>
+                      );
+                    })()
+                  )}
                 </>
               )}
             </div>
@@ -1101,11 +1656,26 @@ function HomeView({
                 return (
                   <div>
                     <p className="text-sm text-mute mb-4 leading-relaxed">{flow.subtitle}</p>
+                    {/* 최신 포트폴리오 점검 보고서 (portfolio-latest.md) */}
+                    {portfolioReport ? (
+                      <button
+                        onClick={() => setModalPath(portfolioReport.path)}
+                        className="w-full flex items-center gap-2 rounded-lg bg-canvas-card border border-hairline px-4 py-3 text-left hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99] mb-6"
+                      >
+                        <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-rose-300 bg-rose-500/10">
+                          최신 점검
+                        </span>
+                        <span className="text-xs font-mono text-body flex-1 truncate">{portfolioReport.name}</span>
+                        <span className="shrink-0 text-xs text-mute">보기 →</span>
+                      </button>
+                    ) : (
+                      <p className="text-xs text-mute mb-6">아직 포트폴리오 점검 보고서가 없습니다.</p>
+                    )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {flow.quarters.map((q) => (
                         <button
                           key={q.label}
-                          onClick={() => onSelectFlow(flow)}
+                          onClick={() => onOpenFlowModal(flow)}
                           className="text-left rounded-lg border border-hairline bg-canvas-card p-5 hover:border-white/30 hover:bg-canvas-soft transition-all group active:scale-[0.99]"
                         >
                           <div className="flex items-center justify-between gap-2 mb-2">
@@ -1167,6 +1737,10 @@ export default function Home() {
   const [selectedFlow, setSelectedFlow] = useState<Flow | null>(null);
   const [pickingStartFor, setPickingStartFor] = useState<Flow | null>(null);
   const [startStep, setStartStep] = useState(0);
+  // 프로세스 가이드에서 단계를 열면 전체 화면 대신 모달로 띄운다(홈 컨텍스트 유지).
+  const [flowModal, setFlowModal] = useState<{ flow: Flow; step: number } | null>(null);
+  // 포트폴리오 점검 탭에서 분기 카드를 누르면 플로우 전체를 모달로 띄운다.
+  const [flowAllModal, setFlowAllModal] = useState<Flow | null>(null);
 
   return (
     <>
@@ -1181,11 +1755,8 @@ export default function Home() {
               setView("flow");
             }
           }}
-          onLaunchStep={(f, step) => {
-            setStartStep(step);
-            setSelectedFlow(f);
-            setView("flow");
-          }}
+          onLaunchStep={(f, step) => setFlowModal({ flow: f, step })}
+          onOpenFlowModal={(f) => setFlowAllModal(f)}
         />
       )}
       {view === "flow" && selectedFlow && (
@@ -1197,6 +1768,16 @@ export default function Home() {
             setSelectedFlow(null);
           }}
         />
+      )}
+      {flowModal && (
+        <ProcessStepModal
+          flow={flowModal.flow}
+          stepIndex={flowModal.step}
+          onClose={() => setFlowModal(null)}
+        />
+      )}
+      {flowAllModal && (
+        <FlowModal flow={flowAllModal} onClose={() => setFlowAllModal(null)} />
       )}
       {pickingStartFor && (
         <StartPointModal

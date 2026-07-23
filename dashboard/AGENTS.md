@@ -19,7 +19,7 @@ Read로 먼저 읽고 그 언어로 구현한다.** 이 단계를 건너뛰지 �
 핵심 원칙 (요약 — 상세·수치는 문서 참조):
 - **near-black 단일 캔버스**: 페이지 배경 canvas(#0a0a0a), 카드 canvas-card(#191919), 인풋/hover canvas-soft(#1a1c20). 라이트 모드 없음 — dark-canvas 전용.
 - **화이트 pill이 전체 인터랙티브 어휘**: 대부분 아웃라인 pill(`rounded-full border border-hairline`), 주요 액션만 화이트-필 pill(`bg-white text-canvas`). 컬러 CTA 없음.
-- **레이아웃은 대시보드 앱셸**: 좌측 고정 사이드바(nav row 활성표시 = 좌측 `border-l-2 border-white`) + 메인 상단바. 모바일은 상단바 + 가로 탭.
+- **레이아웃은 대시보드 앱셸**: 좌측 고정 사이드바(nav row 활성표시 = **화이트-필** `bg-white text-canvas`, 모바일 가로 탭과 통일) + 메인 상단바. 모바일은 상단바 + 가로 탭.
 - **타이포 = 두 얼굴**: 디스플레이/본문 Inter(Universal Sans 대체) **weight 400 절대 볼드 금지** + 음수 트래킹(`tracking-[-0.03em]`). 라벨/eyebrow는 **Geist Mono 대문자 + 양수 트래킹** → `.eyebrow` 클래스 사용.
 - **그림자 금지**: 1px `border-hairline`(#212327)가 모든 elevation. 카드는 `rounded-lg`(8px).
 - **컬러 액센트는 드물게**: sunset/dusk/breeze/twilight는 코드·데이터·포인트에만. 시맨틱 색(합격 emerald / 탈락 red / 손익)은 '데이터 의미'라 예외로 유지.

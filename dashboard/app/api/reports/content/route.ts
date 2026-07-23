@@ -1,6 +1,9 @@
 import { getReportContent } from "@/lib/github";
+import { requireAuth } from "@/lib/api-auth";
 
 export async function GET(request: Request) {
+  const unauth = await requireAuth();
+  if (unauth) return unauth;
   const { searchParams } = new URL(request.url);
   const path = searchParams.get("path");
   if (!path) {

@@ -13,63 +13,19 @@
 
 ## 예정
 
-### `[ ]` [TASK-1] (S) 보고서 탭: 종목별 보고서 유형 구획화 + 동일 종목 병합
-
-**배경**: 지금 보고서 탭은 `reports/{폴더명}/` 폴더명을 그대로 종목으로 쓰고
-(`lib/github.ts` `company`), 종목 안에서는 파일을 배지만 붙은 평면 목록으로 나열한다
-(`app/page.tsx` `fileBadge` / `sortCompanyFiles`). 두 가지 불편이 있음.
-
-**1. 종목 상세에서 보고서 유형별로 나눠 보기**
-한 종목 화면에서 아래 4개 구획(섹션)으로 그룹핑해 보여주기:
-- **열등주 스크리닝** — `*-quality-screen-*`
-- **버핏 6-게이트 체크** — `*-checklist-*`
-- **심층분석** — `/investment-team` 산출물(`{회사}/` 내 `README` + `01~04-*-Perspective.md` + `FinalReport.md`), `*-earnings-*`
-- **투자 논제 수립** — `*-thesis.md`
-- (기타/미분류는 별도 하단 섹션)
-- 파일이 없는 유형 구획은 비어있음 표시 또는 숨김(택1, 구현 시 결정).
-
-**2. 동일 종목이 폴더명 차이로 분리되는 문제 해결**
-현재 `QUBT`(티커) / `QuantumComputing`(영문명) / `퀀텀컴퓨팅`(한글명)이 서로 다른
-폴더에 저장되면 보고서 탭에서 별개 종목으로 나뉘어 표시됨.
-- 티커 ↔ 회사명 별칭(alias)을 매핑해 하나의 종목으로 병합 표시.
-- 매핑 소스 후보: 별도 alias 테이블(`lib`에 상수) 또는 각 보고서 프론트매터/본문의 티커 파싱.
-- 근본 예방책으로 `CLAUDE.md`의 보고서 폴더 명명 규칙 표준화도 함께 검토(폴더명 = 회사명 고정).
-
-**대상 파일**: `dashboard/lib/github.ts`(그룹핑·별칭), `dashboard/app/page.tsx`(구획 UI),
-필요 시 `dashboard/lib/data.ts`. UI는 `docs/DESIGN-x.ai.md` 디자인 언어 준수.
-
-### `[ ]` [TASK-2] (H) 좌측 사이드바 "＋ 새 종목 추가" 버튼 제거
-
-**배경**: 좌측 고정 사이드바 nav 하단에 `launchDiscovery`를 호출하는
-"＋ 새 종목 추가" 버튼이 있음. 이 버튼을 없앤다.
-
-**대상**: [dashboard/app/page.tsx:902-908](../dashboard/app/page.tsx#L902-L908)
-— 구분선 `div`(`my-2 border-t`)와 버튼 블록 제거.
-- `launchDiscovery` 함수가 이 버튼에서만 쓰인다면 함께 정리, 다른 곳에서도
-  쓰이면 함수는 유지하고 버튼만 제거.
-
-**주의**: `docs/DESIGN-x.ai.md` 디자인 언어 준수.
-
-### `[ ]` [TASK-3] (S) 보고서 가독성: 한 화면에 더 많은 내용 (밀도 개선)
-
-**배경**: 지금 보고서 뷰는 폰트·여백이 커서 스크롤을 많이 내려야 읽힌다.
-한 화면에 들어오는 정보량을 늘려 스캔·통독이 쉽게 한다. 폰트가 다소
-작아져도 무방(사용자 승인).
-
-**방향**:
-- 본문 font-size / line-height, 문단·리스트 간격, 제목(h1~h4) 위아래 마진,
-  블록쿼트·테이블 패딩을 전반적으로 축소해 세로 밀도 상승.
-- 가독성 하한 유지(너무 빽빽해 눈이 피로하지 않게) — 밀도와 가독성 균형.
-- 필요 시 본문 컨테이너 `max-width`도 함께 재검토(가로 폭 활용).
-
-**대상**: [dashboard/app/globals.css:101-238](../dashboard/app/globals.css#L101-L238)
-`.report-prose` 규칙 일괄 조정. 렌더 위치는
-[dashboard/app/page.tsx:164-165](../dashboard/app/page.tsx#L164-L165).
-
-**주의**: `docs/DESIGN-x.ai.md` 타이포/토큰 준수(가능하면 문서의 스케일 값 사용).
+_(없음)_
 
 ---
 
 ## 완료
 
-_(없음)_
+- `[x]` **[TASK-31] (H)** 보고서 유형에 '급변동 분석'(news-pulse) 추가
+  - `/news-pulse` 산출물 `{회사}-news-{YYYYMMDD}.md`가 기존엔 "기타/MD"로 미분류 → 전용 유형 신설
+  - `getReportCategory`에 `-news-` → `"news"` 규칙, `REPORT_SECTIONS`에 `급변동 분석` 구획(투자 논제 다음), `getFileBadge`에 `급변동` 배지(sunset) 추가
+  - `dashboard/app/page.tsx` 수정, `tsc --noEmit` 통과
+  - 주의: 대시보드는 GitHub에서 목록을 읽으므로 보고서를 **커밋+푸시**해야 탭에 노출됨
+
+- `[x]` **[TASK-30] (S)** 포트폴리오 점검 보고서를 '포트폴리오 점검' 탭에서 표시
+  - `portfolio-latest.md` 링크를 '포트폴리오' 탭에서 제거 → '포트폴리오 점검' 플로우 탭(분기 카드 위)에 이동
+  - '포트폴리오' 탭은 보유 현황(HoldingsBanner) 전용으로 정리
+  - `dashboard/app/page.tsx` 수정, 타입체크 통과
