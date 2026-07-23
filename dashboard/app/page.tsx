@@ -235,7 +235,15 @@ function ReportContentView({ path }: { path: string }) {
   );
 }
 
-function ReportModal({ path, onClose }: { path: string; onClose: () => void }) {
+function ReportModal({
+  path,
+  onClose,
+  onRequestDelete,
+}: {
+  path: string;
+  onClose: () => void;
+  onRequestDelete?: (path: string) => void;
+}) {
   useBodyScrollLock();
   const filename = path.split("/").pop() ?? path;
   const badge = getFileBadge(filename);
@@ -256,12 +264,23 @@ function ReportModal({ path, onClose }: { path: string; onClose: () => void }) {
             </span>
             <span className="text-sm font-mono text-body truncate">{filename}</span>
           </div>
-          <button
-            onClick={onClose}
-            className="shrink-0 ml-3 h-9 w-9 rounded-full flex items-center justify-center border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-2 shrink-0 ml-3">
+            {onRequestDelete && (
+              <button
+                onClick={() => onRequestDelete(path)}
+                title="이 보고서 삭제"
+                className="rounded-full border border-hairline px-3 py-1.5 text-xs text-mute hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/10 transition-colors active:scale-95"
+              >
+                삭제
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="h-9 w-9 rounded-full flex items-center justify-center border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+            >
+              ✕
+            </button>
+          </div>
         </div>
         <div className="overflow-y-auto scroll-slim flex-1 px-8 py-7">
           <ReportContentView path={path} />
@@ -1302,6 +1321,60 @@ function DailyCheckView() {
   );
 }
 
+// 보고서 삭제 확인 모달(개발 단계 정리용). 파괴적 동작이라 확인 + 복구 안내를 명시.
+function ConfirmDeleteModal({
+  path,
+  busy,
+  error,
+  onCancel,
+  onConfirm,
+}: {
+  path: string;
+  busy: boolean;
+  error: string | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  useBodyScrollLock();
+  const filename = path.split("/").pop() ?? path;
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-md rounded-lg bg-canvas border border-hairline p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-lg text-ink tracking-[-0.02em] mb-2">보고서 삭제</h3>
+        <p className="text-sm text-body mb-1">이 보고서를 저장소에서 삭제합니다:</p>
+        <p className="text-xs font-mono text-mute break-all mb-3">{filename}</p>
+        <p className="text-xs text-mute mb-5 leading-relaxed">
+          GitHub에 삭제 커밋이 생성됩니다(git 히스토리로 복구 가능). 로컬 클론은{" "}
+          <span className="font-mono text-body">git pull</span>로 동기화하세요.
+        </p>
+        {error && <p className="text-xs text-red-300 mb-3">{error}</p>}
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            disabled={busy}
+            className="rounded-full border border-hairline px-4 py-1.5 text-sm text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            취소
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={busy}
+            className="rounded-full border border-red-500/40 bg-red-500/10 text-red-300 px-4 py-1.5 text-sm font-medium hover:bg-red-500/20 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {busy ? "삭제 중…" : "삭제"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function HomeView({
   onSelectFlow,
   onLaunchStep,
@@ -1319,6 +1392,10 @@ function HomeView({
   const [flowTab, setFlowTab] = useState<string>("portfolio-overview");
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  // 보고서 삭제(개발 정리용): 확인 대기 경로 + 진행/에러 상태.
+  const [deletePath, setDeletePath] = useState<string | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -1403,6 +1480,31 @@ function HomeView({
   const logout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
+  };
+
+  // 확인 모달에서 삭제 확정 → GitHub 삭제 커밋 → 목록 갱신 + 선택/모달 정리.
+  const confirmDelete = async () => {
+    if (!deletePath) return;
+    setDeleteBusy(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/reports/content?path=${encodeURIComponent(deletePath)}`, {
+        method: "DELETE",
+      });
+      const d = await res.json();
+      if (d.error) {
+        setDeleteError(d.error);
+        return;
+      }
+      setModalPath((p) => (p === deletePath ? null : p));
+      setSelectedReport((p) => (p === deletePath ? null : p));
+      setDeletePath(null);
+      setReloadKey((k) => k + 1);
+    } catch (e) {
+      setDeleteError(String(e));
+    } finally {
+      setDeleteBusy(false);
+    }
   };
 
   return (
@@ -1666,6 +1768,16 @@ function HomeView({
                                   </span>
                                 )}
                                 <span className="text-xs font-mono text-body truncate">{selFile.name}</span>
+                                <button
+                                  onClick={() => {
+                                    setDeleteError(null);
+                                    setDeletePath(selFile.path);
+                                  }}
+                                  title="이 보고서 삭제"
+                                  className="ml-auto shrink-0 rounded-full border border-hairline px-2.5 py-1 text-[11px] text-mute hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/10 transition-colors active:scale-95"
+                                >
+                                  삭제
+                                </button>
                               </div>
                               <div className="px-6 py-5">
                                 <ReportContentView path={selFile.path} />
@@ -1760,7 +1872,27 @@ function HomeView({
         </div>
       </main>
 
-      {modalPath && <ReportModal path={modalPath} onClose={() => setModalPath(null)} />}
+      {modalPath && (
+        <ReportModal
+          path={modalPath}
+          onClose={() => setModalPath(null)}
+          onRequestDelete={(p) => {
+            setDeleteError(null);
+            setDeletePath(p);
+          }}
+        />
+      )}
+      {deletePath && (
+        <ConfirmDeleteModal
+          path={deletePath}
+          busy={deleteBusy}
+          error={deleteError}
+          onCancel={() => {
+            if (!deleteBusy) setDeletePath(null);
+          }}
+          onConfirm={confirmDelete}
+        />
+      )}
     </div>
   );
 }

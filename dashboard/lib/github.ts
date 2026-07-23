@@ -161,6 +161,47 @@ export async function getReportContent(path: string): Promise<string> {
   return fetchReportContent(path);
 }
 
+// 보고서를 저장소에서 삭제한다(삭제 커밋 생성 → git 히스토리로 복구 가능).
+// GitHub contents DELETE는 blob sha가 필요하므로 먼저 조회한 뒤 삭제한다.
+// 개발 단계 정리용. GITHUB_TOKEN에 contents 쓰기 권한이 있어야 한다.
+export async function deleteReport(path: string): Promise<void> {
+  // getReportContent와 동일한 형식 가드 + 트리 화이트리스트(실재 경로만 정확 일치)
+  if (!path.startsWith("reports/") || !path.endsWith(".md") || path.includes("..")) {
+    throw new Error("잘못된 경로입니다.");
+  }
+  const allowed = await fetchReportTreePaths();
+  if (!allowed.includes(path)) {
+    throw new Error("잘못된 경로입니다.");
+  }
+  const encoded = path.split("/").map(encodeURIComponent).join("/");
+  // 1) blob sha 조회
+  const getRes = await fetch(
+    `https://api.github.com/repos/${OWNER}/${REPO}/contents/${encoded}?ref=${BRANCH}`,
+    { headers: authHeaders(), cache: "no-store" }
+  );
+  if (!getRes.ok) {
+    throw new Error("보고서를 찾을 수 없습니다.");
+  }
+  const meta = await getRes.json();
+  const sha = meta?.sha;
+  if (typeof sha !== "string") {
+    throw new Error("파일 SHA를 가져올 수 없습니다.");
+  }
+  // 2) 삭제 커밋
+  const delRes = await fetch(
+    `https://api.github.com/repos/${OWNER}/${REPO}/contents/${encoded}`,
+    {
+      method: "DELETE",
+      headers: { ...authHeaders(), "Content-Type": "application/json" },
+      body: JSON.stringify({ message: `dashboard: delete report ${path}`, sha, branch: BRANCH }),
+    }
+  );
+  if (!delRes.ok) {
+    console.error(`GitHub 삭제 오류: ${delRes.status} ${await delRes.text()}`);
+    throw new Error("삭제에 실패했습니다 (GITHUB_TOKEN 쓰기 권한을 확인하세요).");
+  }
+}
+
 // 보고서의 마지막 커밋 시각(ISO 문자열). 파일명에 박힌 날짜가 아니라 저장소에 실제
 // 반영된 시점 = 신선도(as-of) 기준. 실패하면 null(신선도 표기를 숨긴다).
 export async function getReportCommitDate(path: string): Promise<string | null> {
