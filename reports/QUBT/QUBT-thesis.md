@@ -3,7 +3,7 @@
 > **논제 유형: 🔴 관망(No-Buy) 논제** — 매수 논제가 아님
 > **수립일**: 2026-07-23
 > **작동 모드**: 모드 A (최초 수립)
-> **기반 자료**: [investment-team FinalReport](../QuantumComputing/FinalReport.md) · [매수 전 체크리스트](QUBT-checklist-20260723.md) · [열등주 스크리닝](QUBT-quality-screen-20260722.md)
+> **기반 자료**: [investment-team FinalReport](FinalReport.md) · [매수 전 체크리스트](QUBT-checklist-20260723.md) · [열등주 스크리닝](QUBT-quality-screen-20260722.md)
 > **데이터 as-of**: 주가·시총 2026-07-22 종가 $7.91 (2026-07-23 장중 ~$7.9 확인) / 재무 FY2025 10-K 및 2026-03 분기
 
 ---
@@ -110,9 +110,9 @@ QUBT는 "사업이 아니라 현금이 담긴 서사(narrative)"다. 자생 매�
 
 ---
 
-## ⚠️ 폴더 명명 주의
+## 폴더 명명 (통일 완료)
 
-이 종목의 보고서가 **`reports/QUBT/`** (checklist·quality-screen·thesis)와 **`reports/QuantumComputing/`** (investment-team 6개 파일) 두 폴더로 분리돼 있다. CLAUDE.md 명명 규칙상 한 종목은 폴더 하나로 고정해야 하며, 현 상태로는 대시보드에서 별개 종목 2개로 표시될 수 있다. → 폴더 통합 또는 `dashboard/lib/github.ts`의 `COMPANY_ALIAS_GROUPS` 별칭 등록 필요.
+이 종목의 모든 보고서는 **`reports/QUBT/`** 하나로 통일했다 (2026-07-23). investment-team 6개 파일을 `QuantumComputing/`에서 이관. `dashboard/lib/github.ts`의 `COMPANY_ALIAS_GROUPS`에도 `["QUBT", "QuantumComputing", "Quantum Computing", "퀀텀컴퓨팅"]` 별칭이 등록돼 있어 대시보드에서 단일 종목(QUBT)으로 표시된다.
 
 ---
 
