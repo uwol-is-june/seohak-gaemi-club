@@ -50,5 +50,26 @@
 ## 결론
 이 스크리닝의 목적은 "확실히 나쁜" 기업을 걸러내는 것이며, QUBT는 그 기준을 **모든 항목에서** 초과 탈락한다. 첫 번째 관문을 통과하지 못하므로 심층 분석 대상이 아니다. 투자 판단은 재무 펀더멘털이 아닌 순수 테마·모멘텀 베팅 영역에 속한다.
 
+## 데이터 신뢰도 ([data-confidence.md](../../skills/data-confidence.md) 표준)
+
+지표별 신뢰도 등급:
+- ① ROE — 🟡보통 `[사실]` (stockanalysis 단일 집계, macrotrends 403 차단, 5년치만)
+- ② 5년 FCF — 🟡보통 `[사실]` (단일 집계 출처)
+- ③ 이자커버리지 — 🟡보통 `[사실]` (EBIT 음수 명확, 단일 출처)
+- ④ Gross Margin — 🟡보통 `[사실]` (매출 $0.68M로 비율 자체 왜곡)
+- ⑤ OCF/NI — ⬛데이터부족 `[추정]` (분자·분모 모두 음수 → 지표 의미 없음, 판정 제외)
+- ⑥ Net Margin — 🟡보통 `[사실]` (단일 출처, 매출 미미로 비율 왜곡)
+- ⑦ 주식희석 — 🟢높음 `[사실]` (stockanalysis + **SEC EDGAR** $1.478B ATM 증자 교차확인)
+
+**종합**: 대부분 지표가 macrotrends 차단으로 stockanalysis 단일 집계에 의존(🟡). 단, 탈락의 핵심 근거인 대규모 지분희석은 SEC 원문으로 교차확인(🟢)돼 방향성 결론은 견고하다. OCF/NI는 수치가 성립하지 않아 판정에서 제외(⬛). ⚠️ 이 verdict는 데이터 신뢰도이며 투자 매력도가 아니다.
+
+<!-- confidence-summary
+high: 1
+medium: 5
+low: 0
+gap: 1
+verdict: 보통
+-->
+
 ---
 *출처: stockanalysis.com/stocks/QUBT (financials, cash-flow, balance-sheet, ratios, statistics), wallstreetzen.com, SEC EDGAR CIK 0001758009. 스크리닝 기준일 2026-07-22.*

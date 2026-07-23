@@ -62,6 +62,27 @@
 
 ---
 
+## 데이터 신뢰도 ([data-confidence.md](../../skills/data-confidence.md) 표준)
+
+지표별 신뢰도 등급:
+- ① ROE — 🟡보통 `[사실]` (S-1 기준 3개년만, 10년 이력 부재)
+- ② 5년 FCF — 🔴낮음 `[추정]` (2025 capex는 S-1 확인, 단 FCF 절대치 −$14B는 EBITDA-capex 역산 추정)
+- ③ 이자커버리지 — 🟡보통 `[사실]` (EBIT 음수·총차입금 ~$29B S-1 확인)
+- ④ Gross Margin — 🟢높음 `[사실]` (S-1 + stockanalysis 교차, 41%→43%→49% 일관)
+- ⑤ OCF/NI — ⬛데이터부족 `[추정]` (OCF 절대치 미공시 → 판정 보류)
+- ⑥ Net Margin — 🟢높음 `[사실]` (S-1 + stockanalysis 교차검증)
+- ⑦ 주식희석 — ⬛데이터부족 `[사실]` (2023–25 2년치만, 5년 이력·’26.6 IPO 신주 미반영)
+
+**종합**: 매출·마진 등 핵심 손익 항목은 S-1(SEC 제출 1차자료)과 stockanalysis 교차로 신뢰도 높음(🟢). 다만 이 도구가 전제하는 5년/10년 장기 이력이 근본적으로 부재(3개년만)해 ROE·FCF·희석 지표는 추정·보류가 많다. FCF 절대치는 역산 추정(🔴), OCF·5년 희석은 데이터부족(⬛). ⚠️ 이 verdict는 데이터 신뢰도이며 투자 매력도가 아니다 — 낮은 신뢰도는 사업 부실이 아니라 신생 상장에 따른 데이터 기간 부족에서 온다.
+
+<!-- confidence-summary
+high: 2
+medium: 2
+low: 1
+gap: 2
+verdict: 보통
+-->
+
 ## 데이터 출처
 
 - [stockanalysis.com — SPCX Financials](https://stockanalysis.com/stocks/spcx/)
