@@ -13,6 +13,8 @@ function authHeaders(): Record<string, string> {
   };
 }
 
+export type ConfidenceVerdict = "높음" | "보통" | "낮음";
+
 export interface ReportFile {
   path: string; // e.g. "reports/Apple/Apple-thesis.md"
   company: string | null; // e.g. "Apple", null for root-level reports
@@ -20,6 +22,10 @@ export interface ReportFile {
   // 열기 전 노출할 결과 개요. 현재는 열등주 스크리닝(-quality-screen-) 보고서만 파싱한다.
   // 예: "탈락" | "통과" | "면제 통과". 파싱 불가/미해당 시 null.
   summary?: string | null;
+  // 데이터 신뢰도 요약 블록(<!-- confidence-summary ... verdict: ... -->)의 종합 판정.
+  // skills/data-confidence.md 표준을 적용한 보고서만 값이 있다. 미적용 보고서는 null.
+  // 주의: 이는 "데이터 신뢰도"이지 "투자 매력도"가 아니다.
+  confidence?: ConfidenceVerdict | null;
 }
 
 // 열등주 스크리닝 보고서 본문에서 최종 결과를 뽑아낸다.
@@ -32,6 +38,16 @@ function parseQualityScreenResult(md: string): string | null {
   if (scan.includes("탈락")) return "탈락";
   if (scan.includes("통과")) return "통과";
   return null;
+}
+
+// 데이터 신뢰도 요약 블록에서 종합 판정(verdict)을 뽑아낸다.
+// 고정 포맷: <!-- confidence-summary ... verdict: 높음|보통|낮음 ... -->
+// (skills/data-confidence.md 표준) 블록/필드가 없으면 null.
+function parseConfidenceVerdict(md: string): ConfidenceVerdict | null {
+  const block = md.match(/<!--\s*confidence-summary([\s\S]*?)-->/);
+  if (!block) return null;
+  const m = block[1].match(/verdict:\s*(높음|보통|낮음)/);
+  return m ? (m[1] as ConfidenceVerdict) : null;
 }
 
 export async function listReportFiles(): Promise<ReportFile[]> {
@@ -57,16 +73,20 @@ export async function listReportFiles(): Promise<ReportFile[]> {
     })
     .sort((a, b) => a.path.localeCompare(b.path));
 
-  // 열등주 스크리닝 보고서만 본문을 추가로 받아 결과 개요를 파싱한다.
-  // (다른 유형은 파일명 배지로 충분히 구분되므로 불필요한 API 호출을 피한다.)
+  // 각 보고서 본문을 받아 (1) 열등주 스크리닝 결과와 (2) 데이터 신뢰도 판정을 파싱한다.
+  // 한 번의 fetch로 두 신호를 함께 뽑아 중복 호출을 피한다.
+  // 참고: 신뢰도 블록은 대부분의 보고서 유형에 실리므로 전 파일 본문을 받는다. 로컬 단일
+  // 사용자 대시보드 + 보고서 수가 적어 허용 가능. 보고서가 크게 늘면 캐싱/온디맨드 파싱으로 최적화.
   return Promise.all(
     files.map(async (f) => {
-      if (!f.name.includes("-quality-screen-")) return f;
       try {
         const content = await getReportContent(f.path);
-        return { ...f, summary: parseQualityScreenResult(content) };
+        const summary = f.name.includes("-quality-screen-")
+          ? parseQualityScreenResult(content)
+          : null;
+        return { ...f, summary, confidence: parseConfidenceVerdict(content) };
       } catch {
-        return f; // 개요 파싱 실패는 목록 표시를 막지 않는다.
+        return f; // 파싱 실패는 목록 표시를 막지 않는다.
       }
     })
   );

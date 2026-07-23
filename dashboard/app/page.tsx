@@ -1,75 +1,48 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { skills, tools, flowGroupLabels, type DashboardItem, type FlowGroup, type Tag, type RiskSeverity } from "@/lib/data";
 import { flows, type Flow, type FlowStep } from "@/lib/flows";
 import type { ReportFile } from "@/lib/github";
 import type { Holding } from "@/lib/toss";
 
 // ─── Color config ──────────────────────────────────────────────────────────
 
-// 모든 플로우가 브랜드 키컬러(#6A39C0) 하나로 통일됨.
+// xAI 원칙: 인터랙티브 어휘는 '화이트 pill' 하나. 주요 액션은 화이트-필 pill,
+// 나머지는 화이트-아웃라인 pill. 컬러 액센트는 코드/일러스트에만 드물게.
 const colorConfig = {
   brand: {
-    border: "border-brand-500/30",
-    bg: "bg-brand-500/15",
-    text: "text-brand-300",
-    button: "bg-brand-600 hover:bg-brand-500",
-    progress: "bg-brand-500",
-    command: "text-brand-300",
-    dot: "bg-brand-400",
+    border: "border-hairline",
+    bg: "bg-white/10",
+    text: "text-ink",
+    button: "bg-white text-canvas hover:bg-white/90", // 화이트-필 primary pill
+    progress: "bg-white",
+    command: "text-breeze", // 코드 컨텍스트의 드문 액센트 (soft blue)
+    dot: "bg-white",
   },
 } as const;
 
 type ColorKey = keyof typeof colorConfig;
-
-// ─── Admin dashboard config ────────────────────────────────────────────────
-
-const statusConfig = {
-  ok: { label: "정상", bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20", dot: "bg-emerald-400" },
-  warning: { label: "주의", bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20", dot: "bg-amber-400" },
-  danger: { label: "위험", bg: "bg-red-500/10", text: "text-red-400", border: "border-red-500/20", dot: "bg-red-400" },
-};
-
-const tagConfig: Record<Tag, { label: string; bg: string; text: string }> = {
-  "agent-sdk": { label: "🔧 Agent SDK", bg: "bg-blue-500/10", text: "text-blue-400" },
-  manual: { label: "🤚 수동입력", bg: "bg-orange-500/10", text: "text-orange-400" },
-};
-
-const riskDot: Record<RiskSeverity, string> = {
-  high: "bg-red-400",
-  medium: "bg-amber-400",
-  low: "bg-zinc-600",
-  manual: "bg-orange-400",
-};
-
-const riskText: Record<RiskSeverity, string> = {
-  high: "text-red-400",
-  medium: "text-amber-400",
-  low: "text-zinc-500",
-  manual: "text-orange-400",
-};
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 type FileBadge = { label: string; color: string };
 
 function getFileBadge(filename: string): FileBadge {
-  if (filename === "README.md") return { label: "개요", color: "text-zinc-400 bg-zinc-700/50" };
+  if (filename === "README.md") return { label: "개요", color: "text-body bg-canvas-soft" };
   if (/^01-/i.test(filename)) return { label: "DYP 관점", color: "text-emerald-400 bg-emerald-500/10" };
-  if (/^02-/i.test(filename)) return { label: "버핏 관점", color: "text-blue-400 bg-blue-500/10" };
-  if (/^03-/i.test(filename)) return { label: "멍거 관점", color: "text-violet-400 bg-violet-500/10" };
+  if (/^02-/i.test(filename)) return { label: "버핏 관점", color: "text-breeze bg-breeze/10" };
+  if (/^03-/i.test(filename)) return { label: "멍거 관점", color: "text-twilight bg-dusk/20" };
   if (/^04-/i.test(filename)) return { label: "리루 관점", color: "text-amber-400 bg-amber-500/10" };
-  if (filename === "FinalReport.md") return { label: "최종보고서", color: "text-emerald-300 bg-emerald-500/20" };
-  if (filename.includes("-quality-screen-")) return { label: "열등주스크리닝", color: "text-fuchsia-400 bg-fuchsia-500/10" };
-  if (filename.includes("-checklist-")) return { label: "체크리스트", color: "text-blue-400 bg-blue-500/10" };
-  if (filename.endsWith("-thesis.md")) return { label: "투자논제", color: "text-violet-400 bg-violet-500/10" };
-  if (filename.includes("-earnings-")) return { label: "실적분석", color: "text-orange-400 bg-orange-500/10" };
-  if (filename.includes("-industry-")) return { label: "산업리서치", color: "text-cyan-400 bg-cyan-500/10" };
-  if (filename.includes("-funnel-")) return { label: "퍼널", color: "text-teal-400 bg-teal-500/10" };
-  if (filename === "portfolio-latest.md") return { label: "포트폴리오", color: "text-rose-400 bg-rose-500/10" };
-  return { label: "MD", color: "text-zinc-500 bg-zinc-800" };
+  if (filename === "FinalReport.md") return { label: "최종보고서", color: "text-emerald-300 bg-emerald-500/15" };
+  if (filename.includes("-quality-screen-")) return { label: "열등주스크리닝", color: "text-fuchsia-300 bg-fuchsia-500/10" };
+  if (filename.includes("-checklist-")) return { label: "체크리스트", color: "text-breeze bg-breeze/10" };
+  if (filename.endsWith("-thesis.md")) return { label: "투자논제", color: "text-twilight bg-dusk/20" };
+  if (filename.includes("-earnings-")) return { label: "실적분석", color: "text-sunset-soft bg-sunset/10" };
+  if (filename.includes("-industry-")) return { label: "산업리서치", color: "text-cyan-300 bg-cyan-500/10" };
+  if (filename.includes("-funnel-")) return { label: "퍼널", color: "text-teal-300 bg-teal-500/10" };
+  if (filename === "portfolio-latest.md") return { label: "포트폴리오", color: "text-rose-300 bg-rose-500/10" };
+  return { label: "MD", color: "text-mute bg-canvas-soft" };
 }
 
 // 보고서 결과 개요(합격/불합격) pill. summary가 없으면 표시하지 않는다.
@@ -78,7 +51,16 @@ function getResultPill(summary?: string | null): FileBadge | null {
   if (summary.includes("면제")) return { label: "면제 통과", color: "text-amber-300 bg-amber-500/15" };
   if (summary.includes("탈락")) return { label: "탈락", color: "text-red-300 bg-red-500/15" };
   if (summary.includes("통과")) return { label: "통과", color: "text-emerald-300 bg-emerald-500/15" };
-  return { label: summary, color: "text-zinc-300 bg-zinc-700/50" };
+  return { label: summary, color: "text-body bg-canvas-soft" };
+}
+
+// 데이터 신뢰도 pill (data-confidence 표준의 verdict). 값이 없으면 표시하지 않는다.
+// 주의: "데이터 신뢰도"이지 "투자 매력도"가 아니다.
+function getConfidencePill(confidence?: string | null): FileBadge | null {
+  if (confidence === "높음") return { label: "신뢰 높음", color: "text-emerald-300 bg-emerald-500/15" };
+  if (confidence === "보통") return { label: "신뢰 보통", color: "text-amber-300 bg-amber-500/15" };
+  if (confidence === "낮음") return { label: "신뢰 낮음", color: "text-red-300 bg-red-500/15" };
+  return null;
 }
 
 const FILE_ORDER = ["README.md", "01-", "02-", "03-", "04-", "FinalReport.md"];
@@ -150,36 +132,36 @@ function ReportModal({ path, onClose }: { path: string; onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl"
+        className="w-full max-w-6xl max-h-[92vh] flex flex-col rounded-lg bg-canvas border border-hairline overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-800 shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-hairline shrink-0 bg-canvas/80 backdrop-blur">
           <div className="flex items-center gap-2 min-w-0">
-            <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${badge.color}`}>
+            <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${badge.color}`}>
               {badge.label}
             </span>
-            <span className="text-sm font-mono text-zinc-300 truncate">{filename}</span>
+            <span className="text-sm font-mono text-body truncate">{filename}</span>
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 ml-3 h-8 w-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+            className="shrink-0 ml-3 h-9 w-9 rounded-full flex items-center justify-center border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
           >
             ✕
           </button>
         </div>
-        <div className="overflow-y-auto flex-1 p-6">
-          {loading && <p className="text-sm text-zinc-500">불러오는 중...</p>}
+        <div className="overflow-y-auto scroll-slim flex-1 px-8 py-7">
+          {loading && <p className="text-sm text-mute">불러오는 중...</p>}
           {error && (
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
               {error}
             </div>
           )}
           {content && (
-            <article className="prose prose-invert prose-sm max-w-none">
+            <article className="report-prose">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
             </article>
           )}
@@ -190,120 +172,6 @@ function ReportModal({ path, onClose }: { path: string; onClose: () => void }) {
 }
 
 // ─── Components ────────────────────────────────────────────────────────────
-
-function DashboardCard({ item }: { item: DashboardItem }) {
-  const s = statusConfig[item.status];
-  return (
-    <div className={`flex flex-col gap-3 rounded-xl border ${s.border} bg-zinc-900 p-4`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="shrink-0 rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-zinc-400">
-            {item.code}
-          </span>
-          <h3 className="font-mono text-sm font-semibold text-white">{item.name}</h3>
-        </div>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${s.bg} ${s.text}`}>
-          {s.label}
-        </span>
-      </div>
-      <p className="text-xs leading-relaxed text-zinc-400">{item.description}</p>
-      {item.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {item.tags.map((tag) => (
-            <span key={tag} className={`rounded-full px-2 py-0.5 text-xs ${tagConfig[tag].bg} ${tagConfig[tag].text}`}>
-              {tagConfig[tag].label}
-            </span>
-          ))}
-        </div>
-      )}
-      {item.risks.length > 0 && (
-        <div className="flex flex-col gap-1.5 border-t border-zinc-800 pt-3">
-          {item.risks.map((risk, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${riskDot[risk.severity]}`} />
-              <span className={`text-xs ${riskText[risk.severity]}`}>{risk.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-const flowGroupOrder: FlowGroup[] = ["B", "C", "S", "T"];
-
-function AdminModal({ onClose }: { onClose: () => void }) {
-  const [tab, setTab] = useState<FlowGroup>("B");
-  const allItems = [...skills, ...tools];
-  const items = allItems.filter((i) => i.flowGroup === tab);
-  const counts = {
-    ok: items.filter((i) => i.status === "ok").length,
-    warning: items.filter((i) => i.status === "warning").length,
-    danger: items.filter((i) => i.status === "danger").length,
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-5xl max-h-[80vh] flex flex-col rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 shrink-0">
-          <div>
-            <h2 className="font-semibold text-white">Skills & Tools 현황</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">플로우별 Skill과 Python Tool의 동작 상태</p>
-            <p className="text-xs text-amber-400/80 mt-1">⏱ 산업/섹터 데이터는 3개월 기준으로 신선도를 점검·정제합니다 (갱신은 수동 실행)</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="flex items-center justify-between gap-4 px-6 py-3 border-b border-zinc-800 shrink-0 flex-wrap">
-          <div className="flex gap-1 rounded-lg bg-zinc-900 p-1 overflow-x-auto">
-            {flowGroupOrder.map((g) => (
-              <button
-                key={g}
-                onClick={() => setTab(g)}
-                className={`shrink-0 rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-                  tab === g ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                {flowGroupLabels[g].label}
-                <span className="ml-1.5 text-xs text-zinc-500">{flowGroupLabels[g].subtitle}</span>
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-4 text-sm">
-            <span className="flex items-center gap-1.5 text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" /> 정상 {counts.ok}
-            </span>
-            <span className="flex items-center gap-1.5 text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-amber-400" /> 주의 {counts.warning}
-            </span>
-            <span className="flex items-center gap-1.5 text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-red-400" /> 위험 {counts.danger}
-            </span>
-          </div>
-        </div>
-
-        <div className="overflow-y-auto flex-1 p-6">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((item) => (
-              <DashboardCard key={item.name} item={item} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function StepCard({
   step,
@@ -348,11 +216,11 @@ function StepCard({
   if (isSkipped) {
     return (
       <div className="flex items-center gap-3 px-2 py-2.5 opacity-40">
-        <div className="h-6 w-6 shrink-0 rounded-full border border-dashed border-zinc-600 flex items-center justify-center text-xs text-zinc-500">
+        <div className="h-6 w-6 shrink-0 rounded-full border border-dashed border-hairline flex items-center justify-center text-xs text-mute">
           –
         </div>
-        <span className="text-sm text-zinc-500 flex-1">{step.title}</span>
-        <span className="text-xs text-zinc-600">건너뜀</span>
+        <span className="text-sm text-mute flex-1">{step.title}</span>
+        <span className="text-xs text-mute">건너뜀</span>
       </div>
     );
   }
@@ -366,15 +234,15 @@ function StepCard({
         <div className={`h-6 w-6 shrink-0 rounded-full flex items-center justify-center text-xs ${colors.bg} ${colors.text}`}>
           ✓
         </div>
-        <span className="text-sm text-zinc-500 flex-1">{step.title}</span>
+        <span className="text-sm text-body flex-1">{step.title}</span>
         <div className="flex items-center gap-2 shrink-0">
-          <code className="text-xs text-zinc-700 font-mono truncate max-w-[160px] hidden sm:block">
+          <code className="text-xs text-mute font-mono truncate max-w-[160px] hidden sm:block">
             {step.commandTemplate.replace("{input}", input || step.inputPlaceholder)}
           </code>
           {resolvedFiles.length > 0 && (
             <button
               onClick={() => onOpenReport(resolvedFiles[0])}
-              className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+              className="text-xs px-3 py-1 rounded-full bg-transparent border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
             >
               보기
             </button>
@@ -386,28 +254,28 @@ function StepCard({
 
   if (!isActive) {
     return (
-      <div className="flex items-center gap-3 px-2 py-2.5 opacity-25">
-        <div className="h-6 w-6 shrink-0 rounded-full border border-zinc-700 flex items-center justify-center text-xs text-zinc-600">
+      <div className="flex items-center gap-3 px-2 py-2.5 opacity-30">
+        <div className="h-6 w-6 shrink-0 rounded-full border border-hairline flex items-center justify-center text-xs text-mute">
           {index + 1}
         </div>
-        <span className="text-sm text-zinc-500">{step.title}</span>
+        <span className="text-sm text-mute">{step.title}</span>
       </div>
     );
   }
 
   return (
-    <div className={`rounded-xl border ${colors.border} bg-zinc-900 p-5`}>
+    <div className="rounded-lg border border-hairline bg-canvas-card p-6">
       <div className="flex items-center gap-3 mb-3">
-        <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-sm font-bold ${colors.bg} ${colors.text}`}>
+        <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-sm ${colors.bg} ${colors.text}`}>
           {index + 1}
         </div>
-        <h3 className="font-semibold text-white">{step.title}</h3>
+        <h3 className="text-[19px] text-ink tracking-[-0.02em]">{step.title}</h3>
       </div>
 
-      <p className="text-sm text-zinc-400 mb-4 leading-relaxed">{step.description}</p>
+      <p className="text-sm text-body mb-5 leading-relaxed">{step.description}</p>
 
       <div className="mb-3">
-        <label className="block text-xs text-zinc-500 mb-1.5">{step.inputLabel}</label>
+        <label className="eyebrow block text-[11px] mb-1.5">{step.inputLabel}</label>
         {step.sectorPicker && (
           <div className="mb-2">
             <div className="flex gap-1 overflow-x-auto pb-1 mb-2">
@@ -415,8 +283,8 @@ function StepCard({
                 <button
                   key={g.label}
                   onClick={() => setSectorTab(i)}
-                  className={`shrink-0 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-                    sectorTab === i ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
+                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors active:scale-95 ${
+                    sectorTab === i ? "bg-white text-canvas" : "text-mute hover:text-ink"
                   }`}
                 >
                   {g.label}
@@ -428,10 +296,10 @@ function StepCard({
                 <button
                   key={sector}
                   onClick={() => onInputChange(sector)}
-                  className={`rounded-full px-3 py-1 text-xs transition-colors border ${
+                  className={`rounded-full px-3 py-1 text-xs transition-colors border active:scale-95 ${
                     input === sector
-                      ? `${colors.bg} ${colors.text} border-transparent`
-                      : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white hover:bg-zinc-700"
+                      ? "bg-white text-canvas border-white"
+                      : "bg-transparent text-body border-hairline hover:text-ink hover:bg-canvas-soft"
                   }`}
                 >
                   {sector}
@@ -442,7 +310,7 @@ function StepCard({
         )}
         {step.holdingsPicker && holdings.length > 0 && (
           <div className="mb-2">
-            <div className="text-[11px] text-zinc-500 mb-1.5">내 보유 종목 (클릭해서 추가/제거)</div>
+            <div className="text-[11px] text-mute mb-1.5">내 보유 종목 (클릭해서 추가/제거)</div>
             <div className="flex flex-wrap gap-1.5">
               {holdings.map((h) => {
                 const selected = parseTickers(input).includes(h.ticker.toUpperCase());
@@ -453,10 +321,10 @@ function StepCard({
                     onClick={() => onInputChange(toggleTicker(input, h.ticker))}
                     title={h.name}
                     aria-pressed={selected}
-                    className={`rounded-full px-3 py-1 text-xs transition-colors border ${
+                    className={`rounded-full px-3 py-1 text-xs transition-colors border active:scale-95 ${
                       selected
-                        ? `${colors.bg} ${colors.text} border-transparent`
-                        : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:text-white hover:bg-zinc-700"
+                        ? "bg-white text-canvas border-white"
+                        : "bg-transparent text-body border-hairline hover:text-ink hover:bg-canvas-soft"
                     }`}
                   >
                     {selected ? "✓ " : "+ "}
@@ -471,38 +339,38 @@ function StepCard({
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
           placeholder={step.inputPlaceholder}
-          className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors"
+          className="w-full rounded-lg bg-canvas-soft border border-hairline px-3.5 py-2.5 text-sm text-ink placeholder-mute focus:outline-none focus:border-white/40 transition-colors"
         />
       </div>
 
       <div className="mb-4">
-        <div className="text-xs text-zinc-500 mb-1.5">터미널에서 실행</div>
-        <div className="flex items-center gap-2 rounded-lg bg-zinc-950 border border-zinc-800 px-3 py-2.5">
+        <div className="eyebrow text-[11px] mb-1.5">RUN IN TERMINAL</div>
+        <div className="flex items-center gap-2 rounded-lg bg-canvas-mid/40 border border-hairline px-3.5 py-2.5">
           <code className={`flex-1 text-sm font-mono ${colors.command}`}>{command}</code>
           <button
             onClick={handleCopy}
-            className="shrink-0 text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+            className="shrink-0 text-xs px-3 py-1 rounded-full border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
           >
             {copied ? "복사됨 ✓" : "복사"}
           </button>
         </div>
         {step.requiresCli && (
-          <p className="mt-1.5 text-xs text-amber-500">
+          <p className="mt-1.5 text-xs text-sunset-soft">
             ⚠️ Claude Code CLI에서 직접 실행해야 합니다 (Agent SDK 필요 — 일반 API 호출로는 동작하지 않음)
           </p>
         )}
       </div>
 
       {(step.outputFiles.length > 0 || step.outputNote) && (
-        <div className="mb-4 text-xs text-zinc-600">
-          <span className="text-zinc-500">생성: </span>
+        <div className="mb-4 text-xs text-mute">
+          <span className="text-body">생성: </span>
           {step.outputNote || step.outputFiles.map((f) => f.replace("{input}", displayInput)).join(", ")}
         </div>
       )}
 
       <button
         onClick={onDone}
-        className={`w-full rounded-lg py-2.5 text-sm font-medium text-white transition-colors ${colors.button}`}
+        className={`w-full rounded-full py-2.5 text-sm font-medium transition-colors active:scale-[0.98] ${colors.button}`}
       >
         완료, 다음 단계로 →
       </button>
@@ -547,24 +415,24 @@ function FlowView({
   });
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="mx-auto max-w-2xl px-6 py-8">
+    <div className="min-h-screen bg-canvas text-body">
+      <div className="mx-auto max-w-2xl px-6 py-10">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white mb-8 transition-colors"
+          className="flex items-center gap-2 text-sm text-body hover:text-ink mb-8 transition-colors active:scale-95"
         >
           ← 뒤로
         </button>
 
         <div className="mb-8">
           <div className="flex items-center justify-between mb-1">
-            <h1 className="text-xl font-bold">{flow.title}</h1>
-            <span className="text-sm text-zinc-500">
-              {Math.min(currentStep, flow.steps.length)}/{flow.steps.length} 단계
+            <h1 className="text-4xl tracking-[-0.03em] text-ink">{flow.title}</h1>
+            <span className="eyebrow text-[11px]">
+              {Math.min(currentStep, flow.steps.length)} / {flow.steps.length}
             </span>
           </div>
-          <p className="text-sm text-zinc-500 mb-3">{flow.subtitle}</p>
-          <div className="h-1.5 rounded-full bg-zinc-800">
+          <p className="text-sm text-mute mb-3">{flow.subtitle}</p>
+          <div className="h-1 rounded-full bg-canvas-soft overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${colors.progress}`}
               style={{ width: `${progressPct}%` }}
@@ -576,26 +444,26 @@ function FlowView({
           <div className="py-8">
             <div className="text-center mb-8">
               <div className="text-5xl mb-4">🎉</div>
-              <h2 className="text-xl font-bold mb-2">플로우 완료!</h2>
-              <p className="text-sm text-zinc-400">{flow.title} 플로우를 모두 마쳤습니다.</p>
+              <h2 className="text-3xl tracking-[-0.03em] text-ink mb-2">플로우 완료!</h2>
+              <p className="text-sm text-mute">{flow.title} 플로우를 모두 마쳤습니다.</p>
             </div>
 
             {generatedFiles.length > 0 && (
-              <div className="mb-8 rounded-xl border border-zinc-800 bg-zinc-900 p-5">
-                <div className="text-xs text-zinc-500 uppercase tracking-wide mb-3">생성된 보고서</div>
+              <div className="mb-8 rounded-lg border border-hairline bg-canvas-card p-5">
+                <div className="eyebrow text-[11px] mb-3">GENERATED REPORTS</div>
                 <div className="flex flex-col gap-2">
                   {generatedFiles.map(({ path }, i) => {
                     const filename = path.split("/").pop() ?? path;
                     const badge = getFileBadge(filename);
                     return (
                       <div key={i} className="flex items-center gap-2">
-                        <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
+                        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
                           {badge.label}
                         </span>
-                        <span className="text-xs font-mono text-zinc-400 flex-1 truncate min-w-0">{path}</span>
+                        <span className="text-xs font-mono text-body flex-1 truncate min-w-0">{path}</span>
                         <button
                           onClick={() => setModalPath(path)}
-                          className="shrink-0 text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                          className="shrink-0 text-xs px-3 py-1 rounded-full bg-transparent border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
                         >
                           보기
                         </button>
@@ -609,7 +477,7 @@ function FlowView({
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <button
                 onClick={onBack}
-                className={`px-5 py-2.5 rounded-lg text-white transition-colors text-sm ${colors.button}`}
+                className={`px-6 py-2.5 rounded-full transition-colors text-sm font-medium active:scale-95 ${colors.button}`}
               >
                 홈으로 (보고서 보기) →
               </button>
@@ -660,32 +528,31 @@ function FlowView({
 }
 
 function StartPointModal({ flow, onChoose, onClose }: { flow: Flow; onChoose: (fromStep: number) => void; onClose: () => void }) {
-  const c = colorConfig[flow.color as ColorKey];
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full max-w-lg rounded-2xl bg-zinc-950 border border-zinc-800 shadow-2xl p-6"
+        className="w-full max-w-lg rounded-lg bg-canvas border border-hairline p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-2 mb-1">
-          <h2 className="font-bold text-white text-lg">{flow.title}</h2>
+          <h2 className="text-ink text-2xl tracking-[-0.03em]">{flow.title}</h2>
           <button
             onClick={onClose}
-            className="h-8 w-8 shrink-0 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+            className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
           >
             ✕
           </button>
         </div>
-        <p className="text-sm text-zinc-500 mb-6">어디서부터 시작할까요?</p>
+        <p className="text-sm text-mute mb-6">어디서부터 시작할까요?</p>
         <div className="flex flex-col gap-3">
           {flow.startPoints?.map((sp) => (
             <button
               key={sp.id}
               onClick={() => onChoose(sp.fromStep)}
-              className={`text-left rounded-xl border ${c.border} bg-zinc-900 p-4 hover:bg-zinc-800/80 transition-colors`}
+              className="text-left rounded-lg border border-hairline bg-canvas-card p-4 hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99]"
             >
-              <div className={`text-sm font-semibold mb-1 ${c.text}`}>{sp.label}</div>
-              <p className="text-xs text-zinc-400 leading-relaxed">{sp.description}</p>
+              <div className="text-sm text-ink mb-1">{sp.label}</div>
+              <p className="text-xs text-body leading-relaxed">{sp.description}</p>
             </button>
           ))}
         </div>
@@ -711,6 +578,10 @@ function fmtKrw(n: number) {
 const CCY_STORAGE_KEY = "holdings-ccy";
 type Ccy = "USD" | "KRW";
 
+// 보유 정보가 안 뜰 때(에러/빈 목록) 수동 새로고침 없이 자동으로 다시 시도한다.
+// 성공(비어있지 않은 목록)하면 폴링을 멈추고, 무한 재시도를 막기 위해 횟수를 제한한다.
+const MAX_AUTO_RELOADS = 6;
+
 function HoldingsBanner() {
   const [holdings, setHoldings] = useState<Holding[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -718,8 +589,9 @@ function HoldingsBanner() {
   const [loading, setLoading] = useState(true);
   const [ccy, setCcy] = useState<Ccy>("USD");
   const [fx, setFx] = useState<number | null>(null);
+  const [autoTries, setAutoTries] = useState(0);
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true);
     setError(null);
     fetch("/api/holdings")
@@ -731,9 +603,26 @@ function HoldingsBanner() {
       })
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // 자동 재로딩: 로딩이 끝났는데 아직 안 떴으면(에러 또는 빈 목록) 잠시 후 다시 시도.
+  // 정상 표시 중이거나 상한 도달 시 종료. 백오프로 2s→최대 10s 간격.
+  useEffect(() => {
+    if (loading) return;
+    const shown = (holdings?.length ?? 0) > 0;
+    if (shown) return;
+    if (autoTries >= MAX_AUTO_RELOADS) return;
+    const delay = Math.min(2000 * (autoTries + 1), 10000);
+    const timer = setTimeout(() => {
+      setAutoTries((n) => n + 1);
+      load();
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [loading, holdings, error, autoTries, load]);
 
   // 저장된 통화 선호를 복원 (SSR 하이드레이션 불일치 방지 위해 마운트 후 읽음).
   useEffect(() => {
@@ -771,12 +660,12 @@ function HoldingsBanner() {
   const totalPLPct = totalCost > 0 ? (totalPL / totalCost) * 100 : 0;
 
   return (
-    <section className="mb-10 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+    <section className="mb-10 rounded-lg border border-hairline bg-canvas-card p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">보유 자산</h2>
+          <h2 className="eyebrow text-[11px]">PORTFOLIO</h2>
           {isMock && (
-            <span className="rounded px-1.5 py-0.5 text-[10px] font-medium text-amber-400 bg-amber-500/10">
+            <span className="rounded-full px-1.5 py-0.5 text-[10px] font-medium text-sunset-soft bg-sunset/10">
               목업
             </span>
           )}
@@ -785,7 +674,7 @@ function HoldingsBanner() {
           <div
             role="group"
             aria-label="통화 선택"
-            className="flex rounded-lg border border-zinc-800 bg-zinc-950 p-0.5"
+            className="flex rounded-full border border-hairline bg-canvas-soft p-0.5"
           >
             {(["USD", "KRW"] as const).map((c) => {
               const active = ccy === c;
@@ -797,9 +686,9 @@ function HoldingsBanner() {
                   disabled={disabled}
                   aria-pressed={active}
                   title={disabled ? "환율 불러오는 중..." : `${c}로 표시`}
-                  className={`rounded-md px-2 py-0.5 text-[11px] font-semibold transition-colors ${
-                    active ? "bg-brand-600 text-white" : "text-zinc-500 hover:text-white"
-                  } ${disabled ? "cursor-not-allowed opacity-40 hover:text-zinc-500" : ""}`}
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-colors active:scale-95 ${
+                    active ? "bg-white text-canvas" : "text-mute hover:text-ink"
+                  } ${disabled ? "cursor-not-allowed opacity-40 hover:text-mute" : ""}`}
                 >
                   {c === "USD" ? "$ USD" : "₩ KRW"}
                 </button>
@@ -807,10 +696,13 @@ function HoldingsBanner() {
             })}
           </div>
           <button
-            onClick={load}
+            onClick={() => {
+              setAutoTries(0);
+              load();
+            }}
             aria-label="새로고침"
             title="새로고침"
-            className="text-zinc-500 hover:text-white transition-colors"
+            className="text-mute hover:text-ink transition-colors active:scale-95"
           >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -831,25 +723,42 @@ function HoldingsBanner() {
         </div>
       </div>
 
-      {loading && <p className="text-xs text-zinc-600">불러오는 중...</p>}
+      {loading && <p className="text-xs text-mute">불러오는 중...</p>}
 
       {!loading && error && (
-        <p className="text-xs text-zinc-600">보유 정보를 일시적으로 불러올 수 없습니다.</p>
+        <p className="text-xs text-mute">
+          보유 정보를 일시적으로 불러올 수 없습니다.
+          {autoTries < MAX_AUTO_RELOADS && " 자동으로 다시 시도 중…"}
+        </p>
       )}
 
       {!loading && !error && list.length === 0 && (
-        <p className="text-xs text-zinc-600">보유한 해외주식이 없습니다.</p>
+        <p className="text-xs text-mute">
+          {autoTries < MAX_AUTO_RELOADS ? "보유 정보를 불러오는 중… 자동으로 다시 시도합니다." : "보유한 해외주식이 없습니다."}
+        </p>
       )}
 
       {!loading && list.length > 0 && (
         <>
-          <div className="flex items-end gap-3 mb-4">
-            <span className="text-2xl font-bold text-white">{money(total)}</span>
-            <span className={`text-sm font-medium ${totalPL >= 0 ? "text-red-400" : "text-blue-400"}`}>
-              {totalPL >= 0 ? "+" : ""}
-              {money(totalPL)} ({totalPL >= 0 ? "+" : ""}
-              {totalPLPct.toFixed(2)}%)
-            </span>
+          {/* KPI 메트릭 타일 */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="rounded-lg border border-hairline bg-canvas p-3">
+              <div className="eyebrow text-[10px] mb-1">TOTAL VALUE</div>
+              <div className="text-2xl tracking-[-0.02em] text-ink">{money(total)}</div>
+            </div>
+            <div className="rounded-lg border border-hairline bg-canvas p-3">
+              <div className="eyebrow text-[10px] mb-1">TOTAL P/L</div>
+              <div className={`text-2xl tracking-[-0.02em] ${totalPL >= 0 ? "text-red-400" : "text-breeze"}`}>
+                {totalPL >= 0 ? "+" : ""}{money(totalPL)}
+              </div>
+              <div className={`text-[11px] mt-0.5 ${totalPL >= 0 ? "text-red-400" : "text-breeze"}`}>
+                {totalPL >= 0 ? "+" : ""}{totalPLPct.toFixed(2)}%
+              </div>
+            </div>
+            <div className="rounded-lg border border-hairline bg-canvas p-3">
+              <div className="eyebrow text-[10px] mb-1">POSITIONS</div>
+              <div className="text-2xl tracking-[-0.02em] text-ink">{list.length}</div>
+            </div>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {list.map((h) => {
@@ -857,18 +766,18 @@ function HoldingsBanner() {
               return (
                 <div
                   key={h.ticker}
-                  className="shrink-0 min-w-[150px] rounded-xl border border-zinc-800 bg-zinc-950 p-3"
+                  className="shrink-0 min-w-[150px] rounded-lg border border-hairline bg-canvas p-3"
                 >
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-mono text-sm font-bold text-white">{h.ticker}</span>
-                    <span className={`text-xs font-medium ${up ? "text-red-400" : "text-blue-400"}`}>
+                    <span className="font-mono text-sm text-ink">{h.ticker}</span>
+                    <span className={`text-xs font-medium ${up ? "text-red-400" : "text-breeze"}`}>
                       {up ? "+" : ""}
                       {h.profitLossPct.toFixed(1)}%
                     </span>
                   </div>
-                  <div className="text-[11px] text-zinc-500 truncate mb-2">{h.name}</div>
-                  <div className="text-sm font-semibold text-zinc-200">{money(h.marketValue)}</div>
-                  <div className="text-[11px] text-zinc-600 mt-0.5">
+                  <div className="text-[11px] text-mute truncate mb-2">{h.name}</div>
+                  <div className="text-sm text-ink">{money(h.marketValue)}</div>
+                  <div className="text-[11px] text-mute mt-0.5">
                     {h.quantity}주 · 평단 {money(h.avgPrice)}
                   </div>
                 </div>
@@ -883,15 +792,15 @@ function HoldingsBanner() {
 
 function HomeView({
   onSelectFlow,
-  onOpenAdmin,
+  onLaunchStep,
 }: {
   onSelectFlow: (f: Flow) => void;
-  onOpenAdmin: () => void;
+  onLaunchStep: (f: Flow, step: number) => void;
 }) {
   const [files, setFiles] = useState<ReportFile[] | null>(null);
   const [reportTab, setReportTab] = useState<string | null>(null);
   const [modalPath, setModalPath] = useState<string | null>(null);
-  const [flowTab, setFlowTab] = useState<string>("reports");
+  const [flowTab, setFlowTab] = useState<string>("portfolio-overview");
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -923,101 +832,202 @@ function HomeView({
   const companies = files
     ? (Array.from(new Set(files.map((f) => f.company).filter((c): c is string => c !== null))).sort() as string[])
     : [];
-  const rootFiles = files ? files.filter((f) => f.company === null) : [];
+  // 포트폴리오 보고서(portfolio-latest.md)는 전용 '포트폴리오' 탭에서 보여주므로
+  // 보고서 탭의 루트 목록에서는 제외한다.
+  const rootFiles = files ? files.filter((f) => f.company === null && f.name !== "portfolio-latest.md") : [];
+  const portfolioReport = files?.find((f) => f.company === null && f.name === "portfolio-latest.md") ?? null;
   const tabs = [...companies, ...(rootFiles.length > 0 ? ["root"] : [])];
   const rawCurrentFiles =
     reportTab === "root" ? rootFiles : (files?.filter((f) => f.company === reportTab) ?? []);
   const currentFiles = reportTab !== "root" ? sortCompanyFiles(rawCurrentFiles) : rawCurrentFiles;
 
+  // 사이드바/모바일 공용 네비 항목: 포트폴리오 · 프로세스 가이드 · 보고서 · 실적 점검 · 포트폴리오 점검
+  const contentTabs = [
+    { id: "portfolio-overview", label: "포트폴리오" },
+    { id: "process-guide", label: "프로세스 가이드" },
+    { id: "reports", label: "보고서" },
+    ...flows.filter((f) => f.id !== "discovery").map((f) => ({ id: f.id, label: f.title })),
+  ];
+  const activeFlow = flows.find((f) => f.id === flowTab);
+  const headerEyebrow =
+    flowTab === "reports"
+      ? "REPORTS"
+      : flowTab === "portfolio-overview"
+        ? "PORTFOLIO"
+        : flowTab === "process-guide"
+          ? "PROCESS"
+          : flowTab.toUpperCase();
+  const headerTitle =
+    flowTab === "reports"
+      ? "종목별 보고서"
+      : flowTab === "portfolio-overview"
+        ? "포트폴리오"
+        : flowTab === "process-guide"
+          ? "프로세스 가이드"
+          : (activeFlow?.title ?? "");
+  const launchDiscovery = () => {
+    const d = flows.find((f) => f.id === "discovery");
+    if (d) onSelectFlow(d);
+  };
+  const logout = async () => {
+    await fetch("/api/logout", { method: "POST" });
+    window.location.href = "/login";
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="mx-auto max-w-4xl px-6 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-white to-brand-200 bg-clip-text text-transparent">
-            현생 탈출 장치
-          </h1>
+    <div className="min-h-screen bg-canvas text-body flex">
+      {/* ── 사이드바 (데스크톱) — xAI app-shell ── */}
+      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-hairline sticky top-0 h-screen">
+        <div className="px-5 py-5 border-b border-hairline">
+          <div className="eyebrow text-[10px]">REALITY ESCAPE</div>
+          <div className="mt-1.5 text-lg tracking-[-0.02em] text-ink">현생 탈출 장치</div>
+        </div>
+        <nav className="flex-1 p-3 flex flex-col gap-0.5 overflow-y-auto">
+          {contentTabs.map((t) => {
+            const active = flowTab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setFlowTab(t.id)}
+                className={`text-left rounded-lg px-3 py-2 text-sm transition-colors border-l-2 ${
+                  active
+                    ? "bg-canvas-soft text-ink border-white"
+                    : "text-body hover:text-ink hover:bg-canvas-soft border-transparent"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+          <div className="my-2 border-t border-hairline" />
+          <button
+            onClick={launchDiscovery}
+            className="text-left rounded-lg px-3 py-2 text-sm text-body hover:text-ink hover:bg-canvas-soft transition-colors border-l-2 border-transparent"
+          >
+            ＋ 새 종목 추가
+          </button>
+        </nav>
+        <div className="p-3 border-t border-hairline">
+          <button
+            onClick={logout}
+            className="w-full rounded-full border border-hairline px-4 py-2 text-sm text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+          >
+            로그아웃
+          </button>
+        </div>
+      </aside>
+
+      {/* ── 메인 영역 ── */}
+      <main className="flex-1 min-w-0 flex flex-col">
+        {/* 모바일 상단바 */}
+        <div className="md:hidden sticky top-0 z-40 bg-canvas/90 backdrop-blur border-b border-hairline px-5 h-14 flex items-center justify-between">
+          <span className="text-ink tracking-[-0.02em]">현생 탈출 장치</span>
           <div className="flex items-center gap-2">
-            <button
-              onClick={onOpenAdmin}
-              className="px-3 py-1.5 rounded-lg bg-zinc-800 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
-            >
-              관리자
-            </button>
-            <button
-              onClick={async () => {
-                await fetch("/api/logout", { method: "POST" });
-                window.location.href = "/login";
-              }}
-              className="px-3 py-1.5 rounded-lg bg-zinc-800 text-xs text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
-            >
-              로그아웃
-            </button>
+            <button onClick={logout} className="rounded-full border border-hairline px-3 py-1 text-xs text-body active:scale-95">로그아웃</button>
           </div>
         </div>
+        {/* 모바일 탭 로우 */}
+        <div className="md:hidden px-5 py-3 border-b border-hairline flex gap-1 overflow-x-auto">
+          {contentTabs.map((t) => {
+            const active = flowTab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setFlowTab(t.id)}
+                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 ${
+                  active ? "bg-white text-canvas" : "text-mute hover:text-ink"
+                }`}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
 
-        <HoldingsBanner />
-
-        <div className="mb-16">
-          {/* 탭 바 + 새 종목 발굴 버튼 (같은 row) */}
-          <div className="flex items-center justify-between gap-3 mb-6">
-            <div className="flex gap-1 rounded-lg bg-zinc-900 p-1 w-fit">
-            <button
-              onClick={() => setFlowTab("reports")}
-              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                flowTab === "reports" ? "bg-brand-500/15 text-brand-300" : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              보고서
-            </button>
-            {flows
-              .filter((flow) => flow.id !== "discovery")
-              .map((flow) => {
-                const active = flowTab === flow.id;
-                const c = colorConfig[flow.color as ColorKey];
-                return (
-                  <button
-                    key={flow.id}
-                    onClick={() => setFlowTab(flow.id)}
-                    className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                      active ? `${c.bg} ${c.text}` : "text-zinc-400 hover:text-white"
-                    }`}
-                  >
-                    {flow.title}
-                  </button>
-                );
-              })}
-            </div>
-            <button
-              onClick={() => {
-                const d = flows.find((f) => f.id === "discovery");
-                if (d) onSelectFlow(d);
-              }}
-              aria-label="새 종목 발굴"
-              title="새 종목 발굴"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-xl leading-none text-white hover:bg-brand-500 transition-colors"
-            >
-              +
-            </button>
+        {/* 데스크톱 상단바 — mono eyebrow + 페이지 타이틀 + primary 액션 */}
+        <header className="hidden md:flex sticky top-0 z-30 bg-canvas/90 backdrop-blur border-b border-hairline px-8 h-16 items-center justify-between">
+          <div>
+            <div className="eyebrow text-[10px]">{headerEyebrow}</div>
+            <div className="text-lg tracking-[-0.02em] text-ink leading-tight">{headerTitle}</div>
           </div>
+        </header>
+
+        <div className="px-6 md:px-8 py-8 w-full max-w-5xl">
+          <div className="mb-16">
 
           {/* ── 탭 콘텐츠 (전환 애니메이션) ── */}
           <div key={flowTab} className="tab-panel">
-          {flowTab === "reports" ? (
+          {flowTab === "portfolio-overview" ? (
             <div>
-              <div className="mb-4">
-                <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">
-                  종목별 보고서
-                </h2>
-              </div>
-
-              {!files && !loadError && <p className="text-xs text-zinc-600">불러오는 중...</p>}
+              <HoldingsBanner />
+              {portfolioReport ? (
+                <button
+                  onClick={() => setModalPath(portfolioReport.path)}
+                  className="w-full flex items-center gap-2 rounded-lg bg-canvas-card border border-hairline px-4 py-3 text-left hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99]"
+                >
+                  <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-rose-300 bg-rose-500/10">
+                    포트폴리오
+                  </span>
+                  <span className="text-xs font-mono text-body flex-1 truncate">{portfolioReport.name}</span>
+                  <span className="shrink-0 text-xs text-mute">보기 →</span>
+                </button>
+              ) : (
+                <p className="text-xs text-mute">아직 포트폴리오 점검 보고서가 없습니다.</p>
+              )}
+            </div>
+          ) : flowTab === "process-guide" ? (
+            /* ── 프로세스 가이드: 발굴 6단계를 개별 선택·실행 ── */
+            (() => {
+              const discovery = flows.find((f) => f.id === "discovery");
+              if (!discovery) return null;
+              return (
+                <div>
+                  <p className="text-sm text-mute mb-6 leading-relaxed">
+                    섹터 전체 구조 이해부터 투자 논제 수립까지, 각 단계를 개별로 선택해 실행할 수 있습니다.
+                    순서대로 진행하거나 필요한 단계부터 바로 시작하세요.
+                  </p>
+                  <ol className="flex flex-col gap-2.5">
+                    {discovery.steps.map((step, i) => {
+                      const cmd = step.commandTemplate.replace("{input}", step.inputPlaceholder);
+                      return (
+                        <li key={i}>
+                          <button
+                            onClick={() => onLaunchStep(discovery, i)}
+                            className="w-full text-left rounded-lg border border-hairline bg-canvas-card p-5 hover:border-white/30 hover:bg-canvas-soft transition-all group active:scale-[0.99]"
+                          >
+                            <div className="flex items-start gap-4">
+                              <div className="mt-0.5 h-7 w-7 shrink-0 rounded-full bg-white/10 text-ink flex items-center justify-center text-sm">
+                                {i + 1}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-3">
+                                  <h3 className="text-base text-ink tracking-[-0.01em]">{step.title}</h3>
+                                  <span className="shrink-0 text-xs text-ink opacity-0 group-hover:opacity-100 transition-opacity">
+                                    실행 →
+                                  </span>
+                                </div>
+                                <p className="mt-1 text-xs text-body leading-relaxed">{step.description}</p>
+                                <code className="mt-2.5 inline-block text-xs font-mono text-breeze">{cmd}</code>
+                              </div>
+                            </div>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+              );
+            })()
+          ) : flowTab === "reports" ? (
+            <div>
+              {!files && !loadError && <p className="text-xs text-mute">불러오는 중...</p>}
 
               {!files && loadError && (
                 <div className="flex items-center gap-3 text-xs">
-                  <span className="text-red-400">보고서를 불러오지 못했습니다.</span>
+                  <span className="text-red-300">보고서를 불러오지 못했습니다.</span>
                   <button
                     onClick={() => setReloadKey((k) => k + 1)}
-                    className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                    className="px-3 py-1 rounded-full border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
                   >
                     다시 시도
                   </button>
@@ -1025,9 +1035,7 @@ function HomeView({
               )}
 
               {files && tabs.length === 0 && (
-                <p className="text-xs text-zinc-600">
-                  아직 보고서가 없습니다. <span className="text-zinc-500">+ 새 종목 발굴</span>로 시작하세요.
-                </p>
+                <p className="text-xs text-mute">아직 보고서가 없습니다.</p>
               )}
 
               {files && tabs.length > 0 && (
@@ -1037,36 +1045,45 @@ function HomeView({
                       <button
                         key={tab}
                         onClick={() => setReportTab(tab)}
-                        className={`shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                          reportTab === tab ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
+                        className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 ${
+                          reportTab === tab ? "bg-white text-canvas" : "text-mute hover:text-ink"
                         }`}
                       >
-                        {tab === "root" ? "섹터/포트폴리오" : tab}
+                        {tab === "root" ? "섹터/스크리닝" : tab}
                       </button>
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                     {currentFiles.map((f) => {
                       const badge = getFileBadge(f.name);
                       const pill = getResultPill(f.summary);
+                      const conf = getConfidencePill(f.confidence);
                       return (
                         <button
                           key={f.path}
                           onClick={() => setModalPath(f.path)}
-                          className="flex flex-col gap-2 rounded-lg bg-zinc-900 border border-zinc-800 px-3 py-2.5 text-left hover:bg-zinc-800 hover:border-zinc-700 transition-colors"
+                          className="flex flex-col gap-2 rounded-lg bg-canvas-card border border-hairline px-4 py-3 text-left hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99]"
                         >
-                          <div className="flex items-center gap-1.5">
-                            <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${badge.color}`}>
                               {badge.label}
                             </span>
                             {pill && (
-                              <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${pill.color}`}>
+                              <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${pill.color}`}>
                                 {pill.label}
                               </span>
                             )}
+                            {conf && (
+                              <span
+                                title="데이터 신뢰도 (투자 매력도 아님)"
+                                className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${conf.color}`}
+                              >
+                                {conf.label}
+                              </span>
+                            )}
                           </div>
-                          <span className="text-xs font-mono text-zinc-400 break-all">{f.name}</span>
+                          <span className="text-xs font-mono text-body break-all">{f.name}</span>
                         </button>
                       );
                     })}
@@ -1078,28 +1095,27 @@ function HomeView({
             /* ── 플로우 탭 ── */
             (() => {
               const flow = flows.find((f) => f.id === flowTab) ?? flows[0];
-              const c = colorConfig[flow.color as ColorKey];
 
               // 포폴 점검: 분기별 카드
               if (flow.quarters) {
                 return (
                   <div>
-                    <p className="text-sm text-zinc-400 mb-4 leading-relaxed">{flow.subtitle}</p>
+                    <p className="text-sm text-mute mb-4 leading-relaxed">{flow.subtitle}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {flow.quarters.map((q) => (
                         <button
                           key={q.label}
                           onClick={() => onSelectFlow(flow)}
-                          className={`text-left rounded-xl border ${c.border} bg-zinc-900 p-5 hover:bg-zinc-800/80 transition-all group`}
+                          className="text-left rounded-lg border border-hairline bg-canvas-card p-5 hover:border-white/30 hover:bg-canvas-soft transition-all group active:scale-[0.99]"
                         >
                           <div className="flex items-center justify-between gap-2 mb-2">
-                            <h3 className="text-base font-bold text-white">{q.label}</h3>
-                            <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${c.bg} ${c.text}`}>
+                            <h3 className="text-base text-ink tracking-[-0.01em]">{q.label}</h3>
+                            <span className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium border border-hairline text-body">
                               {q.timing}
                             </span>
                           </div>
-                          <p className="text-xs text-zinc-400 leading-relaxed">{q.note}</p>
-                          <div className={`mt-3 text-xs ${c.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                          <p className="text-xs text-body leading-relaxed">{q.note}</p>
+                          <div className="mt-3 text-xs text-ink opacity-0 group-hover:opacity-100 transition-opacity">
                             시작하기 →
                           </div>
                         </button>
@@ -1113,21 +1129,21 @@ function HomeView({
               return (
                 <button
                   onClick={() => onSelectFlow(flow)}
-                  className={`w-full text-left rounded-2xl border ${c.border} bg-zinc-900 p-6 hover:bg-zinc-800/80 transition-all group`}
+                  className="w-full text-left rounded-lg border border-hairline bg-canvas-card p-6 hover:border-white/30 hover:bg-canvas-soft transition-all group active:scale-[0.995]"
                 >
-                  <div className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium mb-4 ${c.bg} ${c.text}`}>
+                  <div className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium mb-4 border border-hairline text-body">
                     {flow.steps.length}단계
                   </div>
-                  <h2 className="text-lg font-bold text-white mb-1">{flow.title}</h2>
-                  <p className="text-xs text-zinc-400 leading-relaxed">{flow.subtitle}</p>
+                  <h2 className="text-2xl text-ink tracking-[-0.03em] mb-1">{flow.title}</h2>
+                  <p className="text-sm text-mute leading-relaxed">{flow.subtitle}</p>
 
                   <div className="flex items-center gap-1 mt-5">
                     {flow.steps.map((_, i) => (
-                      <div key={i} className={`h-1 rounded-full flex-1 ${c.bg}`} />
+                      <div key={i} className="h-1 rounded-full flex-1 bg-white/20" />
                     ))}
                   </div>
 
-                  <div className={`mt-4 text-xs ${c.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                  <div className="mt-4 text-xs text-ink opacity-0 group-hover:opacity-100 transition-opacity">
                     시작하기 →
                   </div>
                 </button>
@@ -1136,7 +1152,8 @@ function HomeView({
           )}
           </div>
         </div>
-      </div>
+        </div>
+      </main>
 
       {modalPath && <ReportModal path={modalPath} onClose={() => setModalPath(null)} />}
     </div>
@@ -1150,7 +1167,6 @@ export default function Home() {
   const [selectedFlow, setSelectedFlow] = useState<Flow | null>(null);
   const [pickingStartFor, setPickingStartFor] = useState<Flow | null>(null);
   const [startStep, setStartStep] = useState(0);
-  const [adminOpen, setAdminOpen] = useState(false);
 
   return (
     <>
@@ -1165,7 +1181,11 @@ export default function Home() {
               setView("flow");
             }
           }}
-          onOpenAdmin={() => setAdminOpen(true)}
+          onLaunchStep={(f, step) => {
+            setStartStep(step);
+            setSelectedFlow(f);
+            setView("flow");
+          }}
         />
       )}
       {view === "flow" && selectedFlow && (
@@ -1190,7 +1210,6 @@ export default function Home() {
           onClose={() => setPickingStartFor(null)}
         />
       )}
-      {adminOpen && <AdminModal onClose={() => setAdminOpen(false)} />}
     </>
   );
 }

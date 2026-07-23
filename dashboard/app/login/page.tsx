@@ -35,26 +35,27 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-canvas text-body flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold">현생 탈출 장치</h1>
-          <p className="mt-1 text-sm text-zinc-500">계속하려면 비밀번호를 입력하세요.</p>
+          <div className="eyebrow text-[10px] mb-2">REALITY ESCAPE DEVICE</div>
+          <h1 className="text-4xl tracking-[-0.03em] text-ink">현생 탈출 장치</h1>
+          <p className="mt-2 text-sm text-mute">계속하려면 비밀번호를 입력하세요.</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 flex flex-col gap-4"
+          className="rounded-lg border border-hairline bg-canvas-card p-6 flex flex-col gap-4"
         >
           <div>
-            <label className="block text-xs text-zinc-500 mb-1.5">비밀번호</label>
+            <label className="eyebrow block text-[11px] mb-1.5">PASSWORD</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoFocus
               autoComplete="current-password"
-              className="w-full rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors"
+              className="w-full rounded-lg bg-canvas-soft border border-hairline px-4 py-2.5 text-sm text-ink placeholder-mute focus:outline-none focus:border-white/40 transition-colors"
               placeholder="••••••••"
             />
           </div>
@@ -68,7 +69,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading || password.length === 0}
-            className="w-full rounded-lg py-2.5 text-sm font-medium text-white bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="w-full rounded-full py-2.5 text-sm font-medium text-canvas bg-white hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
           >
             {loading ? "확인 중..." : "입장"}
           </button>
@@ -80,7 +81,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+    <Suspense fallback={<div className="min-h-screen bg-canvas" />}>
       <LoginForm />
     </Suspense>
   );

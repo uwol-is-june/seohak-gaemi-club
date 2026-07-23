@@ -2,6 +2,7 @@
 
 **모델**: `(O)` Opus · `(S)` Sonnet · `(H)` Haiku
 **상태**: `[ ]` 예정 · `[~]` 진행중 · `[x]` 완료
+**번호**: 각 태스크에 `[TASK-N]` 부여 (지칭용, 완료돼도 번호 재사용 안 함)
 
 ---
 
@@ -12,20 +13,63 @@
 
 ## 예정
 
-_(없음)_
+### `[ ]` [TASK-1] (S) 보고서 탭: 종목별 보고서 유형 구획화 + 동일 종목 병합
+
+**배경**: 지금 보고서 탭은 `reports/{폴더명}/` 폴더명을 그대로 종목으로 쓰고
+(`lib/github.ts` `company`), 종목 안에서는 파일을 배지만 붙은 평면 목록으로 나열한다
+(`app/page.tsx` `fileBadge` / `sortCompanyFiles`). 두 가지 불편이 있음.
+
+**1. 종목 상세에서 보고서 유형별로 나눠 보기**
+한 종목 화면에서 아래 4개 구획(섹션)으로 그룹핑해 보여주기:
+- **열등주 스크리닝** — `*-quality-screen-*`
+- **버핏 6-게이트 체크** — `*-checklist-*`
+- **심층분석** — `/investment-team` 산출물(`{회사}/` 내 `README` + `01~04-*-Perspective.md` + `FinalReport.md`), `*-earnings-*`
+- **투자 논제 수립** — `*-thesis.md`
+- (기타/미분류는 별도 하단 섹션)
+- 파일이 없는 유형 구획은 비어있음 표시 또는 숨김(택1, 구현 시 결정).
+
+**2. 동일 종목이 폴더명 차이로 분리되는 문제 해결**
+현재 `QUBT`(티커) / `QuantumComputing`(영문명) / `퀀텀컴퓨팅`(한글명)이 서로 다른
+폴더에 저장되면 보고서 탭에서 별개 종목으로 나뉘어 표시됨.
+- 티커 ↔ 회사명 별칭(alias)을 매핑해 하나의 종목으로 병합 표시.
+- 매핑 소스 후보: 별도 alias 테이블(`lib`에 상수) 또는 각 보고서 프론트매터/본문의 티커 파싱.
+- 근본 예방책으로 `CLAUDE.md`의 보고서 폴더 명명 규칙 표준화도 함께 검토(폴더명 = 회사명 고정).
+
+**대상 파일**: `dashboard/lib/github.ts`(그룹핑·별칭), `dashboard/app/page.tsx`(구획 UI),
+필요 시 `dashboard/lib/data.ts`. UI는 `docs/DESIGN-x.ai.md` 디자인 언어 준수.
+
+### `[ ]` [TASK-2] (H) 좌측 사이드바 "＋ 새 종목 추가" 버튼 제거
+
+**배경**: 좌측 고정 사이드바 nav 하단에 `launchDiscovery`를 호출하는
+"＋ 새 종목 추가" 버튼이 있음. 이 버튼을 없앤다.
+
+**대상**: [dashboard/app/page.tsx:902-908](../dashboard/app/page.tsx#L902-L908)
+— 구분선 `div`(`my-2 border-t`)와 버튼 블록 제거.
+- `launchDiscovery` 함수가 이 버튼에서만 쓰인다면 함께 정리, 다른 곳에서도
+  쓰이면 함수는 유지하고 버튼만 제거.
+
+**주의**: `docs/DESIGN-x.ai.md` 디자인 언어 준수.
+
+### `[ ]` [TASK-3] (S) 보고서 가독성: 한 화면에 더 많은 내용 (밀도 개선)
+
+**배경**: 지금 보고서 뷰는 폰트·여백이 커서 스크롤을 많이 내려야 읽힌다.
+한 화면에 들어오는 정보량을 늘려 스캔·통독이 쉽게 한다. 폰트가 다소
+작아져도 무방(사용자 승인).
+
+**방향**:
+- 본문 font-size / line-height, 문단·리스트 간격, 제목(h1~h4) 위아래 마진,
+  블록쿼트·테이블 패딩을 전반적으로 축소해 세로 밀도 상승.
+- 가독성 하한 유지(너무 빽빽해 눈이 피로하지 않게) — 밀도와 가독성 균형.
+- 필요 시 본문 컨테이너 `max-width`도 함께 재검토(가로 폭 활용).
+
+**대상**: [dashboard/app/globals.css:101-238](../dashboard/app/globals.css#L101-L238)
+`.report-prose` 규칙 일괄 조정. 렌더 위치는
+[dashboard/app/page.tsx:164-165](../dashboard/app/page.tsx#L164-L165).
+
+**주의**: `docs/DESIGN-x.ai.md` 타이포/토큰 준수(가능하면 문서의 스케일 값 사용).
 
 ---
 
 ## 완료
 
-### 대시보드: 보고서 유형 구분 + 개요 미리보기 `(S)`
-
-**배경**: `/quality-screen`(열등주 제거) 결과가 파일로 저장되면서(`reports/{회사}/{회사}-quality-screen-{날짜}.md`) 종목별 보고서(investment-team, 체크리스트 등)와 한 폴더에 섞임. 대시보드에서 구분이 안 되고, 열기 전에는 합격/불합격 여부도 알 수 없었음.
-
-- [x] **① 열등주 스크리닝 보고서 배지 추가** — [dashboard/app/page.tsx](dashboard/app/page.tsx) `getFileBadge()`에 `-quality-screen-` 규칙 추가. fuchsia 색 "열등주스크리닝" 배지로 다른 유형과 시각 구분.
-- [x] **② 열기 전 합격/불합격 개요 노출** — [dashboard/lib/github.ts](dashboard/lib/github.ts)에서 열등주 스크리닝 보고서 본문을 파싱(`parseQualityScreenResult`)해 `ReportFile.summary`(탈락/통과/면제 통과)로 목록에 첨부. 클라이언트는 `getResultPill()`로 색상 pill 표시.
-- [x] **③ 한눈에 보이는 카드 레이아웃** — 파일명 칩 나열 → 유형 배지 + 결과 pill + 파일명(날짜 포함)이 정돈된 2열 카드 그리드로 재구성.
-
-**완료 기준 충족**: 열등주 스크리닝 보고서가 investment-team 보고서와 배지·색으로 즉시 구분되고, 클릭 없이 "탈락" 등 결과 개요가 보임. `npx tsc --noEmit` 통과.
-
-> **참고**: 대시보드는 GitHub `main` 트리에서 보고서를 읽음. 로컬에 저장한 QUBT 보고서는 push해야 대시보드에 나타남.
+_(없음)_

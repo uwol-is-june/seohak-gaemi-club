@@ -1,40 +1,243 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ─────────────────────────────────────────────────────────────────────────
+   xAI 디자인 시스템 토큰 — docs/DESIGN-x.ai.md 기반.
+   원칙: near-black 캔버스(#0a0a0a) 단일 서페이스 + 화이트 아웃라인 pill이 전체
+   인터랙티브 어휘 + Universal Sans(Inter 대체) weight 400 + 음수 트래킹 +
+   Geist Mono 대문자 eyebrow. 그림자 없음 — 헤어라인 보더가 모든 elevation.
+   ───────────────────────────────────────────────────────────────────────── */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-/* 브랜드 키컬러 팔레트 (key = #6A39C0, brand-500) */
 @theme {
-  --color-brand-50: #f3effb;
-  --color-brand-100: #e7def7;
-  --color-brand-200: #cfbdef;
-  --color-brand-300: #b295e5;
-  --color-brand-400: #8e67d6;
-  --color-brand-500: #6a39c0;
-  --color-brand-600: #582ca3;
-  --color-brand-700: #46237f;
-  --color-brand-800: #351a5f;
-  --color-brand-900: #251242;
+  /* 서페이스 — near-black 단일 캔버스 + 미세하게 밝은 카드/소프트 */
+  --color-canvas: #0a0a0a; /* 유일한 페이지 배경 */
+  --color-canvas-soft: #1a1c20; /* hover·툴팁·인풋 */
+  --color-canvas-card: #191919; /* 카드 fill */
+  --color-canvas-mid: #363a3f; /* 중첩 서페이스·코드 목업 */
+  --color-hairline: #212327; /* 1px 디바이더 */
+
+  /* 텍스트 */
+  --color-ink: #ffffff; /* 기본 텍스트·디스플레이 */
+  --color-body: #dadbdf; /* 보조 본문 */
+  --color-mute: #7d8187; /* 캡션·파인프린트·eyebrow */
+
+  /* 액센트 — 마케팅 표면엔 드물게, 일러스트/코드/포인트에만 */
+  --color-sunset: #ff7a17;
+  --color-sunset-soft: #ffc285;
+  --color-dusk: #7c3aed;
+  --color-twilight: #c4b5fd;
+  --color-breeze: #a0c3ec;
+  --color-midnight: #0d1726;
+
+  /* 폰트 — Universal Sans는 독점 → Inter로 대체(디스플레이+본문), Geist Mono는 eyebrow/label */
+  --font-sans: var(--font-inter), Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* 스크롤바 공간 예약 — 탭 전환 시 mx-auto 레이아웃이 옆으로 밀리는 것 방지 */
+html {
+  scrollbar-gutter: stable;
+  background: var(--color-canvas);
 }
 
-/* 탭 전환 애니메이션 — 콘텐츠에 key를 바꿔 재생 */
+body {
+  background: var(--color-canvas);
+  color: var(--color-body);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 디스플레이: 절대 볼드 금지 — weight 400 + 음수 트래킹이 위계를 만든다.
+   (docs: 96px에서 -2.4px, 사이즈별로 스케일. 크기+트래킹이 강조를 담당) */
+h1, h2, h3, h4 {
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+/* 화이트-투명 포커스 링 (다크 캔버스용) */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Geist Mono 대문자 eyebrow — 코드 코멘트처럼 읽히는 시그니처 라벨 */
+.eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-mute);
+}
+
+/* 슬림 커스텀 스크롤바 — near-black 트랙(투명) + 헤어라인/뮤트 썸. (xAI: 그림자 없음, 은은하게) */
+.scroll-slim {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-canvas-mid) transparent;
+}
+.scroll-slim::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.scroll-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: var(--color-canvas-mid);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+.scroll-slim::-webkit-scrollbar-thumb:hover {
+  background: var(--color-mute);
+  background-clip: content-box;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   보고서 마크다운 — @tailwindcss/typography 대신 DESIGN-x.ai 토큰으로 직접
+   위계·간격을 잡는다. ReactMarkdown이 뱉는 순수 HTML 요소를 타겟.
+   (글자 크기/줄간격/마진/정렬 일관성 확보 → 가독성)
+   ───────────────────────────────────────────────────────────────────────── */
+.report-prose {
+  color: var(--color-body);
+  font-size: 15px;
+  line-height: 1.75;
+  /* 넓은 모달 폭을 그대로 사용(표·코드블록·헤더는 전체 폭). 본문 텍스트만 아래에서
+     읽기 좋은 줄길이로 제한한다. */
+  max-width: none;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+/* 본문 텍스트 블록은 줄길이를 제한해 가독성 유지(표/코드/헤더는 전체 폭 사용) */
+.report-prose p,
+.report-prose ul,
+.report-prose ol,
+.report-prose blockquote {
+  max-width: 88ch;
+}
+.report-prose > :first-child {
+  margin-top: 0;
+}
+.report-prose h1,
+.report-prose h2,
+.report-prose h3,
+.report-prose h4 {
+  color: var(--color-ink);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.report-prose h1 {
+  font-size: 1.85rem;
+  margin: 0 0 1.1rem;
+}
+.report-prose h2 {
+  font-size: 1.4rem;
+  margin: 2.2rem 0 0.9rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--color-hairline);
+}
+.report-prose h3 {
+  font-size: 1.15rem;
+  margin: 1.8rem 0 0.6rem;
+}
+.report-prose h4 {
+  font-size: 1rem;
+  margin: 1.4rem 0 0.5rem;
+  color: var(--color-body);
+}
+.report-prose p {
+  margin: 0 0 1rem;
+}
+.report-prose strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.report-prose em {
+  color: var(--color-body);
+}
+.report-prose a {
+  color: var(--color-breeze);
+  text-decoration: none;
+}
+.report-prose a:hover {
+  text-decoration: underline;
+}
+.report-prose ul,
+.report-prose ol {
+  margin: 0 0 1rem;
+  padding-left: 1.4rem;
+}
+.report-prose li {
+  margin: 0.3rem 0;
+}
+.report-prose li::marker {
+  color: var(--color-mute);
+}
+.report-prose blockquote {
+  margin: 1.2rem 0;
+  padding: 0.2rem 0 0.2rem 1rem;
+  border-left: 2px solid var(--color-canvas-mid);
+  color: var(--color-mute);
+}
+.report-prose hr {
+  border: 0;
+  border-top: 1px solid var(--color-hairline);
+  margin: 2rem 0;
+}
+.report-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--color-canvas-soft);
+  border: 1px solid var(--color-hairline);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+.report-prose pre {
+  background: var(--color-canvas-card);
+  border: 1px solid var(--color-hairline);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  margin: 1.2rem 0;
+}
+.report-prose pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--color-body);
+}
+/* 테이블 — 가로 스크롤 래핑 + 헤어라인 보더 + 헤더 강조 + 지브라 */
+.report-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.3rem 0;
+  font-size: 0.9rem;
+  display: block;
+  overflow-x: auto;
+}
+.report-prose th,
+.report-prose td {
+  border: 1px solid var(--color-hairline);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+.report-prose th {
+  background: var(--color-canvas-soft);
+  color: var(--color-ink);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.report-prose td {
+  color: var(--color-body);
+}
+.report-prose tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* 탭 전환 애니메이션 */
 @keyframes tab-fade-in {
   from {
     opacity: 0;
@@ -54,17 +257,4 @@
   .tab-panel {
     animation: none;
   }
-}
-
-/* 스크롤바 공간을 항상 예약해, 탭 전환으로 콘텐츠 높이가 바뀌어도
-   세로 스크롤바 유무에 따라 가운데 정렬(mx-auto) 레이아웃이 옆으로
-   밀리는(뒤틀리는) 현상을 방지한다. */
-html {
-  scrollbar-gutter: stable;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
