@@ -54,16 +54,38 @@ export interface ReportFile {
   confidence?: ConfidenceVerdict | null;
 }
 
-// 열등주 스크리닝 보고서 본문에서 최종 결과를 뽑아낸다.
-// "최종 판정" 라인을 우선 살피고, 없으면 전체에서 키워드를 찾는다.
+// 열등주 스크리닝 보고서 본문에서 최종 결과를 뽑아낸다. 파싱은 3단 폴백:
+//   1순위) 기계 판독 마커 <!-- quality-screen result: 통과 --> — 프로즈와 분리돼 가장 견고.
+//   2순위) "최종 판정"이 든 라인부터 몇 줄을 함께 스캔 — 판정어가 제목 다음 줄에 있어도 잡는다
+//          (예: "## 최종 판정" 다음 줄 "…전항목 통과…"). 라인 단독 스캔은 이 경우를 놓쳤다.
+//   3순위) 본문 전체 스캔(구형 보고서 호환).
 // 주의: "면제 통과"·"미통과"가 "통과"를 부분 포함하므로 검사 순서를 지킨다.
-function parseQualityScreenResult(md: string): string | null {
-  const verdictLine = md.split("\n").find((l) => l.includes("최종 판정"));
-  const scan = verdictLine ?? md;
+function classifyVerdict(scan: string): string | null {
   if (/면제\s*통과/.test(scan)) return "면제 통과";
   if (scan.includes("탈락")) return "탈락";
   if (scan.includes("통과")) return "통과";
+  if (/데이터\s*부족/.test(scan)) return "데이터 부족";
   return null;
+}
+
+function parseQualityScreenResult(md: string): string | null {
+  // 1순위: 기계 판독 마커
+  const marker = md.match(
+    /<!--\s*quality-screen\s+result:\s*(면제\s*통과|탈락|통과|데이터\s*부족)\s*-->/
+  );
+  if (marker) return classifyVerdict(marker[1]);
+
+  // 2순위: "최종 판정" 라인 + 이어지는 3줄 윈도우
+  const lines = md.split("\n");
+  const idx = lines.findIndex((l) => l.includes("최종 판정"));
+  if (idx >= 0) {
+    const windowScan = lines.slice(idx, idx + 4).join("\n");
+    const v = classifyVerdict(windowScan);
+    if (v) return v;
+  }
+
+  // 3순위: 본문 전체
+  return classifyVerdict(md);
 }
 
 // 데이터 신뢰도 요약 블록에서 종합 판정(verdict)을 뽑아낸다.

@@ -24,7 +24,9 @@ $ARGUMENTS 에 대해 열등주 제거 지표 스크리닝을 실행하여, 1류
 ## ⓪ 사전 점검: 데이터 소스 접근 확인
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/site_preflight.py quality-screen
+# 저장소 루트에서 상대경로로 실행한다(폴더명이 '개인자료/…' 등으로 달라도 동작).
+# python3가 없으면 py / python 순으로 시도.
+python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py quality-screen || python tools/site_preflight.py quality-screen
 ```
 
 차단된 소스가 있으면 스크립트가 대체 소스를 출력한다. 진행은 계속하되, **다음 규칙을 반드시 지킨다(hard rule):**
@@ -133,6 +135,13 @@ python3 ~/Desktop/reality-escape-device/tools/site_preflight.py quality-screen
 > 3. **요약 테이블** (①~⑦ 판정 한눈에)
 > 4. **면제 규칙 적용 여부** 명시
 > 5. **데이터 출처** (말미)
+> 6. **최종 판정 — 두 형태를 동시에 출력한다 (대시보드 칩 파싱 필수)**:
+>    - (a) 사람이 읽는 **단일 라인**: `**최종 판정**: 통과` 처럼 판정어를 **같은 줄**에 둔다.
+>      값은 `통과` / `탈락` / `면제 통과` / `데이터 부족` 중 하나. ⚠️ `## 최종 판정`처럼
+>      **제목 줄에 판정어를 빼고 다음 줄로 내리면 대시보드가 결과를 못 읽어 칩이 누락된다.**
+>    - (b) 기계 판독 마커(HTML 주석): `<!-- quality-screen result: 통과 -->` — 프로즈와 분리된
+>      1순위 파싱 대상. 값은 (a)와 동일 어휘. 개별 종목은 그 종목의 판정, 섹터/일괄 모드는
+>      대표 결론(예: 통과 다수면 `통과`)이나 생략 가능(개별 종목 모드에서만 필수).
 
 #### 출력 형식
 
@@ -176,7 +185,19 @@ python3 ~/Desktop/reality-escape-device/tools/site_preflight.py quality-screen
 | 탈락 | ... | ... |
 
 **섹터 종목 선택 결론**: [한 줄 요약 — 이 섹터가 깊이 파볼 가치가 있는지, 가장 주목할 2~3개 기업은 누구인지]
+
+## 최종 판정
+
+**최종 판정**: 통과            <!-- (a) 사람이 읽는 단일 라인: 판정어를 반드시 같은 줄에. 값: 통과|탈락|면제 통과|데이터 부족 -->
+
+[한두 문장 근거 요약. 개별 종목 모드 기준.]
+
+<!-- quality-screen result: 통과 -->
 ```
+
+> **위 `## 최종 판정` 블록은 개별 종목 모드에서 필수다.** `**최종 판정**: X` 단일 라인과
+> `<!-- quality-screen result: X -->` 마커를 **둘 다** 남긴다. 이 두 형태가 대시보드
+> `dashboard/lib/github.ts`의 결과 칩 파싱 계약이다(마커 1순위, 단일 라인 2순위).
 
 ---
 

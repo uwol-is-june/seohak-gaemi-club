@@ -2,8 +2,8 @@
 """
 데이터 소스 사전 접근 점검 — tools/site_preflight.py
 
-사용법:
-  python3 ~/Desktop/reality-escape-device/tools/site_preflight.py <프로파일> [티커]
+사용법 (저장소 루트에서 상대경로로 실행 권장 — 폴더명이 달라도 동작):
+  python3 tools/site_preflight.py <프로파일> [티커]
 
 프로파일:
   industry-research      macrotrends / sec / yahoo / seekingalpha / wsj / finviz
@@ -17,6 +17,14 @@
 
 import subprocess
 import sys
+
+# Windows 콘솔(cp949 등)에서 🔴/✅ 같은 이모지 출력 시 UnicodeEncodeError로 스크립트가
+# 통째로 죽는 것을 방지한다. 표준출력을 UTF-8로 재설정하고, 재설정이 불가한 환경에서는
+# 인코딩 불가 문자를 대체 문자(?)로 흘려보내 최소한 실행은 완주하게 한다.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 
 SITES = {
     "macrotrends": {
