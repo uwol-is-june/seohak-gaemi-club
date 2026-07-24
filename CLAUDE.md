@@ -96,13 +96,26 @@ reports/{티커}/
 - 재무 용어는 영어 그대로 사용 가능 (PER, EPS, ROE, FCF, EBITDA 등)
 - 버핏/멍거/단융핑/리루 어록 인용으로 포인트 강조
 
-## GitHub 운영
+## 보고서 저장소 = Supabase (대시보드 소스 오브 트루스)
+
+보고서는 이제 **Supabase**에 저장되고 대시보드는 거기서 읽는다. GitHub push는 더 이상
+보고서 반영 경로가 아니다(코드/스킬 변경에만 git 사용).
+
+- **자동 발행**: 세션 종료(Stop) 훅이 `reports/` 변경 .md를 감지해 `tools/publish_report.py`로
+  Supabase에 upsert한다. 발행 후 로컬 git 커밋(변경 감지/백업용, **push 없음**).
+- **수동 발행**: `python tools/publish_report.py reports/{티커}/{파일}.md`
+- **일괄 이관(1회)**: `python tools/migrate_reports_to_supabase.py`
+- **자격증명**: `dashboard/.env.local`의 `SUPABASE_URL` / `SUPABASE_SERVICE_KEY`
+  (service_role 키 — 서버 전용, 절대 커밋 금지). 스키마는 `dashboard/supabase/schema.sql`.
+- summary(스크리닝 판정)·confidence(신뢰도)는 발행 시점에 파싱돼 컬럼으로 저장된다.
+
+## GitHub 운영 (코드 전용)
 
 - 로컬 클론 경로: `~/Desktop/reality-escape-device/`
 - 원격 저장소: `https://github.com/uwol-is-june/reality-escape-device.git`
 - 푸시 전 반드시 `git pull --rebase origin main`
 - 커밋 메시지: 영어 또는 한국어, 변경 내용 명확히 기술
-- 중간 과정 파일 푸시 금지, 최종 보고서만 푸시
+- git push는 **코드(skills/tools/dashboard) 변경용**. 보고서는 Supabase로 발행.
 
 ## 자주 쓰는 명령어
 
@@ -111,12 +124,9 @@ reports/{티커}/
 mkdir -p ~/.claude/commands
 cp ~/Desktop/reality-escape-device/skills/*.md ~/.claude/commands/
 
-# 보고서 GitHub에 푸시
+# 보고서 Supabase에 발행 (수동)
 cd ~/Desktop/reality-escape-device
-git add reports/xxx.md
-git commit -m "Add Apple investment research report"
-git pull --rebase origin main
-git push origin main
+python tools/publish_report.py reports/AAPL/AAPL-checklist-20260101.md
 ```
 
 ## 주의사항
@@ -124,4 +134,4 @@ git push origin main
 - 시가총액 반드시 수동 검산: 주가 × 발행주식수, 보고서 수치와 비교
 - 통화 단위 USD로 명확히 표기
 - PER/ROE 등 지표 계산은 tools/financial_rigor.py 사용
-- 보고서 작성 후 GitHub 푸시 여부 확인
+- 보고서 작성 후 Supabase 발행 여부 확인(Stop 훅이 자동 처리 — 실패 시 수동 발행)

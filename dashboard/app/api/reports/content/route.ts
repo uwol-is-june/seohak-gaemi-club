@@ -1,5 +1,8 @@
-import { getReportContent, getReportCommitDate, deleteReport } from "@/lib/github";
+import { getReportContent, getReportCommitDate, deleteReport } from "@/lib/reports-store";
 import { requireAuth } from "@/lib/api-auth";
+
+// 발행/수정 직후 최신 본문이 즉시 보이도록 캐시를 끈다(브라우저·CDN 휴리스틱 캐싱 방지).
+const NO_STORE = { "Cache-Control": "no-store" } as const;
 
 export async function GET(request: Request) {
   const unauth = await requireAuth();
@@ -15,13 +18,13 @@ export async function GET(request: Request) {
       getReportContent(path),
       getReportCommitDate(path),
     ]);
-    return Response.json({ content, commitDate });
+    return Response.json({ content, commitDate }, { headers: NO_STORE });
   } catch (err) {
-    return Response.json({ error: (err as Error).message }, { status: 500 });
+    return Response.json({ error: (err as Error).message }, { status: 500, headers: NO_STORE });
   }
 }
 
-// 보고서 삭제(개발 단계 정리용). GitHub에 삭제 커밋 생성 — 히스토리로 복구 가능.
+// 보고서 삭제(개발 단계 정리용). Supabase reports 행 삭제 — 되돌릴 수 없으니 주의.
 export async function DELETE(request: Request) {
   const unauth = await requireAuth();
   if (unauth) return unauth;

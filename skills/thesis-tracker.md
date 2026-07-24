@@ -282,6 +282,31 @@ VII. 다음 검토 시 집중 확인 사항
 
 ---
 
+## 콜 원장 기록 (필수 · TASK-38)
+
+논제 수립 또는 분기 검토의 **행동 권고**를 콜 원장(`data/calls.jsonl`)에 박제해 사후 채점
+(대시보드 트랙레코드)이 가능하게 한다. 논제 파일(B7) 업데이트 직후 실행:
+
+```bash
+python3 ~/Desktop/reality-escape-device/tools/record_call.py \
+  --ticker {티커} --skill thesis-tracker \
+  --report reports/{종목}/{종목}-thesis.md \
+  --call {buy|keep|hold|avoid} \
+  --target-low {목표 하단} --target-high {목표 상단} --horizon-months {기간} \
+  --load-bearing "{핵심 가정들}" --invalidation "{레드라인 조건들}"
+```
+
+- **행동 권고 → call 매핑**: 추가 매수 → `buy` · **보유 유지 → `keep`** ·
+  미보유 상태로 진입가 대기 → `hold` · 감량/전량 매도 → `avoid`.
+- ⚠️ **`keep`과 `hold`를 절대 섞지 않는다** — 둘은 정반대를 예측한다.
+  `keep`은 "이미 갖고 있고 안 떨어진다"(적중 = 하락 없음), `hold`는 "아직 안 샀고
+  진입가로 내려오길 기다린다"(적중 = 목표 밴드로 회귀). 실제 보유 여부로 판단한다.
+- 논제의 핵심 가정(⚑)과 레드라인을 `--load-bearing`/`--invalidation`에 옮겨 담는다.
+- `priceAtCall`은 도구가 Yahoo에서 fetch해 박제한다(**모델 기억값 금지**). 실패 시 `--price`로 지정.
+- 원장은 append-only — **분기마다 새 콜을 추가**해 논제 건강도 변화 이력을 남긴다(과거 콜 수정 금지).
+
+---
+
 ## 데이터 신뢰도 표기 (필수)
 
 본 보고서는 **[data-confidence.md](data-confidence.md) 표준**을 적용한다:

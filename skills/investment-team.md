@@ -31,6 +31,35 @@ $ARGUMENTS 에 대해 팀 기반 투자 리서치 분석을 수행합니다. Tea
 
 각 Agent에게 등급 결과를 공유하여 리서치 방식에 반영하도록 합니다.
 
+### 1.8단계: 핵심 재무 1회 수집 (fetch-once · 필수)
+
+**팀을 만들기 전에** 핵심 재무를 딱 한 번 수집해 박제한다. 4개 Agent가 같은 숫자를 각자
+2~4번 긁으면 토큰만 4배로 나가고, 심지어 Agent마다 다른 값을 들고 와 보고서가 어긋난다.
+
+```bash
+python3 ~/Desktop/reality-escape-device/tools/fetch_financials.py {티커} --years 10 --cross
+```
+
+산출물 두 개:
+- `reports/{티커}/_data.md` — 요약표. **Agent가 읽는 것은 이 파일이다.**
+- `reports/{티커}/_data.json` — 태그·accession·공시일 provenance 포함(감사 추적용).
+
+이 도구는 **SEC EDGAR XBRL 원문 수치를 기계로 직접** 읽으므로 HTML을 눈으로 옮겨적을 때
+생기는 전사 오류가 없다 → 여기서 나온 수치는 data-confidence 기준 **🟢[사실]**.
+
+**정확도 가드 (반드시 지킬 것)**:
+1. **교차검증을 건너뛰지 않는다.** `--cross`는 SEC(1차) vs Yahoo(2차)를 자동 대조한다.
+   출력이 `⚠️ 미완료`(2차 출처 실패 또는 통화 불일치)면 **해당 지표는 WebFetch로 2차 출처를
+   직접 확인**해 2출처 검증을 완료한다. 단일 출처로 판정하지 않는다.
+2. **불일치는 덮지 않는다.** ❌ 중대 불일치(>5%)로 표시된 항목은 SEC 10-K 원문으로 재확인한 뒤
+   사용하고, 원인(GAAP/Non-GAAP·총매출 정의·소수지분 등)을 보고서에 명시한다.
+3. **⬛는 추정으로 채우지 않는다.** SEC에 해당 태그가 없다는 뜻이다. 공백을 유지하거나
+   별도 출처로 보완하되 출처를 명기한다.
+4. **🔴 신선도 경고가 뜨면** 최신 회계연도가 아직 SEC에 반영되지 않은 것이다. 최근 실적발표를
+   별도로 확인해 보완한다(구데이터를 최신으로 단정 금지).
+5. **도구가 실패하면**(외국기업 XBRL 미제출, 신규 상장 등) 그대로 **기존 WebFetch 경로로
+   진행**한다. 다이어트는 정확도보다 우선하지 않는다.
+
 ### 2단계: 팀 생성
 
 TeamCreate를 사용해 팀을 생성합니다:
@@ -58,11 +87,16 @@ TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject
 #### 태스크 2: 재무 & 밸류에이션 분석
 - subject: `{기업명}의 재무 데이터, 수익성, 밸류에이션 분석`
 - description 포함 내용:
-  1. 최근 3~5년 매출(Revenue), 순이익(Net Income), 영업이익(Operating Income) 추이
-  2. 수익성 지표: ROE, ROA, 매출총이익률(Gross Margin), 영업이익률(Operating Margin)
-  3. 현금흐름 분석: 영업현금흐름(Operating Cash Flow), FCF(Free Cash Flow), CAPEX
-  4. 재무건전성: 현금 보유량, 부채비율(Debt/Equity), 유동성(Current Ratio)
-  5. 밸류에이션: PER(P/E), P/S, P/B, EV/EBITDA 등 — 과거 평균 및 동종 기업 대비
+  0. **`reports/{기업명}/_data.md` 를 먼저 읽는다.** 아래 1~4번의 원천 수치는 대부분 이미
+     SEC XBRL에서 추출·교차검증되어 들어 있다. 재수집하지 말고 **해석·추세 분석에 집중**한다.
+  1. 최근 3~5년 매출(Revenue), 순이익(Net Income), 영업이익(Operating Income) 추이 — `_data.md`
+  2. 수익성 지표: ROE, 매출총이익률(Gross Margin), 영업이익률(Operating Margin) — `_data.md`
+     (ROA·기타 미수록 지표는 개별 확인)
+  3. 현금흐름 분석: 영업현금흐름(Operating Cash Flow), FCF, CAPEX — `_data.md`
+  4. 재무건전성: 현금 보유량, 부채비율(Debt/Equity) — `_data.md`
+     (유동비율(Current Ratio)은 미수록 → 개별 확인)
+  5. 밸류에이션: PER(P/E), P/S, P/B, EV/EBITDA 등 — 주가가 필요하므로 별도 수집.
+     **비율은 플랫폼 제공값을 쓰지 말고 `_data.md` 원천 수치로 직접 계산**한다(계산 기준 통일).
   6. 안전마진(Margin of Safety) 평가: 내재가치(Intrinsic Value) vs 현재 주가
   7. **금융 정확성 검증 (반드시 Bash로 도구 실행, 암산 금지)**:
      - 시가총액 검증: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-market-cap --price {주가} --shares {발행주식수} --reported {보고된 시가총액} --currency USD`
@@ -70,7 +104,9 @@ TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject
      - 핵심 데이터 교차검증: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py cross-validate --field {항목} --values '{JSON}' --unit {단위}`
      - 3시나리오 밸류에이션: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario --price {주가} --eps {EPS} --shares {발행주식수(B)} --growth {낙관} {중립} {비관} --pe {낙관PER} {중립PER} {비관PER}`
      - 도구 출력 결과를 보고서에 그대로 삽입하여 검증 기록으로 남길 것
-  8. 데이터 출처: macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials, SEC EDGAR 10-K/10-Q
+  8. 데이터 출처: **1순위 `reports/{기업명}/_data.md`(SEC XBRL 기계추출·교차검증 완료)**,
+     보완용으로 macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials,
+     SEC EDGAR 10-K/10-Q 원문
 
 #### 태스크 3: 산업 & 경쟁 분석
 - subject: `{산업명} 산업 구도 및 {기업명}의 경쟁 포지션 분석`
@@ -120,12 +156,21 @@ Task 도구를 사용해 4개 Agent를 동시에 시작합니다 (**반드시 �
 {태스크 description 내용}
 
 **리서치 방법**:
-- WebSearch를 사용해 최신 공개 정보를 검색합니다 (10-K, 10-Q, 8-K, IR 자료, 산업 리포트, 뉴스)
-- **재무 데이터는 반드시 두 개의 독립 출처**에서 확인합니다:
-  - 1차 출처: macrotrends.net/stocks/charts/{TICKER}
-  - 2차 출처: stockanalysis.com/stocks/{ticker}/financials
-  - SEC 공시: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K)
+- **먼저 `reports/{기업명}/_data.md` 를 읽습니다.** 핵심 연간 재무(매출·매출총이익·영업이익·
+  순이익·EPS·영업현금흐름·CAPEX·FCF·총자산/부채·자기자본·현금·마진·ROE·부채비율)는 이미
+  **SEC EDGAR XBRL 원문에서 기계 추출 + 교차검증**되어 여기 들어 있습니다. 🟢[사실] 등급이며,
+  **이 수치를 그대로 사용하고 같은 항목을 다시 검색하지 않습니다**(중복 fetch 금지).
+- `_data.md` 에 **없는 것만** 개별적으로 조사합니다 — 세그먼트별 매출, 지역별 분해, 수주잔고,
+  가이던스, 비GAAP 지표, 경쟁사 비교, 경영진 발언, 산업 데이터 등 정성·비표준 항목.
+- 그 외 정보는 WebSearch로 최신 공개 자료를 검색합니다 (10-K/10-Q/8-K 본문 해설, IR 자료,
+  산업 리포트, 뉴스).
+- **`_data.md` 밖의 재무 수치를 새로 인용할 때는 여전히 두 개의 독립 출처**에서 확인합니다:
+  - macrotrends.net/stocks/charts/{TICKER} · stockanalysis.com/stocks/{ticker}/financials
+  - SEC 공시 원문: sec.gov (10-K, 10-Q, 8-K)
   - 두 출처 간 오차가 1% 초과 시 반드시 표기
+- `_data.md` 에 ⚠️ 교차검증 미완료 / ❌ 중대 불일치 / 🔴 신선도 경고가 있으면 **그 항목은
+  직접 원문 확인 후** 사용하고, 확인 결과를 보고서에 남깁니다.
+- ⬛ 로 비어 있는 항목은 SEC에 해당 태그가 없다는 뜻입니다 — **추정으로 채우지 않습니다.**
 - 데이터 정확성 확보: 핵심 데이터에 출처를 명기
 - 표면적 분석에 그치지 말고 심층 분석을 수행합니다
 
@@ -261,7 +306,9 @@ TeamDelete를 사용해 팀 리소스를 정리합니다.
 
 1. **4개 Agent는 반드시 병렬 실행** — 같은 메시지에서 Task 도구를 4번 동시에 호출합니다
 2. **Agent 보고는 SendMessage로** — 파일 협업이 아니라 메시지 커뮤니케이션입니다
-3. **데이터 정확성** — Agent가 WebSearch로 최신 데이터를 검색하도록 요구하고, 핵심 데이터는 교차검증합니다
+3. **데이터 정확성** — 핵심 재무는 1.8단계에서 **1회만** 수집해(`_data.md`) 4개 Agent가 공유합니다.
+   같은 숫자를 Agent마다 다시 긁지 않습니다(중복 fetch = 토큰 낭비 + Agent 간 수치 불일치 원인).
+   `_data.md` 밖의 데이터는 Agent가 WebSearch로 검색하고, 핵심 수치는 여전히 교차검증합니다.
 4. **결론은 명확하게** — 매수/관망/회피 의견과 구체적인 목표 주가 구간 제시를 회피하지 않습니다
 5. **모든 분석은 데이터 기반** — 출처를 명기합니다
 6. **인내심을 가지고 대기** — 4개 Agent의 리서치에는 몇 분이 소요됩니다. 사용자에게 실시간으로 진행 상황을 업데이트합니다
@@ -276,6 +323,30 @@ TeamDelete를 사용해 팀 리소스를 정리합니다.
 - 내가 내린 결론은 데이터에서 자연스럽게 도출된 것인가, 아니면 미리 결론을 정해두고 데이터를 꿰맞춘 것인가?
 - "확실하다"고 표현한 항목들이 실제로 데이터로 뒷받침되는가, 아니면 추측인가?
 - 4개 Agent 중 서로 상충하는 의견이 있다면, 그것을 최종 보고서에서 솔직하게 드러냈는가?
+
+## 콜 원장 기록 (필수 · TASK-38)
+
+FinalReport의 최종 결론(매수/관망/회피 + 목표 주가 구간)을 **콜 원장**(`data/calls.jsonl`)에
+박제해 사후 채점(대시보드 트랙레코드)이 가능하게 한다. FinalReport 저장 직후 실행:
+
+```bash
+python3 ~/Desktop/reality-escape-device/tools/record_call.py \
+  --ticker {티커} --skill investment-team \
+  --report reports/{티커}/FinalReport.md \
+  --call {buy|hold|avoid} --conviction "{종합 확신도}" \
+  --target-low {목표 하단} --target-high {목표 상단} --horizon-months {기간} \
+  --load-bearing "{핵심 가정1}" "{핵심 가정2}" \
+  --invalidation "{무효화 조건1}"
+```
+
+- **결론 → call 매핑**: 매수 → `buy` · 관망(미보유·진입가 대기) → `hold` · 회피 → `avoid`.
+  이미 보유 중인 종목의 "계속 보유" 판단은 `hold`가 아니라 `keep`이다(→ `/thesis-tracker`).
+- 이 스킬은 목표 주가 구간을 제시하므로 `--target-low/--target-high/--horizon-months`를 반드시 채운다.
+- 리스크 관점(04)의 레드라인/무효화 조건과 핵심 가정(⚑)을 `--invalidation`/`--load-bearing`에 옮겨 담는다.
+- `priceAtCall`은 도구가 Yahoo에서 fetch해 박제한다(**모델 기억값 금지**). 실패 시 `--price`로 지정.
+- **회피 콜도 반드시 기록**(생존편향 방지). 원장은 append-only·불변.
+
+---
 
 ## 데이터 신뢰도 표기 (필수)
 

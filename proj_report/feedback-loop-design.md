@@ -79,4 +79,17 @@
 2. **Phase 2(채점)**: `score_calls.py` — Yahoo 시세로 방향/목표/무효화 채점.
 3. **Phase 3(뷰)**: 대시보드 트랙레코드 탭 + `/api/calls` 라우트.
 
-> 본 문서는 **설계**다(TASK-38 범위). 구현은 위 Phase 순서로 후속 태스크에서 진행한다.
+> 본 문서는 **설계**다(TASK-38 범위).
+
+## 7. 구현 노트 (완료)
+
+Phase 1~3 구현 완료. 설계 이후 대시보드 저장소가 Supabase로 이관되어 다음을 조정했다:
+
+- **원장 저장·읽기**: 설계는 "대시보드가 GitHub에서 읽는다"였으나, 콜의 **불변성 원칙**(§0.2)상
+  Supabase upsert(가변)는 부적합하다. 원장(`data/calls.jsonl`)은 git 추적 append-only 파일로 두고,
+  로컬 전용 대시보드가 **파일시스템에서 직접 읽어**(`/api/calls`) 매 요청 라이브 채점한다.
+- **기록**: `tools/record_call.py` — priceAtCall을 Yahoo에서 fetch해 박제, 1콜=1줄 append.
+- **채점**: `tools/score_calls.py`(CLI) + `dashboard/lib/calls.ts`(대시보드) — 동일 규칙 이중 구현.
+- **뷰**: 사이드바 "트랙레코드" 탭(집계 KPI + 콜 목록 표 + Wilson CI·소표본 경고).
+- **한계(추가 발견)**: 콜 이후 액면분할 시 시점가(분할 전)와 현재가(분할 조정)의 기준이 달라져
+  수익률이 왜곡될 수 있다. 콜은 시점 기준 forward로 기록되므로 실사용 영향은 작으나, 뷰에 주석 표기.

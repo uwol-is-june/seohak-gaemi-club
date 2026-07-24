@@ -11,3 +11,7 @@ reports/.DS_Store
 
 # Claude Code 에이전트 메모리 (로컬 전용)
 memory/
+
+# Python 캐시
+__pycache__/
+*.pyc

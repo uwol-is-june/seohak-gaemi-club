@@ -262,6 +262,28 @@ python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario 
 
 ---
 
+## 콜 원장 기록 (필수 · TASK-38)
+
+체크리스트 최종 판정을 **콜 원장**(`data/calls.jsonl`)에 박제해 사후 채점(대시보드 트랙레코드)이
+가능하게 한다. 판정을 파일에 저장한 직후, 각 **상장** 종목마다 아래를 실행한다:
+
+```bash
+python3 ~/Desktop/reality-escape-device/tools/record_call.py \
+  --ticker {티커} --skill investment-checklist \
+  --report reports/{회사}/{파일}.md \
+  --call {buy|hold|avoid} --conviction "{안전마진 ★평점}"
+```
+
+- **판정 → call 매핑**: 체크리스트 통과 → `buy` · 회색지대 → `hold` · 미통과/거부 → `avoid`.
+- `priceAtCall`은 도구가 그 시점 시세를 Yahoo에서 fetch해 박제한다(**모델 기억값 금지**).
+  시세를 못 구하면 `--price {주가}`로 직접 지정한다(불변 값).
+- 관문5(안전마진) 3-시나리오에서 목표가 밴드가 나오면
+  `--target-low {중립 하단} --target-high {낙관 상단} --horizon-months 24`를 덧붙인다(선택).
+- **회피(avoid)도 반드시 기록** — "안 산 게 옳았는지"까지 채점해 생존편향을 막는다.
+- 원장은 append-only·불변이다. 이미 기록한 콜을 수정하지 않는다(재평가는 새 콜로 추가).
+
+---
+
 ## 데이터 신뢰도 표기 (필수)
 
 본 보고서는 **[data-confidence.md](data-confidence.md) 표준**을 적용한다:

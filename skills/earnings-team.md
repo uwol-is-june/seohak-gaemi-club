@@ -19,6 +19,27 @@ $ARGUMENTS 에 대해 팀 기반 실적 정밀분석을 수행한다. 4명의 �
 
 ## 1단계: 4대 거장 병렬 연구
 
+### 0번째 단계: 핵심 재무 1회 수집 (fetch-once · 필수)
+
+Agent를 띄우기 **전에** 연간 핵심 재무를 딱 한 번 수집해 박제한다. 4~6개 Agent가 같은
+숫자를 각자 긁으면 토큰만 배로 나가고 Agent마다 다른 값을 들고 와 리포트가 어긋난다.
+
+```bash
+python3 ~/Desktop/reality-escape-device/tools/fetch_financials.py {티커} --years 10 --cross
+```
+
+- `reports/{티커}/_data.md` — 요약표. **Agent가 읽는 것은 이 파일이다.**
+- `reports/{티커}/_data.json` — provenance(태그·accession·공시일) 포함 감사용.
+
+SEC EDGAR XBRL 원문을 기계로 직접 읽으므로 전사 오류가 없다 → **🟢[사실]** 등급.
+
+**정확도 가드**: ⚠️ 교차검증 미완료 / ❌ 중대 불일치(>5%) / 🔴 신선도 경고가 뜬 항목은
+**반드시 원문으로 직접 확인**한 뒤 사용한다. ⬛(SEC에 태그 없음)은 추정으로 채우지 않는다.
+도구가 실패하면(외국기업 XBRL 미제출 등) 기존 WebFetch 경로로 그대로 진행한다.
+
+> ⚠️ 이 도구는 **연간(10-K/20-F)** 데이터만 제공한다. 분기 실적 수치는 여기 없으므로
+> 8-K/10-Q 원문·실적발표 자료에서 별도 수집한다. `_data.md`는 **추세 비교의 기준선**으로 쓴다.
+
 ### 1번째 단계: 1차 자료 수집
 
 Agent 도구를 사용해 백그라운드 Agent를 **병렬**로 실행하여 다음 원본 자료를 수집한다:
@@ -29,7 +50,8 @@ Agent 도구를 사용해 백그라운드 Agent를 **병렬**로 실행하여 �
 | 실적 발표(Earnings Call) 트랜스크립트 | Seeking Alpha (seekingalpha.com), 회사 IR 페이지 | 최고 |
 | 주주 서한 | 연간 보고서(10-K) 내 추출 | 높음 (연간 보고서 시에만) |
 | 직전 분기 실적/콜 트랜스크립트 | 상동 | 높음 (공약 추적 목적) |
-| 재무 데이터 | macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials | 높음 |
+| **연간 재무 기준선** | **`reports/{티커}/_data.md` (0번째 단계에서 확보 — 재수집 금지)** | **최고** |
+| 재무 데이터(분기·보조) | macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials | 높음 |
 | 뉴스/애널리스트 반응 | finance.yahoo.com, wsj.com, seekingalpha.com | 보통 |
 
 **자료 가용성 등급**:
@@ -105,9 +127,12 @@ Agent 도구를 사용해 **같은 메시지 내**에서 4개의 백그라운드
 분석 내용:
 
 1. **핵심 재무 데이터 추출 및 검증**
+   - **연간 GAAP 수치는 `reports/{티커}/_data.md` 를 먼저 읽는다** — 0번째 단계에서 SEC XBRL
+     원문 기계추출 + 교차검증까지 끝난 값이다(🟢[사실]). **같은 항목을 다시 긁지 않는다.**
    - 매출(Revenue), 매출총이익(Gross Profit), 영업이익(Operating Income), 순이익(Net Income) — GAAP과 Non-GAAP 모두 확인
+     (GAAP 연간 = `_data.md` / **분기치와 Non-GAAP은 8-K·10-Q·실적자료에서 별도 수집**)
    - GAAP vs Non-GAAP 차이: 얼마나 차이나는가, 어디서 차이가 나는가, 격차가 확대되는가 축소되는가
-   - 핵심 데이터는 최소 2개 출처 교차 검증 (macrotrends.net + stockanalysis.com)
+   - `_data.md` 에 없는 수치(분기·Non-GAAP·세그먼트)는 최소 2개 출처 교차 검증 (macrotrends.net + stockanalysis.com)
 
    ```bash
    python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py cross-validate \

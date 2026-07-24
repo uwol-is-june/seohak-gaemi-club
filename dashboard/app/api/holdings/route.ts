@@ -1,5 +1,5 @@
 import { requireAuth } from "@/lib/api-auth";
-import { getHoldings, MOCK_HOLDINGS } from "@/lib/toss";
+import { getHoldingsCached, MOCK_HOLDINGS, TossError } from "@/lib/toss";
 
 export async function GET() {
   // 금융 데이터이므로 로그인 쿠키를 검증한다 (fail-closed).
@@ -12,9 +12,14 @@ export async function GET() {
   }
 
   try {
-    const holdings = await getHoldings();
+    const holdings = await getHoldingsCached();
     return Response.json({ holdings });
   } catch (err) {
-    return Response.json({ error: (err as Error).message, holdings: [] }, { status: 502 });
+    // 429(토스 요청 한도)는 그대로 전달해 화면이 재시도 간격을 늘릴 수 있게 한다.
+    const rateLimited = err instanceof TossError && err.rateLimited;
+    return Response.json(
+      { error: (err as Error).message, rateLimited, holdings: [] },
+      { status: rateLimited ? 429 : 502 }
+    );
   }
 }
