@@ -101,10 +101,14 @@ reports/{티커}/
 보고서는 이제 **Supabase**에 저장되고 대시보드는 거기서 읽는다. GitHub push는 더 이상
 보고서 반영 경로가 아니다(코드/스킬 변경에만 git 사용).
 
-- **자동 발행**: 세션 종료(Stop) 훅(`.claude/settings.json`)이 `tools/publish_changed_reports.py`를
+- **자동 발행**: **매 응답 종료 시**(Stop) 훅(`.claude/settings.json`)이 `tools/publish_changed_reports.py`를
   실행한다 — `git status`로 `reports/` 변경 .md를 감지해 `tools/publish_report.py`로 upsert하고,
   발행 성공한 파일만 로컬 git 커밋(변경 감지/백업용, **push 없음**). 발행 실패 시 커밋하지 않아
-  다음 세션에 재시도된다. 훅은 어떤 경우에도 세션을 막지 않는다(항상 exit 0).
+  다음 턴에 재시도된다. 훅은 어떤 경우에도 세션을 막지 않는다(항상 exit 0).
+  > ⚠️ Stop 훅은 **Claude가 한 응답을 마칠 때마다** 돈다 — 창을 닫을 때가 아니다.
+  > 따라서 보고서를 쓴 응답이 끝나는 즉시 발행되며, 사용자가 별도로 할 일은 없다.
+  > 발행 여부는 `git log --oneline -3`(발행 커밋 존재) 또는
+  > `python3 tools/publish_changed_reports.py --dry-run`(대상 0건)으로 확인한다.
 - **수동 발행**: `python3 tools/publish_report.py reports/{티커}/{파일}.md`
   (변경분 일괄: `python3 tools/publish_changed_reports.py`, 대상 확인만: `--dry-run`)
 - **로컬 복구(역방향)**: `python3 tools/pull_reports_from_supabase.py`

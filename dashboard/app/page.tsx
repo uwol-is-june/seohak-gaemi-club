@@ -83,6 +83,16 @@ function getConfidencePill(confidence?: string | null): FileBadge | null {
 
 const FILE_ORDER = ["README.md", "01-", "02-", "03-", "04-", "FinalReport.md"];
 
+// 파일명에서 정렬용 날짜 키를 뽑는다. YYYYMMDD(체크리스트·급변동·퍼널 등) 또는
+// YYYYQ#(실적분석). 날짜가 없는 보고서(thesis 등)는 null.
+function reportDateKey(name: string): string | null {
+  const d = name.match(/\d{8}/);
+  if (d) return d[0];
+  const q = name.match(/\d{4}Q\d/);
+  if (q) return q[0];
+  return null;
+}
+
 function sortCompanyFiles(files: ReportFile[]): ReportFile[] {
   return [...files].sort((a, b) => {
     const ai = FILE_ORDER.findIndex((o) => a.name === o || a.name.startsWith(o));
@@ -90,6 +100,15 @@ function sortCompanyFiles(files: ReportFile[]): ReportFile[] {
     if (ai !== -1 && bi !== -1) return ai - bi;
     if (ai !== -1) return -1;
     if (bi !== -1) return 1;
+    // 날짜가 있는 보고서는 최신 우선(내림차순). /news-pulse처럼 반복 실행되는
+    // 산출물에서 3차 '생성일자' 탭의 맨 앞 = 최신이 되고, 2차 유형 탭 클릭 시
+    // 기본 선택(첫 항목)도 최신이 잡힌다.
+    const ad = reportDateKey(a.name);
+    const bd = reportDateKey(b.name);
+    if (ad && bd && ad !== bd) return bd.localeCompare(ad);
+    // 날짜 있는 쪽을 날짜 없는 쪽보다 앞에 (같은 유형 내 혼재 시 안정적 순서).
+    if (ad && !bd) return -1;
+    if (!ad && bd) return 1;
     return a.name.localeCompare(b.name);
   });
 }
