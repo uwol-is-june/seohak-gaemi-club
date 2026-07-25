@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR:-.}/tools/publish_changed_reports.py\"",
+            "timeout": 300,
+            "statusMessage": "보고서 Supabase 발행 중..."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -101,10 +101,17 @@ reports/{티커}/
 보고서는 이제 **Supabase**에 저장되고 대시보드는 거기서 읽는다. GitHub push는 더 이상
 보고서 반영 경로가 아니다(코드/스킬 변경에만 git 사용).
 
-- **자동 발행**: 세션 종료(Stop) 훅이 `reports/` 변경 .md를 감지해 `tools/publish_report.py`로
-  Supabase에 upsert한다. 발행 후 로컬 git 커밋(변경 감지/백업용, **push 없음**).
-- **수동 발행**: `python tools/publish_report.py reports/{티커}/{파일}.md`
-- **일괄 이관(1회)**: `python tools/migrate_reports_to_supabase.py`
+- **자동 발행**: 세션 종료(Stop) 훅(`.claude/settings.json`)이 `tools/publish_changed_reports.py`를
+  실행한다 — `git status`로 `reports/` 변경 .md를 감지해 `tools/publish_report.py`로 upsert하고,
+  발행 성공한 파일만 로컬 git 커밋(변경 감지/백업용, **push 없음**). 발행 실패 시 커밋하지 않아
+  다음 세션에 재시도된다. 훅은 어떤 경우에도 세션을 막지 않는다(항상 exit 0).
+- **수동 발행**: `python3 tools/publish_report.py reports/{티커}/{파일}.md`
+  (변경분 일괄: `python3 tools/publish_changed_reports.py`, 대상 확인만: `--dry-run`)
+- **로컬 복구(역방향)**: `python3 tools/pull_reports_from_supabase.py`
+  Supabase에는 있는데 로컬 파일이 유실됐을 때 되받는다. 기본은 없는 파일만 생성하고,
+  내용이 다른 파일은 건드리지 않는다(`--overwrite`로 DB 버전 강제 적용).
+- **일괄 이관(1회)**: `python3 tools/migrate_reports_to_supabase.py`
+- ⚠️ 이 환경에는 `python`이 없다 — 반드시 `python3`을 쓴다.
 - **자격증명**: `dashboard/.env.local`의 `SUPABASE_URL` / `SUPABASE_SERVICE_KEY`
   (service_role 키 — 서버 전용, 절대 커밋 금지). 스키마는 `dashboard/supabase/schema.sql`.
 - summary(스크리닝 판정)·confidence(신뢰도)는 발행 시점에 파싱돼 컬럼으로 저장된다.
@@ -126,7 +133,13 @@ cp ~/Desktop/reality-escape-device/skills/*.md ~/.claude/commands/
 
 # 보고서 Supabase에 발행 (수동)
 cd ~/Desktop/reality-escape-device
-python tools/publish_report.py reports/AAPL/AAPL-checklist-20260101.md
+python3 tools/publish_report.py reports/AAPL/AAPL-checklist-20260101.md
+
+# 변경된 보고서 일괄 발행 + 로컬 커밋 (Stop 훅과 동일 동작)
+python3 tools/publish_changed_reports.py
+
+# Supabase → 로컬 복구 (유실 파일 되받기)
+python3 tools/pull_reports_from_supabase.py --dry-run
 ```
 
 ## 주의사항
