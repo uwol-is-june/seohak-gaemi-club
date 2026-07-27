@@ -265,6 +265,32 @@ export function reportAsOf(iso: string): { text: string; stale: boolean } | null
   return { text: `${ymd} · ${rel}`, stale: days >= REPORT_STALE_DAYS };
 }
 
+// 보고서 본문의 마크다운 링크(href)를 현재 보고서(fromPath) 기준 상대경로로 풀어
+// 저장소 경로 reports/*.md 로 변환한다. 보고서 링크가 아니면(외부 URL·앵커·절대경로·
+// skills 문서 등 reports 밖) null 을 반환한다. 보고서끼리의 상호 링크를 앱 안에서
+// 열기 위한 것(외부 네비게이션 → 404 방지).
+export function resolveReportPath(href: string, fromPath: string): string | null {
+  if (!href) return null;
+  const bare = href.split(/[?#]/)[0];
+  if (!bare.endsWith(".md")) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(bare)) return null; // http:, mailto: 등 스킴
+  if (bare.startsWith("/")) return null; // 절대 경로/프로토콜상대는 대상 아님
+  const dir = fromPath.includes("/") ? fromPath.slice(0, fromPath.lastIndexOf("/")) : "";
+  const segs = dir ? dir.split("/") : [];
+  for (const seg of bare.split("/")) {
+    if (seg === "" || seg === ".") continue;
+    if (seg === "..") {
+      if (segs.length) segs.pop();
+      continue;
+    }
+    segs.push(seg);
+  }
+  const resolved = segs.join("/");
+  return resolved.startsWith("reports/") && resolved.endsWith(".md") && !resolved.includes("..")
+    ? resolved
+    : null;
+}
+
 // ─── 통화 포맷 ───────────────────────────────────────────────────────────────
 
 export function fmtUsd(n: number, digits = 2) {

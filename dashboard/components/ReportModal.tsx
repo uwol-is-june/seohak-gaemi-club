@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 import { useModalA11y } from "@/lib/use-modal-a11y";
 import { getFileBadge } from "@/lib/report-helpers";
@@ -15,10 +16,13 @@ export function ReportModal({
 }) {
   useBodyScrollLock();
   const dialogRef = useModalA11y<HTMLDivElement>(onClose);
+  // 본문 안의 다른 보고서 링크를 누르면 그 보고서를 위에 겹쳐 연다(재귀 모달).
+  const [linkPath, setLinkPath] = useState<string | null>(null);
   const filename = path.split("/").pop() ?? path;
   const badge = getFileBadge(filename);
 
   return (
+    <>
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
       onClick={onClose}
@@ -61,10 +65,13 @@ export function ReportModal({
           </div>
         </div>
         <div className="overflow-y-auto scroll-slim flex-1 px-8 py-7">
-          <ReportContentView path={path} />
+          <ReportContentView path={path} onOpenReport={setLinkPath} />
         </div>
       </div>
     </div>
+    {/* 링크로 연 보고서는 부모 백드롭 바깥(형제)에 둬 클릭 버블링으로 부모까지 닫히지 않게 한다. */}
+    {linkPath && <ReportModal path={linkPath} onClose={() => setLinkPath(null)} />}
+    </>
   );
 }
 

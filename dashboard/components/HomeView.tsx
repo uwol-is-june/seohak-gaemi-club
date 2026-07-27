@@ -411,7 +411,7 @@ export function HomeView({
                 <div>
                   <div className="eyebrow text-[10px] text-mute mb-3">매매 기록 (수기)</div>
                   <div className="rounded-lg border border-hairline bg-canvas-card px-6 py-5">
-                    <ReportContentView path={trackRecordDoc.path} />
+                    <ReportContentView path={trackRecordDoc.path} onOpenReport={setModalPath} />
                   </div>
                 </div>
               )}
@@ -605,7 +605,7 @@ export function HomeView({
                               </button>
                             </div>
                             <div className="px-6 py-5">
-                              <ReportContentView path={selFile.path} />
+                              <ReportContentView path={selFile.path} onOpenReport={setModalPath} />
                             </div>
                           </div>
                         ) : (
@@ -878,7 +878,7 @@ export function HomeView({
                                 </button>
                               </div>
                               <div className="px-6 py-5">
-                                <ReportContentView path={selFile.path} />
+                                <ReportContentView path={selFile.path} onOpenReport={setModalPath} />
                               </div>
                             </div>
                           ) : (
