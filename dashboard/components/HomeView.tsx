@@ -15,6 +15,9 @@ import { EarningsCalendar } from "./EarningsCalendar";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { SectorGroupEditor } from "./SectorGroupEditor";
 
+// 루트에 있지만 '섹터 리서치'가 아닌 문서(각자 전용 탭이 따로 있음).
+const ROOT_NON_SECTOR = new Set(["portfolio-latest.md", "track-record.md"]);
+
 export function HomeView({
   onLaunchStep,
   onOpenFlowModal,
@@ -77,13 +80,25 @@ export function HomeView({
     [files]
   );
   // 루트 레벨 보고서(회사 폴더 밖)는 섹터/스크리닝 결과물이다 → '섹터 리서치' 탭에서 보여준다.
-  // 포트폴리오 보고서(portfolio-latest.md)는 '포트폴리오 점검' 탭 소관이라 여기서도 제외.
+  // 단, 섹터 리서치가 아닌 루트 문서는 제외한다:
+  //   - portfolio-latest.md : '포트폴리오 점검' 탭 소관
+  //   - track-record.md     : 수기 매매기록(자동 채점 '트랙레코드' 탭과 별개) — 섹터가 아님
   const rootFiles = useMemo(
-    () => (files ? files.filter((f) => f.company === null && f.name !== "portfolio-latest.md") : []),
+    () =>
+      files
+        ? files.filter(
+            (f) => f.company === null && !ROOT_NON_SECTOR.has(f.name)
+          )
+        : [],
     [files]
   );
   const portfolioReport = useMemo(
     () => files?.find((f) => f.company === null && f.name === "portfolio-latest.md") ?? null,
+    [files]
+  );
+  // 수기 매매기록 문서(reports/track-record.md) — 트랙레코드 탭 하단에 함께 보여준다.
+  const trackRecordDoc = useMemo(
+    () => files?.find((f) => f.company === null && f.name === "track-record.md") ?? null,
     [files]
   );
   // '종목별 보고서' 탭 위계: 섹터(1차) → 열등주 스크리닝 결과 그룹(2차) → 종목(칩) → 보고서.
@@ -389,7 +404,18 @@ export function HomeView({
           ) : flowTab === "glossary" ? (
             <GlossaryView />
           ) : flowTab === "track-record" ? (
-            <TrackRecordView />
+            <div className="flex flex-col gap-10">
+              <TrackRecordView />
+              {/* 수기 매매기록 문서(reports/track-record.md) — 자동 채점(위)과 별개의 사람이 쓴 기록. */}
+              {trackRecordDoc && (
+                <div>
+                  <div className="eyebrow text-[10px] text-mute mb-3">매매 기록 (수기)</div>
+                  <div className="rounded-lg border border-hairline bg-canvas-card px-6 py-5">
+                    <ReportContentView path={trackRecordDoc.path} />
+                  </div>
+                </div>
+              )}
+            </div>
           ) : flowTab === "sector-reports" ? (
             /* ── 섹터 리서치: /industry-research·/industry-funnel 등 섹터/스크리닝 결과물 ── */
             <div>
