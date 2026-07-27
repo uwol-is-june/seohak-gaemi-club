@@ -42,6 +42,18 @@ export interface Flow {
   quarters?: FlowQuarter[]; // 있으면 분기별 카드로 표시 (포폴 점검)
 }
 
+// 종목 발굴 플로우의 섹터 선택지. '섹터 구조 파악'과 '후보 종목 압축' 두 스텝이 공유한다
+// (TASK-63 — 두 곳에 복붙돼 있던 것을 단일 상수로 통합).
+const DISCOVERY_SECTOR_GROUPS: SectorGroup[] = [
+  { label: "테크/AI",  sectors: ["AI Semiconductors", "AI Infrastructure", "Cloud Computing", "Cybersecurity", "Enterprise Software"] },
+  { label: "금융",     sectors: ["Fintech Payments", "Digital Asset", "Insurance", "Investment Banking"] },
+  { label: "헬스케어", sectors: ["GLP-1 / Obesity Drugs", "Medical Devices", "Biotech", "Health Insurance"] },
+  { label: "소비",     sectors: ["Luxury / Brand", "E-commerce", "Warehouse Retail"] },
+  { label: "에너지",   sectors: ["Nuclear Power", "Renewable Energy", "Oil & Gas"] },
+  { label: "산업재",   sectors: ["Defense", "Electrical Equipment", "Aerospace"] },
+  { label: "소재",     sectors: ["Copper / Mining", "Logistics", "Real Estate"] },
+];
+
 export const flows: Flow[] = [
   {
     id: "discovery",
@@ -70,17 +82,7 @@ export const flows: Flow[] = [
         inputPlaceholder: "AI Semiconductors",
         commandTemplate: "/industry-research {input}",
         outputFiles: ["reports/{input}-industry-{날짜}.md"],
-        sectorPicker: {
-          groups: [
-            { label: "테크/AI",  sectors: ["AI Semiconductors", "AI Infrastructure", "Cloud Computing", "Cybersecurity", "Enterprise Software"] },
-            { label: "금융",     sectors: ["Fintech Payments", "Digital Asset", "Insurance", "Investment Banking"] },
-            { label: "헬스케어", sectors: ["GLP-1 / Obesity Drugs", "Medical Devices", "Biotech", "Health Insurance"] },
-            { label: "소비",     sectors: ["Luxury / Brand", "E-commerce", "Warehouse Retail"] },
-            { label: "에너지",   sectors: ["Nuclear Power", "Renewable Energy", "Oil & Gas"] },
-            { label: "산업재",   sectors: ["Defense", "Electrical Equipment", "Aerospace"] },
-            { label: "소재",     sectors: ["Copper / Mining", "Logistics", "Real Estate"] },
-          ],
-        },
+        sectorPicker: { groups: DISCOVERY_SECTOR_GROUPS },
       },
       {
         title: "후보 종목 압축",
@@ -89,17 +91,7 @@ export const flows: Flow[] = [
         inputPlaceholder: "AI Semiconductors",
         commandTemplate: "/industry-funnel {input}",
         outputFiles: ["reports/{input}-funnel-{날짜}.md"],
-        sectorPicker: {
-          groups: [
-            { label: "테크/AI",  sectors: ["AI Semiconductors", "AI Infrastructure", "Cloud Computing", "Cybersecurity", "Enterprise Software"] },
-            { label: "금융",     sectors: ["Fintech Payments", "Digital Asset", "Insurance", "Investment Banking"] },
-            { label: "헬스케어", sectors: ["GLP-1 / Obesity Drugs", "Medical Devices", "Biotech", "Health Insurance"] },
-            { label: "소비",     sectors: ["Luxury / Brand", "E-commerce", "Warehouse Retail"] },
-            { label: "에너지",   sectors: ["Nuclear Power", "Renewable Energy", "Oil & Gas"] },
-            { label: "산업재",   sectors: ["Defense", "Electrical Equipment", "Aerospace"] },
-            { label: "소재",     sectors: ["Copper / Mining", "Logistics", "Real Estate"] },
-          ],
-        },
+        sectorPicker: { groups: DISCOVERY_SECTOR_GROUPS },
       },
       {
         title: "열등주 제거",

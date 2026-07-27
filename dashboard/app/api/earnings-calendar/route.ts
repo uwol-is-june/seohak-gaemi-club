@@ -8,6 +8,7 @@
 // 화면은 "발표일 미상"으로 표시하고 앱은 계속 동작한다.
 
 import { requireAuth } from "@/lib/api-auth";
+import { mapLimit } from "@/lib/map-limit";
 
 interface EarningsInfo {
   ticker: string;
@@ -140,6 +141,7 @@ export async function GET(request: Request) {
 
   if (tickers.length === 0) return Response.json({ earnings: [] });
 
-  const earnings = await Promise.all(tickers.map(fetchEarnings));
+  // 아웃바운드 동시성 제한(TASK-70).
+  const earnings = await mapLimit(tickers, 6, fetchEarnings);
   return Response.json({ earnings });
 }

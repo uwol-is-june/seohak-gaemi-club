@@ -1,0 +1,75 @@
+{
+  "_comment": "콜 채점 파리티 픽스처(TASK-60). dashboard/lib/calls.ts 와 tools/score_calls.py 가 동일 결과를 내야 한다. 두 곳의 테스트(dashboard/lib/calls.fixture.test.ts, tools/test_score_calls.py)가 이 파일을 함께 검증한다. today 는 UTC 기준 YYYY-MM-DD.",
+  "cases": [
+    {
+      "name": "buy-up-40d-no-horizon → 적중",
+      "call": { "id": "c1", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "buy", "priceAtCall": 100 },
+      "priceNow": 110,
+      "today": "2026-07-24",
+      "expect": { "status": "적중", "directionHit": true, "horizonMonths": null }
+    },
+    {
+      "name": "buy-today-no-horizon → 진행중(당일 확정 방지)",
+      "call": { "id": "c2", "ticker": "X", "date": "2026-07-24", "skill": "s", "call": "buy", "priceAtCall": 100 },
+      "priceNow": 110,
+      "today": "2026-07-24",
+      "expect": { "status": "진행중", "directionHit": true, "horizonMonths": null }
+    },
+    {
+      "name": "buy-flat-40d → 빗나감(보합은 방향 미실현)",
+      "call": { "id": "c3", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "buy", "priceAtCall": 100 },
+      "priceNow": 100,
+      "today": "2026-07-24",
+      "expect": { "status": "빗나감", "directionHit": false }
+    },
+    {
+      "name": "avoid-down-40d → 적중",
+      "call": { "id": "c4", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "avoid", "priceAtCall": 100 },
+      "priceNow": 90,
+      "today": "2026-07-24",
+      "expect": { "status": "적중", "directionHit": true }
+    },
+    {
+      "name": "keep-down-5pct-40d → 적중(문턱 -10% 이내)",
+      "call": { "id": "c5", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "keep", "priceAtCall": 100 },
+      "priceNow": 95,
+      "today": "2026-07-24",
+      "expect": { "status": "적중", "directionHit": true }
+    },
+    {
+      "name": "hold-in-band-40d → 적중 + targetReached",
+      "call": { "id": "c6", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "hold", "priceAtCall": 100, "target": { "low": 90, "high": 110 } },
+      "priceNow": 100,
+      "today": "2026-07-24",
+      "expect": { "status": "적중", "directionHit": true, "targetReached": true }
+    },
+    {
+      "name": "horizon-12m-미경과 → 진행중",
+      "call": { "id": "c7", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "buy", "priceAtCall": 100, "target": { "horizonMonths": 12 } },
+      "priceNow": 110,
+      "today": "2026-07-24",
+      "expect": { "status": "진행중", "directionHit": true, "horizonMonths": 12 }
+    },
+    {
+      "name": "invalid-date → today 폴백, 진행중, NaN 없음",
+      "call": { "id": "c8", "ticker": "X", "date": "2026-13-45", "skill": "s", "call": "buy", "priceAtCall": 100 },
+      "priceNow": 110,
+      "today": "2026-07-24",
+      "expect": { "status": "진행중", "directionHit": true, "horizonMonths": null, "elapsedDays": 0 }
+    },
+    {
+      "name": "horizonMonths-0 → 즉시 확정",
+      "call": { "id": "c9", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "buy", "priceAtCall": 100, "target": { "horizonMonths": 0 } },
+      "priceNow": 110,
+      "today": "2026-07-24",
+      "expect": { "status": "적중", "directionHit": true, "horizonMonths": 0 }
+    },
+    {
+      "name": "mid-0 → targetErrorPct null(0 나눗셈 방지)",
+      "call": { "id": "c10", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "buy", "priceAtCall": 100, "target": { "low": 0, "high": 0 } },
+      "priceNow": 110,
+      "today": "2026-07-24",
+      "expect": { "status": "적중", "directionHit": true, "targetErrorPct": null }
+    }
+  ]
+}

@@ -17,8 +17,12 @@ export async function GET() {
   } catch (err) {
     // 429(토스 요청 한도)는 그대로 전달해 화면이 재시도 간격을 늘릴 수 있게 한다.
     const rateLimited = err instanceof TossError && err.rateLimited;
+    // TossError 는 사용자용으로 다듬어진 메시지. 그 외 런타임 에러는 내부 정보가 새지
+    // 않도록 일반 메시지로 대체하고 상세는 서버 로그로만 남긴다(TASK-53).
+    if (!(err instanceof TossError)) console.error("holdings GET:", err);
+    const message = err instanceof TossError ? err.message : "보유 정보를 불러오지 못했습니다.";
     return Response.json(
-      { error: (err as Error).message, rateLimited, holdings: [] },
+      { error: message, rateLimited, holdings: [] },
       { status: rateLimited ? 429 : 502 }
     );
   }

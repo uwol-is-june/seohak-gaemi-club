@@ -184,7 +184,11 @@ def normalize_rel(path_arg: str) -> str:
     """입력 경로를 repo 루트 기준 'reports/...' 상대경로(슬래시)로 정규화."""
     p = Path(path_arg)
     if p.is_absolute():
-        rel = p.resolve().relative_to(REPO_ROOT)
+        # repo 루트 밖의 절대경로면 relative_to 가 ValueError → 친절히 종료(TASK-51).
+        try:
+            rel = p.resolve().relative_to(REPO_ROOT)
+        except ValueError:
+            sys.exit(f"오류: repo 루트 밖의 경로입니다: {path_arg}")
     else:
         # 이미 reports/ 로 시작하면 그대로, 아니면 그대로 시도
         rel = Path(path_arg)
@@ -222,7 +226,17 @@ def main() -> None:
         print("발행할 보고서가 없습니다.")
         return
 
-    rows = [build_row(r, use_git_date=args.git_date) for r in targets]
+    # 존재하지 않는 파일은 건너뛴다 — build_row 의 read_text 가 FileNotFoundError 로
+    # 크래시하면 Stop 훅 발행 체인 전체가 깨진다(TASK-51).
+    rows = []
+    for r in targets:
+        if not (REPO_ROOT / r).is_file():
+            print(f"경고: 파일이 없어 건너뜁니다: {r}", file=sys.stderr)
+            continue
+        rows.append(build_row(r, use_git_date=args.git_date))
+    if not rows:
+        print("발행할 보고서가 없습니다.")
+        return
     supabase_upsert(rows)
     for r in rows:
         tag = f" [{r['summary']}]" if r["summary"] else ""

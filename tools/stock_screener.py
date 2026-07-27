@@ -98,6 +98,14 @@ def save_fundamentals(data):
 
 def update_fundamental_interactive(ticker):
     """Interactively update fundamental data for a ticker."""
+    def _prompt_float(msg):
+        while True:
+            raw = input(msg).strip()
+            try:
+                return float(raw)
+            except ValueError:
+                print("    숫자를 입력하세요 (예: 12.5).")
+
     funds = load_fundamentals()
     if ticker not in funds:
         funds[ticker] = {"quarters": {}}
@@ -105,9 +113,10 @@ def update_fundamental_interactive(ticker):
     print(f"  Existing quarters: {', '.join(funds[ticker]['quarters'].keys()) or 'none'}")
     date = input("  Earnings date (YYYY-MM-DD): ").strip()
     label = input("  Label (e.g. Q1 2024): ").strip()
-    rev_yoy = float(input("  Revenue YoY growth (%): "))
-    gm = float(input("  Gross margin (%): "))
-    eps_beat = float(input("  EPS beat (%): "))
+    # 비숫자 입력으로 전체 입력이 버려지지 않도록 각 항목을 재시도 루프로 받는다(TASK-71).
+    rev_yoy = _prompt_float("  Revenue YoY growth (%): ")
+    gm = _prompt_float("  Gross margin (%): ")
+    eps_beat = _prompt_float("  EPS beat (%): ")
 
     funds[ticker]["quarters"][date] = {
         "label": label, "rev_yoy": rev_yoy, "gm": gm, "eps_beat": eps_beat
@@ -145,7 +154,11 @@ def check_momentum(prices):
     # Breakout within recent 5 days (not necessarily today)
     recent_breakout = False
     for i in range(-5, 0):
-        if prices[i]["close"] > max(p["high"] for p in prices[i-60:i]):
+        window = prices[i - 60:i]
+        # 시작부 근처에선 슬라이스가 60봉보다 짧아져 더 짧은 창으로 오탐한다 — 창이 온전할 때만 판정(TASK-68).
+        if len(window) < 60:
+            continue
+        if prices[i]["close"] > max(p["high"] for p in window):
             recent_breakout = True
             break
 

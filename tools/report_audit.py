@@ -292,11 +292,13 @@ def render_verdict(results: list, report_name: str = "") -> dict:
         'summary': str,
       }
     """
-    BOLD = '\033[1m'
-    RED = '\033[91m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RESET = '\033[0m'
+    # ANSI 색은 TTY 일 때만 — 파이프/비ANSI 콘솔에 이스케이프 시퀀스가 새는 것을 막는다(TASK-71).
+    _color = sys.stdout.isatty()
+    BOLD = '\033[1m' if _color else ''
+    RED = '\033[91m' if _color else ''
+    GREEN = '\033[92m' if _color else ''
+    YELLOW = '\033[93m' if _color else ''
+    RESET = '\033[0m' if _color else ''
 
     print('=' * 70)
     print(f'{BOLD}Report Data Audit — Pass/Fail Verdict{RESET}')
@@ -310,24 +312,38 @@ def render_verdict(results: list, report_name: str = "") -> dict:
 
     for item in results:
         label = item.get('label', '?')
-        reported = float(item.get('reported_value', 0))
         unit = item.get('unit', '')
-        fetched = item.get('fetched_value')
         source = item.get('fetched_source', '?')
         fetched2 = item.get('fetched_value2')
         source2 = item.get('fetched_source2', '')
+        item_id = item.get('id', '?')
 
-        if fetched is None:
-            print(f'  ⬜ [{item["id"]:>2}] {label[:35]:35s} {reported:>12.2f} {unit}  →  [no verification value provided, skipped]')
+        # 사용자 제공 JSON 이라 값이 null/비숫자일 수 있다 — 예외로 전체 중단 대신 항목만 건너뛴다(TASK-66).
+        try:
+            reported = float(item.get('reported_value'))
+        except (TypeError, ValueError):
+            print(f'  ⚠️  [{str(item_id):>2}] {label[:35]:35s} reported_value 누락/비숫자 — 건너뜀')
             continue
 
-        fetched = float(fetched)
+        fetched = item.get('fetched_value')
+        if fetched is None:
+            print(f'  ⬜ [{str(item_id):>2}] {label[:35]:35s} {reported:>12.2f} {unit}  →  [no verification value provided, skipped]')
+            continue
+
+        try:
+            fetched = float(fetched)
+        except (TypeError, ValueError):
+            print(f'  ⚠️  [{str(item_id):>2}] {label[:35]:35s} fetched_value 비숫자 — 건너뜀')
+            continue
         diff1 = _pct_diff(reported, fetched)
 
         diff2 = None
         if fetched2 is not None:
-            fetched2 = float(fetched2)
-            diff2 = _pct_diff(reported, fetched2)
+            try:
+                fetched2 = float(fetched2)
+                diff2 = _pct_diff(reported, fetched2)
+            except (TypeError, ValueError):
+                fetched2 = None
 
         pass1 = diff1 <= _TOLERANCE
         pass2 = (diff2 is None) or (diff2 <= _TOLERANCE)

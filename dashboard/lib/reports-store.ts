@@ -20,6 +20,21 @@ function isValidReportPath(path: string): boolean {
   return path.startsWith("reports/") && path.endsWith(".md") && !path.includes("..");
 }
 
+const CONFIDENCE_VALUES: ConfidenceVerdict[] = ["높음", "보통", "낮음"];
+
+// DB 값은 자유 문자열일 수 있으므로 허용된 union 밖 값은 null 로 정규화한다(TASK-61).
+function normalizeConfidence(v: unknown): ConfidenceVerdict | null {
+  return typeof v === "string" && (CONFIDENCE_VALUES as string[]).includes(v)
+    ? (v as ConfidenceVerdict)
+    : null;
+}
+
+// path 로 reports 행의 지정 컬럼을 1건 조회하는 공용 헬퍼(중복 쿼리 보일러플레이트 제거).
+async function selectReportRow(path: string, columns: string) {
+  const sb = getSupabase();
+  return sb.from("reports").select(columns).eq("path", path).maybeSingle();
+}
+
 export async function listReportFiles(): Promise<ReportFile[]> {
   const sb = getSupabase();
   const { data, error } = await sb
@@ -30,41 +45,49 @@ export async function listReportFiles(): Promise<ReportFile[]> {
     console.error("Supabase 오류(목록):", error.message);
     throw new Error("보고서 목록을 불러오지 못했습니다.");
   }
-  return (data ?? []) as ReportFile[];
+  // 행을 무검증 캐스트하지 않고 필드를 정규화한다(confidence union 밖 값 방지).
+  return (data ?? []).map((r) => {
+    const row = r as {
+      path: string;
+      company: string | null;
+      name: string;
+      summary?: string | null;
+      confidence?: unknown;
+    };
+    return {
+      path: row.path,
+      company: row.company ?? null,
+      name: row.name,
+      summary: row.summary ?? null,
+      confidence: normalizeConfidence(row.confidence),
+    };
+  });
 }
 
 export async function getReportContent(path: string): Promise<string> {
   if (!isValidReportPath(path)) {
     throw new Error("잘못된 경로입니다.");
   }
-  const sb = getSupabase();
-  const { data, error } = await sb
-    .from("reports")
-    .select("content")
-    .eq("path", path)
-    .maybeSingle();
+  const { data, error } = await selectReportRow(path, "content");
   if (error) {
     console.error("Supabase 오류(내용):", error.message);
     throw new Error("보고서를 불러오지 못했습니다.");
   }
-  if (!data) {
+  const content = data ? (data as unknown as { content: string | null }).content : null;
+  // 행이 없거나 content 가 null 이면 '없음'으로 처리(타입은 non-null이지만 DB는 null 가능).
+  if (content == null) {
     throw new Error("보고서를 찾을 수 없습니다.");
   }
-  return (data as { content: string }).content;
+  return content;
 }
 
 // 보고서의 as-of(발행/최종수정) 시각. 실패 시 null(신선도 표기를 숨긴다).
 export async function getReportCommitDate(path: string): Promise<string | null> {
   if (!isValidReportPath(path)) return null;
   try {
-    const sb = getSupabase();
-    const { data, error } = await sb
-      .from("reports")
-      .select("committed_at")
-      .eq("path", path)
-      .maybeSingle();
+    const { data, error } = await selectReportRow(path, "committed_at");
     if (error || !data) return null;
-    const v = (data as { committed_at: string | null }).committed_at;
+    const v = (data as unknown as { committed_at: string | null }).committed_at;
     return typeof v === "string" ? v : null;
   } catch {
     return null;

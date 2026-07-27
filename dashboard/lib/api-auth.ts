@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { AUTH_COOKIE, expectedToken, safeEqual } from "./auth";
+import { AUTH_COOKIE, verifyToken } from "./auth";
 
 /**
  * 라우트 핸들러 공통 인증 가드 (심층방어).
@@ -12,10 +12,10 @@ import { AUTH_COOKIE, expectedToken, safeEqual } from "./auth";
  * 사용: `const unauth = await requireAuth(); if (unauth) return unauth;`
  */
 export async function requireAuth(): Promise<Response | null> {
-  const token = expectedToken();
   const cookieStore = await cookies();
   const cookie = cookieStore.get(AUTH_COOKIE)?.value;
-  if (!token || !cookie || !safeEqual(cookie, token)) {
+  // 권위 있는 검증: 서명 + 만료 + 현재 epoch(로그아웃 무효화 반영).
+  if (!verifyToken(cookie)) {
     return Response.json({ error: "인증이 필요합니다." }, { status: 401 });
   }
   return null;

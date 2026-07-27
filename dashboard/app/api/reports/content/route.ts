@@ -20,7 +20,9 @@ export async function GET(request: Request) {
     ]);
     return Response.json({ content, commitDate }, { headers: NO_STORE });
   } catch (err) {
-    return Response.json({ error: (err as Error).message }, { status: 500, headers: NO_STORE });
+    // 내부 에러 상세는 서버 로그로만(TASK-53).
+    console.error("reports content GET:", err);
+    return Response.json({ error: "보고서를 불러오지 못했습니다." }, { status: 500, headers: NO_STORE });
   }
 }
 
@@ -33,10 +35,18 @@ export async function DELETE(request: Request) {
   if (!path) {
     return Response.json({ error: "path 쿼리 파라미터가 필요합니다." }, { status: 400 });
   }
+  // CSRF·우발 삭제 방지(TASK-70): 삭제 대상을 커스텀 헤더로 재확인한다. 커스텀 헤더는
+  // 교차 출처에서 CORS 프리플라이트 없이 설정할 수 없어(이 서버는 CORS 미허용) 사실상
+  // 동일 출처 요청으로 제한된다.
+  if (request.headers.get("x-confirm-delete") !== path) {
+    return Response.json({ error: "삭제 확인 헤더가 없거나 일치하지 않습니다." }, { status: 400 });
+  }
   try {
     await deleteReport(path);
     return Response.json({ ok: true });
   } catch (err) {
-    return Response.json({ error: (err as Error).message }, { status: 500 });
+    // 내부 에러 상세는 서버 로그로만(TASK-53).
+    console.error("reports content DELETE:", err);
+    return Response.json({ error: "보고서를 삭제하지 못했습니다." }, { status: 500 });
   }
 }

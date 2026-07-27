@@ -112,6 +112,8 @@ def build_call(args: argparse.Namespace) -> dict:
         row["report"] = args.report
     if args.conviction:
         row["conviction"] = args.conviction
+    if args.reason:
+        row["reason"] = args.reason
 
     # 목표가 밴드(선택): low/high/horizon 중 하나라도 주어지면 target 블록 생성.
     if args.target_low is not None or args.target_high is not None or args.horizon_months is not None:
@@ -135,8 +137,19 @@ def append_call(row: dict) -> None:
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
     # append-only: 같은 id가 있으면 경고만 하고 그대로 추가(이력 보존).
     if LEDGER.exists():
-        existing = LEDGER.read_text(encoding="utf-8").splitlines()
-        if any(line.strip() and json.loads(line).get("id") == row["id"] for line in existing):
+        # 깨진 줄 하나 때문에 신규 콜 기록이 실패하지 않도록 per-line 으로 안전 파싱한다(TASK-64).
+        dup = False
+        for line in LEDGER.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                if json.loads(line).get("id") == row["id"]:
+                    dup = True
+                    break
+            except json.JSONDecodeError:
+                continue
+        if dup:
             print(f"주의: 같은 id({row['id']})의 콜이 이미 있습니다. 이력 보존을 위해 새 줄로 추가합니다.")
     with LEDGER.open("a", encoding="utf-8") as f:
         f.write(json.dumps(row, ensure_ascii=False) + "\n")
@@ -154,6 +167,7 @@ def main() -> None:
     ap.add_argument("--date", help="콜 시점 YYYY-MM-DD (기본: 오늘)")
     ap.add_argument("--report", help="근거 보고서 경로 (예: reports/AAPL/AAPL-checklist-20260723.md)")
     ap.add_argument("--conviction", help="확신도/신뢰도 (예: ★★★★☆)")
+    ap.add_argument("--reason", help="이 콜을 낸 사유 (예: 목표가 대비 고평가라 진입 대기)")
     ap.add_argument("--price", type=float, help="콜 시점 주가(USD). 생략 시 Yahoo에서 fetch")
     ap.add_argument("--target-low", type=float, help="목표가 밴드 하단(USD)")
     ap.add_argument("--target-high", type=float, help="목표가 밴드 상단(USD)")

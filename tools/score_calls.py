@@ -42,6 +42,10 @@ DAYS_PER_MONTH = 30.44
 # dashboard/lib/calls.ts 의 DRIFT_TOLERANCE_PCT 와 반드시 같은 값이어야 한다.
 DRIFT_TOLERANCE_PCT = 10
 
+# horizon 미명시 콜의 최소 확정 대기일(TASK-44). 콜 당일 하루 등락으로 즉시 확정돼
+# 트랙레코드가 오염되는 것을 막는다. dashboard/lib/calls.ts 의 MIN_RESOLVE_DAYS 와 같아야 한다.
+MIN_RESOLVE_DAYS = 30
+
 
 def to_yahoo_symbol(ticker: str) -> str:
     return ticker.strip().upper().replace(".", "-").replace(" ", "-")
@@ -97,11 +101,14 @@ def score_call(call: dict, now_price: float | None, today: date) -> dict:
 
     target = call.get("target") or {}
     horizon_months = target.get("horizonMonths")
-    horizon_end = add_months(call_date, horizon_months) if horizon_months else None
+    # 0 은 유효한 horizon 이므로 truthiness 대신 명시적 None 검사(TASK-44).
+    if not isinstance(horizon_months, (int, float)) or isinstance(horizon_months, bool):
+        horizon_months = None
+    horizon_end = add_months(call_date, int(horizon_months)) if horizon_months is not None else None
     horizon_elapsed = bool(horizon_end and today >= horizon_end)
     horizon_progress = None
-    if horizon_months:
-        horizon_progress = min(elapsed_days / (horizon_months * DAYS_PER_MONTH), 1.0)
+    if horizon_months is not None and horizon_months > 0:
+        horizon_progress = max(0.0, min(elapsed_days / (horizon_months * DAYS_PER_MONTH), 1.0))
 
     result: dict = {
         "id": call.get("id"),
@@ -157,11 +164,20 @@ def score_call(call: dict, now_price: float | None, today: date) -> dict:
     # 목표 도달·오차
     if isinstance(low, (int, float)) and isinstance(high, (int, float)):
         result["targetReached"] = low <= now_price <= high
-    if mid:
+    # mid == 0 은 '목표 없음'이 아니라 목표가 0 — 나눗셈 방지 겸 의도 명시(TASK-72, calls.ts와 동일).
+    if mid is not None and mid != 0:
         result["targetErrorPct"] = (now_price - mid) / mid * 100
 
-    # 상태: horizon 있으면 미경과=진행중, 경과=적중/빗나감. horizon 없으면 방향으로 잠정.
-    if horizon_months and not horizon_elapsed:
+    # 상태(TASK-44): horizon 있으면 미경과=진행중, 경과=적중/빗나감.
+    # horizon 없으면 최소 대기일 전엔 진행중(당일 확정 오염 방지), 이후 방향으로 확정.
+    if horizon_months is not None:
+        if not horizon_elapsed:
+            result["status"] = "진행중"
+        elif result["directionHit"] is True:
+            result["status"] = "적중"
+        elif result["directionHit"] is False:
+            result["status"] = "빗나감"
+    elif elapsed_days < MIN_RESOLVE_DAYS:
         result["status"] = "진행중"
     elif result["directionHit"] is True:
         result["status"] = "적중"
@@ -182,7 +198,7 @@ def wilson_interval(hits: int, n: int, z: float = 1.96) -> tuple[float, float]:
 
 
 def aggregate(scored: list[dict]) -> dict:
-    """확정(horizon 경과 or horizon 없는 방향콜) 기준 방향 적중률 집계."""
+    """확정(horizon 경과 or horizon 없이 최소 대기일 경과) 콜 기준 방향 적중률 집계."""
     resolved = [s for s in scored if s["status"] in ("적중", "빗나감")]
     hits = sum(1 for s in resolved if s["directionHit"] is True)
     n = len(resolved)

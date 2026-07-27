@@ -25,7 +25,9 @@ function LoginForm() {
         setLoading(false);
         return;
       }
-      const from = searchParams.get("from") || "/";
+      // 오픈 리다이렉트 방지: 앱 내부 경로(단일 "/" 시작, "//"·"/\" 아님)만 허용(TASK-55).
+      const raw = searchParams.get("from") || "/";
+      const from = /^\/(?![/\\])/.test(raw) ? raw : "/";
       router.replace(from);
       router.refresh();
     } catch {

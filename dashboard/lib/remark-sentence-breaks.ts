@@ -17,6 +17,25 @@ import type { Root, Text, PhrasingContent } from "mdast";
 // 구두점(. ! ? …) 뒤에 하나 이상의 공백/탭이 오는 지점을 문장 경계로 본다.
 const SENTENCE_BOUNDARY = /([.!?…])[ \t]+/g;
 
+// 마침표가 문장 끝이 아니라 약어/약칭인 경우(경계로 보면 문장 중간에 <br>이 끼어든다).
+// 예: "U.S. economy", "e.g. foo", "vs. bar". (! ? … 는 약어가 없으므로 항상 경계)
+const ABBREVIATIONS = new Set([
+  "e.g", "i.e", "etc", "vs", "cf", "al", "no", "approx", "est",
+  "inc", "corp", "ltd", "co", "mr", "mrs", "ms", "dr", "st", "jr", "sr",
+  "fig", "vol", "pp", "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sep", "sept", "oct", "nov", "dec",
+]);
+
+// 마침표(pos = 마침표 위치) 앞 텍스트가 약어/두문자면 문장 경계가 아니다.
+function isRealPeriodBoundary(value: string, dotPos: number): boolean {
+  const before = value.slice(0, dotPos);
+  // 두문자/이니셜(U.S., a.m., p.m. 등): 마침표 앞이 '문자.문자' 꼴이면 약어.
+  if (/[A-Za-z]\.[A-Za-z]$/.test(before)) return false;
+  // 마침표 앞 마지막 토큰이 알려진 약어면 경계가 아니다.
+  const m = before.match(/([A-Za-z][A-Za-z.]*)$/);
+  if (m && ABBREVIATIONS.has(m[1].toLowerCase().replace(/\.$/, ""))) return false;
+  return true;
+}
+
 export default function remarkSentenceBreaks() {
   return (tree: Root) => {
     visit(tree, "text", (node: Text, index, parent) => {
@@ -28,11 +47,13 @@ export default function remarkSentenceBreaks() {
       if (!SENTENCE_BOUNDARY.test(value)) return;
 
       // 문장 조각으로 분해(끝 구두점은 앞 조각에 포함, 뒤 공백은 버림 → <br>이 대체).
+      // 약어(예: U.S., e.g.)의 마침표는 경계로 취급하지 않고 공백째로 다음 조각에 남긴다.
       SENTENCE_BOUNDARY.lastIndex = 0;
       const parts: string[] = [];
       let last = 0;
       let m: RegExpExecArray | null;
       while ((m = SENTENCE_BOUNDARY.exec(value)) !== null) {
+        if (m[1] === "." && !isRealPeriodBoundary(value, m.index)) continue;
         parts.push(value.slice(last, m.index + m[1].length));
         last = SENTENCE_BOUNDARY.lastIndex;
       }

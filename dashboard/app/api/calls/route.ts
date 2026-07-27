@@ -7,6 +7,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { requireAuth } from "@/lib/api-auth";
 import { aggregate, scoreCall, type RawCall } from "@/lib/calls";
+import { mapLimit } from "@/lib/map-limit";
 
 // dev 서버 cwd는 dashboard/ 이지만, 실행 위치에 흔들리지 않게 후보 경로를 순서대로 시도한다.
 const LEDGER_CANDIDATES = [
@@ -77,9 +78,8 @@ export async function GET() {
 
   // 티커별로 한 번씩만 시세 조회(중복 콜 절약).
   const tickers = Array.from(new Set(calls.map((c) => c.ticker)));
-  const priceEntries = await Promise.all(
-    tickers.map(async (t) => [t, await fetchPrice(t)] as const)
-  );
+  // 아웃바운드 동시성 제한(TASK-70).
+  const priceEntries = await mapLimit(tickers, 6, async (t) => [t, await fetchPrice(t)] as const);
   const priceMap = new Map(priceEntries);
 
   const scored = calls

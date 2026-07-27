@@ -12,6 +12,8 @@ export async function GET() {
     const files = await listReportFiles();
     return Response.json({ files }, { headers: NO_STORE });
   } catch (err) {
-    return Response.json({ error: (err as Error).message }, { status: 500, headers: NO_STORE });
+    // 내부 에러 상세는 서버 로그로만(TASK-53).
+    console.error("reports GET:", err);
+    return Response.json({ error: "보고서 목록을 불러오지 못했습니다." }, { status: 500, headers: NO_STORE });
   }
 }

@@ -12,6 +12,11 @@ export type CallType = "buy" | "keep" | "hold" | "avoid";
 // 방향 판정의 '의미 있는 움직임' 문턱(%). keep 은 하방만, hold 는 양방향으로 본다.
 const DRIFT_TOLERANCE_PCT = 10;
 
+// horizon(목표 기간)이 명시되지 않은 콜의 최소 확정 대기일(TASK-44).
+// 콜 당일의 하루 등락으로 즉시 적중/빗나감이 확정돼 트랙레코드가 오염되는 것을 막는다.
+// tools/score_calls.py 의 MIN_RESOLVE_DAYS 와 반드시 같은 값이어야 한다.
+const MIN_RESOLVE_DAYS = 30;
+
 // data/calls.jsonl 한 줄 = 콜 하나. record_call.py 가 기록한 불변 스냅샷.
 export interface RawCall {
   id: string;
@@ -25,6 +30,7 @@ export interface RawCall {
   target?: { low?: number; high?: number; horizonMonths?: number };
   loadBearing?: string[];
   invalidation?: string[];
+  reason?: string; // 이 콜을 낸 사유 (관망/대기 이유 등). 채점에 영향 없는 설명 메타데이터.
 }
 
 export type CallStatus = "진행중" | "적중" | "빗나감" | "unknown";
@@ -50,6 +56,7 @@ export interface ScoredCall {
   status: CallStatus;
   target?: { low?: number; high?: number; horizonMonths?: number };
   invalidation: string[];
+  reason?: string;
 }
 
 export interface CallAggregate {
@@ -89,17 +96,31 @@ export function wilsonInterval(hits: number, n: number, z = 1.96): [number, numb
 }
 
 export function scoreCall(call: RawCall, priceNow: number | null, today: Date): ScoredCall {
-  const callDate = /^\d{4}-\d{2}-\d{2}$/.test(call.date)
+  // today 를 UTC 자정으로 정규화한다(TASK-72). callDate 는 UTC 자정인데 today 에
+  // 시각대가 섞여 있으면 경과일·horizon 경과가 하루 어긋날 수 있어, 라우트가 어떤
+  // 시각을 넘기든 안전하도록 여기서 자정으로 맞춘다.
+  const todayMid = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
+  );
+  // 포맷뿐 아니라 유효성까지 확인 — "2026-13-45" 같은 값은 Invalid Date 를 만들고
+  // 이후 계산이 전부 NaN 으로 흘러가므로 today(자정)로 폴백한다(TASK-45).
+  const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(call.date)
     ? new Date(`${call.date}T00:00:00Z`)
-    : today;
-  const elapsedDays = daysBetween(callDate, today);
-  const target = call.target ?? {};
-  const horizonMonths = typeof target.horizonMonths === "number" ? target.horizonMonths : null;
-  const horizonEnd = horizonMonths ? addMonths(callDate, horizonMonths) : null;
-  const horizonElapsed = !!(horizonEnd && today >= horizonEnd);
-  const horizonProgress = horizonMonths
-    ? Math.min(elapsedDays / (horizonMonths * DAYS_PER_MONTH), 1)
     : null;
+  const callDate = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : todayMid;
+  const elapsedDays = daysBetween(callDate, todayMid);
+  const target = call.target ?? {};
+  // 0 은 유효한 horizon 이므로 truthiness 대신 명시적 null 검사(TASK-44).
+  const horizonMonths =
+    typeof target.horizonMonths === "number" && Number.isFinite(target.horizonMonths)
+      ? target.horizonMonths
+      : null;
+  const horizonEnd = horizonMonths != null ? addMonths(callDate, horizonMonths) : null;
+  const horizonElapsed = !!(horizonEnd && todayMid >= horizonEnd);
+  const horizonProgress =
+    horizonMonths != null && horizonMonths > 0
+      ? Math.max(0, Math.min(elapsedDays / (horizonMonths * DAYS_PER_MONTH), 1))
+      : null;
 
   const base: ScoredCall = {
     id: call.id,
@@ -122,6 +143,7 @@ export function scoreCall(call: RawCall, priceNow: number | null, today: Date): 
     status: "unknown",
     target: call.target,
     invalidation: call.invalidation ?? [],
+    reason: call.reason,
   };
 
   const priceAt = call.priceAtCall;
@@ -137,6 +159,9 @@ export function scoreCall(call: RawCall, priceNow: number | null, today: Date): 
   else if (typeof low === "number") mid = low;
   else if (typeof high === "number") mid = high;
 
+  // buy/avoid 는 '방향' 예측이라 의도적으로 문턱을 두지 않는다(TASK-72): 오르면 buy 적중,
+  // 내리면 avoid 적중. 정확히 보합(0%)은 방향이 실현되지 않았으므로 빗나감으로 본다.
+  // (움직임 크기·목표가 도달은 targetReached/targetErrorPct 로 따로 채점.)
   if (call.call === "buy") base.directionHit = priceNow > priceAt;
   else if (call.call === "avoid") base.directionHit = priceNow < priceAt;
   else if (call.call === "keep") {
@@ -155,10 +180,20 @@ export function scoreCall(call: RawCall, priceNow: number | null, today: Date): 
   if (typeof low === "number" && typeof high === "number") {
     base.targetReached = low <= priceNow && priceNow <= high;
   }
-  if (mid) base.targetErrorPct = ((priceNow - mid) / mid) * 100;
+  // mid === 0 은 '목표 없음'이 아니라 목표가 0 — 나눗셈 방지 겸 의도 명시(TASK-72).
+  if (mid != null && mid !== 0) base.targetErrorPct = ((priceNow - mid) / mid) * 100;
 
-  if (horizonMonths && !horizonElapsed) base.status = "진행중";
-  else if (base.directionHit === true) base.status = "적중";
+  // 상태 판정(TASK-44):
+  //  - horizon 명시: 미경과=진행중, 경과 후 방향으로 확정.
+  //  - horizon 없음: 최소 대기일(MIN_RESOLVE_DAYS) 전엔 진행중(당일 확정 오염 방지),
+  //                  이후 방향으로 확정.
+  if (horizonMonths != null) {
+    if (!horizonElapsed) base.status = "진행중";
+    else if (base.directionHit === true) base.status = "적중";
+    else if (base.directionHit === false) base.status = "빗나감";
+  } else if (elapsedDays < MIN_RESOLVE_DAYS) {
+    base.status = "진행중";
+  } else if (base.directionHit === true) base.status = "적중";
   else if (base.directionHit === false) base.status = "빗나감";
   return base;
 }

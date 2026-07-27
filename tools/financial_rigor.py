@@ -19,10 +19,32 @@ Usage (called automatically by Skills, no manual execution needed):
 """
 
 import argparse
+import ast
 import json
 import math
+import operator as _operator
 import sys
 from decimal import Decimal, Context, ROUND_HALF_EVEN, InvalidOperation
+
+# 안전한 산술 평가기(TASK-67): eval 대신 AST 를 직접 걸어 +,-,*,/ 와 괄호만 허용한다.
+# 문자 화이트리스트만으로는 9**9**9 같은 지수 DoS 를 막지 못하므로 ** 자체를 미허용한다.
+_ARITH_BINOPS = {ast.Add: _operator.add, ast.Sub: _operator.sub,
+                 ast.Mult: _operator.mul, ast.Div: _operator.truediv}
+_ARITH_UNARY = {ast.UAdd: _operator.pos, ast.USub: _operator.neg}
+
+
+def _safe_arith(expr: str):
+    def ev(n):
+        if isinstance(n, ast.Constant):
+            if isinstance(n.value, (int, float)) and not isinstance(n.value, bool):
+                return n.value
+            raise ValueError("숫자 상수만 허용됩니다")
+        if isinstance(n, ast.BinOp) and type(n.op) in _ARITH_BINOPS:
+            return _ARITH_BINOPS[type(n.op)](ev(n.left), ev(n.right))
+        if isinstance(n, ast.UnaryOp) and type(n.op) in _ARITH_UNARY:
+            return _ARITH_UNARY[type(n.op)](ev(n.operand))
+        raise ValueError("허용되지 않은 연산입니다")
+    return ev(ast.parse(expr, mode="eval").body)
 
 # ---------------------------------------------------------------------------
 # Exact Decimal Engine (no floating-point drift)
@@ -197,7 +219,8 @@ def cross_validate(field_name, source_values: dict, unit="", tolerance_pct=2.0):
         print(f"     Recommendation: prioritize company annual report / SEC filing data")
 
     consensus = median
-    print(f"\n  Consensus (weighted median): {fmt_number(exact(consensus))} {unit}")
+    # 실제로는 비가중 median 이므로 라벨을 정확히 표기(TASK-71).
+    print(f"\n  Consensus (median): {fmt_number(exact(consensus))} {unit}")
     return {"consensus": consensus, "all_consistent": all_ok}
 
 
@@ -218,10 +241,11 @@ def benford_check(values: list):
     for v in values:
         v = abs(float(v))
         if v > 0:
-            sig = 10 ** (math.log10(v) - math.floor(math.log10(v)))
-            d = int(sig)
-            if 1 <= d <= 9:
-                digits.append(d)
+            # 부동소수 지수 연산은 반올림 오차로 선두 자릿수를 틀리게 할 수 있어(TASK-71)
+            # 과학적 표기 문자열의 첫 유효숫자를 직접 취한다(예: 4.0e-04 → '4').
+            first = f"{v:.15e}"[0]
+            if first.isdigit() and first != "0":
+                digits.append(int(first))
 
     n = len(digits)
     if n < 50:
@@ -290,7 +314,7 @@ def exact_calc(expr: str):
         return None
 
     try:
-        result = eval(expr, {"__builtins__": {}}, {})
+        result = _safe_arith(expr)
         d_result = exact(result)
         print(f"  Expression: {expr}")
         print(f"  Result:     {fmt_number(d_result)}")
@@ -338,10 +362,14 @@ def three_scenario_valuation(current_price, current_eps, shares_billion,
         for _ in range(years):
             future_eps = _CTX.multiply(future_eps, _CTX.add(Decimal("1"), g))
         target_price = _CTX.multiply(future_eps, target_pe)
-        change = float(target_price - p) / float(p) * 100
+        # current_price 가 0이면 상승률은 정의되지 않는다 — ZeroDivisionError 방지(TASK-71).
+        if float(p) != 0:
+            change_str = f"{float(target_price - p) / float(p) * 100:>+8.1f}%"
+        else:
+            change_str = f"{'N/A':>8}"
 
         print(f"  {name:20} {float(g)*100:>7.0f}% {float(target_pe):>9.0f}x "
-              f"{float(future_eps):>12.2f} {float(target_price):>12.1f} {change:>+8.1f}%")
+              f"{float(future_eps):>12.2f} {float(target_price):>12.1f} {change_str}")
 
     print()
     print("  ✅ All calculations use exact decimal arithmetic — results are auditable")

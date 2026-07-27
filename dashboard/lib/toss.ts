@@ -32,6 +32,16 @@ export class TossError extends Error {
 
 const RATE_LIMIT_MSG = "토스 API 요청 한도를 초과했습니다.";
 
+// 에러 응답 본문을 로그에 남길 때 토큰·계좌 등 민감정보를 마스킹하고 길이를 제한한다(TASK-70).
+function redactBody(text: string): string {
+  return text
+    .replace(
+      /("?(?:access_token|refresh_token|accountNumber|accountSeq|token)"?\s*[:=]\s*"?)[^",}\s]+/gi,
+      "$1***"
+    )
+    .slice(0, 300);
+}
+
 // 토스 API는 초당 요청 한도가 빡빡해 연속 호출하면 바로 429가 난다.
 // 429는 잠깐 쉬었다 한 번만 재시도하고, 그래도 실패하면 호출부가 에러로 처리한다.
 async function tossFetch(path: string, init: RequestInit): Promise<Response> {
@@ -70,7 +80,7 @@ async function getAccessToken(): Promise<string> {
     body: "grant_type=client_credentials",
   });
   if (!res.ok) {
-    console.error(`토큰 발급 실패: ${res.status} ${await res.text()}`);
+    console.error(`토큰 발급 실패: ${res.status} ${redactBody(await res.text())}`);
     throw new TossError(
       res.status === 429 ? RATE_LIMIT_MSG : "토스 인증에 실패했습니다.",
       res.status
@@ -78,7 +88,7 @@ async function getAccessToken(): Promise<string> {
   }
   const data = await res.json();
   if (typeof data.access_token !== "string" || !data.access_token) {
-    console.error("토큰 응답에 access_token이 없습니다:", JSON.stringify(data));
+    console.error("토큰 응답에 access_token이 없습니다. keys:", Object.keys(data ?? {}));
     throw new TossError("토스 토큰 응답이 올바르지 않습니다.");
   }
   const expiresInSec = typeof data.expires_in === "number" ? data.expires_in : 3600;
@@ -103,7 +113,7 @@ async function resolveAccountSeq(token: string): Promise<string> {
   });
   if (!res.ok) {
     // 상태를 살려서 올린다 — 429를 "계좌 없음"으로 뭉개면 원인 파악이 어렵다.
-    console.error(`계좌 조회 실패: ${res.status} ${await res.text()}`);
+    console.error(`계좌 조회 실패: ${res.status} ${redactBody(await res.text())}`);
     throw new TossError(
       res.status === 429 ? RATE_LIMIT_MSG : "계좌를 찾을 수 없습니다 (accountSeq 조회 실패).",
       res.status
@@ -150,7 +160,7 @@ export async function getHoldings(): Promise<Holding[]> {
     headers: { Authorization: `Bearer ${token}`, "X-Tossinvest-Account": accountSeq },
   });
   if (!res.ok) {
-    console.error(`잔고 조회 실패: ${res.status} ${await res.text()}`);
+    console.error(`잔고 조회 실패: ${res.status} ${redactBody(await res.text())}`);
     throw new TossError(
       res.status === 429 ? RATE_LIMIT_MSG : "보유 종목을 불러오지 못했습니다.",
       res.status

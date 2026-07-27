@@ -34,7 +34,14 @@ def fetch_page(page: int) -> dict:
         ["curl", "-s", "-H", "User-Agent: Mozilla/5.0", url],
         capture_output=True, text=True, timeout=30,
     )
-    return json.loads(result.stdout)
+    # curl 실패(네트워크/타임아웃)나 빈 응답을 json.loads 에 그대로 넘기면
+    # JSONDecodeError 로 크래시하므로 먼저 검증한다(TASK-50).
+    if result.returncode != 0 or not result.stdout.strip():
+        raise RuntimeError(f"curl 실패 (page {page}, returncode={result.returncode})")
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f"JSON 파싱 실패 (page {page}): {e}") from e
 
 
 def extract_ticker(tenforeid: str) -> str:
@@ -50,7 +57,11 @@ def main():
     print(f"{'='*80}\n")
 
     print("  Fetching page 1...")
-    data = fetch_page(1)
+    try:
+        data = fetch_page(1)
+    except (RuntimeError, subprocess.TimeoutExpired) as e:
+        print(f"  ❌ 1페이지 조회 실패: {e}")
+        return
     total = data.get("total", 0)
     all_rows = data.get("rows", [])
     total_pages = (total + PAGE_SIZE - 1) // PAGE_SIZE
@@ -104,11 +115,16 @@ def main():
     print(f"  {'-'*4} {'-'*8} {'-'*35} {'-'*10} {'-'*10} {'-'*8} {'-'*5} {'-'*8} {'-'*20}")
 
     for i, s in enumerate(stocks[:100], 1):
+        # StarRatingM255 가 "4.0" 같은 문자열/실수로 올 수 있어 int() 직접 호출은 크래시한다(TASK-65).
+        try:
+            stars = "★" * int(float(s["star_rating"])) if s["star_rating"] else "N/A"
+        except (TypeError, ValueError):
+            stars = "N/A"
         print(
             f"  {i:>4} {s['ticker']:<8} {s['name'][:35]:<35} "
             f"${s['close_price']:>9,.2f} ${s['fair_value']:>9,.2f} "
             f"{s['upside_pct']:>+7.1f}% "
-            f"{'★'*int(s['star_rating']) if s['star_rating'] else 'N/A':>5} "
+            f"{stars:>5} "
             f"{s['moat']:<8} {s['industry'][:20]:<20}"
         )
 
@@ -128,17 +144,20 @@ def main():
     print(f"\n  Full data saved to: {csv_path}")
     print(f"  Total: {len(stocks)} stocks (sorted by upside)\n")
 
-    undervalued = [s for s in stocks if s["upside_pct"] > 0]
-    overvalued = [s for s in stocks if s["upside_pct"] < 0]
-    print(f"  📊 Summary:")
-    print(f"     Undervalued: {len(undervalued)} ({len(undervalued)/len(stocks)*100:.0f}%)")
-    print(f"     Overvalued:  {len(overvalued)} ({len(overvalued)/len(stocks)*100:.0f}%)")
-    if undervalued:
-        avg_upside = sum(s["upside_pct"] for s in undervalued) / len(undervalued)
-        print(f"     Avg upside (undervalued): +{avg_upside:.1f}%")
+    # 유효 종목이 0개면 len(stocks) 나눗셈이 ZeroDivisionError → 요약 전체를 가드(TASK-50).
     if stocks:
+        undervalued = [s for s in stocks if s["upside_pct"] > 0]
+        overvalued = [s for s in stocks if s["upside_pct"] < 0]
+        print(f"  📊 Summary:")
+        print(f"     Undervalued: {len(undervalued)} ({len(undervalued)/len(stocks)*100:.0f}%)")
+        print(f"     Overvalued:  {len(overvalued)} ({len(overvalued)/len(stocks)*100:.0f}%)")
+        if undervalued:
+            avg_upside = sum(s["upside_pct"] for s in undervalued) / len(undervalued)
+            print(f"     Avg upside (undervalued): +{avg_upside:.1f}%")
         wide_moat_undervalued = [s for s in stocks if s["moat"] == "Wide" and s["upside_pct"] > 0]
         print(f"     Wide moat + undervalued: {len(wide_moat_undervalued)}")
+    else:
+        print("  📊 유효한 (FairValue+ClosePrice) 종목이 없어 요약을 건너뜁니다.")
 
 
 if __name__ == "__main__":

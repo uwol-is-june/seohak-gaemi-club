@@ -5,6 +5,7 @@
 // 캐시한다(fx 라우트와 동일 방식).
 
 import { requireAuth } from "@/lib/api-auth";
+import { mapLimit } from "@/lib/map-limit";
 
 interface Quote {
   ticker: string;
@@ -77,6 +78,7 @@ export async function GET(request: Request) {
     return Response.json({ quotes: [] });
   }
 
-  const quotes = await Promise.all(tickers.map(fetchQuote));
+  // 아웃바운드 fetch 동시성을 제한한다(최대 50개를 한꺼번에 쏘면 Yahoo에 차단당함, TASK-70).
+  const quotes = await mapLimit(tickers, 6, fetchQuote);
   return Response.json({ quotes });
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { AUTH_COOKIE, expectedToken, safeEqual } from "@/lib/auth";
+import { AUTH_COOKIE, verifyToken } from "@/lib/auth";
 
 // 로그인 없이 접근 가능한 경로 (로그인 화면 + 인증 API)
 const PUBLIC_PATHS = ["/login", "/api/login", "/api/logout"];
@@ -14,10 +14,10 @@ export function proxy(request: NextRequest) {
   }
 
   const token = request.cookies.get(AUTH_COOKIE)?.value;
-  const expected = expectedToken();
 
-  // 인증됨 → 통과 (상수 시간 비교로 통일, 코드베이스의 다른 인증 경로와 일관)
-  if (expected && token && safeEqual(token, expected)) {
+  // 인증됨 → 통과. 미들웨어는 epoch 를 검사하지 않는다(런타임 간 epoch 불일치로 정상
+  // 토큰을 오거부하지 않기 위해) — 로그아웃 무효화는 각 라우트 requireAuth 가 강제한다.
+  if (verifyToken(token, false)) {
     return NextResponse.next();
   }
 

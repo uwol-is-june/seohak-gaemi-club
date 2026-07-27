@@ -14,17 +14,25 @@ const DEFAULT_SECTOR_GROUPS = [
 
 type SectorGroup = { id: string; name: string; tickers: string[] };
 
-// 외부 입력(PUT 바디)을 신뢰하지 않고 형태를 검증·정규화한다.
+// 인증된 클라이언트라도 거대 blob 을 app_config 에 저장하지 못하도록 상한을 둔다(TASK-54).
+const MAX_GROUPS = 100;
+const MAX_TICKERS_PER_GROUP = 500;
+const MAX_STR = 200;
+
+// 외부 입력(PUT 바디)을 신뢰하지 않고 형태를 검증·정규화한다. 상한 초과 시 null(→400).
 function sanitizeGroups(input: unknown): SectorGroup[] | null {
   if (!Array.isArray(input)) return null;
+  if (input.length > MAX_GROUPS) return null;
   const groups: SectorGroup[] = [];
   for (const g of input) {
     if (!g || typeof g !== "object") return null;
     const rec = g as Record<string, unknown>;
-    if (typeof rec.name !== "string") return null;
-    if (!Array.isArray(rec.tickers)) return null;
+    if (typeof rec.name !== "string" || rec.name.length > MAX_STR) return null;
+    if (typeof rec.id !== "string" && typeof rec.id !== "undefined") return null;
+    if (typeof rec.id === "string" && rec.id.length > MAX_STR) return null;
+    if (!Array.isArray(rec.tickers) || rec.tickers.length > MAX_TICKERS_PER_GROUP) return null;
     const tickers = rec.tickers
-      .filter((t): t is string => typeof t === "string")
+      .filter((t): t is string => typeof t === "string" && t.length <= MAX_STR)
       .map((t) => t.trim().toUpperCase())
       .filter(Boolean);
     groups.push({
@@ -51,7 +59,9 @@ export async function GET() {
     const groups = sanitizeGroups(value) ?? DEFAULT_SECTOR_GROUPS;
     return Response.json({ groups });
   } catch (err) {
-    return Response.json({ error: (err as Error).message }, { status: 500 });
+    // 원시 DB 에러 메시지를 클라이언트에 노출하지 않는다(TASK-53).
+    console.error("sector-groups GET:", err);
+    return Response.json({ error: "섹터 그룹을 불러오지 못했습니다." }, { status: 500 });
   }
 }
 
@@ -71,6 +81,8 @@ export async function PUT(request: Request) {
     if (error) throw new Error(error.message);
     return Response.json({ groups });
   } catch (err) {
-    return Response.json({ error: (err as Error).message }, { status: 500 });
+    // 원시 DB 에러 메시지를 클라이언트에 노출하지 않는다(TASK-53).
+    console.error("sector-groups PUT:", err);
+    return Response.json({ error: "섹터 그룹을 저장하지 못했습니다." }, { status: 500 });
   }
 }

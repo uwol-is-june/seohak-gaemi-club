@@ -15,6 +15,7 @@
 티커 생략 시 AAPL로 대체하여 사이트 접근성만 확인한다.
 """
 
+import os
 import subprocess
 import sys
 
@@ -129,7 +130,7 @@ def check_site(key: str, ticker: str) -> dict:
     try:
         proc = subprocess.run(
             [
-                "curl", "-s", "-o", "/dev/null", "-w", "%{http_code}",
+                "curl", "-s", "-o", os.devnull, "-w", "%{http_code}",
                 "-L", "--max-time", "10",
                 "-H", (
                     "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
