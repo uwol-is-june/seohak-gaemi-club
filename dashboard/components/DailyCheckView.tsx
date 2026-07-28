@@ -274,8 +274,11 @@ export function DailyCheckView() {
                         </div>
                         <div className="text-[11px] text-mute truncate max-w-[180px]">{h.name}</div>
                       </td>
+                      {/* 현재가는 토스 보유 데이터(h.currentPrice) 기준 — 포트폴리오 배너와
+                          동일 소스로 통일해 상·하단 값이 어긋나지 않게 한다. 당일 등락(%)만
+                          토스가 안 주므로 아래 열에서 Yahoo(q.changePct)를 쓴다. */}
                       <td className="px-4 py-3 text-right font-mono text-body">
-                        {q?.price != null ? fmtUsd(q.price) : quotes ? "—" : ""}
+                        {fmtUsd(h.currentPrice)}
                       </td>
                       <td className="px-4 py-3 text-right font-mono">
                         {chg != null ? (

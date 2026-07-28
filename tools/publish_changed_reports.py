@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -23,17 +24,35 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PUBLISHER = REPO_ROOT / "tools" / "publish_report.py"
 
+# Windows 콘솔(cp949)에서 한글·이모지 출력 시 UnicodeEncodeError 로 죽는 것을 막는다.
+# 이 스크립트는 Stop 훅이 실행하므로 여기서 죽으면 발행 체인 전체가 끊긴다.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+    except (AttributeError, ValueError):
+        pass
+
 
 def git(*args: str, timeout: int = 30) -> subprocess.CompletedProcess:
+    # encoding 명시 필수: 자식(git)이 UTF-8 을 내는데 부모가 cp949 로 디코딩하면
+    # 한글 경로/파일명에서 UnicodeDecodeError 로 죽는다(errors=replace 로 방어).
     return subprocess.run(
         ["git", *args],
         cwd=REPO_ROOT, capture_output=True, text=True, timeout=timeout,
+        encoding="utf-8", errors="replace",
     )
 
 
 def changed_reports() -> tuple[list[str], list[str]]:
-    """(발행 대상, 삭제된 경로). core.quotepath=false 로 한글 파일명도 그대로 받는다."""
-    out = git("-c", "core.quotepath=false", "status", "--porcelain", "--", "reports/")
+    """(발행 대상, 삭제된 경로). core.quotepath=false 로 한글 파일명도 그대로 받는다.
+
+    --untracked-files=all 필수: 이게 없으면 git 이 **완전히 새로운 폴더**(예: 처음
+    만드는 티커 reports/CEG/)를 파일 단위로 나열하지 않고 `?? reports/CEG/` 폴더 하나로
+    접어버린다. 그러면 경로가 .md 로 안 끝나 아래 필터에서 스킵돼 **새 종목의 첫 보고서가
+    영영 발행되지 않는다**. -uall 로 폴더를 파일 단위로 펼쳐야 한다.
+    """
+    out = git("-c", "core.quotepath=false", "status", "--porcelain",
+              "--untracked-files=all", "--", "reports/")
     if out.returncode != 0:
         return [], []
 
@@ -83,9 +102,14 @@ def main() -> int:
                 print(f"  {d}")
         return 0
 
+    # 자식(publish_report.py)은 stdout 을 UTF-8 로 내므로 부모도 UTF-8 로 디코딩해야
+    # 한다. text=True 기본은 로케일 코덱(Windows=cp949)이라 한글 출력에서 죽는다.
+    # PYTHONIOENCODING/PYTHONUTF8 도 넘겨 자식 인코딩까지 이중으로 고정한다.
+    child_env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"}
     pub = subprocess.run(
         [sys.executable, str(PUBLISHER), *targets],
         cwd=REPO_ROOT, capture_output=True, text=True, timeout=300,
+        encoding="utf-8", errors="replace", env=child_env,
     )
     if pub.returncode != 0:
         detail = (pub.stderr or pub.stdout).strip().splitlines()

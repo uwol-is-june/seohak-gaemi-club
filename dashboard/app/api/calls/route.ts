@@ -84,8 +84,14 @@ export async function GET() {
 
   const scored = calls
     .map((c) => scoreCall(c, priceMap.get(c.ticker) ?? null, today))
-    // 최신 콜이 위로.
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    // 최신 콜이 위로. 같은 날짜면 recordedAt(기록 시각) 최신순으로 확정 —
+    // 종목당 최신 콜을 접을 때 같은 날 콜의 순서가 안정적이어야 한다.
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      const ra = a.recordedAt ?? "";
+      const rb = b.recordedAt ?? "";
+      return ra < rb ? 1 : ra > rb ? -1 : 0;
+    });
 
   return Response.json({ calls: scored, aggregate: aggregate(scored) });
 }

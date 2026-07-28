@@ -1,11 +1,45 @@
 "use client";
 import { readJsonSafe } from "@/lib/fetch-json";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Holding } from "@/lib/toss";
-import { fmtUsd, fmtKrw } from "@/lib/report-helpers";
+import { fmtUsd, fmtKrw, SCREEN_GROUPS } from "@/lib/report-helpers";
+import { ScoredCall } from "@/lib/calls";
 import { type Ccy, CCY_STORAGE_KEY, MAX_AUTO_RELOADS, retryDelayMs, holdingsErrorText, holdingsCache, fxCache, setFxCache, persistFx, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
 
-export function HoldingsBanner() {
+// 콜 라벨/색 — 트랙레코드와 동일 어휘(예측: 매수=오른다, 관망=진입가 회귀 대기 등).
+const CALL_STYLE: Record<string, { label: string; color: string }> = {
+  buy: { label: "매수", color: "text-breeze bg-breeze/10" },
+  keep: { label: "보유 유지", color: "text-twilight bg-twilight/10" },
+  hold: { label: "관망", color: "text-amber-300 bg-amber-500/10" },
+  avoid: { label: "회피", color: "text-mute bg-canvas-soft" },
+};
+// 콜 채점 상태 점 — 트랙레코드와 동일.
+const CALL_STATUS_DOT: Record<string, string> = {
+  적중: "bg-emerald-400",
+  빗나감: "bg-red-400",
+  진행중: "bg-amber-400",
+  unknown: "bg-canvas-mid",
+};
+
+// 단일 종목 과대비중 경고 문턱(%). 넘으면 집중 리스크 신호(TASK-76).
+const CONCENTRATION_WARN = 30;
+
+// screenByCompany: 종목별 최신 열등주 스크리닝 판정(HomeView가 /api/reports에서 파생).
+//   → 각 보유 카드에 "최신 콜 + 스크리닝 판정 + 목표밴드" 판단 레이어(TASK-75).
+// sectorOf: 티커 → 섹터명(HomeView의 사용자 섹터 그룹 기반). 섹터 편중 위젯(TASK-76)에 쓴다.
+export function HoldingsBanner({
+  screenByCompany,
+  sectorOf,
+  reportedTickers,
+  onDrill,
+}: {
+  screenByCompany?: Record<string, string | null>;
+  sectorOf?: (ticker: string) => string;
+  // 보고서가 있는 티커 집합(대문자) — 있으면 카드가 클릭 가능(TASK-77).
+  reportedTickers?: Set<string>;
+  // 카드 클릭 시 그 티커의 종목별 보고서로 이동(티커 축 통합).
+  onDrill?: (ticker: string) => void;
+}) {
   const [holdings, setHoldings] = useState<Holding[] | null>(holdingsCache);
   const [error, setError] = useState<string | null>(null);
   const [isMock, setIsMock] = useState(false);
@@ -15,6 +49,8 @@ export function HoldingsBanner() {
   const [fx, setFx] = useState<number | null>(fxCache);
   const [autoTries, setAutoTries] = useState(0);
   const [rateLimited, setRateLimited] = useState(false);
+  // 판단 pill용 콜 원장(TASK-75). 실패해도 보유 카드 자체는 정상 표시한다.
+  const [calls, setCalls] = useState<ScoredCall[] | null>(null);
 
   const load = useCallback(() => {
     // 캐시가 없을 때만 스피너를 띄우고, 캐시가 있으면 조용히 백그라운드 갱신한다.
@@ -46,6 +82,23 @@ export function HoldingsBanner() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // 콜 원장 로드(판단 pill). /api/calls는 최신순 정렬이라 티커별 첫 항목이 최신 콜.
+  useEffect(() => {
+    fetch("/api/calls")
+      .then(readJsonSafe)
+      .then((d) => setCalls(Array.isArray(d.calls) ? d.calls : []))
+      .catch(() => setCalls([]));
+  }, []);
+
+  const callByTicker = useMemo(() => {
+    const m: Record<string, ScoredCall> = {};
+    for (const c of calls ?? []) {
+      const t = c.ticker.toUpperCase();
+      if (!m[t]) m[t] = c; // 최신순 → 처음 만난 게 최신
+    }
+    return m;
+  }, [calls]);
 
   // 자동 재로딩: 로딩이 끝났는데 아직 안 떴으면(에러 또는 빈 목록) 잠시 후 다시 시도.
   // 정상 표시 중이거나 상한 도달 시 종료. 백오프는 retryDelayMs 참조(429는 더 길게).
@@ -102,6 +155,22 @@ export function HoldingsBanner() {
   const totalPLPct = totalCost > 0 ? (totalPL / totalCost) * 100 : 0;
   // 비중(평가금액) 큰 순으로 정렬해 한눈에 비교되도록.
   const sorted = [...list].sort((a, b) => b.marketValue - a.marketValue);
+
+  // ── 집중도·섹터 편중(TASK-76) ──
+  const weightPct = (h: Holding) => (total > 0 ? (h.marketValue / total) * 100 : 0);
+  const topWeight = sorted.length ? weightPct(sorted[0]) : 0;
+  const top3Weight = sorted.slice(0, 3).reduce((s, h) => s + weightPct(h), 0);
+  const overweight = sorted.filter((h) => weightPct(h) >= CONCENTRATION_WARN);
+  // 섹터별 비중 합(내림차순). sectorOf 미제공 시 빈 배열 → 섹터 바 생략.
+  const sectorDist: [string, number][] = sectorOf
+    ? Array.from(
+        list.reduce((m, h) => {
+          const s = sectorOf(h.ticker);
+          m.set(s, (m.get(s) ?? 0) + weightPct(h));
+          return m;
+        }, new Map<string, number>())
+      ).sort((a, b) => b[1] - a[1])
+    : [];
 
   return (
     <section className="mb-10 rounded-lg border border-hairline bg-canvas-card p-6">
@@ -206,6 +275,40 @@ export function HoldingsBanner() {
             </div>
           </div>
 
+          {/* 집중도·섹터 편중(TASK-76, 슬림): 한 줄 스트립으로 "얼마나 쏠려 있나"만
+              빠르게 읽게 한다. 상세 섹터 바 대신 상위 섹터를 텍스트로 인라인 표시. */}
+          <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2.5 text-[11px]">
+            <span className="eyebrow text-[10px] shrink-0">집중도</span>
+            <span className="text-mute">
+              최대{" "}
+              <span className="font-mono text-ink">
+                {sorted.length ? `${sorted[0].ticker} ${topWeight.toFixed(0)}%` : "—"}
+              </span>
+            </span>
+            <span className="text-mute">
+              상위3 <span className="font-mono text-ink">{top3Weight.toFixed(0)}%</span>
+            </span>
+            <span className="text-mute">
+              종목 <span className="font-mono text-ink">{list.length}</span>
+            </span>
+            {sectorDist.length > 0 && (
+              <span className="text-mute truncate">
+                섹터{" "}
+                <span className="text-body">
+                  {sectorDist
+                    .slice(0, 3)
+                    .map(([s, w]) => `${s} ${w.toFixed(0)}%`)
+                    .join(" · ")}
+                </span>
+              </span>
+            )}
+            {overweight.length > 0 && (
+              <span className="ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-sunset-soft bg-sunset/10">
+                집중 리스크 {overweight.map((h) => h.ticker).join(", ")}
+              </span>
+            )}
+          </div>
+
           {/* 보유 종목 — 비중 큰 순. 현재가 vs 평단을 게이지로 시각화 */}
           <div className="grid gap-2 [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]">
             {sorted.map((h) => {
@@ -217,15 +320,41 @@ export function HoldingsBanner() {
               const GAUGE_CAP = 40;
               const frac = Math.min(Math.abs(pct) / GAUGE_CAP, 1);
               const weight = total > 0 ? (h.marketValue / total) * 100 : 0;
+              // 보고서가 있는 종목만 드릴다운 가능(TASK-77).
+              const canDrill = !!(onDrill && reportedTickers?.has(h.ticker.toUpperCase()));
               return (
                 <div
                   key={h.ticker}
-                  className="flex flex-col gap-3 rounded-lg border border-hairline bg-canvas p-4"
+                  {...(canDrill
+                    ? {
+                        role: "button" as const,
+                        tabIndex: 0,
+                        onClick: () => onDrill!(h.ticker),
+                        onKeyDown: (e: ReactKeyboardEvent) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onDrill!(h.ticker);
+                          }
+                        },
+                      }
+                    : {})}
+                  className={`group flex flex-col gap-3 rounded-lg border border-hairline bg-canvas p-4 ${
+                    canDrill
+                      ? "cursor-pointer hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99]"
+                      : ""
+                  }`}
                 >
                   {/* 헤더: 티커·종목명 + 손익률 배지 */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="font-mono text-sm text-ink">{h.ticker}</div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-sm text-ink">{h.ticker}</span>
+                        {canDrill && (
+                          <span className="text-[10px] text-mute opacity-0 group-hover:opacity-100 transition-opacity">
+                            보고서 →
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[11px] text-mute truncate">{h.name}</div>
                     </div>
                     <span
@@ -277,6 +406,63 @@ export function HoldingsBanner() {
                       {h.quantity}주 · {weight.toFixed(1)}%
                     </div>
                   </div>
+
+                  {/* 판단 레이어(TASK-75): 최신 콜 + 스크리닝 판정 + 목표밴드.
+                      실보유 숫자에 "지금 이걸 계속 들고 있어도 되나"의 판단 근거를 붙인다. */}
+                  {(() => {
+                    const tk = h.ticker.toUpperCase();
+                    const call = callByTicker[tk] ?? null;
+                    const verdict = screenByCompany?.[tk] ?? null;
+                    const vGroup = verdict ? SCREEN_GROUPS.find((g) => g.match(verdict)) : null;
+                    const cs = call ? CALL_STYLE[call.call] ?? CALL_STYLE.hold : null;
+                    const tgt = call?.target;
+                    const hasBand = !!(tgt && (tgt.low != null || tgt.high != null));
+                    // 현재가의 목표밴드 대비 위치(판단 보조). 위=비쌈, 아래=쌈. USD 기준 비교.
+                    const bandPos =
+                      hasBand && tgt
+                        ? h.currentPrice > (tgt.high ?? Infinity)
+                          ? "위"
+                          : h.currentPrice < (tgt.low ?? -Infinity)
+                            ? "아래"
+                            : "밴드내"
+                        : null;
+                    if (!call && !vGroup) {
+                      return (
+                        <div className="border-t border-hairline pt-2.5">
+                          <span className="text-[10px] text-mute">분석 기록 없음</span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="flex flex-wrap items-center gap-1.5 border-t border-hairline pt-2.5">
+                        {call && cs && (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${cs.color}`}
+                          >
+                            <span
+                              className={`inline-block w-1.5 h-1.5 rounded-full ${CALL_STATUS_DOT[call.status] ?? CALL_STATUS_DOT.unknown}`}
+                            />
+                            {cs.label}
+                            {call.conviction ? (
+                              <span className="text-[9px] opacity-80">{call.conviction}</span>
+                            ) : null}
+                          </span>
+                        )}
+                        {vGroup && (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-hairline px-2 py-0.5 text-[10px] font-medium">
+                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${vGroup.dot}`} />
+                            <span className={vGroup.tint}>{vGroup.label}</span>
+                          </span>
+                        )}
+                        {hasBand && tgt && (
+                          <span className="rounded-full border border-hairline px-2 py-0.5 text-[10px] font-mono text-mute">
+                            목표 ${tgt.low ?? "?"}~{tgt.high ?? "?"}
+                            {bandPos && <span className="ml-1 text-body">· {bandPos}</span>}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}

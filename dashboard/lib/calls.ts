@@ -22,6 +22,7 @@ export interface RawCall {
   id: string;
   ticker: string;
   date: string; // 콜 시점 YYYY-MM-DD (불변)
+  recordedAt?: string; // 기록 시각 ISO (같은 날짜 콜의 최신순 판별용)
   skill: string;
   call: CallType;
   priceAtCall: number; // 콜 시점 주가 USD (불변)
@@ -40,6 +41,7 @@ export interface ScoredCall {
   ticker: string;
   call: CallType;
   date: string;
+  recordedAt?: string; // 기록 시각 ISO — 같은 날짜 콜의 최신 판별(종목당 최신 콜 접기).
   skill: string;
   conviction?: string;
   report?: string;
@@ -55,6 +57,7 @@ export interface ScoredCall {
   targetErrorPct: number | null;
   status: CallStatus;
   target?: { low?: number; high?: number; horizonMonths?: number };
+  loadBearing: string[]; // 논제 핵심 가정(참이어야 콜이 유효). 채점엔 미반영, 진행중 콜 상세용.
   invalidation: string[];
   reason?: string;
 }
@@ -127,6 +130,7 @@ export function scoreCall(call: RawCall, priceNow: number | null, today: Date): 
     ticker: call.ticker,
     call: call.call,
     date: call.date,
+    recordedAt: call.recordedAt,
     skill: call.skill,
     conviction: call.conviction,
     report: call.report,
@@ -142,6 +146,7 @@ export function scoreCall(call: RawCall, priceNow: number | null, today: Date): 
     targetErrorPct: null,
     status: "unknown",
     target: call.target,
+    loadBearing: call.loadBearing ?? [],
     invalidation: call.invalidation ?? [],
     reason: call.reason,
   };

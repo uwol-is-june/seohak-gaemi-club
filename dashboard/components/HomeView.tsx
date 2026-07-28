@@ -96,15 +96,26 @@ export function HomeView({
     () => files?.find((f) => f.company === null && f.name === "portfolio-latest.md") ?? null,
     [files]
   );
-  // 수기 매매기록 문서(reports/track-record.md) — 트랙레코드 탭 하단에 함께 보여준다.
-  const trackRecordDoc = useMemo(
-    () => files?.find((f) => f.company === null && f.name === "track-record.md") ?? null,
-    [files]
-  );
   // '종목별 보고서' 탭 위계: 섹터(1차) → 열등주 스크리닝 결과 그룹(2차) → 종목(칩) → 보고서.
   const tabs = companies;
   // 사용자 그룹 설정에 종속된 섹터 판정. sectorGroups가 바뀌면 아래 값들도 갱신된다.
   const sectorOf = useCallback((company: string) => sectorOfWith(sectorGroups, company), [sectorGroups]);
+  // 보고서가 존재하는 티커(대문자) — 포트폴리오 카드 드릴다운 가능 여부 판정(TASK-77).
+  const reportedTickers = useMemo(() => new Set(companies.map((c) => c.toUpperCase())), [companies]);
+  // 보유 종목 → 그 티커의 종목별 보고서로 이동. 실보유(포트폴리오)와 분석(보고서)을
+  // 티커 축으로 잇는다. 종목이 속한 섹터를 함께 선택해 선별 레이어도 맞춘다.
+  const drillToTicker = useCallback(
+    (ticker: string) => {
+      const t = ticker.toUpperCase();
+      const match = companies.find((c) => c.toUpperCase() === t);
+      if (!match) return;
+      setReportSectorTab(sectorOf(match));
+      setReportTab(match);
+      setSelectedReport(null); // 종목이 바뀌면 첫 보고서로 리셋(파생 이펙트가 채움)
+      setFlowTab("reports");
+    },
+    [companies, sectorOf]
+  );
   // 1차: 보고서가 존재하는 섹터만, 그룹 순서대로(미분류는 맨 끝).
   const reportSectors = useMemo(() => orderedSectors(sectorGroups, companies), [sectorGroups, companies]);
   // 선택된 섹터에 속한 종목만. 섹터 미선택 시(로드 전) 전체.
@@ -246,8 +257,12 @@ export function HomeView({
     },
     {
       label: "리서치 프로세스",
+      // 'discovery'는 결과물 탭(섹터/종목)의 실행 카드로, 'portfolio'(분기 점검)는
+      // 포트폴리오 탭 안으로 흡수했으므로(TASK-73) nav 항목에서 제외한다.
       items: [
-        ...flows.filter((f) => f.id !== "discovery").map((f) => ({ id: f.id, label: f.title })),
+        ...flows
+          .filter((f) => f.id !== "discovery" && f.id !== "portfolio")
+          .map((f) => ({ id: f.id, label: f.title })),
       ],
     },
     {
@@ -396,26 +411,53 @@ export function HomeView({
           {/* ── 탭 콘텐츠 (전환 애니메이션) ── */}
           <div key={flowTab} className="tab-panel">
           {flowTab === "portfolio-overview" ? (
-            <div>
-              <HoldingsBanner />
-              {/* 당일 등락 체크 — 포트폴리오와 동일한 /api/holdings를 쓰므로 같은 페이지에 배치 */}
-              <DailyCheckView />
+            <div className="flex flex-col gap-8">
+              <div>
+                <HoldingsBanner
+                  screenByCompany={screenByCompany}
+                  sectorOf={sectorOf}
+                  reportedTickers={reportedTickers}
+                  onDrill={drillToTicker}
+                />
+                {/* 당일 등락 체크 — 포트폴리오와 동일한 /api/holdings를 쓰므로 같은 페이지에 배치 */}
+                <DailyCheckView />
+              </div>
+
+              {/* ── 분기 포트폴리오 점검 (축소): 분기 1회만 쓰는 기능이라 카드 4개 대신
+                  실행 버튼 1개 + 최신 보고서 링크로 슬림화. 분기 타이밍 안내는 모달로. ── */}
+              {(() => {
+                const pf = flows.find((f) => f.id === "portfolio");
+                if (!pf) return null;
+                return (
+                  <div className="flex flex-wrap items-center gap-2 border-t border-hairline pt-6">
+                    <button
+                      onClick={() => onOpenFlowModal(pf)}
+                      className="rounded-full border border-hairline px-4 py-2 text-sm text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+                    >
+                      분기 포트폴리오 점검 →
+                    </button>
+                    {portfolioReport ? (
+                      <button
+                        onClick={() => setModalPath(portfolioReport.path)}
+                        className="inline-flex items-center gap-2 rounded-full border border-hairline px-3 py-2 text-xs text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+                      >
+                        <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-rose-300 bg-rose-500/10">
+                          최신 점검
+                        </span>
+                        <span className="font-mono text-body truncate max-w-[220px]">{portfolioReport.name}</span>
+                      </button>
+                    ) : (
+                      <span className="text-xs text-mute">아직 점검 보고서 없음</span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           ) : flowTab === "glossary" ? (
             <GlossaryView />
           ) : flowTab === "track-record" ? (
-            <div className="flex flex-col gap-10">
-              <TrackRecordView />
-              {/* 수기 매매기록 문서(reports/track-record.md) — 자동 채점(위)과 별개의 사람이 쓴 기록. */}
-              {trackRecordDoc && (
-                <div>
-                  <div className="eyebrow text-[10px] text-mute mb-3">매매 기록 (수기)</div>
-                  <div className="rounded-lg border border-hairline bg-canvas-card px-6 py-5">
-                    <ReportContentView path={trackRecordDoc.path} onOpenReport={setModalPath} />
-                  </div>
-                </div>
-              )}
-            </div>
+            /* 트랙레코드 = 콜(예측) 자동 채점만. 수기 매매기록(실보유)은 포트폴리오 탭으로 이동(TASK-74). */
+            <TrackRecordView />
           ) : flowTab === "sector-reports" ? (
             /* ── 섹터 리서치: /industry-research·/industry-funnel 등 섹터/스크리닝 결과물 ── */
             <div>
