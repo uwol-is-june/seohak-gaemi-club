@@ -1,6 +1,7 @@
 // 보고서/섹터/종목 표시에 쓰는 순수 헬퍼·타입·데이터 테이블 모음.
 // React 의존 없음 — page.tsx 와 components/ 가 공유한다(TASK-46 분해).
-import { type FlowStep } from "@/lib/flows";
+import { type FlowStep, DISCOVERY_SECTOR_GROUPS } from "@/lib/flows";
+import { deriveDomainGroups, type DomainGroup } from "@/lib/sector-domains";
 import type { ReportFile } from "@/lib/reports-store";
 
 // ─── Color config ──────────────────────────────────────────────────────────
@@ -204,6 +205,12 @@ export function getSectorReportInfo(name: string): { sector: string; kind: Secto
   // 규칙에 안 맞는 루트 파일은 파일명(확장자 제외)을 섹터로 보고 '기타'로 분류한다.
   return { sector: name.replace(/\.md$/i, ""), kind: "other" };
 }
+
+// '섹터 리서치' 탭의 1차 구분 = 분야(도메인) 그룹의 기본 시드. 프로세스 가이드
+// '섹터 구조 파악' 스텝의 섹터 피커 표를 그대로 분야 그룹으로 변환한 것으로, 저장된
+// 사용자 설정(/api/sector-domain-groups)이 없을 때만 쓰인다. 판정·정렬 헬퍼는
+// lib/sector-domains.ts 참조(그쪽은 테스트를 위해 import 없는 순수 모듈로 유지).
+export const DEFAULT_DOMAIN_GROUPS: DomainGroup[] = deriveDomainGroups(DISCOVERY_SECTOR_GROUPS);
 
 // 섹터 상세의 2차(유형) 탭 순서·라벨. 빈 유형은 렌더 단계에서 숨긴다.
 export const SECTOR_SECTIONS: { id: SectorKind; label: string }[] = [

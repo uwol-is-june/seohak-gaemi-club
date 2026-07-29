@@ -44,7 +44,9 @@ export interface Flow {
 
 // 종목 발굴 플로우의 섹터 선택지. '섹터 구조 파악'과 '후보 종목 압축' 두 스텝이 공유한다
 // (TASK-63 — 두 곳에 복붙돼 있던 것을 단일 상수로 통합).
-const DISCOVERY_SECTOR_GROUPS: SectorGroup[] = [
+// '섹터 리서치' 탭의 분야(도메인) 그룹 기본값도 이 표에서 파생된다(TASK-81) — 리서치를
+// 시작할 때 본 분류와 결과물을 묶는 분류를 같게 유지하기 위해 export 한다.
+export const DISCOVERY_SECTOR_GROUPS: SectorGroup[] = [
   { label: "테크/AI",  sectors: ["AI Semiconductors", "AI Infrastructure", "Cloud Computing", "Cybersecurity", "Enterprise Software"] },
   { label: "금융",     sectors: ["Fintech Payments", "Digital Asset", "Insurance", "Investment Banking"] },
   { label: "헬스케어", sectors: ["GLP-1 / Obesity Drugs", "Medical Devices", "Biotech", "Health Insurance"] },

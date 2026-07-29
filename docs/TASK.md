@@ -19,60 +19,50 @@ _(없음)_
 
 ## 완료
 
-> **포트폴리오·트랙레코드 개선 (2026-07-27, TASK-73~80 일괄 완료)**
-> 방향: ① 파편화 정리(탭 2개 역할 재정의) ② 포트폴리오 "판단 레이어" ③ 트랙레코드 "살아있게".
-> 검증: `npx tsc --noEmit` + `next build` 통과. 관련: [[report-folder-ticker-naming]]
+### 섹터 리서치 탭: 분야(도메인) 그룹으로 묶기 (TASK-81~83)
 
-### A. 구조 정리 (파편화 해소)
+**배경 / 문제**
+섹터 리서치 탭의 1차 탭이 루트 보고서 파일명에서 파싱한 **섹터명 그대로**를 알파벳순으로
+나열해(`AI-Infrastructure`, `Cloud-Computing`, `E-commerce`, `GLP-1-Obesity` …), 섹터가
+늘어날수록 칩 나열이 길어지고 유관 분야(테크/AI vs 헬스케어)가 섞여 보였다.
 
-- [x] [TASK-73] (S) **"포트폴리오 점검" 탭을 "포트폴리오" 탭으로 흡수**
-  - 배경: nav에 `포트폴리오`(개요 그룹)와 `포트폴리오 점검`(리서치 프로세스 그룹)이 따로 있어 라벨 중복·혼동.
-  - 범위: `navGroups`에서 `portfolio`(점검) flow 항목 제거 → 포트폴리오 탭(`portfolio-overview`) 안에
-    "분기 점검 실행" 카드 ROW(`/portfolio-review`) + 최신 `portfolio-latest.md` 패널을 병합.
-    분기 카드/`FlowModal` 진입은 포트폴리오 탭 안에서 유지.
-  - 완료 기준: nav에 포트폴리오 관련 항목 1개만. 포트폴리오 탭에서 점검 실행·최신 점검 보고서 열람 가능.
-  - 참고: `HomeView.tsx` navGroups·flowTab 분기, `lib/flows.ts`의 `portfolio` flow.
+**해결**
+프로세스 가이드 1단계 '섹터 구조 파악'의 섹터 피커와 **같은 분야 분류**로 1차 묶음을 만들고
+(테크/AI · 금융 · 헬스케어 · 소비 · 에너지 · 산업재 · 소재), 거기에 없는 주제는 종목별 보고서
+탭처럼 사용자가 그룹을 편집할 수 있게 했다.
 
-- [x] [TASK-74] (S) **수기 매매기록(`track-record.md`)을 포트폴리오 탭으로 이동**
-  - 배경: 트랙레코드 탭은 "콜=예측 채점"인데 그 밑에 실보유 수기표가 붙어 예측/실보유 개념이 섞임
-    (코드 주석 스스로 "원장은 매매기록 아니라 판단기록"이라 강조).
-  - 범위: `track-record.md` 인라인 렌더를 트랙레코드 탭에서 제거 → 포트폴리오 탭 하단으로 이동.
-    `ROOT_NON_SECTOR`·`trackRecordDoc` 로직 위치만 조정.
-  - 완료 기준: 트랙레코드 탭 = 콜 채점만. 포트폴리오 탭에서 보유 포지션·매매로그 확인.
+- [x] **(O) [TASK-81] 섹터 리서치 1차 탭에 '분야' 위계 추가**
+  - 위계: `분야(1차) → 섹터(2차) → 보고서 유형(3차) → 생성일자(4차)`.
+  - 판정·정렬 헬퍼는 [sector-domains.ts](../dashboard/lib/sector-domains.ts) 신규 모듈
+    (`normalizeSectorKey` / `domainOfSector` / `orderedDomains` / `deriveDomainGroups`).
+    **import 없는 순수 모듈**로 유지 — 그래야 plain node 로 테스트를 바로 돌릴 수 있다
+    (report-helpers 는 `@/` 별칭 때문에 불가).
+  - 기본 매핑 단일 소스 = [flows.ts](../dashboard/lib/flows.ts) `DISCOVERY_SECTOR_GROUPS`(export 로 변경)
+    → `DEFAULT_DOMAIN_GROUPS`([report-helpers.ts](../dashboard/lib/report-helpers.ts))로 파생.
+  - 표기 차이 흡수: 영문·숫자만 남긴 키로 완전 일치 → 실패 시 접두 일치(최소 4자).
+    `AI-Semiconductors` ↔ `AI Semiconductors`, `GLP-1-Obesity` ⊂ `GLP-1 / Obesity Drugs`.
+    **완전 일치를 항상 먼저 전체 그룹에 대해 시도** — `Insurance`(금융)가
+    `Health Insurance`(헬스케어)로 새는 것을 막는다.
+  - 매핑에 없는 섹터는 `미분류` 분야로 모아 맨 끝. 보고서 없는 분야 탭은 숨김.
+  - UI는 종목별 보고서 탭의 '종목 선택' 카드와 동일 패턴('섹터 선택' 카드 안에 분야 → 섹터 2단).
 
-### B. 포트폴리오 강화 (판단 레이어)
+- [x] **(S) [TASK-82] 분야 그룹 사용자 편집 + 서버 영속화**
+  - [SectorGroupEditor.tsx](../dashboard/components/SectorGroupEditor.tsx)를 두 축이 공유하도록
+    일반화(`title` / `eyebrow` / `itemNoun` / `namePlaceholder` / `upperCaseItems` prop).
+    비교는 항상 대소문자·공백 무시, 저장은 축에 맞는 표기(티커=대문자, 섹터명=원표기 유지).
+  - 신규 [/api/sector-domain-groups](../dashboard/app/api/sector-domain-groups/route.ts) GET/PUT —
+    `app_config('sector_domain_groups')`. 종목 그룹(`sector_groups`)과 키 분리.
+    `requireAuth` + 상한 sanitize + DB 에러 비노출은 기존 라우트와 동일.
+  - 저장값이 있으면 기본 매핑을 덮어쓴다. 저장 실패 시 화면만 낙관적 갱신(기존 패턴 동일).
+  - 검증(로컬 dev): 미인증 401 / 로그인 후 GET = 기본 7분야 / PUT 라운드트립(trim·빈값 제거·
+    대문자 변환 없음 확인) / `{"groups":"nope"}` → 400. 테스트로 쓴 config 행은 삭제해 원복.
 
-- [x] [TASK-75] (O) **보유 종목 카드에 판단 pill 부착 (숫자 → 판단)**
-  - 범위: `HoldingsBanner`가 `/api/calls`를 직접 로드(티커별 최신 콜) + HomeView에서
-    `screenByCompany` prop 수신. 각 카드 하단에 판단 스트립 추가 — 최신 콜(라벨+★+상태점),
-    스크리닝 판정(SCREEN_GROUPS 재사용), 목표밴드(현재가 위/아래/밴드내). 데이터 없으면 "분석 기록 없음".
-  - 구현 메모: 논제 건강도(7/10)는 thesis 마크다운 내부 값이라 구조화 안 됨 → 제외(현재 API로 불가).
-    콜 상태점/목표밴드 위치로 대체 표현.
-
-- [x] [TASK-76] (O) **집중도·섹터 편중 위젯 + 리밸런싱 신호**
-  - 범위: `HoldingsBanner`에 `sectorOf` prop 추가. KPI 아래 위젯 — 최대 비중/상위 3종목/종목수 +
-    섹터별 비중 바(sectorGroups 기반) + 과대비중(≥30%) 종목 pill("집중 리스크" 배지).
-
-- [x] [TASK-77] (O) **보유 종목 → 종목 상세 드릴다운 (티커 축 통합)**
-  - 범위: `HoldingsBanner` 카드에 `reportedTickers`/`onDrill` prop. 보고서 있는 종목만 클릭 가능
-    (role=button+키보드). 클릭 시 HomeView `drillToTicker` → 섹터·종목 선택 후 `reports` 탭으로 이동.
-
-### C. 트랙레코드 강화 (살아있게 + 정직성)
-
-- [x] [TASK-78] (S) **빈 상태 개선 (확정 0건 안내)**
-  - 범위: `agg.resolvedCount === 0`일 때 KPI 위에 안내 배너 — "모든 콜 채점 기준일 미경과" +
-    진행중 콜의 예상 첫 채점일 중 가장 이른 날짜(`expectedResolveDate` 근사) 표시.
-
-- [x] [TASK-79] (O) **진행중 콜 상세 — 목표밴드/horizon/무효화 조건 노출**
-  - 범위: 콜 행 클릭 시 확장 패널(Fragment) — 콜시점가/현재가/목표밴드/horizon 경과율 요약 +
-    핵심 가정(loadBearing) + 무효화 레드라인(invalidation) 리스트. `lib/calls.ts` ScoredCall에
-    `loadBearing` 필드 추가(passthrough).
-
-- [x] [TASK-80] (O) **콜 유형별 분리 집계 + skill별 성적표**
-  - 범위: `TrackRecordView`에서 클라이언트 집계(`tallyBy`) — 유형별(buy/keep/hold/avoid)·스킬별
-    총건수/확정/적중/진행중. KPI 아래 2단 카드. **API 계약(`CallAggregate`)은 미변경** →
-    `tools/score_calls.py` 동기화 부담 없음(분해만 클라이언트에서).
+- [x] **(H) [TASK-83] 매핑 헬퍼 유닛 테스트**
+  - [sector-domains.test.ts](../dashboard/lib/sector-domains.test.ts) — 실제 매핑 표를 먹여
+    루트 보고서 7개 섹터 전부 + 완전 일치 우선 + 미분류 + 짧은 키 접두 제외 + 탭 순서/dedup +
+    사용자 그룹 덮어쓰기를 검증.
+  - 실행: `node dashboard/lib/sector-domains.test.ts` (Node 24+ 타입 스트리핑, `calls.fixture.test.ts`와 동일 방식)
 
 ---
 
-_(마지막 사용 번호: TASK-80, 다음은 TASK-81부터)_
+_(마지막 사용 번호: TASK-83, 다음은 TASK-84부터)_

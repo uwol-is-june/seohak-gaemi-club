@@ -3,7 +3,8 @@ import { readJsonSafe } from "@/lib/fetch-json";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { flows, type Flow } from "@/lib/flows";
 import { ReportFile } from "@/lib/reports-store";
-import { getFileBadge, getResultPill, getConfidencePill, sortCompanyFiles, getReportCategory, REPORT_SECTIONS, SCREEN_GROUPS, type SectorGroup, DEFAULT_SECTOR_GROUPS, sectorOfWith, orderedSectors, getSectorReportInfo, SECTOR_SECTIONS, reportDateLabel } from "@/lib/report-helpers";
+import { getFileBadge, getResultPill, getConfidencePill, sortCompanyFiles, getReportCategory, REPORT_SECTIONS, SCREEN_GROUPS, type SectorGroup, DEFAULT_SECTOR_GROUPS, DEFAULT_DOMAIN_GROUPS, sectorOfWith, orderedSectors, getSectorReportInfo, SECTOR_SECTIONS, reportDateLabel } from "@/lib/report-helpers";
+import { domainOfSector, orderedDomains, type DomainGroup } from "@/lib/sector-domains";
 import { GLOSSARY } from "@/lib/glossary";
 import { ReportContentView } from "./ReportContentView";
 import { ReportModal } from "./ReportModal";
@@ -34,7 +35,12 @@ export function HomeView({
   const [reportTab, setReportTab] = useState<string | null>(null);
   // 종목 탭 하위 2차 탭에서 선택된 보고서(경로). 종목 탭이 바뀌면 첫 보고서로 리셋.
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
-  // 섹터 리서치 탭: 1차(섹터명) 선택 + 하위에서 선택된 보고서(경로).
+  // 섹터 리서치 탭 위계: 분야(1차) → 섹터(2차) → 보고서 유형(3차) → 생성일자(4차).
+  // 분야 그룹(이름 + 포함 섹터명)은 서버(/api/sector-domain-groups)에서 불러오고,
+  // 그룹 편집 모달에서 갱신한다. 로드 전에는 섹터 피커에서 파생한 기본 시드를 쓴다.
+  const [domainGroups, setDomainGroups] = useState<DomainGroup[]>(DEFAULT_DOMAIN_GROUPS);
+  const [editingDomains, setEditingDomains] = useState(false);
+  const [domainTab, setDomainTab] = useState<string | null>(null);
   const [sectorTab, setSectorTab] = useState<string | null>(null);
   const [sectorReport, setSectorReport] = useState<string | null>(null);
   const [modalPath, setModalPath] = useState<string | null>(null);
@@ -150,10 +156,22 @@ export function HomeView({
     return map;
   }, [files, companies]);
 
-  // 섹터 리서치 탭: 루트 파일을 섹터명으로 묶는다 (1차 = 섹터).
+  // 섹터 리서치 탭: 루트 파일을 섹터명으로 묶는다 (2차 = 섹터).
   const sectors = useMemo(
     () => Array.from(new Set(rootFiles.map((f) => getSectorReportInfo(f.name).sector))).sort(),
     [rootFiles]
+  );
+  // 1차 = 분야(도메인). 섹터명을 사용자 그룹 설정으로 유관 분야에 묶는다(TASK-81).
+  const domainOf = useCallback(
+    (sector: string) => domainOfSector(domainGroups, sector),
+    [domainGroups]
+  );
+  // 보고서가 존재하는 분야만, 그룹 순서대로(미분류는 맨 끝).
+  const sectorDomains = useMemo(() => orderedDomains(domainGroups, sectors), [domainGroups, sectors]);
+  // 선택된 분야에 속한 섹터만. 분야 미선택 시(로드 전) 전체.
+  const domainSectors = useMemo(
+    () => (domainTab ? sectors.filter((s) => domainOf(s) === domainTab) : sectors),
+    [domainTab, sectors, domainOf]
   );
   const sectorCurrentFiles = useMemo(
     () =>
@@ -198,6 +216,34 @@ export function HomeView({
     });
   };
 
+  // 저장된 분야 그룹 설정을 서버(Supabase)에서 불러온다. 실패 시 기본 시드 유지.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/sector-domain-groups")
+      .then(readJsonSafe)
+      .then((d) => {
+        if (!cancelled && Array.isArray(d.groups)) setDomainGroups(d.groups);
+      })
+      .catch(() => {
+        // 네트워크 실패 시 화면엔 기본 분야 그룹이 유지된다.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 분야 그룹 저장: 화면 즉시 갱신(낙관적) + 서버(Supabase) 영속화.
+  const saveDomainGroups = (groups: DomainGroup[]) => {
+    setDomainGroups(groups);
+    fetch("/api/sector-domain-groups", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ groups }),
+    }).catch(() => {
+      // 저장 실패는 무시(현재 세션 표시엔 반영됨). 새로고침 시 서버 값으로 되돌아갈 수 있음.
+    });
+  };
+
   // 섹터 목록이 바뀌면(로드·그룹 편집) 1차 선택을 유효한 값으로 맞춘다.
   const sectorKey = reportSectors.join("|");
   useEffect(() => {
@@ -224,11 +270,21 @@ export function HomeView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportTab, files]);
 
-  // 섹터 목록이 로드되면 1차 탭을 첫 섹터로 맞춘다.
+  // 분야 목록이 바뀌면(로드·그룹 편집) 섹터 리서치 1차 탭을 유효한 값으로 맞춘다.
+  const domainKey = sectorDomains.join("|");
   useEffect(() => {
-    setSectorTab((prev) => (prev && sectors.includes(prev) ? prev : (sectors[0] ?? null)));
+    setDomainTab((prev) => (prev && sectorDomains.includes(prev) ? prev : (sectorDomains[0] ?? null)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [files]);
+  }, [domainKey]);
+
+  // 분야가 바뀌거나 그 분야 구성원이 바뀌면 2차(섹터) 선택을 유효한 값으로 맞춘다
+  // (현재 섹터가 이 분야에 속해 있으면 유지). domainSectors 는 files 파생이라
+  // 보고서 로드도 이 키로 같이 커버된다.
+  const domainSectorsKey = domainSectors.join("|");
+  useEffect(() => {
+    setSectorTab((prev) => (prev && domainSectors.includes(prev) ? prev : (domainSectors[0] ?? null)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [domainTab, domainSectorsKey]);
 
   // 섹터 탭이 바뀌거나 목록이 로드되면 선택 보고서를 그 섹터의 첫 보고서로 맞춘다.
   useEffect(() => {
@@ -528,30 +584,75 @@ export function HomeView({
 
               {files && rootFiles.length > 0 && (
                 <>
-                  {/* 1차: 섹터 */}
-                  <div className="flex gap-1 overflow-x-auto pb-1 mb-4">
-                    {sectors.map((s) => (
+                  {/* ── 선별 레이어: 분야(1차) → 섹터(2차) ──
+                      종목별 보고서 탭의 '종목 선택' 카드와 동일한 패턴. 분야 분류는
+                      프로세스 가이드 '섹터 구조 파악'의 섹터 피커와 같은 표에서 오고,
+                      '그룹 편집'으로 사용자가 덮어쓸 수 있다(TASK-81/82). */}
+                  <div className="mb-6 rounded-lg border border-hairline bg-canvas-card p-4 sm:p-5">
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                      <span className="eyebrow text-[10px] text-ink">섹터 선택</span>
                       <button
-                        key={s}
-                        onClick={() => setSectorTab(s)}
-                        className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 ${
-                          sectorTab === s ? "bg-white text-canvas" : "text-mute hover:text-ink"
-                        }`}
+                        onClick={() => setEditingDomains(true)}
+                        className="shrink-0 rounded-full border border-hairline px-2.5 py-1 text-[11px] text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
                       >
-                        {s}
+                        그룹 편집
                       </button>
-                    ))}
+                    </div>
+
+                    {/* 1차: 분야 */}
+                    <div className="mb-4">
+                      <div className="eyebrow text-[10px] text-mute mb-1.5">분야</div>
+                      <div className="flex gap-1 overflow-x-auto pb-1">
+                        {sectorDomains.map((d) => {
+                          const count = sectors.filter((s) => domainOf(s) === d).length;
+                          return (
+                            <button
+                              key={d}
+                              onClick={() => {
+                                setDomainTab(d);
+                                const first = sectors.find((s) => domainOf(s) === d);
+                                if (first) setSectorTab(first);
+                              }}
+                              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 flex items-center gap-1.5 ${
+                                domainTab === d ? "bg-white text-canvas" : "text-mute hover:text-ink hover:bg-canvas-soft"
+                              }`}
+                            >
+                              {d}
+                              <span className={domainTab === d ? "text-canvas/60" : "text-mute"}>{count}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* 2차: 선택 분야 안의 섹터 */}
+                    <div className="border-t border-hairline pt-4">
+                      <div className="eyebrow text-[10px] text-mute mb-2">섹터</div>
+                      <div className="flex flex-wrap gap-1">
+                        {domainSectors.map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => setSectorTab(s)}
+                            className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 ${
+                              sectorTab === s ? "bg-white text-canvas" : "text-mute hover:text-ink hover:bg-canvas-soft"
+                            }`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* 섹터 상세: 유형(2차) → 생성일자(3차) 위계 + 선택 보고서 인라인 표시 */}
+                  {/* 섹터 상세: 유형(3차) → 생성일자(4차) 위계 + 선택 보고서 인라인 표시 */}
                   {(() => {
                     const selFile = sectorCurrentFiles.find((f) => f.path === sectorReport) ?? null;
                     const activeKind = selFile ? getSectorReportInfo(selFile.name).kind : null;
-                    // 파일이 있는 유형만 2차 탭으로 노출(순서는 SECTOR_SECTIONS).
+                    // 파일이 있는 유형만 3차 탭으로 노출(순서는 SECTOR_SECTIONS).
                     const activeSections = SECTOR_SECTIONS.filter((s) =>
                       sectorCurrentFiles.some((f) => getSectorReportInfo(f.name).kind === s.id)
                     );
-                    // 선택된 유형의 보고서들(생성일자 = 3차). 하나뿐이면 3차 탭은 생략.
+                    // 선택된 유형의 보고서들(생성일자 = 4차). 하나뿐이면 4차 탭은 생략.
                     const kindFiles = activeKind
                       ? sectorCurrentFiles.filter((f) => getSectorReportInfo(f.name).kind === activeKind)
                       : [];
@@ -560,7 +661,7 @@ export function HomeView({
                     const confPill = getConfidencePill(selFile?.confidence);
                     return (
                       <div className="flex flex-col gap-4">
-                        {/* 2차: 보고서 유형 */}
+                        {/* 3차: 보고서 유형 */}
                         <div className="flex flex-wrap gap-1.5">
                           {activeSections.map((section) => {
                             const active = section.id === activeKind;
@@ -585,7 +686,7 @@ export function HomeView({
                           })}
                         </div>
 
-                        {/* 3차: 생성일자(같은 유형에 보고서가 둘 이상일 때만) */}
+                        {/* 4차: 생성일자(같은 유형에 보고서가 둘 이상일 때만) */}
                         {kindFiles.length > 1 && (
                           <div className="flex flex-wrap items-center gap-1.5 border-l-2 border-hairline pl-3">
                             {kindFiles.map((f) => {
@@ -1059,6 +1160,23 @@ export function HomeView({
             setEditingSectors(false);
           }}
           onClose={() => setEditingSectors(false)}
+        />
+      )}
+      {/* 섹터 리서치 탭의 분야 그룹 편집 — 같은 모달을 '섹터명 → 분야' 축으로 쓴다(TASK-82). */}
+      {editingDomains && (
+        <SectorGroupEditor
+          companies={sectors}
+          groups={domainGroups}
+          onSave={(g) => {
+            saveDomainGroups(g);
+            setEditingDomains(false);
+          }}
+          onClose={() => setEditingDomains(false)}
+          title="분야 그룹 편집"
+          eyebrow="SECTOR DOMAINS"
+          itemNoun="섹터"
+          namePlaceholder="분야 이름 (예: 헬스케어)"
+          upperCaseItems={false}
         />
       )}
     </div>

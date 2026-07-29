@@ -4,16 +4,32 @@ import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 import { useModalA11y } from "@/lib/use-modal-a11y";
 import { type SectorGroup, normalizeTicker, newGroupId } from "@/lib/report-helpers";
 
+// 두 곳에서 공유하는 그룹 편집 모달(TASK-82):
+//   · 종목별 보고서 탭 — 티커를 섹터 그룹에 배정          (/api/sector-groups)
+//   · 섹터 리서치 탭 — 섹터명을 분야(도메인) 그룹에 배정   (/api/sector-domain-groups)
+// 두 축의 저장 타입은 구조가 같아(id/name/tickers) 로직을 그대로 쓰고, 문구만 prop 으로
+// 바꾼다. 섹터 리서치 쪽에서는 `tickers`·`companies` 에 티커가 아니라 섹터명이 담긴다.
 export function SectorGroupEditor({
   companies,
   groups,
   onSave,
   onClose,
+  title = "섹터 그룹 편집",
+  eyebrow = "SECTOR GROUPS",
+  itemNoun = "종목",
+  namePlaceholder = "그룹 이름 (예: 헬스케어)",
+  // 티커는 대문자 정규화가 맞지만 섹터명은 표기를 보존해야 한다.
+  upperCaseItems = true,
 }: {
   companies: string[];
   groups: SectorGroup[];
   onSave: (groups: SectorGroup[]) => void;
   onClose: () => void;
+  title?: string;
+  eyebrow?: string;
+  itemNoun?: string;
+  namePlaceholder?: string;
+  upperCaseItems?: boolean;
 }) {
   useBodyScrollLock();
   const dialogRef = useModalA11y<HTMLDivElement>(onClose);
@@ -21,9 +37,11 @@ export function SectorGroupEditor({
     groups.map((g) => ({ ...g, tickers: [...g.tickers] }))
   );
 
-  // 종목을 특정 그룹에 토글 배정. 같은 그룹이면 해제, 다른 그룹이면 그쪽에서 제거 후 이동.
+  // 항목을 특정 그룹에 토글 배정. 같은 그룹이면 해제, 다른 그룹이면 그쪽에서 제거 후 이동.
+  // 비교는 항상 대소문자·공백 무시(normalizeTicker), 저장은 축에 맞는 표기로 한다.
   const assign = (ticker: string, groupId: string) => {
     const key = normalizeTicker(ticker);
+    const stored = upperCaseItems ? key : ticker.trim();
     setDraft((prev) =>
       prev.map((g) => {
         if (g.id === groupId) {
@@ -32,7 +50,7 @@ export function SectorGroupEditor({
             ...g,
             tickers: has
               ? g.tickers.filter((t) => normalizeTicker(t) !== key)
-              : [...g.tickers, key],
+              : [...g.tickers, stored],
           };
         }
         // 배타적: 다른 그룹에서는 제거
@@ -72,15 +90,15 @@ export function SectorGroupEditor({
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
-        aria-label="섹터 그룹 편집"
+        aria-label={title}
         tabIndex={-1}
         className="w-full max-w-2xl my-8 rounded-lg bg-canvas border border-hairline overflow-hidden focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-hairline">
           <div>
-            <div className="eyebrow text-[10px]">SECTOR GROUPS</div>
-            <div className="text-lg tracking-[-0.02em] text-ink leading-tight">섹터 그룹 편집</div>
+            <div className="eyebrow text-[10px]">{eyebrow}</div>
+            <div className="text-lg tracking-[-0.02em] text-ink leading-tight">{title}</div>
           </div>
           <button
             type="button"
@@ -94,8 +112,9 @@ export function SectorGroupEditor({
 
         <div className="px-6 py-5 flex flex-col gap-4">
           <p className="text-sm text-mute leading-relaxed">
-            그룹 이름을 정하고, 아래 종목 칩을 눌러 그룹에 넣으세요. 한 종목은 한 그룹에만 속합니다.
-            어느 그룹에도 넣지 않은 종목은 <span className="text-body">미분류</span>로 표시됩니다.
+            그룹 이름을 정하고, 아래 {itemNoun} 칩을 눌러 그룹에 넣으세요. 한 {itemNoun}은 한 그룹에만
+            속합니다. 어느 그룹에도 넣지 않은 {itemNoun}은 <span className="text-body">미분류</span>로
+            표시됩니다.
           </p>
 
           {draft.map((g) => (
@@ -104,7 +123,7 @@ export function SectorGroupEditor({
                 <input
                   value={g.name}
                   onChange={(e) => rename(g.id, e.target.value)}
-                  placeholder="그룹 이름 (예: 헬스케어)"
+                  placeholder={namePlaceholder}
                   className="flex-1 rounded-lg bg-canvas-soft border border-hairline px-3 py-2 text-sm text-ink placeholder-mute focus:outline-none focus:border-white/40 transition-colors"
                 />
                 <button
@@ -159,7 +178,7 @@ export function SectorGroupEditor({
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-mute">모든 종목이 그룹에 배정되었습니다.</p>
+              <p className="text-xs text-mute">모든 {itemNoun}이 그룹에 배정되었습니다.</p>
             )}
           </div>
         </div>
