@@ -28,7 +28,10 @@ const groups = deriveDomainGroups(DISCOVERY_SECTOR_GROUPS);
 eq("key: 하이픈 제거", normalizeSectorKey("AI-Semiconductors"), "aisemiconductors");
 eq("key: 공백 제거", normalizeSectorKey("AI Semiconductors"), "aisemiconductors");
 eq("key: 슬래시·공백 제거", normalizeSectorKey("GLP-1 / Obesity Drugs"), "glp1obesitydrugs");
-eq("key: 한글은 빈 키", normalizeSectorKey("테크/AI"), "ai");
+// 한글은 보존한다(TASK-85) — 버리면 한글 섹터 그룹명이 절대 매칭되지 않는다.
+eq("key: 한글 보존", normalizeSectorKey("테크/AI"), "테크ai");
+eq("key: 중점(·) 제거", normalizeSectorKey("반도체·AI"), "반도체ai");
+eq("key: 한글 구분기호 무시(중점 = 공백)", normalizeSectorKey("우주·항공"), normalizeSectorKey("우주 항공"));
 
 // ── 실제 루트 보고서의 섹터명 (reports/*.md) ──────────────────────────────────
 eq("AI-Semiconductors", domainOfSector(groups, "AI-Semiconductors"), "테크/AI");
@@ -101,7 +104,7 @@ eq(
 eq(
   "sectorsInDomain: 미분류만 골라냄",
   sectorsInDomain(groups, ["Quantum-Foo", "Cybersecurity", "양자컴퓨터"], UNCLASSIFIED_DOMAIN),
-  ["Quantum-Foo", "양자컴퓨터"]
+  ["Quantum-Foo"] // '양자컴퓨터'는 별칭으로 테크/AI에 붙는다(TASK-85)
 );
 eq("sectorsInDomain: 없는 분야는 빈 배열", sectorsInDomain(groups, ["Cybersecurity"], "에너지"), []);
 
@@ -122,22 +125,35 @@ const domainOfTicker = (t: string) => domainOfSector(groups, sectorOfTicker(t));
 eq("종목: GOOGL → 테크/AI", domainOfTicker("GOOGL"), "테크/AI");
 eq("종목: AXP → 금융 (Fintech ⊂ Fintech Payments)", domainOfTicker("AXP"), "금융");
 eq("종목: AMZN → 소비", domainOfTicker("AMZN"), "소비");
-// 한글 섹터 그룹명은 매칭 키가 비어(또는 너무 짧아) 미분류로 떨어진다 — 사용자가
-// 분야 그룹 편집으로 직접 넣어줘야 한다는 뜻. '우선 미분류' 정책의 근거.
-eq("종목: NVDA → 미분류 (한글 그룹명)", domainOfTicker("NVDA"), UNCLASSIFIED_DOMAIN);
-// 어느 종목 그룹에도 없는 티커도 미분류.
+// 한글·약어 섹터 그룹명도 별칭 표(DOMAIN_MEMBER_ALIASES)로 기존 분야에 붙는다(TASK-85).
+eq("종목: NVDA → 테크/AI (반도체·AI 별칭)", domainOfTicker("NVDA"), "테크/AI");
+// 어느 종목 그룹에도 없는 티커는 여전히 미분류 — '정말로 없는 것'만 남긴다.
 eq("종목: 미배정 티커 → 미분류", domainOfTicker("ZZZZ"), UNCLASSIFIED_DOMAIN);
 
-// 한글 그룹명을 분야 그룹에 등록하면 정상 분류된다(편집으로 해소 가능함을 확인).
-const withKorean: DomainGroup[] = [
-  ...groups,
-  { id: "kr", name: "테크/AI-추가", tickers: ["반도체·AI"] },
-];
+// ── 별칭 표 전수 확인: 사용자 종목 그룹명 → 기존 분야 (TASK-85) ────────────────
+eq("별칭: 헬스케어 → 헬스케어", domainOfSector(groups, "헬스케어"), "헬스케어");
+eq("별칭: 반도체·AI → 테크/AI", domainOfSector(groups, "반도체·AI"), "테크/AI");
+eq("별칭: 양자컴퓨터 → 테크/AI", domainOfSector(groups, "양자컴퓨터"), "테크/AI");
+eq("별칭: 우주·항공 → 산업재", domainOfSector(groups, "우주·항공"), "산업재");
+eq("별칭: Enterprise SW → 테크/AI", domainOfSector(groups, "Enterprise SW"), "테크/AI");
+// 구분기호가 달라도 같은 키 → 붙는다.
+eq("별칭: '우주 항공'(중점 없음)도 산업재", domainOfSector(groups, "우주 항공"), "산업재");
+
+// 자동으로 붙는 이름은 별칭 표에 없어도 매칭된다(별칭을 최소로 유지하는 근거).
+eq("자동: AI Infra → 테크/AI", domainOfSector(groups, "AI Infra"), "테크/AI");
+eq("자동: Fintech → 금융", domainOfSector(groups, "Fintech"), "금융");
+eq("금융 멤버는 피커 4개 그대로", groups.find((g) => g.name === "금융")?.tickers.length, 4);
+// 별칭 dedup: 이미 접두로 붙는 이름을 별칭에 넣어도 멤버가 늘지 않는다.
 eq(
-  "종목: 한글 그룹명을 분야에 등록하면 분류됨",
-  domainOfSector(withKorean, sectorOfTicker("NVDA")),
-  "테크/AI-추가"
+  "별칭 dedup: 접두로 이미 붙으면 추가 안 함",
+  deriveDomainGroups([{ label: "테크/AI", sectors: ["AI Infrastructure"] }])[0].tickers,
+  ["AI Infrastructure", "반도체·AI", "양자컴퓨터", "Enterprise SW"]
 );
+
+// 사용자가 저장한 그룹은 여전히 시드를 완전히 대체한다(별칭도 함께 사라짐).
+const custom2: DomainGroup[] = [{ id: "x", name: "내분야", tickers: ["반도체·AI"] }];
+eq("사용자 그룹이 별칭 시드를 대체", domainOfSector(custom2, "반도체·AI"), "내분야");
+eq("사용자 그룹에 없으면 미분류", domainOfSector(custom2, "헬스케어"), UNCLASSIFIED_DOMAIN);
 
 if (failures.length > 0) {
   console.error(`❌ 섹터→분야 매핑 실패 (${failures.length}건):`);

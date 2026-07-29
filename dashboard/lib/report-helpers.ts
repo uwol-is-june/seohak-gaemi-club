@@ -206,10 +206,11 @@ export function getSectorReportInfo(name: string): { sector: string; kind: Secto
   return { sector: name.replace(/\.md$/i, ""), kind: "other" };
 }
 
-// '섹터 리서치' 탭의 1차 구분 = 분야(도메인) 그룹의 기본 시드. 프로세스 가이드
-// '섹터 구조 파악' 스텝의 섹터 피커 표를 그대로 분야 그룹으로 변환한 것으로, 저장된
-// 사용자 설정(/api/sector-domain-groups)이 없을 때만 쓰인다. 판정·정렬 헬퍼는
-// lib/sector-domains.ts 참조(그쪽은 테스트를 위해 import 없는 순수 모듈로 유지).
+// '섹터 리서치'·'종목별 보고서' 탭의 1차 구분 = 분야(도메인) 그룹의 기본 시드. 프로세스 가이드
+// '섹터 구조 파악' 스텝의 섹터 피커 표를 분야 그룹으로 변환한 것(+ 한글·약어 섹터 그룹명 별칭,
+// TASK-85)으로, 저장된 사용자 설정(/api/sector-domain-groups)이 없을 때만 쓰인다.
+// 별칭 표와 판정·정렬 헬퍼는 lib/sector-domains.ts 참조
+// (그쪽은 테스트를 위해 import 없는 순수 모듈로 유지).
 export const DEFAULT_DOMAIN_GROUPS: DomainGroup[] = deriveDomainGroups(DISCOVERY_SECTOR_GROUPS);
 
 // 섹터 상세의 2차(유형) 탭 순서·라벨. 빈 유형은 렌더 단계에서 숨긴다.
