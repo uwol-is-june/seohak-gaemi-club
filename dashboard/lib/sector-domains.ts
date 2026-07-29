@@ -66,6 +66,16 @@ export function orderedDomains(groups: DomainGroup[], sectors: string[]): string
   return present;
 }
 
+// 선택된 분야에 속한 섹터만 추린다(입력 순서 유지). '섹터 리서치' 탭의 2차 탭과
+// '종목별 보고서' 탭의 2차 탭이 공유한다 — 두 탭이 같은 분야 판정을 쓰도록(TASK-84).
+export function sectorsInDomain(
+  groups: DomainGroup[],
+  sectors: string[],
+  domain: string
+): string[] {
+  return sectors.filter((s) => domainOfSector(groups, s) === domain);
+}
+
 // 섹터 피커 표(flows.ts DISCOVERY_SECTOR_GROUPS) → 기본 분야 그룹 시드.
 // 저장된 사용자 설정이 없을 때만 쓰인다.
 export function deriveDomainGroups(

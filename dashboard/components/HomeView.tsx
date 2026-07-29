@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { flows, type Flow } from "@/lib/flows";
 import { ReportFile } from "@/lib/reports-store";
 import { getFileBadge, getResultPill, getConfidencePill, sortCompanyFiles, getReportCategory, REPORT_SECTIONS, SCREEN_GROUPS, type SectorGroup, DEFAULT_SECTOR_GROUPS, DEFAULT_DOMAIN_GROUPS, sectorOfWith, orderedSectors, getSectorReportInfo, SECTOR_SECTIONS, reportDateLabel } from "@/lib/report-helpers";
-import { domainOfSector, orderedDomains, type DomainGroup } from "@/lib/sector-domains";
+import { domainOfSector, orderedDomains, sectorsInDomain, type DomainGroup } from "@/lib/sector-domains";
 import { GLOSSARY } from "@/lib/glossary";
 import { ReportContentView } from "./ReportContentView";
 import { ReportModal } from "./ReportModal";
@@ -30,7 +30,9 @@ export function HomeView({
   // 사용자 정의 섹터 그룹(이름 + 포함 종목). localStorage에서 복원, 편집 모달에서 갱신.
   const [sectorGroups, setSectorGroups] = useState<SectorGroup[]>(DEFAULT_SECTOR_GROUPS);
   const [editingSectors, setEditingSectors] = useState(false);
-  // 종목별 보고서 1차 구분(섹터) 선택. 종목(reportTab)은 이 섹터 안에서만 고른다.
+  // 종목별 보고서 위계: 분야(1차) → 섹터(2차) → 종목(3차) → 보고서 유형 → 생성일자.
+  // 섹터 리서치 탭과 같은 분야 그룹(domainGroups)을 공유해 두 탭의 1차 구분을 통일한다(TASK-84).
+  const [reportDomainTab, setReportDomainTab] = useState<string | null>(null);
   const [reportSectorTab, setReportSectorTab] = useState<string | null>(null);
   const [reportTab, setReportTab] = useState<string | null>(null);
   // 종목 탭 하위 2차 탭에서 선택된 보고서(경로). 종목 탭이 바뀌면 첫 보고서로 리셋.
@@ -106,6 +108,18 @@ export function HomeView({
   const tabs = companies;
   // 사용자 그룹 설정에 종속된 섹터 판정. sectorGroups가 바뀌면 아래 값들도 갱신된다.
   const sectorOf = useCallback((company: string) => sectorOfWith(sectorGroups, company), [sectorGroups]);
+  // 섹터 → 분야 판정. 섹터 리서치 탭(섹터명이 파일명에서 옴)과 종목별 보고서 탭
+  // (섹터명이 사용자 종목 그룹명)이 같은 분야 그룹 표를 공유한다(TASK-81/84).
+  const domainOf = useCallback(
+    (sector: string) => domainOfSector(domainGroups, sector),
+    [domainGroups]
+  );
+  // 종목 → 섹터 → 분야 2단 합성. 어느 단계든 매칭이 안 되면 '미분류'로 떨어진다
+  // (종목이 어느 종목 그룹에도 없거나, 그 섹터가 어느 분야 그룹에도 없는 경우).
+  const companyDomainOf = useCallback(
+    (company: string) => domainOf(sectorOf(company)),
+    [domainOf, sectorOf]
+  );
   // 보고서가 존재하는 티커(대문자) — 포트폴리오 카드 드릴다운 가능 여부 판정(TASK-77).
   const reportedTickers = useMemo(() => new Set(companies.map((c) => c.toUpperCase())), [companies]);
   // 보유 종목 → 그 티커의 종목별 보고서로 이동. 실보유(포트폴리오)와 분석(보고서)을
@@ -115,15 +129,28 @@ export function HomeView({
       const t = ticker.toUpperCase();
       const match = companies.find((c) => c.toUpperCase() === t);
       if (!match) return;
+      // 3단 위계라 분야까지 함께 맞춘다 — 분야가 어긋나면 섹터 탭이 목록에 없어
+      // reconciliation 이펙트가 선택을 되돌려버린다.
+      setReportDomainTab(companyDomainOf(match));
       setReportSectorTab(sectorOf(match));
       setReportTab(match);
       setSelectedReport(null); // 종목이 바뀌면 첫 보고서로 리셋(파생 이펙트가 채움)
       setFlowTab("reports");
     },
-    [companies, sectorOf]
+    [companies, sectorOf, companyDomainOf]
   );
-  // 1차: 보고서가 존재하는 섹터만, 그룹 순서대로(미분류는 맨 끝).
+  // 2차: 보고서가 존재하는 섹터만, 그룹 순서대로(미분류는 맨 끝).
   const reportSectors = useMemo(() => orderedSectors(sectorGroups, companies), [sectorGroups, companies]);
+  // 1차: 그 섹터들이 속한 분야만, 분야 그룹 순서대로(미분류는 맨 끝).
+  const reportDomains = useMemo(
+    () => orderedDomains(domainGroups, reportSectors),
+    [domainGroups, reportSectors]
+  );
+  // 선택된 분야에 속한 섹터만. 분야 미선택 시(로드 전) 전체.
+  const domainReportSectors = useMemo(
+    () => (reportDomainTab ? sectorsInDomain(domainGroups, reportSectors, reportDomainTab) : reportSectors),
+    [reportDomainTab, domainGroups, reportSectors]
+  );
   // 선택된 섹터에 속한 종목만. 섹터 미선택 시(로드 전) 전체.
   const sectorCompanies = useMemo(
     () => (reportSectorTab ? tabs.filter((t) => sectorOf(t) === reportSectorTab) : tabs),
@@ -162,16 +189,20 @@ export function HomeView({
     [rootFiles]
   );
   // 1차 = 분야(도메인). 섹터명을 사용자 그룹 설정으로 유관 분야에 묶는다(TASK-81).
-  const domainOf = useCallback(
-    (sector: string) => domainOfSector(domainGroups, sector),
-    [domainGroups]
-  );
+  // 판정 함수 domainOf 는 종목 축과 공유하므로 위쪽에 한 번만 정의한다(TASK-84).
   // 보고서가 존재하는 분야만, 그룹 순서대로(미분류는 맨 끝).
   const sectorDomains = useMemo(() => orderedDomains(domainGroups, sectors), [domainGroups, sectors]);
   // 선택된 분야에 속한 섹터만. 분야 미선택 시(로드 전) 전체.
   const domainSectors = useMemo(
-    () => (domainTab ? sectors.filter((s) => domainOf(s) === domainTab) : sectors),
-    [domainTab, sectors, domainOf]
+    () => (domainTab ? sectorsInDomain(domainGroups, sectors, domainTab) : sectors),
+    [domainTab, domainGroups, sectors]
+  );
+  // 분야 그룹 편집 모달에 올릴 '섹터명' 후보 목록. 분야 표를 두 탭이 공유하므로
+  // 섹터 리서치 축(루트 보고서 파일명에서 파싱한 섹터명)과 종목 축(사용자 종목 그룹명)의
+  // 합집합을 보여준다 — 그래야 '반도체·AI' 같은 종목 그룹명도 분야에 넣을 수 있다(TASK-84).
+  const domainEditorSectors = useMemo(
+    () => Array.from(new Set([...sectors, ...sectorGroups.map((g) => g.name)])).sort(),
+    [sectors, sectorGroups]
   );
   const sectorCurrentFiles = useMemo(
     () =>
@@ -244,12 +275,22 @@ export function HomeView({
     });
   };
 
-  // 섹터 목록이 바뀌면(로드·그룹 편집) 1차 선택을 유효한 값으로 맞춘다.
-  const sectorKey = reportSectors.join("|");
+  // 분야 목록이 바뀌면(로드·그룹 편집) 종목 축 1차 선택을 유효한 값으로 맞춘다.
+  const reportDomainKey = reportDomains.join("|");
   useEffect(() => {
-    setReportSectorTab((prev) => (prev && reportSectors.includes(prev) ? prev : (reportSectors[0] ?? null)));
+    setReportDomainTab((prev) => (prev && reportDomains.includes(prev) ? prev : (reportDomains[0] ?? null)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectorKey]);
+  }, [reportDomainKey]);
+
+  // 분야가 바뀌거나 그 분야의 섹터 구성이 바뀌면 2차(섹터) 선택을 유효한 값으로 맞춘다
+  // (현재 섹터가 이 분야에 속해 있으면 유지).
+  const sectorKey = domainReportSectors.join("|");
+  useEffect(() => {
+    setReportSectorTab((prev) =>
+      prev && domainReportSectors.includes(prev) ? prev : (domainReportSectors[0] ?? null)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reportDomainTab, sectorKey]);
 
   // 섹터가 바뀌거나 그 섹터 구성원이 바뀌면 선택 종목을 유효한 값으로 맞춘다
   // (현재 종목이 이 섹터에 속해 있으면 유지).
@@ -827,19 +868,58 @@ export function HomeView({
                       <div className="flex items-baseline gap-2 min-w-0">
                         <span className="eyebrow text-[10px] text-ink">종목 선택</span>
                       </div>
-                      <button
-                        onClick={() => setEditingSectors(true)}
-                        className="shrink-0 rounded-full border border-hairline px-2.5 py-1 text-[11px] text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
-                      >
-                        그룹 편집
-                      </button>
+                      {/* 3단 위계라 편집 축이 둘이다: 종목→섹터(이 탭 전용) / 섹터→분야(섹터 리서치 탭과 공유). */}
+                      <div className="flex shrink-0 gap-1.5">
+                        <button
+                          onClick={() => setEditingDomains(true)}
+                          className="shrink-0 rounded-full border border-hairline px-2.5 py-1 text-[11px] text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+                        >
+                          분야 그룹
+                        </button>
+                        <button
+                          onClick={() => setEditingSectors(true)}
+                          className="shrink-0 rounded-full border border-hairline px-2.5 py-1 text-[11px] text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+                        >
+                          종목 그룹
+                        </button>
+                      </div>
                     </div>
 
-                    {/* 1차: 섹터 탭 */}
+                    {/* 1차: 분야 — 섹터 리서치 탭과 같은 분야 그룹 표를 쓴다(TASK-84). */}
                     <div className="mb-4">
+                      <div className="eyebrow text-[10px] text-mute mb-1.5">분야</div>
+                      <div className="flex gap-1 overflow-x-auto pb-1">
+                        {reportDomains.map((d) => {
+                          const count = tabs.filter((t) => companyDomainOf(t) === d).length;
+                          return (
+                            <button
+                              key={d}
+                              onClick={() => {
+                                setReportDomainTab(d);
+                                const firstSector = reportSectors.find((s) => domainOf(s) === d);
+                                if (firstSector) {
+                                  setReportSectorTab(firstSector);
+                                  const first = tabs.find((t) => sectorOf(t) === firstSector);
+                                  if (first) setReportTab(first);
+                                }
+                              }}
+                              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 flex items-center gap-1.5 ${
+                                reportDomainTab === d ? "bg-white text-canvas" : "text-mute hover:text-ink hover:bg-canvas-soft"
+                              }`}
+                            >
+                              {d}
+                              <span className={reportDomainTab === d ? "text-canvas/60" : "text-mute"}>{count}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* 2차: 선택 분야 안의 섹터 */}
+                    <div className="border-t border-hairline pt-4 mb-4">
                       <div className="eyebrow text-[10px] text-mute mb-1.5">섹터</div>
                       <div className="flex gap-1 overflow-x-auto pb-1">
-                        {reportSectors.map((s) => {
+                        {domainReportSectors.map((s) => {
                           const count = tabs.filter((t) => sectorOf(t) === s).length;
                           return (
                             <button
@@ -1162,10 +1242,11 @@ export function HomeView({
           onClose={() => setEditingSectors(false)}
         />
       )}
-      {/* 섹터 리서치 탭의 분야 그룹 편집 — 같은 모달을 '섹터명 → 분야' 축으로 쓴다(TASK-82). */}
+      {/* 분야 그룹 편집 — 같은 모달을 '섹터명 → 분야' 축으로 쓴다(TASK-82).
+          섹터 리서치 탭과 종목별 보고서 탭이 이 표를 공유하므로 두 탭에서 모두 열린다(TASK-84). */}
       {editingDomains && (
         <SectorGroupEditor
-          companies={sectors}
+          companies={domainEditorSectors}
           groups={domainGroups}
           onSave={(g) => {
             saveDomainGroups(g);

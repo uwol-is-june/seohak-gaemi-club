@@ -10,6 +10,7 @@ import {
   domainOfSector,
   normalizeSectorKey,
   orderedDomains,
+  sectorsInDomain,
   UNCLASSIFIED_DOMAIN,
   type DomainGroup,
 } from "./sector-domains.ts";
@@ -89,6 +90,53 @@ eq(
     ["Cybersecurity", "Cloud-Computing"]
   ),
   ["테크/AI"]
+);
+
+// ── sectorsInDomain: 분야 안의 섹터만, 입력 순서 유지 (TASK-84) ───────────────
+eq(
+  "sectorsInDomain: 테크/AI",
+  sectorsInDomain(groups, ["E-commerce", "Cybersecurity", "Cloud-Computing"], "테크/AI"),
+  ["Cybersecurity", "Cloud-Computing"]
+);
+eq(
+  "sectorsInDomain: 미분류만 골라냄",
+  sectorsInDomain(groups, ["Quantum-Foo", "Cybersecurity", "양자컴퓨터"], UNCLASSIFIED_DOMAIN),
+  ["Quantum-Foo", "양자컴퓨터"]
+);
+eq("sectorsInDomain: 없는 분야는 빈 배열", sectorsInDomain(groups, ["Cybersecurity"], "에너지"), []);
+
+// ── 종목 축 위계: 종목 → 섹터(사용자 종목 그룹) → 분야 (TASK-84) ──────────────
+// 종목별 보고서 탭은 sectorOfWith(종목→섹터)의 결과를 그대로 domainOfSector 에 먹인다.
+// report-helpers 는 @/ 별칭 때문에 여기서 import 할 수 없으므로 동일 규칙을 인라인으로 둔다.
+const tickerGroups = [
+  { id: "t0", name: "반도체·AI", tickers: ["NVDA", "TSM", "INTC"] },
+  { id: "t1", name: "Cloud Computing", tickers: ["GOOGL"] },
+  { id: "t2", name: "Fintech", tickers: ["AXP"] },
+  { id: "t3", name: "E-commerce", tickers: ["AMZN"] },
+];
+const sectorOfTicker = (t: string) =>
+  tickerGroups.find((g) => g.tickers.includes(t.toUpperCase()))?.name ?? UNCLASSIFIED_DOMAIN;
+const domainOfTicker = (t: string) => domainOfSector(groups, sectorOfTicker(t));
+
+// 영문 섹터 그룹명은 섹터 피커 표와 붙는다(완전/접두 일치).
+eq("종목: GOOGL → 테크/AI", domainOfTicker("GOOGL"), "테크/AI");
+eq("종목: AXP → 금융 (Fintech ⊂ Fintech Payments)", domainOfTicker("AXP"), "금융");
+eq("종목: AMZN → 소비", domainOfTicker("AMZN"), "소비");
+// 한글 섹터 그룹명은 매칭 키가 비어(또는 너무 짧아) 미분류로 떨어진다 — 사용자가
+// 분야 그룹 편집으로 직접 넣어줘야 한다는 뜻. '우선 미분류' 정책의 근거.
+eq("종목: NVDA → 미분류 (한글 그룹명)", domainOfTicker("NVDA"), UNCLASSIFIED_DOMAIN);
+// 어느 종목 그룹에도 없는 티커도 미분류.
+eq("종목: 미배정 티커 → 미분류", domainOfTicker("ZZZZ"), UNCLASSIFIED_DOMAIN);
+
+// 한글 그룹명을 분야 그룹에 등록하면 정상 분류된다(편집으로 해소 가능함을 확인).
+const withKorean: DomainGroup[] = [
+  ...groups,
+  { id: "kr", name: "테크/AI-추가", tickers: ["반도체·AI"] },
+];
+eq(
+  "종목: 한글 그룹명을 분야에 등록하면 분류됨",
+  domainOfSector(withKorean, sectorOfTicker("NVDA")),
+  "테크/AI-추가"
 );
 
 if (failures.length > 0) {
