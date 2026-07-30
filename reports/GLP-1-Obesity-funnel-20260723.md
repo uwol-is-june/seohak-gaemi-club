@@ -1,4 +1,5 @@
 # GLP-1 / 비만 치료제 산업 퍼널 스크리닝
+<!-- funnel sector: GLP-1-Obesity | finalists: LLY, NVO, WST -->
 
 > 전체 시장 스캔 → 5개 핵심 지표 1차 필터 → 정밀 분석 → 최종 3종목
 > 작성 스킬: `/industry-funnel`

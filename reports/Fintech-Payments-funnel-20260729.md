@@ -1,4 +1,5 @@
 # 핀테크 결제(Fintech Payments) 산업 퍼널 스크리닝
+<!-- funnel sector: Fintech-Payments | finalists: AXP, PYPL, NU -->
 
 > 전체 시장 스캔 → 5개 핵심 지표 → 정밀 분석 → 최종 3종목
 > 작성 스킬: `/industry-funnel`

@@ -1,4 +1,5 @@
 # AI 반도체 산업 퍼널 스크리닝
+<!-- funnel sector: AI-Semiconductors | finalists: TSM, NVDA, MU -->
 
 > 전체 시장 스캔 → 5개 가치지표 스크리닝 → 정밀 분석 → 최종 3종목
 > 작성 스킬: `/industry-funnel`

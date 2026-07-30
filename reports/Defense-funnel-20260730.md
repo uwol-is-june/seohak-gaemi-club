@@ -1,4 +1,5 @@
 # 방위산업(Defense) 퍼널 스크리닝 — 전체 시장 → 최종 3종목
+<!-- funnel sector: Defense | finalists: NOC, GD, PLTR -->
 
 > 산업 퍼널 스크리닝: 전체 시장에서 최종 3종목까지의 가치투자 정선 프로세스
 > 작성 스킬: `/industry-funnel`

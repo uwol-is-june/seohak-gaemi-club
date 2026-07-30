@@ -1,4 +1,5 @@
 # AI 인프라(AI Infrastructure) 산업 퍼널 스크리닝
+<!-- funnel sector: AI-Infrastructure | finalists: CEG, VRT, POWL -->
 
 > 전체 시장 스캔 → 5대 가치지표 → 정밀분석 → 최종 3종목 정선
 > 작성 스킬: `/industry-funnel`

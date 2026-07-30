@@ -1,4 +1,5 @@
 # 엔터프라이즈 소프트웨어 산업 퍼널 스크리닝 — 전체 시장에서 최종 3종목까지
+<!-- funnel sector: Enterprise-Software | finalists: SAP, PEGA, ADBE -->
 
 **데이터 기준일: 2026-07-24**
 **신규 스캔 데이터: 2026-07-24 (stockanalysis.com 직접 대조)**

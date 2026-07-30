@@ -1,4 +1,5 @@
 # 클라우드 컴퓨팅(Cloud Computing) 산업 퍼널 스크리닝
+<!-- funnel sector: Cloud-Computing | finalists: GOOGL, PANW, SNOW -->
 
 > 전체 시장 스캔 → 가치투자 5지표 → 정밀 분석 → 최종 3종목
 > 작성 스킬: `/industry-funnel`

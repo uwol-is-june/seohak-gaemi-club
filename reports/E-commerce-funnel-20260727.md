@@ -1,4 +1,5 @@
 # E-commerce 산업 퍼널 스크리닝 — 전체 시장 → 최종 3종목
+<!-- funnel sector: E-commerce | finalists: AMZN, MELI, PDD -->
 
 > **데이터 기준일: 2026-07-27** (주가/시총 2026-07-24 종가 기준)
 > **선행 보고서**: `reports/E-commerce-industry-20260727.md` (기준일 2026-07-27, **0개월 = 신선**) → 가치사슬·TAM·이미-발생 검증이벤트 그대로 재사용
