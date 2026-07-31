@@ -1,6 +1,6 @@
 # Constellation Energy (CEG) — 리스크 관리 및 경영진 평가 (리루 관점)
 
-<!-- meta sector: Nuclear-Power -->
+<!-- meta sector: AI-Infrastructure -->
 
 **분석일**: 2026-07-31 | **역할**: risk-assessor (Li Lu Perspective) | **종목**: NASDAQ: CEG
 **기준가**: $275.60 (2026-07-23) | **시가총액**: 약 $96~99B | **발행주식수**: 357.1M (2026-07-29)
