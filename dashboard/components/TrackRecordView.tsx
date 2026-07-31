@@ -3,6 +3,8 @@ import { readJsonSafe } from "@/lib/fetch-json";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { ScoredCall, CallAggregate, CallStatus, CallType } from "@/lib/calls";
 import { CALL_LABEL } from "@/lib/report-helpers";
+import type { Holding } from "@/lib/toss";
+import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
 import { ReportModal } from "./ReportModal";
 
 // 진행중 콜의 예상 첫 채점일 = 콜일 + horizon(개월), horizon 미지정 시 +30일(MIN_RESOLVE_DAYS).
@@ -64,6 +66,10 @@ export function TrackRecordView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalPath, setModalPath] = useState<string | null>(null);
+  // 매수가 열 전용 보유 정보. 콜(예측)과 실제 진입가는 별개 축이라 원장에는 없다 —
+  // 포트폴리오(토스)에서 평단가를 가져와 붙인다. 이 열이 비어도 표는 그대로 유효하므로
+  // 실패는 조용히 무시하고 '—'로 둔다(트랙레코드가 보유 조회에 발목 잡히지 않게).
+  const [holdings, setHoldings] = useState<Holding[] | null>(holdingsCache);
   // 진행중 콜 상세(핵심 가정·무효화 조건) 펼침 상태(TASK-79). 여러 행 동시 펼침 허용.
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const toggleExpand = (id: string) =>
@@ -93,6 +99,28 @@ export function TrackRecordView() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // 보유 정보(매수가 열). localStorage 캐시 복원은 마운트 후에만 — 렌더 중 복원하면
+  // 서버 HTML과 어긋나 하이드레이션이 깨진다(HoldingsBanner와 같은 규칙).
+  // fetchHoldingsShared 로 진행 중 요청을 공유해 토스 API 중복 호출(429)을 피한다.
+  useEffect(() => {
+    hydratePortfolioCache();
+    if (holdingsCache && holdingsCache.length > 0) setHoldings(holdingsCache);
+    fetchHoldingsShared()
+      .then((d) => commitHoldings(Array.isArray(d.holdings) ? d.holdings : [], setHoldings))
+      .catch(() => {
+        // 보유 조회 실패는 매수가 열만 '—'로 만들 뿐 트랙레코드 본체와 무관하다.
+      });
+  }, []);
+
+  // 티커 → 평단가(USD). 표의 다른 가격 열과 통화를 맞춘다.
+  const avgPriceByTicker = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const h of holdings ?? []) {
+      if (typeof h.avgPrice === "number" && h.avgPrice > 0) m[h.ticker.toUpperCase()] = h.avgPrice;
+    }
+    return m;
+  }, [holdings]);
 
   // 진행중 콜들의 예상 첫 채점일 중 가장 이른 날짜(TASK-78 빈 상태 안내).
   const earliestResolve = useMemo(() => {
@@ -188,7 +216,7 @@ export function TrackRecordView() {
               <table className="w-full text-sm border-collapse min-w-[820px]">
                 <thead>
                   <tr className="border-b border-hairline text-left">
-                    {["종목", "콜", "콜 시점", "시점가", "현재가", "수익률", "밴드", "경과", "상태"].map(
+                    {["종목", "콜", "콜 시점", "시점가", "매수가", "현재가", "밴드", "보고서"].map(
                       (h) => (
                         <th key={h} className="eyebrow text-[10px] text-mute font-normal px-3 py-2.5">
                           {h}
@@ -202,6 +230,7 @@ export function TrackRecordView() {
                     const cl = CALL_LABEL[c.call] ?? CALL_LABEL.hold;
                     const st = STATUS_STYLE[c.status] ?? STATUS_STYLE.unknown;
                     const band = bandOf(c);
+                    const avgPrice = avgPriceByTicker[c.ticker.toUpperCase()] ?? null;
                     const history = historyByTicker.get(c.ticker) ?? [];
                     const isOpen = expanded.has(c.id);
                     const hasDetail =
@@ -238,13 +267,20 @@ export function TrackRecordView() {
                         <td className="px-3 py-2.5 font-mono text-body">
                           {typeof c.priceAtCall === "number" ? `$${c.priceAtCall.toFixed(2)}` : "—"}
                         </td>
+                        {/* 매수가 = 포트폴리오 평단가. 미보유 종목은 '—' (관망·회피 콜이 대부분). */}
+                        <td className="px-3 py-2.5 font-mono">
+                          {avgPrice != null ? (
+                            <span className="text-body" title="포트폴리오 평단가 (보유 중)">
+                              ${avgPrice.toFixed(2)}
+                            </span>
+                          ) : (
+                            <span className="text-mute" title="미보유 — 포트폴리오에 없는 종목">
+                              —
+                            </span>
+                          )}
+                        </td>
                         <td className="px-3 py-2.5 font-mono text-body">
                           {typeof c.priceNow === "number" ? `$${c.priceNow.toFixed(2)}` : "—"}
-                        </td>
-                        <td className={`px-3 py-2.5 font-mono ${moveColor(c.returnPct)}`}>
-                          {typeof c.returnPct === "number"
-                            ? `${c.returnPct >= 0 ? "+" : ""}${c.returnPct.toFixed(1)}%`
-                            : "—"}
                         </td>
                         <td className="px-3 py-2.5 text-[11px]">
                           {band ? (
@@ -263,29 +299,21 @@ export function TrackRecordView() {
                             <span className="font-mono text-mute">—</span>
                           )}
                         </td>
-                        <td className="px-3 py-2.5 font-mono text-[11px] text-mute">
-                          {c.elapsedDays}d
-                          {c.horizonProgress != null && (
-                            <span className="text-mute/70"> · {Math.round(c.horizonProgress * 100)}%</span>
-                          )}
-                        </td>
+                        {/* 채점 상태(적중/빗나감/진행중)와 경과일은 표에서 뺐다 —
+                            행을 펼치면 상세 요약 줄에 나온다. */}
                         <td className="px-3 py-2.5">
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium ${st.color}`}
-                          >
-                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${st.dot}`} />
-                            {st.label}
-                          </span>
-                          {c.report && (
+                          {c.report ? (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setModalPath(c.report!);
                               }}
-                              className="ml-2 text-[11px] text-mute hover:text-ink underline underline-offset-2 transition-colors"
+                              className="text-[11px] text-mute hover:text-ink underline underline-offset-2 transition-colors"
                             >
                               보고서
                             </button>
+                          ) : (
+                            <span className="text-[11px] text-mute">—</span>
                           )}
                         </td>
                       </tr>
@@ -295,21 +323,57 @@ export function TrackRecordView() {
                           원장(loadBearing·invalidation)에 있으나 표에는 없던 정보. */}
                       {isOpen && (
                         <tr className="border-b border-hairline last:border-0 bg-canvas-soft/30">
-                          <td colSpan={9} className="px-3 py-4">
+                          <td colSpan={8} className="px-3 py-4">
                             <div className="flex flex-col gap-3.5 max-w-3xl pl-3">
-                              {/* 진행 요약 */}
-                              <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-mute">
+                              {/* 진행 요약 — 표에서 뺀 채점 상태·경과일이 여기 남는다.
+                                  특히 관망(hold)은 밴드로 내려오는 게 적중이라 수익률
+                                  부호와 채점 결과가 어긋난다 → 상태를 반드시 함께 둔다. */}
+                              <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[11px] text-mute">
+                                <span className="inline-flex items-center gap-1.5">
+                                  채점
+                                  <span
+                                    className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium ${st.color}`}
+                                  >
+                                    <span className={`inline-block w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                                    {st.label}
+                                  </span>
+                                </span>
+                                <span>
+                                  경과 <span className="font-mono text-body">{c.elapsedDays}d</span>
+                                  {c.horizonProgress != null && (
+                                    <span className="text-mute/70">
+                                      {" "}· horizon {Math.round(c.horizonProgress * 100)}%
+                                    </span>
+                                  )}
+                                </span>
                                 <span>
                                   콜 시점가{" "}
                                   <span className="font-mono text-body">
                                     ${c.priceAtCall.toFixed(2)}
                                   </span>
                                 </span>
+                                {avgPrice != null && (
+                                  <span>
+                                    매수가{" "}
+                                    <span className="font-mono text-body">
+                                      ${avgPrice.toFixed(2)}
+                                    </span>
+                                  </span>
+                                )}
                                 {c.priceNow != null && (
                                   <span>
                                     현재가{" "}
                                     <span className="font-mono text-body">
                                       ${c.priceNow.toFixed(2)}
+                                    </span>
+                                  </span>
+                                )}
+                                {c.returnPct != null && (
+                                  <span>
+                                    수익률{" "}
+                                    <span className={`font-mono ${moveColor(c.returnPct)}`}>
+                                      {c.returnPct >= 0 ? "+" : ""}
+                                      {c.returnPct.toFixed(1)}%
                                     </span>
                                   </span>
                                 )}
@@ -450,6 +514,12 @@ export function TrackRecordView() {
             <span className="text-body">도달해야 할 목표가</span>로 채점은 방향으로 하고 밴드 도달은
             보조 지표입니다. <span className="eyebrow text-[9px]">참고</span>(회피)는 채점에 쓰이지
             않습니다.
+          </p>
+          <p className="mt-1.5 text-[11px] text-mute leading-relaxed">
+            ※ <span className="text-body">매수가</span>는 포트폴리오(토스) 평단가입니다 — 콜은 예측이고
+            매수가는 실제 진입가라 별개 축이며, 미보유 종목은 <span className="font-mono">—</span>로
+            표시됩니다. <span className="text-body">채점 상태</span>(적중·빗나감·진행중)·수익률·경과일은
+            행을 펼치면 나옵니다.
           </p>
           <p className="mt-1.5 text-[11px] text-mute leading-relaxed">
             ※ 콜 이후 액면분할 등으로 시점가와 현재가의 기준이 달라질 수 있습니다(현재가는 분할 조정됨).
