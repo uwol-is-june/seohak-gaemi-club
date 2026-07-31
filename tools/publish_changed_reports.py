@@ -23,6 +23,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PUBLISHER = REPO_ROOT / "tools" / "publish_report.py"
+SECTOR_SYNC = REPO_ROOT / "tools" / "sync_sector_map.py"
 
 # Windows 콘솔(cp949)에서 한글·이모지 출력 시 UnicodeEncodeError 로 죽는 것을 막는다.
 # 이 스크립트는 Stop 훅이 실행하므로 여기서 죽으면 발행 체인 전체가 끊긴다.
@@ -137,10 +138,22 @@ def main() -> int:
         if commit.returncode != 0 and "nothing to commit" not in commit.stdout:
             note = " (로컬 커밋 실패 — 발행 자체는 완료)"
 
+    # 보고서가 바뀌었으면 '티커 → 섹터' 자동 맵도 다시 만든다(TASK-90). 실패해도
+    # 발행 자체는 이미 끝났으므로 경고만 붙이고 넘어간다.
+    sync_note = ""
+    if SECTOR_SYNC.is_file():
+        sync = subprocess.run(
+            [sys.executable, str(SECTOR_SYNC)],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=120,
+            encoding="utf-8", errors="replace", env=child_env,
+        )
+        if sync.returncode != 0:
+            sync_note = " (섹터 자동 맵 갱신 실패 — python3 tools/sync_sector_map.py 로 재시도)"
+
     names = ", ".join(Path(p).name for p in published[:4])
     if len(published) > 4:
         names += f" 외 {len(published) - 4}건"
-    msg = f"✅ 보고서 {len(published)}건 Supabase 발행: {names}{note}"
+    msg = f"✅ 보고서 {len(published)}건 Supabase 발행: {names}{note}{sync_note}"
     if deleted:
         msg += f"\n삭제된 보고서 {len(deleted)}건은 Supabase에 그대로 남아 있습니다: " + ", ".join(
             Path(d).name for d in deleted

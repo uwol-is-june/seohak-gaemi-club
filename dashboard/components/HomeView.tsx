@@ -3,14 +3,15 @@ import { readJsonSafe } from "@/lib/fetch-json";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { flows, type Flow } from "@/lib/flows";
 import { ReportFile } from "@/lib/reports-store";
-import { getFileBadge, getResultPill, getConfidencePill, sortCompanyFiles, getReportCategory, REPORT_SECTIONS, SCREEN_GROUPS, type SectorGroup, DEFAULT_SECTOR_GROUPS, DEFAULT_DOMAIN_GROUPS, sectorOfWith, orderedSectors, getSectorReportInfo, SECTOR_SECTIONS, reportDateLabel } from "@/lib/report-helpers";
-import { domainOfSector, orderedDomains, sectorsInDomain, type DomainGroup } from "@/lib/sector-domains";
-import { GLOSSARY } from "@/lib/glossary";
+import { getFileBadge, getResultPill, getConfidencePill, type SectorGroup, DEFAULT_SECTOR_GROUPS, DEFAULT_DOMAIN_GROUPS, sectorOfWith, getSectorReportInfo, SECTOR_SECTIONS, reportDateLabel } from "@/lib/report-helpers";
+import { domainOfSector, mergeAutoSectorGroups, orderedDomains, sectorsInDomain, type AutoSectorMap, type DomainGroup } from "@/lib/sector-domains";
+import { fetchHoldingsShared, holdingsCache, hydratePortfolioCache } from "@/lib/portfolio-cache";
+import type { Holding } from "@/lib/toss";
 import { ReportContentView } from "./ReportContentView";
 import { ReportModal } from "./ReportModal";
+import { CompanyReportsView } from "./CompanyReportsView";
 import { HoldingsBanner } from "./HoldingsBanner";
 import { DailyCheckView } from "./DailyCheckView";
-import { GlossaryView } from "./GlossaryView";
 import { TrackRecordView } from "./TrackRecordView";
 import { EarningsCalendar } from "./EarningsCalendar";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
@@ -29,14 +30,17 @@ export function HomeView({
   const [files, setFiles] = useState<ReportFile[] | null>(null);
   // 사용자 정의 섹터 그룹(이름 + 포함 종목). localStorage에서 복원, 편집 모달에서 갱신.
   const [sectorGroups, setSectorGroups] = useState<SectorGroup[]>(DEFAULT_SECTOR_GROUPS);
+  // 보고서 마커에서 파생된 티커→섹터 자동 맵(TASK-90). 수동 그룹과 별도로 들고 있다가
+  // 표시할 때만 병합한다 — 편집 모달에는 수동 원본만 올려야 자동분이 수동으로 굳지 않는다.
+  const [sectorAutoMap, setSectorAutoMap] = useState<AutoSectorMap>({});
   const [editingSectors, setEditingSectors] = useState(false);
-  // 종목별 보고서 위계: 분야(1차) → 섹터(2차) → 종목(3차) → 보고서 유형 → 생성일자.
-  // 섹터 리서치 탭과 같은 분야 그룹(domainGroups)을 공유해 두 탭의 1차 구분을 통일한다(TASK-84).
-  const [reportDomainTab, setReportDomainTab] = useState<string | null>(null);
-  const [reportSectorTab, setReportSectorTab] = useState<string | null>(null);
-  const [reportTab, setReportTab] = useState<string | null>(null);
-  // 종목 탭 하위 2차 탭에서 선택된 보고서(경로). 종목 탭이 바뀌면 첫 보고서로 리셋.
-  const [selectedReport, setSelectedReport] = useState<string | null>(null);
+  // 종목 축 보고서 탭('전체 보고서'·'보유 종목 보고서')의 위계·선택 상태는
+  // CompanyReportsView 인스턴스가 각자 들고 있다(TASK-86). 여기서는 외부 드릴다운
+  // (포트폴리오 카드 → 그 티커의 보고서)만 nonce로 밀어 넣는다.
+  const [reportFocus, setReportFocus] = useState<{ ticker: string; nonce: number } | null>(null);
+  // 보유 종목 티커(대문자). '보유 종목 보고서' 탭의 종목 목록을 이 집합으로 좁힌다.
+  // null = 아직 로드 전(빈 배열과 구분해 안내 문구를 다르게 한다).
+  const [holdingTickers, setHoldingTickers] = useState<string[] | null>(null);
   // 섹터 리서치 탭 위계: 분야(1차) → 섹터(2차) → 보고서 유형(3차) → 생성일자(4차).
   // 분야 그룹(이름 + 포함 섹터명)은 서버(/api/sector-domain-groups)에서 불러오고,
   // 그룹 편집 모달에서 갱신한다. 로드 전에는 섹터 피커에서 파생한 기본 시드를 쓴다.
@@ -66,8 +70,8 @@ export function HomeView({
           return;
         }
         setFiles(d.files);
-        // reportSectorTab·reportTab 선택은 파생 값 기반 reconciliation 이펙트가 맞춘다
-        // (섹터 그룹 설정이 localStorage 로드로 바뀌어도 자동 반영되도록).
+        // 섹터·종목 선택은 각 탭(CompanyReportsView·섹터 리서치)의 파생 값 기반
+        // reconciliation 이펙트가 맞춘다(그룹 설정이 나중에 로드돼도 자동 반영).
       })
       .catch(() => {
         if (!cancelled) setLoadError(true);
@@ -76,6 +80,30 @@ export function HomeView({
       cancelled = true;
     };
   }, [reloadKey]);
+
+  // 보유 종목 티커 로드('보유 종목 보고서' 탭의 필터). 포트폴리오 배너와 같은
+  // /api/holdings 를 공유 요청(fetchHoldingsShared)으로 쓰므로 중복 호출은 없다.
+  // 캐시가 있으면 먼저 그것으로 채워 탭이 즉시 그려지게 한다.
+  useEffect(() => {
+    hydratePortfolioCache();
+    if (holdingsCache && holdingsCache.length > 0) {
+      setHoldingTickers(holdingsCache.map((h) => h.ticker.toUpperCase()));
+    }
+    let cancelled = false;
+    fetchHoldingsShared()
+      .then((d) => {
+        if (cancelled || !Array.isArray(d.holdings)) return;
+        // 에러 응답의 빈 배열로 캐시 값을 '보유 없음'으로 덮지 않는다.
+        if (d.error && d.holdings.length === 0) return;
+        setHoldingTickers((d.holdings as Holding[]).map((h) => h.ticker.toUpperCase()));
+      })
+      .catch(() => {
+        // 실패 시 캐시(있으면) 유지 — 탭은 안내 문구로 폴백한다.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // 파생 데이터는 useMemo 로 캐시한다 — HomeView 는 상태가 많아 자주 리렌더되는데,
   // 아래 스캔·정렬(특히 screenByCompany 의 O(companies×files))을 매 렌더마다 다시 돌면
@@ -104,62 +132,44 @@ export function HomeView({
     () => files?.find((f) => f.company === null && f.name === "portfolio-latest.md") ?? null,
     [files]
   );
-  // '종목별 보고서' 탭 위계: 섹터(1차) → 열등주 스크리닝 결과 그룹(2차) → 종목(칩) → 보고서.
-  const tabs = companies;
+  // 표시에 쓰는 실효 섹터 그룹 = 수동 그룹 + 자동 맵(수동 우선, 빈 곳만 자동 — TASK-90).
+  // 섹터 리서치에서 나온 종목은 퍼널 보고서 마커로 자동 배정되므로 그룹 편집이 필요 없다.
+  const effectiveSectorGroups = useMemo(
+    () => mergeAutoSectorGroups(sectorGroups, sectorAutoMap),
+    [sectorGroups, sectorAutoMap]
+  );
   // 사용자 그룹 설정에 종속된 섹터 판정. sectorGroups가 바뀌면 아래 값들도 갱신된다.
-  const sectorOf = useCallback((company: string) => sectorOfWith(sectorGroups, company), [sectorGroups]);
-  // 섹터 → 분야 판정. 섹터 리서치 탭(섹터명이 파일명에서 옴)과 종목별 보고서 탭
+  const sectorOf = useCallback(
+    (company: string) => sectorOfWith(effectiveSectorGroups, company),
+    [effectiveSectorGroups]
+  );
+  // 섹터 → 분야 판정. 섹터 리서치 탭(섹터명이 파일명에서 옴)과 종목 축 보고서 탭
   // (섹터명이 사용자 종목 그룹명)이 같은 분야 그룹 표를 공유한다(TASK-81/84).
   const domainOf = useCallback(
     (sector: string) => domainOfSector(domainGroups, sector),
     [domainGroups]
   );
-  // 종목 → 섹터 → 분야 2단 합성. 어느 단계든 매칭이 안 되면 '미분류'로 떨어진다
-  // (종목이 어느 종목 그룹에도 없거나, 그 섹터가 어느 분야 그룹에도 없는 경우).
-  const companyDomainOf = useCallback(
-    (company: string) => domainOf(sectorOf(company)),
-    [domainOf, sectorOf]
-  );
   // 보고서가 존재하는 티커(대문자) — 포트폴리오 카드 드릴다운 가능 여부 판정(TASK-77).
   const reportedTickers = useMemo(() => new Set(companies.map((c) => c.toUpperCase())), [companies]);
-  // 보유 종목 → 그 티커의 종목별 보고서로 이동. 실보유(포트폴리오)와 분석(보고서)을
-  // 티커 축으로 잇는다. 종목이 속한 섹터를 함께 선택해 선별 레이어도 맞춘다.
-  const drillToTicker = useCallback(
-    (ticker: string) => {
-      const t = ticker.toUpperCase();
-      const match = companies.find((c) => c.toUpperCase() === t);
-      if (!match) return;
-      // 3단 위계라 분야까지 함께 맞춘다 — 분야가 어긋나면 섹터 탭이 목록에 없어
-      // reconciliation 이펙트가 선택을 되돌려버린다.
-      setReportDomainTab(companyDomainOf(match));
-      setReportSectorTab(sectorOf(match));
-      setReportTab(match);
-      setSelectedReport(null); // 종목이 바뀌면 첫 보고서로 리셋(파생 이펙트가 채움)
-      setFlowTab("reports");
-    },
-    [companies, sectorOf, companyDomainOf]
-  );
-  // 2차: 보고서가 존재하는 섹터만, 그룹 순서대로(미분류는 맨 끝).
-  const reportSectors = useMemo(() => orderedSectors(sectorGroups, companies), [sectorGroups, companies]);
-  // 1차: 그 섹터들이 속한 분야만, 분야 그룹 순서대로(미분류는 맨 끝).
-  const reportDomains = useMemo(
-    () => orderedDomains(domainGroups, reportSectors),
-    [domainGroups, reportSectors]
-  );
-  // 선택된 분야에 속한 섹터만. 분야 미선택 시(로드 전) 전체.
-  const domainReportSectors = useMemo(
-    () => (reportDomainTab ? sectorsInDomain(domainGroups, reportSectors, reportDomainTab) : reportSectors),
-    [reportDomainTab, domainGroups, reportSectors]
-  );
-  // 선택된 섹터에 속한 종목만. 섹터 미선택 시(로드 전) 전체.
-  const sectorCompanies = useMemo(
-    () => (reportSectorTab ? tabs.filter((t) => sectorOf(t) === reportSectorTab) : tabs),
-    [reportSectorTab, tabs, sectorOf]
-  );
-  const currentFiles = useMemo(
-    () => sortCompanyFiles(files?.filter((f) => f.company === reportTab) ?? []),
-    [files, reportTab]
-  );
+  // 보유 종목 → 그 티커의 '보유 종목 보고서'로 이동. 실보유(포트폴리오)와 분석(보고서)을
+  // 티커 축으로 잇는다. 선택 위계 정렬은 CompanyReportsView가 focusTicker로 처리한다.
+  const drillToTicker = useCallback((ticker: string) => {
+    setReportFocus((prev) => ({ ticker, nonce: (prev?.nonce ?? 0) + 1 }));
+    setFlowTab("holdings-reports");
+  }, []);
+  // '보유 종목 보고서' 탭이 다룰 종목 = 보고서가 있는 종목 ∩ 보유 종목(대문자 비교).
+  const holdingCompanies = useMemo(() => {
+    if (!holdingTickers) return [];
+    const held = new Set(holdingTickers);
+    return companies.filter((c) => held.has(c.toUpperCase()));
+  }, [companies, holdingTickers]);
+  // 보유 탭이 비었을 때의 사유 구분: 아직 로드 전 / 보유 없음 / 보유했지만 보고서 없음.
+  const holdingsEmptyText =
+    holdingTickers === null
+      ? "보유 정보를 불러오는 중..."
+      : holdingTickers.length === 0
+        ? "보유한 해외주식이 없습니다."
+        : "보유 종목 중 보고서가 있는 종목이 없습니다.";
 
   // 종목별 '최신 열등주 스크리닝 결과' 맵. 종목 탭을 통과/탈락 등으로 구획 분리하는 데 쓴다.
   // 파일명에 날짜(YYYYMMDD)가 박혀 사전식 정렬의 마지막이 최신. 최신부터 결과가 파싱된 것 채택.
@@ -201,8 +211,8 @@ export function HomeView({
   // 섹터 리서치 축(루트 보고서 파일명에서 파싱한 섹터명)과 종목 축(사용자 종목 그룹명)의
   // 합집합을 보여준다 — 그래야 '반도체·AI' 같은 종목 그룹명도 분야에 넣을 수 있다(TASK-84).
   const domainEditorSectors = useMemo(
-    () => Array.from(new Set([...sectors, ...sectorGroups.map((g) => g.name)])).sort(),
-    [sectors, sectorGroups]
+    () => Array.from(new Set([...sectors, ...effectiveSectorGroups.map((g) => g.name)])).sort(),
+    [sectors, effectiveSectorGroups]
   );
   const sectorCurrentFiles = useMemo(
     () =>
@@ -225,7 +235,10 @@ export function HomeView({
     fetch("/api/sector-groups")
       .then(readJsonSafe)
       .then((d) => {
-        if (!cancelled && Array.isArray(d.groups)) setSectorGroups(d.groups);
+        if (cancelled) return;
+        if (Array.isArray(d.groups)) setSectorGroups(d.groups);
+        // 자동 맵은 같은 응답에 실려 온다(보고서 마커 → Stop 훅이 갱신).
+        if (d.autoMap && typeof d.autoMap === "object") setSectorAutoMap(d.autoMap);
       })
       .catch(() => {
         // 네트워크 실패 시 화면엔 기본 그룹이 유지된다.
@@ -275,42 +288,6 @@ export function HomeView({
     });
   };
 
-  // 분야 목록이 바뀌면(로드·그룹 편집) 종목 축 1차 선택을 유효한 값으로 맞춘다.
-  const reportDomainKey = reportDomains.join("|");
-  useEffect(() => {
-    setReportDomainTab((prev) => (prev && reportDomains.includes(prev) ? prev : (reportDomains[0] ?? null)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reportDomainKey]);
-
-  // 분야가 바뀌거나 그 분야의 섹터 구성이 바뀌면 2차(섹터) 선택을 유효한 값으로 맞춘다
-  // (현재 섹터가 이 분야에 속해 있으면 유지).
-  const sectorKey = domainReportSectors.join("|");
-  useEffect(() => {
-    setReportSectorTab((prev) =>
-      prev && domainReportSectors.includes(prev) ? prev : (domainReportSectors[0] ?? null)
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reportDomainTab, sectorKey]);
-
-  // 섹터가 바뀌거나 그 섹터 구성원이 바뀌면 선택 종목을 유효한 값으로 맞춘다
-  // (현재 종목이 이 섹터에 속해 있으면 유지).
-  const sectorCompaniesKey = sectorCompanies.join("|");
-  useEffect(() => {
-    if (!reportSectorTab) return;
-    setReportTab((prev) => (prev && sectorCompanies.includes(prev) ? prev : (sectorCompanies[0] ?? null)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reportSectorTab, sectorCompaniesKey]);
-
-  // 종목 탭이 바뀌거나 목록이 로드되면 2차 탭 선택을 첫 보고서로 맞춘다.
-  // (현재 선택이 이 종목에 속해 있으면 유지.)
-  useEffect(() => {
-    setSelectedReport((prev) =>
-      prev && currentFiles.some((f) => f.path === prev) ? prev : (currentFiles[0]?.path ?? null)
-    );
-    // currentFiles는 reportTab·files에서 파생되므로 이 둘만 의존성으로 둔다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reportTab, files]);
-
   // 분야 목록이 바뀌면(로드·그룹 편집) 섹터 리서치 1차 탭을 유효한 값으로 맞춘다.
   const domainKey = sectorDomains.join("|");
   useEffect(() => {
@@ -336,7 +313,7 @@ export function HomeView({
   }, [sectorTab, files]);
 
   // 사이드바/모바일 공용 네비. 비슷한 성격끼리 그룹으로 묶는다:
-  //  개요(대시보드) · 결과물(보고서) · 리서치 프로세스(실행 플로우) · 참고(용어)
+  //  개요(대시보드) · 결과물(보고서) · 리서치 프로세스(실행 플로우)
   const navGroups = [
     {
       label: "개요",
@@ -349,7 +326,9 @@ export function HomeView({
       label: "결과물",
       items: [
         { id: "sector-reports", label: "섹터 리서치" },
-        { id: "reports", label: "종목별 보고서" },
+        // 보유 종목만 모아 보는 탭이 먼저 — 실제로 들고 있는 종목의 판단이 우선(TASK-86).
+        { id: "holdings-reports", label: "보유 종목 보고서" },
+        { id: "reports", label: "전체 보고서" },
       ],
     },
     {
@@ -362,10 +341,6 @@ export function HomeView({
           .map((f) => ({ id: f.id, label: f.title })),
       ],
     },
-    {
-      label: "참고",
-      items: [{ id: "glossary", label: "용어 정리" }],
-    },
   ];
   // 모바일 가로 탭 로우와 각종 조회는 평탄화한 목록을 쓴다.
   const contentTabs = navGroups.flatMap((g) => g.items);
@@ -373,24 +348,24 @@ export function HomeView({
   const headerEyebrow =
     flowTab === "reports"
       ? "REPORTS"
-      : flowTab === "sector-reports"
-        ? "SECTOR"
-        : flowTab === "portfolio-overview"
-          ? "PORTFOLIO"
-          : flowTab === "glossary"
-            ? "GLOSSARY"
+      : flowTab === "holdings-reports"
+        ? "HOLDINGS REPORTS"
+        : flowTab === "sector-reports"
+          ? "SECTOR"
+          : flowTab === "portfolio-overview"
+            ? "PORTFOLIO"
             : flowTab === "track-record"
               ? "TRACK RECORD"
               : flowTab.toUpperCase();
   const headerTitle =
     flowTab === "reports"
-      ? "종목별 보고서"
-      : flowTab === "sector-reports"
-        ? "섹터 리서치"
-        : flowTab === "portfolio-overview"
-          ? "포트폴리오"
-          : flowTab === "glossary"
-            ? "용어 정리"
+      ? "전체 보고서"
+      : flowTab === "holdings-reports"
+        ? "보유 종목 보고서"
+        : flowTab === "sector-reports"
+          ? "섹터 리서치"
+          : flowTab === "portfolio-overview"
+            ? "포트폴리오"
             : flowTab === "track-record"
               ? "트랙레코드"
               : (activeFlow?.title ?? "");
@@ -416,7 +391,8 @@ export function HomeView({
         return;
       }
       setModalPath((p) => (p === deletePath ? null : p));
-      setSelectedReport((p) => (p === deletePath ? null : p));
+      // 선택 보고서 정리는 목록 갱신(reloadKey) 후 CompanyReportsView의 파생 이펙트가
+      // 유효하지 않은 선택을 첫 보고서로 되돌린다.
       setDeletePath(null);
       setReloadKey((k) => k + 1);
     } catch (e) {
@@ -550,8 +526,6 @@ export function HomeView({
                 );
               })()}
             </div>
-          ) : flowTab === "glossary" ? (
-            <GlossaryView />
           ) : flowTab === "track-record" ? (
             /* 트랙레코드 = 콜(예측) 자동 채점만. 수기 매매기록(실보유)은 포트폴리오 탭으로 이동(TASK-74). */
             <TrackRecordView />
@@ -626,7 +600,7 @@ export function HomeView({
               {files && rootFiles.length > 0 && (
                 <>
                   {/* ── 선별 레이어: 분야(1차) → 섹터(2차) ──
-                      종목별 보고서 탭의 '종목 선택' 카드와 동일한 패턴. 분야 분류는
+                      종목 축 보고서 탭의 '종목 선택' 카드와 동일한 패턴. 분야 분류는
                       프로세스 가이드 '섹터 구조 파악'의 섹터 피커와 같은 표에서 오고,
                       '그룹 편집'으로 사용자가 덮어쓸 수 있다(TASK-81/82). */}
                   <div className="mb-6 rounded-lg border border-hairline bg-canvas-card p-4 sm:p-5">
@@ -801,318 +775,34 @@ export function HomeView({
                 </>
               )}
             </div>
-          ) : flowTab === "reports" ? (
-            <div>
-              {!files && !loadError && <p className="text-xs text-mute">불러오는 중...</p>}
-
-              {!files && loadError && (
-                <div className="flex items-center gap-3 text-xs">
-                  <span className="text-red-300">보고서를 불러오지 못했습니다.</span>
-                  <button
-                    onClick={() => setReloadKey((k) => k + 1)}
-                    className="px-3 py-1 rounded-full border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
-                  >
-                    다시 시도
-                  </button>
-                </div>
-              )}
-
-              {files && tabs.length === 0 && (
-                <p className="text-xs text-mute">아직 보고서가 없습니다.</p>
-              )}
-
-              {files && tabs.length > 0 && (
-                <>
-                  {/* 상단 실행 카드 ROW: 프로세스 가이드 3~6단계(열등주 제거·버핏 6-게이트·심층
-                      분석·투자 논제 = 가이드 표시 기준 1~4번)를 종목 보고서를 보는 자리에서 바로
-                      실행. 섹터 리서치 탭의 카드 ROW와 동일 패턴. */}
-                  {(() => {
-                    const discovery = flows.find((f) => f.id === "discovery");
-                    if (!discovery) return null;
-                    return (
-                      <div className="mb-6">
-                        <div className="eyebrow text-[10px] text-mute mb-2">새 분석 시작</div>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                          {discovery.steps.slice(2).map((step, i) => {
-                            const stepIndex = i + 2;
-                            const cmd = step.commandTemplate.replace("{input}", step.inputPlaceholder);
-                            return (
-                              <button
-                                key={stepIndex}
-                                onClick={() => onLaunchStep(discovery, stepIndex)}
-                                className="text-left rounded-lg border border-hairline bg-canvas-card p-4 hover:border-white/30 hover:bg-canvas-soft transition-all group active:scale-[0.99]"
-                              >
-                                <div className="flex items-center gap-2 mb-2">
-                                  <div className="h-6 w-6 shrink-0 rounded-full bg-white/10 text-ink flex items-center justify-center text-xs">
-                                    {i + 1}
-                                  </div>
-                                  <span className="ml-auto shrink-0 text-xs text-ink opacity-0 group-hover:opacity-100 transition-opacity">
-                                    실행 →
-                                  </span>
-                                </div>
-                                <h3 className="text-sm text-ink tracking-[-0.01em]">{step.title}</h3>
-                                <code className="mt-2 inline-block text-xs font-mono text-breeze">{cmd}</code>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* ── 선별 레이어: 종목 선택 ──
-                      섹터로 좁히고 → 열등주 스크리닝 판정(통과/탈락…)으로 그룹핑한 칩에서
-                      볼 종목을 고른다. 아래 '보고서 레이어'와는 카드 경계로 분리한다. */}
-                  <div className="mb-6 rounded-lg border border-hairline bg-canvas-card p-4 sm:p-5">
-                    <div className="flex items-center justify-between gap-2 mb-4">
-                      <div className="flex items-baseline gap-2 min-w-0">
-                        <span className="eyebrow text-[10px] text-ink">종목 선택</span>
-                      </div>
-                      {/* 3단 위계라 편집 축이 둘이다: 종목→섹터(이 탭 전용) / 섹터→분야(섹터 리서치 탭과 공유). */}
-                      <div className="flex shrink-0 gap-1.5">
-                        <button
-                          onClick={() => setEditingDomains(true)}
-                          className="shrink-0 rounded-full border border-hairline px-2.5 py-1 text-[11px] text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
-                        >
-                          분야 그룹
-                        </button>
-                        <button
-                          onClick={() => setEditingSectors(true)}
-                          className="shrink-0 rounded-full border border-hairline px-2.5 py-1 text-[11px] text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
-                        >
-                          종목 그룹
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* 1차: 분야 — 섹터 리서치 탭과 같은 분야 그룹 표를 쓴다(TASK-84). */}
-                    <div className="mb-4">
-                      <div className="eyebrow text-[10px] text-mute mb-1.5">분야</div>
-                      <div className="flex gap-1 overflow-x-auto pb-1">
-                        {reportDomains.map((d) => {
-                          const count = tabs.filter((t) => companyDomainOf(t) === d).length;
-                          return (
-                            <button
-                              key={d}
-                              onClick={() => {
-                                setReportDomainTab(d);
-                                const firstSector = reportSectors.find((s) => domainOf(s) === d);
-                                if (firstSector) {
-                                  setReportSectorTab(firstSector);
-                                  const first = tabs.find((t) => sectorOf(t) === firstSector);
-                                  if (first) setReportTab(first);
-                                }
-                              }}
-                              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 flex items-center gap-1.5 ${
-                                reportDomainTab === d ? "bg-white text-canvas" : "text-mute hover:text-ink hover:bg-canvas-soft"
-                              }`}
-                            >
-                              {d}
-                              <span className={reportDomainTab === d ? "text-canvas/60" : "text-mute"}>{count}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* 2차: 선택 분야 안의 섹터 */}
-                    <div className="border-t border-hairline pt-4 mb-4">
-                      <div className="eyebrow text-[10px] text-mute mb-1.5">섹터</div>
-                      <div className="flex gap-1 overflow-x-auto pb-1">
-                        {domainReportSectors.map((s) => {
-                          const count = tabs.filter((t) => sectorOf(t) === s).length;
-                          return (
-                            <button
-                              key={s}
-                              onClick={() => {
-                                setReportSectorTab(s);
-                                const first = tabs.find((t) => sectorOf(t) === s);
-                                if (first) setReportTab(first);
-                              }}
-                              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 flex items-center gap-1.5 ${
-                                reportSectorTab === s ? "bg-white text-canvas" : "text-mute hover:text-ink hover:bg-canvas-soft"
-                              }`}
-                            >
-                              {s}
-                              <span className={reportSectorTab === s ? "text-canvas/60" : "text-mute"}>{count}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* 2차: 선택 섹터 안에서 열등주 스크리닝 판정(통과/면제 통과/탈락/데이터 부족/미검사)으로 종목 칩 구획 분리.
-                        여기서 고른 종목의 상세 보고서(열등주 스크리닝 리포트 포함)는 아래 '보고서 레이어'에 나온다. */}
-                    <div className="border-t border-hairline pt-4">
-                      <div className="eyebrow text-[10px] text-mute mb-2.5">선별 결과 · 열등주 스크리닝 판정</div>
-                      <div className="flex flex-row flex-wrap gap-x-6 gap-y-4">
-                        {SCREEN_GROUPS.map((g) => {
-                          const members = sectorCompanies.filter((t) => g.match(screenByCompany[t] ?? null));
-                          if (members.length === 0) return null;
-                          return (
-                            <div key={g.id}>
-                              <div className="eyebrow text-[10px] mb-1.5 flex items-center gap-1.5">
-                                <span className={`inline-block w-1.5 h-1.5 rounded-full ${g.dot}`} />
-                                <span className={g.tint}>{g.label}</span>
-                                <span className="text-mute">{members.length}</span>
-                              </div>
-                              <div className="flex gap-1 flex-wrap">
-                                {members.map((tab) => (
-                                  <button
-                                    key={tab}
-                                    onClick={() => setReportTab(tab)}
-                                    className={`shrink-0 rounded-full pl-2 pr-3 py-1.5 text-xs font-medium transition-colors active:scale-95 flex items-center gap-1.5 ${
-                                      reportTab === tab ? "bg-white text-canvas" : "text-mute hover:text-ink hover:bg-canvas-soft"
-                                    }`}
-                                  >
-                                    <span className={`inline-block w-1.5 h-1.5 rounded-full ${g.dot}`} />
-                                    {tab}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 종목 상세: 보고서 유형(2차) → 생성일자(3차) 위계 + 선택 보고서 인라인 표시 */}
-                  {(() => {
-                      const selFile = currentFiles.find((f) => f.path === selectedReport) ?? null;
-                      const activeCategory = selFile ? getReportCategory(selFile.name) : null;
-                      // 파일이 있는 유형만 2차 탭으로 노출(순서는 REPORT_SECTIONS).
-                      const activeSections = REPORT_SECTIONS.filter((s) =>
-                        currentFiles.some((f) => getReportCategory(f.name) === s.id)
-                      );
-                      // 선택된 유형의 보고서들(생성일자 = 3차). 하나뿐이면 3차 탭은 생략.
-                      const categoryFiles = activeCategory
-                        ? currentFiles.filter((f) => getReportCategory(f.name) === activeCategory)
-                        : [];
-                      const badge = selFile ? getFileBadge(selFile.name) : null;
-                      const resultPill = getResultPill(selFile?.summary);
-                      const confPill = getConfidencePill(selFile?.confidence);
-                      // 선택한 종목의 최신 열등주 스크리닝 판정 → 헤더 pill. 선별 레이어의 그룹 색과 동일.
-                      const companyVerdict = reportTab ? (screenByCompany[reportTab] ?? null) : null;
-                      const verdictGroup = SCREEN_GROUPS.find((g) => g.match(companyVerdict));
-                      return (
-                        <div className="flex flex-col gap-4">
-                          {/* 선택한 종목 헤더 — 위 '종목 선택'(선별)과 아래 보고서(콘텐츠)의 경계.
-                              큰 티커 + 최신 스크리닝 판정 pill로 "지금 이 종목의 보고서를 본다"를 명시. */}
-                          <div className="flex items-center justify-between gap-3 flex-wrap border-b border-hairline pb-3">
-                            <div className="flex items-center gap-2.5 flex-wrap min-w-0">
-                              <span className="font-mono text-2xl text-ink tracking-[-0.02em]">
-                                {reportTab ?? "—"}
-                              </span>
-                              {verdictGroup && (
-                                <span className="inline-flex items-center gap-1.5 rounded-full border border-hairline px-2.5 py-0.5 text-[11px] font-medium">
-                                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${verdictGroup.dot}`} />
-                                  <span className={verdictGroup.tint}>{verdictGroup.label}</span>
-                                </span>
-                              )}
-                            </div>
-                            <span className="eyebrow text-[10px] text-mute shrink-0">이 종목의 보고서</span>
-                          </div>
-
-                          {/* 2차: 보고서 유형 */}
-                          <div className="flex flex-wrap gap-1.5">
-                            {activeSections.map((section) => {
-                              const active = section.id === activeCategory;
-                              return (
-                                <button
-                                  key={section.id}
-                                  onClick={() => {
-                                    const first = currentFiles.find(
-                                      (f) => getReportCategory(f.name) === section.id
-                                    );
-                                    if (first) setSelectedReport(first.path);
-                                  }}
-                                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors active:scale-95 ${
-                                    active
-                                      ? "bg-white text-canvas border-white"
-                                      : "border-hairline text-body hover:text-ink hover:bg-canvas-soft"
-                                  }`}
-                                >
-                                  {section.label}
-                                </button>
-                              );
-                            })}
-                          </div>
-
-                          {/* 3차: 생성일자(같은 유형에 보고서가 둘 이상일 때만) */}
-                          {categoryFiles.length > 1 && (
-                            <div className="flex flex-wrap items-center gap-1.5 border-l-2 border-hairline pl-3">
-                              {categoryFiles.map((f) => {
-                                const active = selectedReport === f.path;
-                                return (
-                                  <button
-                                    key={f.path}
-                                    onClick={() => setSelectedReport(f.path)}
-                                    title={f.name}
-                                    className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors active:scale-95 ${
-                                      active
-                                        ? "bg-white text-canvas border-white"
-                                        : "border-hairline text-mute hover:text-ink hover:bg-canvas-soft"
-                                    }`}
-                                  >
-                                    {reportDateLabel(f.name)}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-
-                          {/* 선택 보고서 인라인 패널 */}
-                          {selFile ? (
-                            <div className="rounded-lg border border-hairline bg-canvas-card overflow-hidden">
-                              <div className="flex items-center gap-1.5 flex-wrap px-5 py-3 border-b border-hairline">
-                                {badge && (
-                                  <span
-                                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${badge.color}`}
-                                  >
-                                    {badge.label}
-                                  </span>
-                                )}
-                                {resultPill && (
-                                  <span
-                                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${resultPill.color}`}
-                                  >
-                                    {resultPill.label}
-                                  </span>
-                                )}
-                                {confPill && (
-                                  <span
-                                    title="데이터 신뢰도 (투자 매력도 아님)"
-                                    className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${confPill.color}`}
-                                  >
-                                    {confPill.label}
-                                  </span>
-                                )}
-                                <span className="text-xs font-mono text-body truncate">{selFile.name}</span>
-                                <button
-                                  onClick={() => {
-                                    setDeleteError(null);
-                                    setDeletePath(selFile.path);
-                                  }}
-                                  title="이 보고서 삭제"
-                                  className="ml-auto shrink-0 rounded-full border border-hairline px-2.5 py-1 text-[11px] text-mute hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/10 transition-colors active:scale-95"
-                                >
-                                  삭제
-                                </button>
-                              </div>
-                              <div className="px-6 py-5">
-                                <ReportContentView path={selFile.path} onOpenReport={setModalPath} />
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="text-xs text-mute">표시할 보고서가 없습니다.</p>
-                          )}
-                        </div>
-                      );
-                  })()}
-                </>
-              )}
-            </div>
+          ) : flowTab === "reports" || flowTab === "holdings-reports" ? (
+            /* ── 종목 축 보고서 — '전체 보고서'와 '보유 종목 보고서'가 같은 패널(레이아웃·
+               위계·UI 동일)을 공유한다. 차이는 다룰 종목 목록뿐: 보유 탭은 보유 티커로
+               좁힌다. 선택 상태는 탭마다 독립(외곽 tab-panel의 key로 재마운트) — TASK-86. */
+            <CompanyReportsView
+              key={flowTab}
+              files={files}
+              companies={flowTab === "holdings-reports" ? holdingCompanies : companies}
+              loadError={loadError}
+              onRetry={() => setReloadKey((k) => k + 1)}
+              sectorGroups={effectiveSectorGroups}
+              domainGroups={domainGroups}
+              screenByCompany={screenByCompany}
+              onEditSectorGroups={() => setEditingSectors(true)}
+              onEditDomainGroups={() => setEditingDomains(true)}
+              onLaunchStep={onLaunchStep}
+              onOpenReport={setModalPath}
+              onRequestDelete={(p) => {
+                setDeleteError(null);
+                setDeletePath(p);
+              }}
+              focusTicker={flowTab === "holdings-reports" ? reportFocus : null}
+              // 보유 종목은 몇 개뿐 → 분야·섹터 필터 없이 종목 칩만 바로 노출(TASK-87).
+              flatCompanyPicker={flowTab === "holdings-reports"}
+              emptyText={
+                flowTab === "holdings-reports" ? holdingsEmptyText : "아직 보고서가 없습니다."
+              }
+            />
           ) : (
             /* ── 플로우 탭 ── */
             (() => {
@@ -1163,7 +853,7 @@ export function HomeView({
               }
 
               // 일반 플로우(실적 점검 등): 각 단계를 개별 카드로 흩어 표시.
-              // '종목별 보고서' 탭 상단 실행 카드 ROW와 동일 패턴 — 카드를 누르면
+              // 종목 축 보고서 탭 상단 실행 카드 ROW와 동일 패턴 — 카드를 누르면
               // 그 단계 하나만 onLaunchStep 모달로 띄운다(홈 컨텍스트 유지).
               return (
                 <div>
@@ -1235,6 +925,8 @@ export function HomeView({
         <SectorGroupEditor
           companies={companies}
           groups={sectorGroups}
+          // 저장 대상은 수동 그룹만. 자동 배정분은 '미분류'가 아니라는 표시로만 넘긴다(TASK-90).
+          autoLabels={sectorAutoMap}
           onSave={(g) => {
             saveSectorGroups(g);
             setEditingSectors(false);
@@ -1243,7 +935,7 @@ export function HomeView({
         />
       )}
       {/* 분야 그룹 편집 — 같은 모달을 '섹터명 → 분야' 축으로 쓴다(TASK-82).
-          섹터 리서치 탭과 종목별 보고서 탭이 이 표를 공유하므로 두 탭에서 모두 열린다(TASK-84). */}
+          섹터 리서치 탭과 종목 축 보고서 탭이 이 표를 공유하므로 두 탭에서 모두 열린다(TASK-84). */}
       {editingDomains && (
         <SectorGroupEditor
           companies={domainEditorSectors}

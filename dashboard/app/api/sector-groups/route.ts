@@ -4,6 +4,9 @@ import { requireAuth } from "@/lib/api-auth";
 // 종목별 보고서 탭의 섹터 그룹(이름 + 포함 티커) 설정. app_config('sector_groups')에 저장.
 // 브라우저 localStorage 대신 서버 저장이라 기기 간 공유된다.
 const CONFIG_KEY = "sector_groups";
+// 보고서 마커에서 파생된 '티커 → 섹터' 자동 맵(tools/sync_sector_map.py 가 Stop 훅에서 갱신).
+// 수동 그룹과 같은 축이라 한 응답에 실어 보낸다 — 클라이언트가 수동 우선으로 병합한다(TASK-90).
+const AUTO_MAP_KEY = "sector_auto_map";
 
 // 저장된 설정이 없을 때 시드로 쓰는 기본 그룹. (page.tsx의 DEFAULT_SECTOR_GROUPS와 일치)
 const DEFAULT_SECTOR_GROUPS = [
@@ -44,6 +47,21 @@ function sanitizeGroups(input: unknown): SectorGroup[] | null {
   return groups;
 }
 
+// 자동 맵도 DB에서 온 값이라 형태를 검증한다(티커·섹터명 모두 문자열, 길이 상한).
+function sanitizeAutoMap(input: unknown): Record<string, string> {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return {};
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof v !== "string") continue;
+    const ticker = k.trim().toUpperCase();
+    const sector = v.trim();
+    if (!ticker || !sector || ticker.length > MAX_STR || sector.length > MAX_STR) continue;
+    if (Object.keys(out).length >= MAX_GROUPS * MAX_TICKERS_PER_GROUP) break;
+    out[ticker] = sector;
+  }
+  return out;
+}
+
 export async function GET() {
   const unauth = await requireAuth();
   if (unauth) return unauth;
@@ -51,13 +69,14 @@ export async function GET() {
     const sb = getSupabase();
     const { data, error } = await sb
       .from("app_config")
-      .select("value")
-      .eq("key", CONFIG_KEY)
-      .maybeSingle();
+      .select("key, value")
+      .in("key", [CONFIG_KEY, AUTO_MAP_KEY]);
     if (error) throw new Error(error.message);
-    const value = data ? (data as { value: unknown }).value : null;
-    const groups = sanitizeGroups(value) ?? DEFAULT_SECTOR_GROUPS;
-    return Response.json({ groups });
+    const rows = (data ?? []) as { key: string; value: unknown }[];
+    const groups =
+      sanitizeGroups(rows.find((r) => r.key === CONFIG_KEY)?.value ?? null) ?? DEFAULT_SECTOR_GROUPS;
+    const autoMap = sanitizeAutoMap(rows.find((r) => r.key === AUTO_MAP_KEY)?.value ?? null);
+    return Response.json({ groups, autoMap });
   } catch (err) {
     // 원시 DB 에러 메시지를 클라이언트에 노출하지 않는다(TASK-53).
     console.error("sector-groups GET:", err);

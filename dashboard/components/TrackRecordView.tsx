@@ -1,7 +1,8 @@
 "use client";
 import { readJsonSafe } from "@/lib/fetch-json";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-import { ScoredCall, CallAggregate, CallStatus } from "@/lib/calls";
+import { ScoredCall, CallAggregate, CallStatus, CallType } from "@/lib/calls";
+import { CALL_LABEL } from "@/lib/report-helpers";
 import { ReportModal } from "./ReportModal";
 
 // 진행중 콜의 예상 첫 채점일 = 콜일 + horizon(개월), horizon 미지정 시 +30일(MIN_RESOLVE_DAYS).
@@ -19,40 +20,37 @@ function expectedResolveDate(c: ScoredCall): Date | null {
 }
 const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
 
-// 성적표 집계(TASK-80): 임의 키(유형·스킬)별로 총건수·확정·적중·진행중을 센다.
-// 서버 CallAggregate(전체)와 별개로 클라이언트에서 계산 — API 계약을 건드리지 않고
-// 분해만 추가한다(채점 규칙은 여전히 lib/calls.ts scoreCall 단일 소스).
-type Tally = { total: number; resolved: number; hits: number; inProgress: number };
-function tallyBy(calls: ScoredCall[], key: (c: ScoredCall) => string): Map<string, Tally> {
-  const m = new Map<string, Tally>();
-  for (const c of calls) {
-    const k = key(c);
-    const e = m.get(k) ?? { total: 0, resolved: 0, hits: 0, inProgress: 0 };
-    e.total++;
-    if (c.status === "적중" || c.status === "빗나감") {
-      e.resolved++;
-      if (c.directionHit === true) e.hits++;
-    } else if (c.status === "진행중") e.inProgress++;
-    m.set(k, e);
-  }
-  return m;
-}
-// 콜 유형 표시 순서.
-const CALL_ORDER: (keyof typeof CALL_LABEL)[] = ["buy", "keep", "hold", "avoid"];
-
-const CALL_LABEL: Record<string, { label: string; color: string }> = {
-  buy: { label: "매수", color: "text-breeze bg-breeze/10" },
-  keep: { label: "보유 유지", color: "text-twilight bg-twilight/10" },
-  hold: { label: "관망", color: "text-amber-300 bg-amber-500/10" },
-  avoid: { label: "회피", color: "text-mute bg-canvas-soft" },
-};
-
 const STATUS_STYLE: Record<CallStatus, { label: string; color: string; dot: string }> = {
   적중: { label: "적중", color: "text-emerald-300 bg-emerald-500/15", dot: "bg-emerald-400" },
   빗나감: { label: "빗나감", color: "text-red-300 bg-red-500/15", dot: "bg-red-400" },
   진행중: { label: "진행중", color: "text-amber-300 bg-amber-500/15", dot: "bg-amber-400" },
   unknown: { label: "미채점", color: "text-mute bg-canvas-soft", dot: "bg-canvas-mid" },
 };
+
+// 목표 밴드는 콜 종류에 따라 의미가 정반대다 — hold 밴드는 시점가 '아래'(내려오길 기다리는
+// 진입가)이고 buy/keep 밴드는 시점가 '위'(도달해야 할 목표가)다. 라벨 없이 숫자만 두면
+// 시점가와 눈으로 비교해야만 구분되므로, 채점상 의미를 앞에 붙여 드러낸다.
+// (판정 규칙 자체는 lib/calls.ts scoreCall — 여기선 그 규칙을 말로 옮길 뿐이다.)
+const BAND_META: Record<CallType, { short: string; long: string; why: string }> = {
+  hold: { short: "진입", long: "진입 대기 밴드", why: "이 구간으로 내려오면 적중 — 밴드가 곧 채점 기준" },
+  buy: { short: "목표", long: "도달 목표가", why: "채점은 방향(상승)으로 하고, 밴드 도달은 보조 지표" },
+  keep: { short: "목표", long: "도달 목표가", why: "상단을 넘겨도 적중 — 보유 유지는 상방이 열려 있음" },
+  avoid: { short: "참고", long: "참고 밴드", why: "채점(하락 방향)에 쓰이지 않는 적정가 추정" },
+};
+
+function bandOf(
+  c: ScoredCall
+): { label: string; long: string; why: string; value: string } | null {
+  const t = c.target;
+  if (!t || (t.low == null && t.high == null)) return null;
+  const meta = BAND_META[c.call] ?? BAND_META.buy;
+  return {
+    label: meta.short,
+    long: meta.long,
+    why: meta.why,
+    value: `$${t.low ?? "?"}~${t.high ?? "?"}${t.horizonMonths ? ` · ${t.horizonMonths}M` : ""}`,
+  };
+}
 
 // 수익률·손익 색은 앱 전역 규칙(한국식: 상승=빨강, 하락=파랑)을 따른다.
 function moveColor(v: number | null | undefined): string {
@@ -96,10 +94,6 @@ export function TrackRecordView() {
     load();
   }, [load]);
 
-  const rate = agg?.directionHitRate;
-  const pct = (v: number | null | undefined, d = 0) =>
-    typeof v === "number" ? `${(v * 100).toFixed(d)}%` : "—";
-
   // 진행중 콜들의 예상 첫 채점일 중 가장 이른 날짜(TASK-78 빈 상태 안내).
   const earliestResolve = useMemo(() => {
     const dates = (calls ?? [])
@@ -109,21 +103,6 @@ export function TrackRecordView() {
     if (dates.length === 0) return null;
     return dates.reduce((a, b) => (a < b ? a : b));
   }, [calls]);
-
-  // 유형별·스킬별 성적표(TASK-80). keep(실보유)과 hold(대기)는 정반대 예측이라
-  // 전체 적중률 하나로 뭉치면 왜곡 → 분해해서 본다. 스킬별은 어느 판단 도구가 잘 맞는지.
-  const byType = useMemo(() => tallyBy(calls ?? [], (c) => c.call), [calls]);
-  const bySkill = useMemo(
-    () =>
-      Array.from(tallyBy(calls ?? [], (c) => c.skill).entries()).sort(
-        (a, b) => b[1].total - a[1].total
-      ),
-    [calls]
-  );
-  const tallyLine = (t: Tally) =>
-    t.resolved > 0
-      ? `적중 ${t.hits}/${t.resolved} · ${Math.round((t.hits / t.resolved) * 100)}%`
-      : `확정 전 · 진행 ${t.inProgress}`;
 
   // 종목당 최신 콜 1건으로 접는다 — "누가 기록했나"가 아니라 "이 종목의 현재 판단"이
   // 표의 주인공이 되게. 같은 종목의 이전 콜(스킬 이력)은 행을 펼치면 나온다.
@@ -198,91 +177,18 @@ export function TrackRecordView() {
             </div>
           )}
 
-          {/* 집계 KPI 타일 */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
-            <div className="rounded-lg border border-hairline bg-canvas-card p-4">
-              <div className="eyebrow text-[10px] mb-1">방향 적중률</div>
-              <div className="text-2xl tracking-[-0.02em] text-ink">
-                {rate != null ? pct(rate) : "—"}
-              </div>
-              <div className="text-[11px] text-mute mt-0.5">
-                {rate != null
-                  ? `${agg.directionHits}/${agg.resolvedCount} · 95% CI ${pct(agg.ci95[0])}~${pct(agg.ci95[1])}`
-                  : "확정 콜 없음"}
-              </div>
-            </div>
-            <div className="rounded-lg border border-hairline bg-canvas-card p-4">
-              <div className="eyebrow text-[10px] mb-1">확정 콜</div>
-              <div className="text-2xl tracking-[-0.02em] text-ink">{agg.resolvedCount}</div>
-              <div className="text-[11px] text-mute mt-0.5">horizon 경과</div>
-            </div>
-            <div className="rounded-lg border border-hairline bg-canvas-card p-4">
-              <div className="eyebrow text-[10px] mb-1">진행 중</div>
-              <div className="text-2xl tracking-[-0.02em] text-ink">{agg.inProgress}</div>
-              <div className="text-[11px] text-mute mt-0.5">잠정 채점</div>
-            </div>
-            <div className="rounded-lg border border-hairline bg-canvas-card p-4">
-              <div className="eyebrow text-[10px] mb-1">평균 목표 오차</div>
-              <div className={`text-2xl tracking-[-0.02em] ${moveColor(agg.avgTargetErrorPct)}`}>
-                {agg.avgTargetErrorPct != null
-                  ? `${agg.avgTargetErrorPct >= 0 ? "+" : ""}${agg.avgTargetErrorPct.toFixed(1)}%`
-                  : "—"}
-              </div>
-              <div className="text-[11px] text-mute mt-0.5">현재가 vs 목표중앙</div>
-            </div>
-          </div>
-
-          {/* 성적표(TASK-80): 유형별·스킬별 분해. keep/hold는 정반대 예측이라 전체
-              적중률로 뭉치면 왜곡되고, 스킬별은 어느 판단 도구가 잘 맞는지 드러낸다. */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
-            <div className="rounded-lg border border-hairline bg-canvas-card p-4">
-              <div className="eyebrow text-[10px] text-mute mb-3">콜 유형별</div>
-              <div className="flex flex-col gap-2">
-                {CALL_ORDER.map((k) => {
-                  const t = byType.get(k);
-                  if (!t) return null;
-                  const cl = CALL_LABEL[k] ?? CALL_LABEL.hold;
-                  return (
-                    <div key={k} className="flex items-center justify-between gap-2">
-                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${cl.color}`}>
-                        {cl.label}
-                      </span>
-                      <span className="font-mono text-[11px] text-mute">
-                        {t.total}건 · <span className="text-body">{tallyLine(t)}</span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="rounded-lg border border-hairline bg-canvas-card p-4">
-              <div className="eyebrow text-[10px] text-mute mb-3">스킬별</div>
-              <div className="flex flex-col gap-2">
-                {bySkill.map(([skill, t]) => (
-                  <div key={skill} className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-mono text-body truncate max-w-[160px]" title={skill}>
-                      {skill}
-                    </span>
-                    <span className="font-mono text-[11px] text-mute shrink-0">
-                      {t.total}건 · <span className="text-body">{tallyLine(t)}</span>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 콜 목록 표 — 넓은 화면에서 표, 좁으면 자체 가로 스크롤 */}
+          {/* 콜 목록 표 — 넓은 화면에서 표, 좁으면 자체 가로 스크롤.
+              상단 집계 카드(KPI 4 + 성적표 2)는 제거됨 — 표 자체가 판단 근거다. */}
           <p className="text-[11px] text-mute mb-2">
             종목당 <span className="text-body">최신 콜 1건</span>만 표시합니다. 같은 종목의 이전
-            콜(스킬 이력)은 행을 눌러 펼치면 나옵니다. 위 집계·성적표는 전체 콜 기준입니다.
+            콜(스킬 이력)은 행을 눌러 펼치면 나옵니다.
           </p>
           <div className="rounded-lg border border-hairline bg-canvas-card overflow-hidden">
             <div className="overflow-x-auto scroll-slim">
-              <table className="w-full text-sm border-collapse min-w-[900px]">
+              <table className="w-full text-sm border-collapse min-w-[820px]">
                 <thead>
                   <tr className="border-b border-hairline text-left">
-                    {["종목", "콜", "콜 시점", "시점가", "현재가", "수익률", "목표", "경과", "상태", "사유"].map(
+                    {["종목", "콜", "콜 시점", "시점가", "현재가", "수익률", "밴드", "경과", "상태"].map(
                       (h) => (
                         <th key={h} className="eyebrow text-[10px] text-mute font-normal px-3 py-2.5">
                           {h}
@@ -295,12 +201,7 @@ export function TrackRecordView() {
                   {latest.map((c) => {
                     const cl = CALL_LABEL[c.call] ?? CALL_LABEL.hold;
                     const st = STATUS_STYLE[c.status] ?? STATUS_STYLE.unknown;
-                    const band =
-                      c.target && (c.target.low != null || c.target.high != null)
-                        ? `$${c.target.low ?? "?"}~${c.target.high ?? "?"}${
-                            c.target.horizonMonths ? ` · ${c.target.horizonMonths}M` : ""
-                          }`
-                        : "—";
+                    const band = bandOf(c);
                     const history = historyByTicker.get(c.ticker) ?? [];
                     const isOpen = expanded.has(c.id);
                     const hasDetail =
@@ -345,7 +246,23 @@ export function TrackRecordView() {
                             ? `${c.returnPct >= 0 ? "+" : ""}${c.returnPct.toFixed(1)}%`
                             : "—"}
                         </td>
-                        <td className="px-3 py-2.5 font-mono text-[11px] text-mute">{band}</td>
+                        <td className="px-3 py-2.5 text-[11px]">
+                          {band ? (
+                            <span
+                              className="flex items-baseline gap-1.5"
+                              title={`${band.long} — ${band.why}`}
+                            >
+                              <span className="eyebrow text-[9px] text-mute shrink-0">
+                                {band.label}
+                              </span>
+                              <span className="font-mono text-body whitespace-nowrap">
+                                {band.value}
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="font-mono text-mute">—</span>
+                          )}
+                        </td>
                         <td className="px-3 py-2.5 font-mono text-[11px] text-mute">
                           {c.elapsedDays}d
                           {c.horizonProgress != null && (
@@ -371,15 +288,6 @@ export function TrackRecordView() {
                             </button>
                           )}
                         </td>
-                        <td className="px-3 py-2.5 align-top">
-                          {c.reason ? (
-                            <span className="block max-w-[280px] whitespace-normal leading-snug text-[11px] text-body">
-                              {c.reason}
-                            </span>
-                          ) : (
-                            <span className="text-[11px] text-mute">—</span>
-                          )}
-                        </td>
                       </tr>
 
                       {/* 콜 상세(TASK-79): 핵심 가정(참이어야 유효) + 무효화(레드라인) 조건.
@@ -387,7 +295,7 @@ export function TrackRecordView() {
                           원장(loadBearing·invalidation)에 있으나 표에는 없던 정보. */}
                       {isOpen && (
                         <tr className="border-b border-hairline last:border-0 bg-canvas-soft/30">
-                          <td colSpan={10} className="px-3 py-4">
+                          <td colSpan={9} className="px-3 py-4">
                             <div className="flex flex-col gap-3.5 max-w-3xl pl-3">
                               {/* 진행 요약 */}
                               <div className="flex flex-wrap gap-x-6 gap-y-1 text-[11px] text-mute">
@@ -405,9 +313,10 @@ export function TrackRecordView() {
                                     </span>
                                   </span>
                                 )}
-                                {band !== "—" && (
+                                {band && (
                                   <span>
-                                    목표밴드 <span className="font-mono text-body">{band}</span>
+                                    {band.long}{" "}
+                                    <span className="font-mono text-body">{band.value}</span>
                                   </span>
                                 )}
                                 {c.horizonMonths != null && (
@@ -418,6 +327,14 @@ export function TrackRecordView() {
                                   </span>
                                 )}
                               </div>
+
+                              {/* 이 콜에서 밴드가 무엇을 뜻하는지 — hold(진입 대기)와
+                                  buy/keep(도달 목표)이 정반대라 표의 라벨만으론 부족하다. */}
+                              {band && (
+                                <p className="-mt-2 text-[11px] text-mute leading-snug">
+                                  {band.long} — {band.why}
+                                </p>
+                              )}
 
                               {c.loadBearing.length > 0 && (
                                 <div>
@@ -523,7 +440,18 @@ export function TrackRecordView() {
             </div>
           </div>
 
+          {/* 밴드 열 범례 — 같은 숫자가 콜 종류에 따라 정반대를 뜻하므로,
+              라벨만 보고도 읽히도록 두 의미를 명시한다. */}
           <p className="mt-3 text-[11px] text-mute leading-relaxed">
+            ※ <span className="text-body">밴드</span> 열은 콜 종류에 따라 의미가 다릅니다 —{" "}
+            <span className="eyebrow text-[9px]">진입</span>(관망)은{" "}
+            <span className="text-body">내려오길 기다리는 매수 구간</span>으로 밴드 안으로의 회귀가
+            곧 적중이고, <span className="eyebrow text-[9px]">목표</span>(매수·보유 유지)는{" "}
+            <span className="text-body">도달해야 할 목표가</span>로 채점은 방향으로 하고 밴드 도달은
+            보조 지표입니다. <span className="eyebrow text-[9px]">참고</span>(회피)는 채점에 쓰이지
+            않습니다.
+          </p>
+          <p className="mt-1.5 text-[11px] text-mute leading-relaxed">
             ※ 콜 이후 액면분할 등으로 시점가와 현재가의 기준이 달라질 수 있습니다(현재가는 분할 조정됨).
             무효화(레드라인) 조건은 재무 데이터가 필요해 자동 채점하지 않고 기록만 합니다.
           </p>

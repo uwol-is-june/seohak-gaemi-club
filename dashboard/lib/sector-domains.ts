@@ -95,6 +95,40 @@ export const DOMAIN_MEMBER_ALIASES: Record<string, string[]> = {
   산업재: ["우주·항공"],
 };
 
+// ─── 티커 → 섹터 자동 배정(TASK-90) ────────────────────────────────────────
+// 보고서 마커에서 파생된 자동 맵(app_config 'sector_auto_map', tools/sync_sector_map.py).
+// 키 = 티커(대문자), 값 = 섹터명(퍼널 보고서 파일명의 섹터 토큰과 같은 표기).
+export type AutoSectorMap = Record<string, string>;
+
+// 자동 맵을 사용자의 수동 종목 그룹에 합친다. **수동 우선, 빈 곳만 자동**:
+//   · 이미 어느 수동 그룹에 든 티커는 손대지 않는다(사용자가 옮긴 분류가 되돌아가지 않게).
+//   · 어느 그룹에도 없어 '미분류'로 떨어질 티커만 자동 맵의 섹터에 넣는다.
+// 자동 섹터명이 기존 그룹명과 같거나 접두 일치하면(예: 'Fintech-Payments' ↔ 'Fintech')
+// 그 그룹에 덧붙이고, 아니면 새 그룹을 뒤에 만든다.
+// 반환값은 **표시 전용** — 그룹 편집 모달에는 수동 그룹 원본을 그대로 넘겨야 한다.
+export function mergeAutoSectorGroups(
+  manual: DomainGroup[],
+  autoMap: AutoSectorMap | null | undefined
+): DomainGroup[] {
+  const merged = manual.map((g) => ({ ...g, tickers: [...g.tickers] }));
+  if (!autoMap) return merged;
+  const taken = new Set(merged.flatMap((g) => g.tickers.map((t) => t.trim().toUpperCase())));
+  for (const [rawTicker, rawSector] of Object.entries(autoMap)) {
+    const ticker = String(rawTicker).trim().toUpperCase();
+    const sector = String(rawSector ?? "").trim();
+    if (!ticker || !sector || taken.has(ticker)) continue;
+    taken.add(ticker);
+    const key = normalizeSectorKey(sector);
+    let target = merged.find((g) => keyMatches(normalizeSectorKey(g.name), key));
+    if (!target) {
+      target = { id: `auto-${key || merged.length}`, name: sector, tickers: [] };
+      merged.push(target);
+    }
+    target.tickers.push(ticker);
+  }
+  return merged;
+}
+
 // 두 매칭 키가 domainOfSector 기준으로 같은 것으로 취급되는가(완전 일치 또는 접두 일치).
 // 별칭 중복 삽입을 막는 데 쓴다 — 이미 붙는 이름을 멤버로 또 넣을 필요는 없다.
 function keyMatches(a: string, b: string): boolean {

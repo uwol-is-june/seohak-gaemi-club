@@ -37,7 +37,7 @@ export function HoldingsBanner({
   sectorOf?: (ticker: string) => string;
   // 보고서가 있는 티커 집합(대문자) — 있으면 카드가 클릭 가능(TASK-77).
   reportedTickers?: Set<string>;
-  // 카드 클릭 시 그 티커의 종목별 보고서로 이동(티커 축 통합).
+  // 카드 클릭 시 그 티커의 '보유 종목 보고서'로 이동(티커 축 통합).
   onDrill?: (ticker: string) => void;
 }) {
   const [holdings, setHoldings] = useState<Holding[] | null>(holdingsCache);

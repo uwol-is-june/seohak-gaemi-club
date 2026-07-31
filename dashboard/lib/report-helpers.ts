@@ -2,6 +2,7 @@
 // React 의존 없음 — page.tsx 와 components/ 가 공유한다(TASK-46 분해).
 import { type FlowStep, DISCOVERY_SECTOR_GROUPS } from "@/lib/flows";
 import { deriveDomainGroups, type DomainGroup } from "@/lib/sector-domains";
+import type { CallType } from "@/lib/calls";
 import type { ReportFile } from "@/lib/reports-store";
 
 // ─── Color config ──────────────────────────────────────────────────────────
@@ -21,6 +22,16 @@ export const colorConfig = {
 } as const;
 
 export type ColorKey = keyof typeof colorConfig;
+
+// 콜 종류 배지(라벨+색). 트랙레코드 탭과 실적 캘린더가 같은 표기를 쓰도록 공유한다 —
+// keep(보유 유지)과 hold(관망)는 정반대 예측이므로 라벨이 갈리면 곧바로 오독된다.
+// 시맨틱/데이터 의미 색이라 컬러 액센트 최소화 원칙의 예외(AGENTS.md).
+export const CALL_LABEL: Record<CallType, { label: string; color: string }> = {
+  buy: { label: "매수", color: "text-breeze bg-breeze/10" },
+  keep: { label: "보유 유지", color: "text-twilight bg-twilight/10" },
+  hold: { label: "관망", color: "text-amber-300 bg-amber-500/10" },
+  avoid: { label: "회피", color: "text-mute bg-canvas-soft" },
+};
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -90,27 +101,34 @@ export function sortCompanyFiles(files: ReportFile[]): ReportFile[] {
     // 날짜 있는 쪽을 날짜 없는 쪽보다 앞에 (같은 유형 내 혼재 시 안정적 순서).
     if (ad && !bd) return -1;
     if (!ad && bd) return 1;
+    // 같은 날짜에 접미사 파생본이 있으면(/earnings-team의 -버핏·-멍거 등) 접미사 없는
+    // 확정본을 앞에 — 유형 탭을 눌렀을 때 기본 선택이 파생본으로 잡히지 않게.
+    if (ad && bd && ad === bd && a.name.length !== b.name.length) return a.name.length - b.name.length;
     return a.name.localeCompare(b.name);
   });
 }
 
 // 종목 상세에서 보고서를 유형별 구획으로 나누기 위한 분류.
-export type ReportCategory = "quality-screen" | "checklist" | "deep-dive" | "thesis" | "news" | "other";
+export type ReportCategory =
+  | "quality-screen"
+  | "checklist"
+  | "deep-dive"
+  | "thesis"
+  | "earnings"
+  | "news"
+  | "other";
 
 export function getReportCategory(name: string): ReportCategory {
   if (name.includes("-quality-screen-")) return "quality-screen";
   if (name.includes("-checklist-")) return "checklist";
   if (name.endsWith("-thesis.md")) return "thesis";
+  // 실적 점검 = /earnings-review·/earnings-team 산출물({티커}-earnings-{기간}[-거장].md).
+  // 심층분석(종목 1회성 리서치)과 달리 분기마다 반복되는 축이라 별도 유형으로 둔다(TASK-91).
+  if (name.includes("-earnings-")) return "earnings";
   // 급변동 분석 = /news-pulse 산출물({회사}-news-{YYYYMMDD}.md)
   if (name.includes("-news-")) return "news";
-  // 심층분석 = /investment-team 산출물(README + 01~04-*-Perspective + FinalReport) + 실적분석
-  if (
-    name === "README.md" ||
-    /^0[1-4]-/.test(name) ||
-    name === "FinalReport.md" ||
-    name.includes("-earnings-")
-  )
-    return "deep-dive";
+  // 심층분석 = /investment-team 산출물(README + 01~04-*-Perspective + FinalReport)
+  if (name === "README.md" || /^0[1-4]-/.test(name) || name === "FinalReport.md") return "deep-dive";
   return "other";
 }
 
@@ -120,6 +138,7 @@ export const REPORT_SECTIONS: { id: ReportCategory; label: string }[] = [
   { id: "checklist", label: "버핏 6-게이트 체크" },
   { id: "deep-dive", label: "심층분석" },
   { id: "thesis", label: "투자 논제 수립" },
+  { id: "earnings", label: "실적 점검" },
   { id: "news", label: "급변동 분석" },
   { id: "other", label: "기타" },
 ];
@@ -225,6 +244,10 @@ export const SECTOR_SECTIONS: { id: SectorKind; label: string }[] = [
 export function reportDateLabel(name: string): string {
   const d = name.match(/(\d{4})(\d{2})(\d{2})/);
   if (d) return `${d[1]}-${d[2]}-${d[3]}`;
+  // 실적 보고서는 같은 분기에 파생본이 여럿이라(/earnings-team의 -버핏·-독자검토 등)
+  // 분기만으로는 3차 탭 라벨이 전부 같아진다 → 접미사를 붙여 구분한다.
+  const eq = name.match(/-earnings-(\d{4}Q\d)(?:-(.+))?\.md$/);
+  if (eq) return eq[2] ? `${eq[1]} · ${eq[2]}` : eq[1];
   const q = name.match(/\d{4}Q\d/);
   if (q) return q[0];
   return getFileBadge(name).label;

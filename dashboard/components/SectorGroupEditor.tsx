@@ -20,6 +20,7 @@ export function SectorGroupEditor({
   namePlaceholder = "그룹 이름 (예: 헬스케어)",
   // 티커는 대문자 정규화가 맞지만 섹터명은 표기를 보존해야 한다.
   upperCaseItems = true,
+  autoLabels,
 }: {
   companies: string[];
   groups: SectorGroup[];
@@ -30,6 +31,9 @@ export function SectorGroupEditor({
   itemNoun?: string;
   namePlaceholder?: string;
   upperCaseItems?: boolean;
+  // 보고서 마커에서 자동 배정된 항목(티커 → 섹터명, TASK-90). 수동 그룹에 없는 항목이
+  // '미분류'가 아니라 '자동 배정'임을 미리보기에 표시하는 용도 — 저장 값에는 영향 없다.
+  autoLabels?: Record<string, string>;
 }) {
   useBodyScrollLock();
   const dialogRef = useModalA11y<HTMLDivElement>(onClose);
@@ -70,6 +74,10 @@ export function SectorGroupEditor({
 
   const assignedKeys = new Set(draft.flatMap((g) => g.tickers.map(normalizeTicker)));
   const unassigned = companies.filter((c) => !assignedKeys.has(normalizeTicker(c)));
+  // 수동 배정이 없는 항목 중 보고서 마커로 자동 배정된 것 — 진짜 '미분류'와 나눠 보여준다.
+  const autoOf = (c: string) => autoLabels?.[normalizeTicker(c)];
+  const autoAssigned = unassigned.filter((c) => autoOf(c));
+  const trulyUnassigned = unassigned.filter((c) => !autoOf(c));
 
   const names = draft.map((g) => g.name.trim());
   const hasEmptyName = names.some((n) => n.length === 0);
@@ -163,12 +171,37 @@ export function SectorGroupEditor({
             + 그룹 추가
           </button>
 
+          {/* 자동 배정 미리보기 (읽기 전용) — 보고서 마커에서 온 배정(TASK-90).
+              위 그룹에 직접 넣으면 수동 배정이 자동을 덮는다. */}
+          {autoAssigned.length > 0 && (
+            <div>
+              <div className="eyebrow text-[10px] mb-1.5 text-mute">
+                보고서에서 자동 배정 {autoAssigned.length}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {autoAssigned.map((c) => (
+                  <span
+                    key={c}
+                    className="rounded-full px-3 py-1 text-xs border border-hairline text-body"
+                  >
+                    {c}
+                    <span className="text-mute"> · {autoOf(c)}</span>
+                  </span>
+                ))}
+              </div>
+              <p className="text-xs text-mute mt-1.5">
+                퍼널·종목 보고서의 섹터 마커에서 자동으로 배정된 {itemNoun}입니다. 위 그룹에 직접
+                넣으면 수동 배정이 우선합니다.
+              </p>
+            </div>
+          )}
+
           {/* 미분류 미리보기 (읽기 전용) */}
           <div>
-            <div className="eyebrow text-[10px] mb-1.5 text-mute">미분류 {unassigned.length}</div>
-            {unassigned.length > 0 ? (
+            <div className="eyebrow text-[10px] mb-1.5 text-mute">미분류 {trulyUnassigned.length}</div>
+            {trulyUnassigned.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
-                {unassigned.map((c) => (
+                {trulyUnassigned.map((c) => (
                   <span
                     key={c}
                     className="rounded-full px-3 py-1 text-xs border border-hairline text-mute"
@@ -213,8 +246,9 @@ export function SectorGroupEditor({
 }
 
 // ─── EarningsCalendar ────────────────────────────────────────────────────────
-// 실적 점검 탭 상단. 보유 종목을 "다가오는 실적 발표일" 순으로 정렬해 D-day와 함께
+// 실적 점검 탭 상단. 대상 종목을 "다가오는 실적 발표일" 순으로 정렬해 D-day와 함께
 // 보여준다 — 실적 점검은 종목별 발표일에 트리거되는 이벤트라, "언제 점검할지"를
-// 한눈에 안내한다. 발표일은 /api/earnings-calendar(Yahoo calendarEvents)에서 온다.
+// 한눈에 안내한다. 대상은 두 축(보유 종목 / 트랙레코드 전체)에서 고른다.
+// 발표일은 /api/earnings-calendar(Yahoo calendarEvents)에서 온다.
 // 각 행의 '분석'은 /earnings-review 단계를 그 티커로 프리필해 연다.
 

@@ -8,6 +8,7 @@ import { DISCOVERY_SECTOR_GROUPS } from "./flows.ts";
 import {
   deriveDomainGroups,
   domainOfSector,
+  mergeAutoSectorGroups,
   normalizeSectorKey,
   orderedDomains,
   sectorsInDomain,
@@ -154,6 +155,38 @@ eq(
 const custom2: DomainGroup[] = [{ id: "x", name: "내분야", tickers: ["반도체·AI"] }];
 eq("사용자 그룹이 별칭 시드를 대체", domainOfSector(custom2, "반도체·AI"), "내분야");
 eq("사용자 그룹에 없으면 미분류", domainOfSector(custom2, "헬스케어"), UNCLASSIFIED_DOMAIN);
+
+// ── 티커 → 섹터 자동 배정 병합 (TASK-90) ──────────────────────────────────────
+// 정책: 수동 그룹이 항상 이기고, 어느 그룹에도 없는 티커만 자동 맵으로 채운다.
+const manual: DomainGroup[] = [
+  { id: "m0", name: "헬스케어", tickers: ["LLY", "NVO"] },
+  { id: "m1", name: "Fintech", tickers: [] },
+];
+const auto = {
+  LLY: "GLP-1-Obesity", // 수동에 이미 있음 → 무시
+  WST: "GLP-1-Obesity", // 신규 → 새 그룹
+  AXP: "Fintech-Payments", // 접두 일치 → 기존 'Fintech' 그룹에 합류
+  NOC: "Defense",
+  GD: "Defense",
+};
+const effective = mergeAutoSectorGroups(manual, auto);
+const nameOf = (t: string) =>
+  effective.find((g) => g.tickers.includes(t))?.name ?? UNCLASSIFIED_DOMAIN;
+
+eq("자동병합: 수동 배정은 유지", nameOf("LLY"), "헬스케어");
+eq("자동병합: 미배정 티커는 자동 섹터로", nameOf("WST"), "GLP-1-Obesity");
+eq("자동병합: 접두 일치 그룹에 합류", nameOf("AXP"), "Fintech");
+eq("자동병합: 같은 섹터는 한 그룹에", nameOf("NOC"), "Defense");
+eq(
+  "자동병합: Defense 멤버 2종목",
+  effective.find((g) => g.name === "Defense")?.tickers,
+  ["NOC", "GD"]
+);
+eq("자동병합: 원본 그룹 불변(수동 배열 오염 없음)", manual[0].tickers, ["LLY", "NVO"]);
+eq("자동병합: 맵이 없으면 수동 그대로", mergeAutoSectorGroups(manual, null).length, 2);
+// 자동 그룹명도 분야 판정에 그대로 들어간다 — 종목 축 위계가 자동으로 완성되는 근거.
+eq("자동병합: 자동 그룹 → 분야", domainOfSector(groups, nameOf("NOC")), "산업재");
+eq("자동병합: 자동 그룹 → 분야(헬스케어)", domainOfSector(groups, nameOf("WST")), "헬스케어");
 
 if (failures.length > 0) {
   console.error(`❌ 섹터→분야 매핑 실패 (${failures.length}건):`);
