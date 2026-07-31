@@ -24,7 +24,7 @@ $ARGUMENTS 에 대한 실적 보고서 정밀 분석을 수행한다.
 ## ⓪ 사전 점검: 데이터 소스 접근 확인
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/site_preflight.py earnings-review {분석할 티커}
+python3 tools/site_preflight.py earnings-review {분석할 티커}
 ```
 
 SEC EDGAR는 거의 차단되지 않으나 Seeking Alpha 어닝스 콜 트랜스크립트는 유료 장벽 가능성이 있다. 차단 시 스크립트가 SEC 8-K 대체 경로를 안내한다. **차단 여부와 관계없이 리서치를 계속 진행한다.**
@@ -217,14 +217,14 @@ VII. 결론: 이번 실적이 바꾼 것은 무엇인가?
 
 ```bash
 # Step 1 — 검증 체크리스트 추출
-python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
+python3 tools/report_audit.py extract \
   --report reports/{종목명}/{종목명}-earnings-{기간}.md
 
 # Step 2 — 체크리스트 각 항목을 신뢰할 수 있는 출처에서 재확인
 #           (macrotrends.net, stockanalysis.com, SEC EDGAR 활용)
 
 # Step 3 — 검증 결과 판정 출력
-python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
+python3 tools/report_audit.py verdict \
   --results '<작성된 JSON>' \
   --report {보고서 파일명}
 ```

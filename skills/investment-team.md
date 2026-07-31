@@ -2,7 +2,28 @@
 
 $ARGUMENTS 에 대해 팀 기반 투자 리서치 분석을 수행합니다. Team 도구를 사용해 실제 멀티 Agent 병렬 리서치 팀을 구성합니다.
 
+> 🔴 **이 스킬은 저장소에서 가장 비싼 스킬이다** — 4개 Agent 팬아웃이라 본체 비용의 몇 배가 든다.
+> [token-budget.md](token-budget.md) 의 하드 규칙(TB-1~TB-7)을 **전 단계에서 지킨다**.
+> 특히 TB-1(손자 Agent 금지)·TB-2(재시도 1회)·TB-7(중복 실행 금지)은 실측으로 확인된
+> 사고 지점이다(2026-07-31 CEG 1회 실행에 50.4M 토큰 — 그중 58%가 재시도 폐기분).
+
 ## 실행 절차
+
+### 0단계: 기존 산출물 확인 (중복 실행 가드 · TB-7)
+
+**팀을 만들기 전에 반드시 먼저 실행한다.** 같은 종목을 같은 날 처음부터 두 번 돌린 사례가 있다
+(CEG 65.5M 토큰). 한 번의 Bash 호출로 확인한다:
+
+```bash
+T={티커}; ls -la reports/$T/ 2>/dev/null && date
+```
+
+- 대상 산출물(`FinalReport.md`, `01~04-*.md`)이 **7일 이내**면 전체 재실행하지 않는다.
+  사용자에게 파일 날짜를 보여주고 선택하게 한다:
+  1. **갱신** — 기존 보고서를 읽고 변경된 부분(주가·최근 실적·뉴스)만 반영 (가장 쌈)
+  2. **일부 재실행** — 특정 관점(01~04) 하나만 Agent 1개로 다시 (전체의 1/4 비용)
+  3. **전체 재실행** — 사용자가 명시적으로 원할 때만
+- 7일 초과이거나 산출물이 없으면 그대로 1단계로 진행한다.
 
 ### 1단계: 팀 구조 제시
 
@@ -37,7 +58,7 @@ $ARGUMENTS 에 대해 팀 기반 투자 리서치 분석을 수행합니다. Tea
 2~4번 긁으면 토큰만 4배로 나가고, 심지어 Agent마다 다른 값을 들고 와 보고서가 어긋난다.
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/fetch_financials.py {티커} --years 10 --cross
+python3 tools/fetch_financials.py {티커} --years 10 --cross
 ```
 
 산출물 두 개:
@@ -98,11 +119,21 @@ TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject
   5. 밸류에이션: PER(P/E), P/S, P/B, EV/EBITDA 등 — 주가가 필요하므로 별도 수집.
      **비율은 플랫폼 제공값을 쓰지 말고 `_data.md` 원천 수치로 직접 계산**한다(계산 기준 통일).
   6. 안전마진(Margin of Safety) 평가: 내재가치(Intrinsic Value) vs 현재 주가
-  7. **금융 정확성 검증 (반드시 Bash로 도구 실행, 암산 금지)**:
-     - 시가총액 검증: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-market-cap --price {주가} --shares {발행주식수} --reported {보고된 시가총액} --currency USD`
-     - 밸류에이션 검증: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-valuation --price {주가} --eps {EPS} --bvps {BPS}`
-     - 핵심 데이터 교차검증: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py cross-validate --field {항목} --values '{JSON}' --unit {단위}`
-     - 3시나리오 밸류에이션: `python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario --price {주가} --eps {EPS} --shares {발행주식수(B)} --growth {낙관} {중립} {비관} --pe {낙관PER} {중립PER} {비관PER}`
+  7. **금융 정확성 검증 (반드시 Bash로 도구 실행, 암산 금지 — 단 호출은 1회로 묶는다 · TB-6)**:
+     4종을 개별 호출하면 Bash 왕복이 4회이고 매 왕복이 컨텍스트 전량을 다시 낸다.
+     **`batch` 서브커맨드로 한 번에 실행한다** (출력은 개별 실행과 동일):
+
+     ```bash
+     python3 tools/financial_rigor.py batch --spec '[
+       {"cmd":"verify-market-cap","price":{주가},"shares":{발행주식수},"reported":{보고된 시가총액},"currency":"USD"},
+       {"cmd":"verify-valuation","price":{주가},"eps":{EPS},"bvps":{BPS}},
+       {"cmd":"cross-validate","field":"{항목}","values":{JSON},"unit":"{단위}"},
+       {"cmd":"three-scenario","price":{주가},"eps":{EPS},"shares":{발행주식수(B)},
+        "growth":[{낙관},{중립},{비관}],"pe":[{낙관PER},{중립PER},{비관PER}]}
+     ]'
+     ```
+
+     - 교차검증할 항목이 여럿이면 `cross-validate` 스텝을 배열에 더 넣는다(여전히 호출 1회).
      - 도구 출력 결과를 보고서에 그대로 삽입하여 검증 기록으로 남길 것
   8. 데이터 출처: **1순위 `reports/{기업명}/_data.md`(SEC XBRL 기계추출·교차검증 완료)**,
      보완용으로 macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials,
@@ -174,20 +205,43 @@ Task 도구를 사용해 4개 Agent를 동시에 시작합니다 (**반드시 �
 - 데이터 정확성 확보: 핵심 데이터에 출처를 명기
 - 표면적 분석에 그치지 말고 심층 분석을 수행합니다
 
+**🔴 토큰 예산 (하드 제약 — 반드시 지킬 것)**:
+당신의 도구 호출 1회는 그때까지의 컨텍스트 전량을 다시 소비합니다. 조사를 많이 할수록
+1회 비용이 커져 총 비용은 호출 횟수의 제곱으로 늘어납니다. 아래는 권고가 아니라 상한입니다.
+
+- **다른 Agent를 절대 스폰하지 않습니다.** Task/Agent 도구를 호출하지 마십시오. 당신이 직접
+  조사하고 직접 씁니다. (하위 Agent를 띄우면 팀 전체 비용이 몇 배로 뜁니다.)
+- **조사 상한**: WebSearch 10회 · WebFetch 8회 · Bash 10회. 상한에 닿으면 **더 파지 말고
+  가진 자료로 즉시 보고서를 작성**합니다.
+- **컨텍스트가 120k를 넘었다고 판단되면 조사를 즉시 멈추고 작성 단계로 넘어갑니다.**
+- 독립적인 조회는 **같은 메시지에서 병렬로** 호출합니다. 셸 명령은 `&&`로 묶어 1회로 냅니다.
+- **보고서는 Write 한 번으로 저장합니다.** 본문을 Edit로 나눠 붙이지 마십시오(Edit 1회도
+  컨텍스트 전량 재전송입니다). Edit는 저장 후 발견된 오류 수정에만, 수 회 이내로 씁니다.
+- ⚠️ **상한 때문에 못 구한 항목은 `⬛`(데이터부족)으로 남깁니다. 추측으로 채우지 않습니다.**
+  빈칸은 허용되지만 지어낸 숫자는 허용되지 않습니다. 상한은 정확도보다 우선하지 않습니다 —
+  둘이 충돌하면 "조사를 줄이고 빈칸을 남기는" 쪽으로 해결합니다.
+
 **출력 요구사항**:
 - 보고서는 상세하게 작성하며, 핵심 데이터는 Markdown 표로 표현합니다
 - 각 분석 차원마다 명확한 결론과 ★ 평점(1~5)을 부여합니다
 - 보고서 말미에 해당 차원의 종합 결론을 작성합니다
 
 **완료 후**:
-1. 완성된 분석 보고서를 아래 경로에 파일로 저장합니다:
+1. 완성된 분석 보고서를 아래 경로에 **Write 1회로** 저장합니다:
    - business-analyst  → `reports/{기업명}/01-BusinessModel-DYP-Perspective.md`
    - financial-analyst → `reports/{기업명}/02-FinancialValuation-Buffett-Perspective.md`
    - industry-researcher → `reports/{기업명}/03-IndustryCompetition-Munger-Perspective.md`
    - risk-assessor     → `reports/{기업명}/04-RiskManagement-LiLu-Perspective.md`
    (회사 폴더가 없으면 먼저 생성)
 2. TaskUpdate로 태스크 #{번호}를 completed로 표시합니다
-3. SendMessage로 완성된 분석 보고서 전체를 team-lead에게 전송합니다 (type: "message", recipient: "team-lead")
+3. SendMessage로 team-lead에게 **완료 보고를 보냅니다** (type: "message", recipient: "team-lead").
+   ⚠️ **보고서 전문을 메시지에 다시 붙여넣지 마십시오** — 같은 본문을 두 번 생성하는 것이고
+   (Write 1회 + 메시지 1회), team-lead 컨텍스트도 그만큼 부풀립니다. team-lead는 파일을
+   직접 읽습니다. 메시지에는 아래만 담습니다 (20줄 이내):
+   - 저장한 파일 경로
+   - ★ 평점과 한 줄 결론
+   - 핵심 발견 3~5가지 (각 1~2줄)
+   - 다른 관점과 충돌할 수 있는 지점, `⬛`로 남긴 데이터 공백
 ```
 
 ### 5단계: 보고서 수신 및 진행 상황 추적
@@ -195,11 +249,30 @@ Task 도구를 사용해 4개 Agent를 동시에 시작합니다 (**반드시 �
 - 사용자에게 실시간으로 진행 상황 표를 보여줍니다 (완료된 Agent, 아직 분석 중인 Agent)
 - 보고서를 받을 때마다, 또는 사용자와 상호작용이 발생할 때마다 `date`를 다시 실행해 4단계 시작 시각과 비교한 **경과 시간(분)**을 계산하고 진행 상황 표에 함께 표시합니다 (예: "경과 8분 / 완료 3, 대기 1")
 - 4개의 보고서가 모두 도착할 때까지 대기합니다
+- ⚠️ 대기 중에 상태를 확인하려고 **폴링하지 않습니다** — Agent가 끝나면 알림이 옵니다.
+  불필요한 확인 호출 1회도 컨텍스트 전량 재전송입니다(TB-6).
 
-**부분 실패 가드**: 경과 시간이 10분을 넘었는데 특정 Agent로부터 SendMessage가 도착하지 않았다면(무응답·에러 추정), 대기를 멈추고 사용자에게 "{역할명} Agent 무응답 (경과 N분)" 상태를 알린 뒤 다음 중 하나를 선택하도록 묻습니다:
-1. **재시도** — 해당 Agent만 TaskCreate로 다시 시작
-2. **제외하고 진행** — 해당 관점 없이 나머지 보고서로 7단계 통합 진행 (FinalReport.md에 "⚠️ {역할명} 관점 누락 (Agent 무응답)" 명시, 종합 평점에서 해당 차원은 "데이터 부족"으로 표기)
-3. **전체 중단**
+**부분 실패 가드 (TB-2 · 재시도 총 1회 상한)**
+
+경과 10분이 넘었는데 특정 Agent의 SendMessage가 안 왔다면, **재시도를 결정하기 전에
+반드시 산출물 파일부터 확인합니다** — 한 번의 Bash 호출로:
+
+```bash
+ls -la reports/{티커}/0*.md 2>/dev/null
+```
+
+- **파일이 있으면 무응답이 아닙니다.** 보고만 유실된 것이므로 그 파일을 읽어 7단계로 진행하고
+  **재시도하지 않습니다.** (실측 사고: 파일을 다 쓴 Agent 세트를 무응답으로 오판해 4개를
+  통째로 재실행 → 7.2M 토큰을 버렸습니다.)
+- **파일이 없으면** 사용자에게 "{역할명} Agent 무응답 (경과 N분)"을 알리고 선택하게 합니다:
+  1. **재시도 (총 1회만)** — 해당 Agent만 다시 시작. **이미 1회 재시도한 역할이면 이 선택지를
+     제시하지 않습니다.**
+  2. **제외하고 진행** — 해당 관점 없이 나머지 보고서로 7단계 통합 진행
+  3. **전체 중단**
+- 🔴 **재시도한 Agent가 또 실패하면 묻지 않고 "제외하고 진행"을 자동 선택합니다.**
+  FinalReport.md에 `⚠️ {역할명} 관점 누락 (Agent 무응답)`을 명시하고, 종합 평점에서 해당
+  차원은 "데이터 부족"으로 표기합니다. 3번째 실행은 어떤 경우에도 하지 않습니다.
+- **웨이브 단위 재실행 금지**: 실패한 역할만 다시 띄웁니다. 4개를 한꺼번에 다시 돌리지 않습니다.
 
 ### 6단계: 팀원 종료
 
@@ -263,6 +336,13 @@ Task 도구를 사용해 4개 Agent를 동시에 시작합니다 (**반드시 �
 
 완성된 최종 보고서를 `reports/{기업명}/FinalReport.md` 에 저장합니다.
 
+**섹터 마커(대시보드 파싱 계약 — FinalReport.md·README.md 둘 다)**: H1 제목 **바로 다음 줄**에
+`<!-- meta sector: {섹터명} -->` 를 남깁니다. 섹터명은 이 종목이 나온 섹터 리서치 보고서 파일명의
+섹터 토큰(`reports/{섹터}-funnel-{YYYYMMDD}.md`)과 **정확히 같은 표기**를 씁니다
+(예: `Defense`, `GLP-1-Obesity`). 퍼널을 거치지 않고 종목부터 시작했다면 그 종목이 속한 섹터명을
+같은 어휘로 적고, 판단이 어려우면 마커를 생략합니다(임의 신조어 금지 — 대시보드에서 섹터가 갈립니다).
+이 마커로 대시보드가 종목을 분야·섹터 위계에 자동 배치합니다(`tools/sync_sector_map.py`).
+
 추가로 `reports/{기업명}/README.md` 를 생성합니다. 포함 내용:
 - 리서치 수행 날짜
 - 4개 서브 보고서 링크 (01-04.md)
@@ -282,21 +362,38 @@ reports/{기업명}/
 
 ### 9단계: 데이터 검수 (준출 프로세스)
 
+검수 항목 하나당 웹 확인 1회 = 컨텍스트 전량 재전송이다. 항목 30개면 왕복 30회이고,
+이 시점의 team-lead 컨텍스트는 이미 300k대다. **표본을 12개로 제한하고, 확인 자체를
+`_data.md` 대조 → 웹 순으로 걸러 낸다**(TB-3·TB-6).
+
 ```bash
-# Step 1 — 검수 목록 추출 (15% 무작위 샘플링)
-python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
-  --report <보고서 파일 경로>
+# Step 1 — 검수 목록 추출 (15% 샘플, 최대 12개로 상한)
+python3 tools/report_audit.py extract \
+  --report <보고서 파일 경로> --max 12
+```
 
-# Step 2 — 목록의 각 항목을 신뢰할 수 있는 출처에서 직접 확인
-#           (macrotrends.net, stockanalysis.com, SEC EDGAR)
+**Step 2 — 확인은 두 단계로 나눈다 (웹 왕복을 줄이는 핵심)**
 
+1. **먼저 `reports/{티커}/_data.md` 와 대조한다.** 표본 항목의 상당수는 1.8단계에서 이미
+   SEC XBRL 원문으로 추출·교차검증된 수치다. `_data.md` 는 이미 컨텍스트에 있으므로
+   **대조 비용이 0**이다. 여기서 일치가 확인된 항목은 웹 확인을 **하지 않는다**
+   (이미 🟢[사실] 등급이며, 다시 긁어도 같은 계보의 출처일 뿐이다).
+2. **`_data.md` 에 없는 항목만** 신뢰할 수 있는 출처에서 직접 확인한다
+   (macrotrends.net, stockanalysis.com, SEC EDGAR). 같은 페이지에서 여러 항목을 한 번에
+   확인할 수 있으면 묶어서 확인한다.
+
+```bash
 # Step 3 — 준출/반려 판정 출력
-python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
+python3 tools/report_audit.py verdict \
   --results '<완성된 JSON>' \
   --report <보고서 파일명>
 ```
 
 **[준출]** 전체 통과 → 보고서 게시 가능; **[반려]** 불통과 항목 있음 → 수정 후 재심사.
+
+⚠️ 표본을 12개로 줄인 것은 **검수 강도를 낮춘 것**이다. 도구 출력의 표본 크기(`Sample size`)를
+FinalReport 검수 기록에 그대로 남겨 "몇 개를 확인했는지"가 드러나게 한다 — 검수 범위를
+숨기지 않는다.
 
 ### 10단계: 팀 정리
 
@@ -305,10 +402,19 @@ TeamDelete를 사용해 팀 리소스를 정리합니다.
 ## 중요 유의사항
 
 1. **4개 Agent는 반드시 병렬 실행** — 같은 메시지에서 Task 도구를 4번 동시에 호출합니다
-2. **Agent 보고는 SendMessage로** — 파일 협업이 아니라 메시지 커뮤니케이션입니다
+2. **Agent 보고는 SendMessage로** — 단, 보고서 전문이 아니라 **요약 + 파일 경로**를 보냅니다.
+   상세 내용은 team-lead가 파일을 읽습니다(같은 본문을 두 번 생성하지 않습니다).
 3. **데이터 정확성** — 핵심 재무는 1.8단계에서 **1회만** 수집해(`_data.md`) 4개 Agent가 공유합니다.
    같은 숫자를 Agent마다 다시 긁지 않습니다(중복 fetch = 토큰 낭비 + Agent 간 수치 불일치 원인).
    `_data.md` 밖의 데이터는 Agent가 WebSearch로 검색하고, 핵심 수치는 여전히 교차검증합니다.
+9. 🔴 **Agent는 절대 하위 Agent를 스폰하지 않습니다** (TB-1) — 팬아웃은 team-lead만,
+   깊이는 항상 1단계입니다. 이 금지는 각 Agent 프롬프트에 **인라인으로** 들어가야 합니다
+   (Agent는 이 스킬 문서를 읽지 않습니다).
+10. 🔴 **재시도는 역할당 총 1회** (TB-2) — 재시도 전에 산출물 파일부터 확인하고, 2회차도
+    실패하면 묻지 않고 "제외하고 진행"합니다. 4개를 한꺼번에 다시 돌리는 웨이브 재실행은 금지입니다.
+11. **비용 인식** — 이 스킬 1회 실행의 정상 범위는 **5~10M 토큰**입니다. 20M을 넘어가고
+    있다면 재시도 루프나 손자 Agent가 돈 것이니 즉시 멈추고 원인을 확인합니다.
+    상세는 [token-budget.md](token-budget.md).
 4. **결론은 명확하게** — 매수/관망/회피 의견과 구체적인 목표 주가 구간 제시를 회피하지 않습니다
 5. **모든 분석은 데이터 기반** — 출처를 명기합니다
 6. **인내심을 가지고 대기** — 4개 Agent의 리서치에는 몇 분이 소요됩니다. 사용자에게 실시간으로 진행 상황을 업데이트합니다
@@ -330,7 +436,7 @@ FinalReport의 최종 결론(매수/관망/회피 + 목표 주가 구간)을 **�
 박제해 사후 채점(대시보드 트랙레코드)이 가능하게 한다. FinalReport 저장 직후 실행:
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/record_call.py \
+python3 tools/record_call.py \
   --ticker {티커} --skill investment-team \
   --report reports/{티커}/FinalReport.md \
   --call {buy|hold|avoid} --conviction "{종합 확신도}" \
@@ -341,6 +447,11 @@ python3 ~/Desktop/reality-escape-device/tools/record_call.py \
 
 - **결론 → call 매핑**: 매수 → `buy` · 관망(미보유·진입가 대기) → `hold` · 회피 → `avoid`.
   이미 보유 중인 종목의 "계속 보유" 판단은 `hold`가 아니라 `keep`이다(→ `/thesis-tracker`).
+- 🔴 **`buy`는 "현재가에 매수 권고"라는 분석 결론일 뿐, 사용자가 보유했다는 뜻이 아니다.**
+  포지션 보유 여부는 사용자만 확정한다 — 콜을 근거로 `reports/track-record.md`의
+  '보유 포지션'에 올리지 않는다(관찰 논제로 남긴다).
+- **안전마진이 확보되지 않았으면 사업 품질이 최상급이어도 `buy`가 아니라 `hold`다** —
+  "훌륭한 회사"와 "훌륭한 가격"을 섞지 않는다.
 - 이 스킬은 목표 주가 구간을 제시하므로 `--target-low/--target-high/--horizon-months`를 반드시 채운다.
 - 리스크 관점(04)의 레드라인/무효화 조건과 핵심 가정(⚑)을 `--invalidation`/`--load-bearing`에 옮겨 담는다.
 - `priceAtCall`은 도구가 Yahoo에서 fetch해 박제한다(**모델 기억값 금지**). 실패 시 `--price`로 지정.

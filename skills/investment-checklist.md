@@ -9,7 +9,7 @@ $ARGUMENTS 에 대해 버핏 가치투자 매수 전 체크리스트 분석을 �
 ### ⓪ 사전 점검: 데이터 소스 접근 확인
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/site_preflight.py quality-screen
+python3 tools/site_preflight.py quality-screen
 ```
 
 차단된 소스가 있으면 스크립트가 대체 소스를 출력한다. 진행은 계속하되, **다음 규칙을 반드시 지킨다(hard rule):**
@@ -43,7 +43,22 @@ $ARGUMENTS 에서 모든 종목명/티커를 파싱한다. 각 종목에 대해 
 
 ### 2단계: 병렬 데이터 수집
 
-Task 도구를 사용해 **각 종목마다** 독립 백그라운드 에이전트를 동시에 실행한다. 각 에이전트가 수집할 항목:
+Task 도구를 사용해 **각 종목마다** 독립 백그라운드 에이전트를 동시에 실행한다.
+
+> **토큰 예산 ([token-budget.md](token-budget.md))** — 종목 수만큼 팬아웃되므로 종목당 비용이
+> 그대로 곱해진다. 아래는 권고가 아니라 상한이다:
+>
+> - **종목 1개면 에이전트를 띄우지 않고 본체에서 직접 수집**한다(에이전트 오버헤드가 더 크다).
+>   2개 이상일 때만 팬아웃하고, **동시 실행은 6개까지**.
+> - 🔴 **에이전트는 하위 에이전트를 스폰하지 않는다** (TB-1). 이 금지를 에이전트 프롬프트에
+>   **인라인으로** 박는다 — 에이전트는 이 문서를 읽지 않는다.
+> - **에이전트 1개당 조사 상한**: WebSearch 10회 · WebFetch 8회 · Bash 8회.
+>   8개 항목을 각각 따로 검색하지 말고 **한 소스에서 여러 항목을 한 번에** 걷는다.
+> - 결과는 **Write 1회**로 저장한다(Edit 반복 금지 · TB-5). 재시도는 종목당 1회까지(TB-2).
+> - 못 구한 항목은 `⬛`로 남긴다 — 상한은 정확도보다 우선하지 않는다.
+> - ⚠️ 종목 1개 기준 정상 범위는 **2~5M 토큰**이다.
+
+각 에이전트가 수집할 항목:
 
 1. **수익성**: ROE (5~10년 추이), 매출총이익률, 순이익률, Free Cash Flow
 2. **밸류에이션**: 현재 주가, 시가총액, PER (TTM), Forward PER, PBR, 배당수익률
@@ -91,7 +106,7 @@ Task 도구를 사용해 **각 종목마다** 독립 백그라운드 에이전�
 데이터로 말한다. **핵심 지표는 반드시 도구로 정확히 계산**한다:
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-valuation \
+python3 tools/financial_rigor.py verify-valuation \
   --price {주가} --eps {EPS} --bvps {주당순자산} --fcf-per-share {주당FCF} --dividend {주당배당}
 ```
 
@@ -167,7 +182,7 @@ python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-valuatio
 
 추가 검증 (**반드시 도구로 정확히 계산, 암산 금지**):
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario \
+python3 tools/financial_rigor.py three-scenario \
   --price {주가} --eps {EPS} --shares {발행주식수B} \
   --growth {낙관} {중립} {비관} --pe {낙관PE} {중립PE} {비관PE} --currency USD
 ```
@@ -242,6 +257,8 @@ python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario 
 - ❓ **회색지대** — 핵심 논쟁 포인트가 무엇인지, 투자자가 직접 판단해야 할 사항이 무엇인지 명시
 - N/A — 비상장 / 매수 불가
 
+**섹터 마커(대시보드 파싱 계약)**: 보고서 H1 제목 **바로 다음 줄**에 `<!-- meta sector: {섹터명} -->` 를 남긴다. 섹터명은 이 종목이 나온 섹터 리서치 보고서 파일명의 섹터 토큰(`reports/{섹터}-funnel-{YYYYMMDD}.md`)과 **정확히 같은 표기**를 쓴다(예: `Defense`, `GLP-1-Obesity`). 퍼널을 거치지 않고 종목부터 시작했다면 그 종목이 속한 섹터명을 같은 어휘로 적고, 판단이 어려우면 마커를 생략한다(임의 신조어 금지 — 대시보드에서 섹터가 갈린다). 이 마커로 대시보드가 종목을 분야·섹터 위계에 자동 배치한다(`tools/sync_sector_map.py`).
+
 완성된 보고서를 `reports/{회사명}/{회사명}-checklist-{YYYYMMDD}.md` 에 저장한다. 회사 폴더가 없으면 먼저 생성한다. 복수 종목 비교 시 주요 종목 이름을 대표 폴더명으로 사용하고, 파일명에 전체 종목을 명기한다 (예: `reports/Apple/Apple-MSFT-GOOGL-checklist-20260627.md`).
 
 ## 출력 형식 요건
@@ -268,13 +285,17 @@ python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario 
 가능하게 한다. 판정을 파일에 저장한 직후, 각 **상장** 종목마다 아래를 실행한다:
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/record_call.py \
+python3 tools/record_call.py \
   --ticker {티커} --skill investment-checklist \
   --report reports/{회사}/{파일}.md \
   --call {buy|hold|avoid} --conviction "{안전마진 ★평점}"
 ```
 
 - **판정 → call 매핑**: 체크리스트 통과 → `buy` · 회색지대 → `hold` · 미통과/거부 → `avoid`.
+- 🔴 **관문5(안전마진) 미통과면 다른 관문을 다 통과해도 `buy`가 아니라 `hold`다.**
+  안전마진은 매수 판단의 생명선이므로 다른 관문의 우수함으로 상계되지 않는다.
+- `buy`는 "현재가에 매수 권고"라는 분석 결론일 뿐 **사용자 보유를 의미하지 않는다** —
+  콜을 근거로 `reports/track-record.md`의 '보유 포지션'에 올리지 않는다.
 - `priceAtCall`은 도구가 그 시점 시세를 Yahoo에서 fetch해 박제한다(**모델 기억값 금지**).
   시세를 못 구하면 `--price {주가}`로 직접 지정한다(불변 값).
 - 관문5(안전마진) 3-시나리오에서 목표가 밴드가 나오면

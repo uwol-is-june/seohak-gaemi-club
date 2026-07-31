@@ -112,7 +112,15 @@ TaskCreate로 다음 4개 태스크를 생성한다:
 
 ### 5단계: 4개 Agent 병렬 실행
 
-**반드시 동일한 메시지에서 Task 도구를 4회 병렬 호출한다.** 각 Agent 설정:
+**반드시 동일한 메시지에서 Task 도구를 4회 병렬 호출한다.** (4개 고정 — 늘리지 않는다.)
+
+> **토큰 예산 ([token-budget.md](token-budget.md))** — 🔴 **Agent는 하위 Agent를 스폰하지
+> 않는다**(TB-1). Agent당 조사 상한은 **WebSearch 8회 · WebFetch 6회**이고, 결과는
+> **Write 1회**로 낸다. 재시도는 역할당 1회까지, 실패하면 그 차원을 "데이터 부족"으로
+> 표기하고 진행한다(TB-2). 이 스킬은 **빠른 원인 분석**이므로 정상 범위는 **1~3M 토큰**이다.
+> 아래 프롬프트 템플릿에 이 제약을 인라인으로 포함시킨다.
+
+각 Agent 설정:
 - `subagent_type`: `general-purpose`
 - `run_in_background`: `true`
 - `team_name`: `{티커}-newspulse`

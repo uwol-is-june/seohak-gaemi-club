@@ -251,9 +251,15 @@ def extract_data_points(md_text: str) -> list:
     return points
 
 
-def sample_points(points: list, ratio: float = 0.15, seed: int = None) -> list:
-    """Randomly sample ratio% of data points, minimum 3, maximum 30."""
-    n = max(3, min(30, math.ceil(len(points) * ratio)))
+def sample_points(points: list, ratio: float = 0.15, seed: int = None,
+                  cap: int = 30) -> list:
+    """Randomly sample ratio% of data points, minimum 3, maximum `cap` (default 30).
+
+    검수 항목 하나당 웹 확인 1회 = 컨텍스트 전량 재전송이므로, 팬아웃 스킬에서는
+    cap 을 낮춰(--max) 검수 비용을 묶는다. 표본 축소는 검수 강도를 낮추므로
+    보고서에 표본 크기를 반드시 남긴다(도구가 출력에 포함).
+    """
+    n = max(3, min(cap, math.ceil(len(points) * ratio)))
     n = min(n, len(points))
     rng = Random(seed)
     sampled = rng.sample(points, n)
@@ -476,6 +482,9 @@ Workflow:
     ext.add_argument('--report', required=True, help='Report file path (Markdown)')
     ext.add_argument('--ratio', type=float, default=0.15, help='Sampling ratio, default 0.15')
     ext.add_argument('--seed', type=int, default=None, help='Random seed (optional, for reproducibility)')
+    ext.add_argument('--max', type=int, default=30, dest='max_items',
+                     help='Cap on sample size, default 30. Lower it for fan-out skills '
+                          '(each item costs one web round-trip). See skills/token-budget.md TB-3.')
     ext.add_argument('--dry-run', action='store_true', help='Print only, no JSON output')
 
     # verdict
@@ -495,7 +504,8 @@ Workflow:
             text = f.read()
 
         all_points = extract_data_points(text)
-        sampled = sample_points(all_points, ratio=args.ratio, seed=args.seed)
+        sampled = sample_points(all_points, ratio=args.ratio, seed=args.seed,
+                                cap=args.max_items)
 
         print('=' * 70)
         print(f'Report Data Audit Checklist')

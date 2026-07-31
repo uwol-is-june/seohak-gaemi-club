@@ -9,7 +9,7 @@
 **웹 페이지를 긁기 전에** 아래를 실행한다. 연간 핵심 재무는 여기서 끝난다.
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/fetch_financials.py {티커} --years 10 --cross
+python3 tools/fetch_financials.py {티커} --years 10 --cross
 ```
 
 - 산출: `reports/{티커}/_data.md`(요약표 — **읽는 것은 이것**) + `_data.json`(provenance 감사용)

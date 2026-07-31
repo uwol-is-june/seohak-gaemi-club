@@ -25,7 +25,7 @@ Agent를 띄우기 **전에** 연간 핵심 재무를 딱 한 번 수집해 박�
 숫자를 각자 긁으면 토큰만 배로 나가고 Agent마다 다른 값을 들고 와 리포트가 어긋난다.
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/fetch_financials.py {티커} --years 10 --cross
+python3 tools/fetch_financials.py {티커} --years 10 --cross
 ```
 
 - `reports/{티커}/_data.md` — 요약표. **Agent가 읽는 것은 이 파일이다.**
@@ -79,6 +79,17 @@ Agent 도구를 사용해 백그라운드 Agent를 **병렬**로 실행하여 �
 ### 3번째 단계: 4개 병렬 연구 Agent 실행
 
 Agent 도구를 사용해 **같은 메시지 내**에서 4개의 백그라운드 Agent를 실행한다.
+
+> **토큰 예산 ([token-budget.md](token-budget.md))** — 각 Agent 프롬프트에 아래를
+> **인라인으로** 포함시킨다(Agent는 이 문서를 읽지 않는다):
+>
+> - 🔴 **하위 Agent를 스폰하지 않는다** (TB-1). 팬아웃은 팀 리드만, 깊이는 1단계.
+> - **조사 상한**: WebSearch 10회 · WebFetch 8회 · Bash 8회. 상한에 닿으면 가진 자료로 작성.
+> - 실적 원본(10-Q·8-K·어닝스콜)은 2단계에서 **1회 수집해 공유**한다 — Agent마다 다시 긁지 않는다.
+> - 결과는 **Write 1회**로 저장(Edit 반복 금지 · TB-5). 팀 리드에게는 **요약 + 파일 경로**만
+>   보내고 본문을 메시지에 다시 붙여넣지 않는다.
+> - 재시도는 역할당 1회까지, 2회차 실패면 그 관점을 "데이터 부족"으로 표기하고 진행(TB-2).
+> - 못 구한 값은 `⬛`로 남긴다 — 상한은 정확도보다 우선하지 않는다.
 
 ---
 
@@ -135,7 +146,7 @@ Agent 도구를 사용해 **같은 메시지 내**에서 4개의 백그라운드
    - `_data.md` 에 없는 수치(분기·Non-GAAP·세그먼트)는 최소 2개 출처 교차 검증 (macrotrends.net + stockanalysis.com)
 
    ```bash
-   python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py cross-validate \
+   python3 tools/financial_rigor.py cross-validate \
      --metric "revenue" --values {value1} {value2} --sources "macrotrends" "stockanalysis"
    ```
 
@@ -160,11 +171,11 @@ Agent 도구를 사용해 **같은 메시지 내**에서 4개의 백그라운드
 5. **밸류에이션 및 안전 마진 업데이트**
 
    ```bash
-   python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-market-cap \
+   python3 tools/financial_rigor.py verify-market-cap \
      --price {price} --shares {shares} --reported {reported_market_cap} --currency USD
-   python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py verify-valuation \
+   python3 tools/financial_rigor.py verify-valuation \
      --price {price} --eps {EPS} --bvps {book_value_per_share}
-   python3 ~/Desktop/reality-escape-device/tools/financial_rigor.py three-scenario \
+   python3 tools/financial_rigor.py three-scenario \
      --price {price} --eps {EPS} --shares {shares_billions} \
      --growth {bull} {base} {bear} --pe {bull_PE} {base_PE} {bear_PE}
    ```
@@ -441,10 +452,10 @@ reports/{회사명}/
 최종 아티클에 대해 점검을 수행한다:
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
+python3 tools/report_audit.py extract \
   --report reports/{회사명}/{회사명}-earnings-{기간}.md
 
-python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
+python3 tools/report_audit.py verdict \
   --results '<입력된 JSON>' \
   --report {리포트 파일명}
 ```

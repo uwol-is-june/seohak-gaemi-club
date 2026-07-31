@@ -16,7 +16,7 @@ $ARGUMENTS 산업에 대한 체계적인 가치사슬 투자 리서치를 수행
 ## ⓪ 사전 점검: 데이터 소스 접근 확인
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/site_preflight.py industry-research
+python3 tools/site_preflight.py industry-research
 ```
 
 산업 리서치는 특정 티커 없이 사이트 접근성만 확인한다. 차단된 소스가 있으면 스크립트가 대체 소스를 출력한다. **차단 여부와 관계없이 리서치를 계속 진행한다.**
@@ -109,6 +109,18 @@ AI 모델 파라미터 확장 경쟁
 ## 3단계: 전체 상장기업 스캔
 
 Task 도구를 사용해 백그라운드 Agent를 실행하고, 해당 산업의 모든 상장기업을 포괄적으로 검색한다.
+
+> **팬아웃 상한 ([token-budget.md](token-budget.md))** — 이 단계는 Agent 수 지정이 없어
+> 실측에서 서브에이전트가 31~41개까지 늘어난 적이 있다(2026-07-27 AI Infrastructure 15.7M,
+> 07-28 E-commerce 25.3M). 아래를 지킨다:
+>
+> - **Agent는 가치사슬 섹터별로 1개씩, 최대 6개**. 기업 1개당 Agent를 띄우지 않는다
+>   (이 단계는 목록·분류 작업이지 심층 분석이 아니다).
+> - 🔴 **Agent는 하위 Agent를 스폰하지 않는다** (TB-1). 팬아웃은 본체만, 깊이는 1단계.
+>   이 금지를 각 Agent 프롬프트에 **인라인으로** 박는다.
+> - **Agent 1개당 조사 상한**: WebSearch 10회 · WebFetch 8회. 결과는 **Write 1회**로 낸다.
+> - 재시도는 Agent당 1회까지. 실패하면 그 섹터는 "데이터 부족"으로 표기하고 진행한다(TB-2).
+> - ⚠️ 이 스킬 1회 실행의 정상 범위는 **5~12M 토큰**이다.
 
 ### 검색 출처
 - **주요 데이터**: macrotrends.net/stocks/charts/{TICKER}
@@ -322,13 +334,13 @@ Task 도구를 사용해 백그라운드 Agent를 실행하고, 해당 산업의
 
 ```bash
 # Step 1 — 샘플 검사 목록 추출 (15% 무작위 샘플링)
-python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
+python3 tools/report_audit.py extract \
   --report <보고서 파일 경로>
 
 # Step 2 — 목록의 각 항목을 신뢰할 수 있는 출처에서 데이터 확인 (skills/financial-data.md 참고)
 
 # Step 3 — 통과/반려 판정 출력
-python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
+python3 tools/report_audit.py verdict \
   --results '<작성된 JSON>' \
   --report <보고서 파일명>
 ```

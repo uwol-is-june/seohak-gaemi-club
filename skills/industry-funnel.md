@@ -21,7 +21,7 @@ $ARGUMENTS 산업/테마에 대해 퍼널 방식의 가치투자 스크리닝을
 ## ⓪ 사전 점검: 데이터 소스 접근 확인
 
 ```bash
-python3 ~/Desktop/reality-escape-device/tools/site_preflight.py industry-funnel
+python3 tools/site_preflight.py industry-funnel
 ```
 
 퍼널 스크리닝은 특정 티커 없이 사이트 접근성만 확인한다. 차단된 소스가 있으면 스크립트가 대체 소스를 출력한다. **차단 여부와 관계없이 스크리닝을 계속 진행한다.**
@@ -53,6 +53,20 @@ python3 ~/Desktop/reality-escape-device/tools/site_preflight.py industry-funnel
 ```
 
 각 단계에서 "탈락된 종목"은 반드시 탈락 이유를 기록해야 한다. 블랙박스 방식은 금지한다.
+
+> **토큰 예산 ([token-budget.md](token-budget.md))** — 퍼널은 **위로 갈수록 얕게, 아래로 갈수록
+> 깊게** 파는 구조다. 이 원칙이 깨지면(30~60개 종목을 전부 깊이 조사) 비용이 폭발한다.
+>
+> | 단계 | 종목 수 | 종목당 조사 상한 |
+> |---|---|---|
+> | 1단계 스캔 | 30~60 | **개별 조회 금지** — 스크리너/목록 페이지에서 일괄로 받는다 |
+> | 2단계 1차 스크리닝 | ≤10 | WebSearch 1회 + WebFetch 1회 (한 페이지에 5개 지표가 대부분 있다) |
+> | 3단계 정밀 분석 | ≤10 | WebSearch 2회 · WebFetch 2회 |
+> | 4단계 4대가 심층 | 3 | WebSearch 6회 · WebFetch 5회 |
+>
+> - Agent를 띄운다면 **깊이는 1단계**, 동시 실행 8개까지, 하위 Agent 스폰 금지(TB-1).
+> - 보고서는 **Write 1회**로 저장한다(TB-5). 못 구한 값은 `⬛`.
+> - ⚠️ 이 스킬 1회 실행의 정상 범위는 **5~12M 토큰**이다.
 
 ---
 
@@ -308,6 +322,16 @@ A = 데이터 충분하고 신뢰 가능; B = 일부 누락이 있으나 주요 
 6. **양면 제시**: 각 핵심 판단에는 반대 논거 필수 첨부
 7. **각 단계 탈락 기록**: 탈락된 기업도 이름과 이유를 남길 것
 8. **데이터 기준일 표기**: 보고서 맨 위에 "데이터 기준일: YYYY-MM-DD"를 표기하고, ⓪-2 단계에서 노후화로 판정된 항목은 "(갱신됨, 원본 기준일 YYYY-MM)"으로 별도 표시한다
+9. **섹터 마커(필수, 대시보드 파싱 계약)**: H1 제목 **바로 다음 줄**에 최종 선정 종목을 기계 판독 마커로 남긴다.
+
+   ```markdown
+   # {산업명} 퍼널 스크리닝 — 전체 시장 → 최종 3종목
+   <!-- funnel sector: Defense | finalists: NOC, GD, PLTR -->
+   ```
+
+   - `sector` 값은 **파일명의 섹터 토큰과 정확히 같은 표기**를 쓴다(`Defense-funnel-20260730.md` → `Defense`, `GLP-1-Obesity-funnel-20260723.md` → `GLP-1-Obesity`). 표기가 어긋나면 대시보드에서 같은 섹터가 둘로 갈린다.
+   - `finalists` 는 5단계 최종 조합표의 종목 티커만 쉼표로 나열한다(관찰·대기 종목과 현금 행은 제외, 굵게·괄호 없이 순수 티커).
+   - 이 마커가 **'티커 → 섹터' 자동 배정의 근거**다(`tools/sync_sector_map.py` → 대시보드 종목별 보고서 탭의 분야·섹터 위계). 마커가 없으면 후속 `/investment-team` 보고서를 써도 그 종목은 '미분류'로 남는다.
 
 ---
 
@@ -317,13 +341,13 @@ A = 데이터 충분하고 신뢰 가능; B = 일부 누락이 있으나 주요 
 
 ```bash
 # Step 1 — 검증 목록 추출 (15% 무작위 샘플링)
-python3 ~/Desktop/reality-escape-device/tools/report_audit.py extract \
+python3 tools/report_audit.py extract \
   --report <보고서 파일 경로>
 
 # Step 2 — 목록의 각 항목을 신뢰 가능한 출처에서 수치 확인 (skills/financial-data.md 참조)
 
 # Step 3 — 통과/반려 판정 출력
-python3 ~/Desktop/reality-escape-device/tools/report_audit.py verdict \
+python3 tools/report_audit.py verdict \
   --results '<작성된 JSON>' \
   --report <보고서 파일명>
 ```

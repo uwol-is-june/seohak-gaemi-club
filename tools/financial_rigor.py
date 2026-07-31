@@ -376,6 +376,74 @@ def three_scenario_valuation(current_price, current_eps, shares_billion,
 
 
 # ---------------------------------------------------------------------------
+# Batch runner — 토큰 다이어트용
+# ---------------------------------------------------------------------------
+
+def run_batch(args):
+    """여러 검증을 한 프로세스에서 순차 실행한다.
+
+    도구 호출 1회 = 컨텍스트 전량 재전송이므로, 검증 4종을 각각 Bash로 부르면
+    같은 컨텍스트를 4번 낸다. batch는 그것을 1회로 줄인다(결과는 동일).
+    한 스텝이 실패해도 나머지는 계속 실행한다. 실패가 하나라도 있으면 종료코드 1,
+    전부 성공하면 0 (실패 **개수**는 종료코드가 아니라 마지막 요약 줄에 출력된다).
+    """
+    if args.spec_file:
+        if args.spec_file == "-":
+            raw = sys.stdin.read()
+        else:
+            with open(args.spec_file, encoding="utf-8") as fh:
+                raw = fh.read()
+    elif args.spec:
+        raw = args.spec
+    else:
+        print("❌ batch: --spec 또는 --spec-file 중 하나가 필요하다", file=sys.stderr)
+        return 2
+
+    steps = json.loads(raw)
+    if isinstance(steps, dict):
+        steps = [steps]
+
+    failed = 0
+    for i, step in enumerate(steps, 1):
+        cmd = step.get("cmd")
+        print()
+        print("=" * 72)
+        print(f"[{i}/{len(steps)}] {cmd}")
+        print("=" * 72)
+        try:
+            if cmd == "verify-market-cap":
+                verify_market_cap(step["price"], step["shares"], step["reported"],
+                                  step.get("currency", ""))
+            elif cmd == "verify-valuation":
+                verify_valuation(step["price"], step.get("eps"), step.get("bvps"),
+                                 step.get("fcf_per_share"), step.get("dividend"),
+                                 step.get("revenue_per_share"))
+            elif cmd == "cross-validate":
+                cross_validate(step["field"], step["values"], step.get("unit", ""),
+                               step.get("tolerance", 2.0))
+            elif cmd == "benford":
+                benford_check(step["values"])
+            elif cmd == "calc":
+                exact_calc(step["expr"])
+            elif cmd == "three-scenario":
+                g = step["growth"]
+                pe = step["pe"]
+                three_scenario_valuation(step["price"], step["eps"], step["shares"],
+                                         g[0], g[1], g[2], pe[0], pe[1], pe[2],
+                                         step.get("years", 3), step.get("currency", ""))
+            else:
+                print(f"❌ 알 수 없는 cmd: {cmd!r}", file=sys.stderr)
+                failed += 1
+        except Exception as exc:  # 한 스텝 실패가 나머지를 막지 않는다
+            print(f"❌ {cmd} 실패: {type(exc).__name__}: {exc}", file=sys.stderr)
+            failed += 1
+
+    print()
+    print(f"batch 완료 — {len(steps) - failed}/{len(steps)} 성공")
+    return 1 if failed else 0
+
+
+# ---------------------------------------------------------------------------
 # CLI Entry Point
 # ---------------------------------------------------------------------------
 
@@ -390,6 +458,8 @@ Examples:
   %(prog)s cross-validate --field revenue --values '{"Annual Report": 391, "Yahoo": 390, "StockAnalysis": 391}' --unit B
   %(prog)s benford --values '[1234, 2345, 3456, ...]'
   %(prog)s calc --expr '180 * 15.2e9'
+  %(prog)s batch --spec '[{"cmd":"verify-market-cap","price":180,"shares":15.2e9,"reported":2.74e12},
+                          {"cmd":"verify-valuation","price":180,"eps":6.43,"bvps":4.38}]'
         """)
 
     sub = parser.add_subparsers(dest="command")
@@ -440,9 +510,19 @@ Examples:
     ts.add_argument("--years", type=int, default=3)
     ts.add_argument("--currency", default="")
 
+    # batch — 여러 검증을 한 프로세스에서 실행 (Bash 왕복 1회로 압축)
+    ba = sub.add_parser(
+        "batch",
+        help="Run several checks in ONE call (token diet: 1 Bash round-trip instead of N)",
+    )
+    ba.add_argument("--spec", help='JSON array of steps: [{"cmd":"verify-valuation","price":..}, ...]')
+    ba.add_argument("--spec-file", help="Path to a file holding the same JSON array ('-' = stdin)")
+
     args = parser.parse_args()
 
-    if args.command == "verify-market-cap":
+    if args.command == "batch":
+        return run_batch(args)
+    elif args.command == "verify-market-cap":
         verify_market_cap(args.price, args.shares, args.reported, args.currency)
     elif args.command == "verify-valuation":
         verify_valuation(args.price, args.eps, args.bvps, args.fcf_per_share,
@@ -466,4 +546,4 @@ Examples:
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)
