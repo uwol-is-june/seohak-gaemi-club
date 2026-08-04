@@ -30,6 +30,12 @@ import sys
 from decimal import Decimal, Context, ROUND_HALF_EVEN
 from random import Random
 
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 _CTX = Context(prec=28, rounding=ROUND_HALF_EVEN)
 
 # ---------------------------------------------------------------------------

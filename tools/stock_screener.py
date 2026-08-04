@@ -25,6 +25,12 @@ import sys
 from datetime import datetime, timedelta
 from collections import OrderedDict
 
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 # ============================================================
 # Config
 # ============================================================

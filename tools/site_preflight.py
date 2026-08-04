@@ -19,6 +19,12 @@ import os
 import subprocess
 import sys
 
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 # Windows 콘솔(cp949 등)에서 🔴/✅ 같은 이모지 출력 시 UnicodeEncodeError로 스크립트가
 # 통째로 죽는 것을 방지한다. 표준출력을 UTF-8로 재설정하고, 재설정이 불가한 환경에서는
 # 인코딩 불가 문자를 대체 문자(?)로 흘려보내 최소한 실행은 완주하게 한다.

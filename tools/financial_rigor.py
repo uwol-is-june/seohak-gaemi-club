@@ -26,6 +26,12 @@ import operator as _operator
 import sys
 from decimal import Decimal, Context, ROUND_HALF_EVEN, InvalidOperation
 
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 # 안전한 산술 평가기(TASK-67): eval 대신 AST 를 직접 걸어 +,-,*,/ 와 괄호만 허용한다.
 # 문자 화이트리스트만으로는 9**9**9 같은 지수 DoS 를 막지 못하므로 ** 자체를 미허용한다.
 _ARITH_BINOPS = {ast.Add: _operator.add, ast.Sub: _operator.sub,

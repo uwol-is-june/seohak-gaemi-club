@@ -10,6 +10,13 @@
 from __future__ import annotations
 
 import argparse
+import sys
+
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 from publish_report import REPO_ROOT, build_row, supabase_upsert
 

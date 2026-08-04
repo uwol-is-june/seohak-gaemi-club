@@ -6,10 +6,17 @@ calculate potential upside, and output Top 100.
 
 import json
 import subprocess
+import sys
 import time
 import csv
 import os
 from datetime import datetime
+
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 API_BASE = (
     "https://lt.morningstar.com/api/rest.svc/klr5zyak8x/security/screener"
