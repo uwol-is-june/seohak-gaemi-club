@@ -5,7 +5,7 @@
 
 > ⚠️ 이 문서는 **정확도보다 우선하지 않는다.** 아래 상한에 걸려 데이터를 못 구했으면
 > 추측으로 채우지 말고 `⬛`(데이터부족)으로 남긴다 —
-> [data-confidence.md](data-confidence.md) 핵심 원칙 4와 동일하다.
+> [data-confidence.md](skills/data-confidence.md) 핵심 원칙 4와 동일하다.
 > "상한 때문에 빈칸"과 "상한 때문에 지어냄"은 완전히 다르다.
 
 ---

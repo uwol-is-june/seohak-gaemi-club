@@ -59,7 +59,7 @@ SEC EDGAR는 거의 차단되지 않으나 Seeking Alpha 어닝스 콜 트랜스
 4. **투자자의 날 / 애널리스트 데이 자료** (최근에 개최된 경우)
 
 원문을 확보하지 못한 경우, 다음 표준 데이터 소스를 활용하되 반드시 "원본 재무 보고서 아님, 3자 요약 출처"라고 명시해야 한다:
-**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+**데이터 소스** ([financial-data.md](skills/financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
 ⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 핵심 데이터는 반드시 2개 이상의 출처에서 교차 검증하며, 오차가 1%를 초과하면 표시해야 한다.
@@ -249,7 +249,7 @@ python3 tools/report_audit.py verdict \
 
 ## 데이터 신뢰도 표기 (필수)
 
-본 보고서는 **[data-confidence.md](data-confidence.md) 표준**을 적용한다:
+본 보고서는 **[data-confidence.md](skills/data-confidence.md) 표준**을 적용한다:
 
 - 핵심 수치·판단 옆에 **신뢰도 등급 + 유형 태그**를 단다 — 🟢높음(2+독립출처 교차검증 또는 SEC 원문 직접 확인) / 🟡보통(단일출처·경미편차·해석여지) / 🔴낮음(추정·미확정주장·구데이터) / ⬛데이터부족(공백 유지) + `[사실]`/`[추정]`/`[주장]`/`[의견]`. 예: `Q4 매출 $X 🟢[사실]`, `차기 가이던스 🔴[추정]`.
 - **출처 독립성 주의**: 회사 IR·보도자료와 집계 사이트는 둘 다 회사 공시 파생이라 상호 독립이 아니다 → 🟢은 SEC 원문 직접 확인 또는 계보가 다른 두 출처를 요구한다.

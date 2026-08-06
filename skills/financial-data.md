@@ -167,41 +167,17 @@ macrotrends·Seeking Alpha·Glassdoor·Bloomberg 모두 검색으로 실제 수�
 
 ---
 
-## 빠른 참조 색인 — 주요 종목
+## SEC EDGAR 공시 유형
 
-| 종목 | 티커 | 주요 출처 (직접 접근·🟢) | 보조 (⚠️ 차단·WebSearch 경유·🟡) |
-|------|------|-----------|-----------|
-| Apple | AAPL | stockanalysis.com/stocks/aapl | macrotrends.net/stocks/charts/AAPL |
-| Microsoft | MSFT | stockanalysis.com/stocks/msft | macrotrends.net/stocks/charts/MSFT |
-| Alphabet (Google) | GOOGL | stockanalysis.com/stocks/googl | macrotrends.net/stocks/charts/GOOGL |
-| Amazon | AMZN | stockanalysis.com/stocks/amzn | macrotrends.net/stocks/charts/AMZN |
-| NVIDIA | NVDA | stockanalysis.com/stocks/nvda | macrotrends.net/stocks/charts/NVDA |
-| Meta | META | stockanalysis.com/stocks/meta | macrotrends.net/stocks/charts/META |
-| Berkshire Hathaway | BRK.B | stockanalysis.com/stocks/brk.b | macrotrends.net/stocks/charts/BRK.B |
-| JPMorgan Chase | JPM | stockanalysis.com/stocks/jpm | macrotrends.net/stocks/charts/JPM |
-| Visa | V | stockanalysis.com/stocks/v | macrotrends.net/stocks/charts/V |
-| Costco | COST | stockanalysis.com/stocks/cost | macrotrends.net/stocks/charts/COST |
-| Netflix | NFLX | stockanalysis.com/stocks/nflx | macrotrends.net/stocks/charts/NFLX |
-| Tesla | TSLA | stockanalysis.com/stocks/tsla | macrotrends.net/stocks/charts/TSLA |
-| UnitedHealth | UNH | stockanalysis.com/stocks/unh | macrotrends.net/stocks/charts/UNH |
+0단계 도구(`tools/fetch_financials.py`)가 덮지 않는 항목 — 분기 데이터, Non-GAAP, 세그먼트·지역별
+분해, 경영진 보수 — 은 `sec.gov/cgi-bin/browse-edgar` 에서 티커로 검색해 원문을 연다.
 
----
-
-## SEC EDGAR 활용 가이드
-
-원본 재무제표가 필요한 경우 아래 절차를 따른다:
-
-```
-1. sec.gov/cgi-bin/browse-edgar 접속
-2. "Company name" 또는 티커 입력 후 검색
-3. Filing type 선택:
-   - 10-K  → 연간 보고서 (가장 중요)
-   - 10-Q  → 분기 보고서
-   - 8-K   → 중요 공시 (실적 발표, M&A, 경영진 변경 등)
-   - DEF 14A → 주주총회 위임장 (경영진 보수, 주요 안건)
-4. 해당 보고서 → "Documents" 탭 → 10-K.htm 또는 10-K.pdf 열기
-5. Ctrl+F로 "Revenue", "Net income", "Cash flows from operations" 검색하여 수치 직접 확인
-```
+| Filing | 내용 |
+|--------|------|
+| 10-K | 연간 보고서 — 사업 설명·리스크 요인·감사받은 재무제표 |
+| 10-Q | 분기 보고서 (미감사) |
+| 8-K | 수시 공시 — 실적 발표, M&A, 경영진 변경 |
+| DEF 14A | 주주총회 위임장 — 경영진 보수, 지분 구조, 주요 안건 |
 
 ---
 
@@ -222,7 +198,7 @@ macrotrends·Seeking Alpha·Glassdoor·Bloomberg 모두 검색으로 실제 수�
 
 ## 관련 표준 — 데이터 신뢰도 표기
 
-본 문서는 데이터를 **어떻게 수집·교차검증하는가**를 정의한다. 그 결과 나온 각 주장의 **신뢰도를 어떻게 표기하는가**는 자매 표준 [data-confidence.md](data-confidence.md)를 따른다:
+본 문서는 데이터를 **어떻게 수집·교차검증하는가**를 정의한다. 그 결과 나온 각 주장의 **신뢰도를 어떻게 표기하는가**는 자매 표준 [data-confidence.md](skills/data-confidence.md)를 따른다:
 
 - 주장 단위 등급(🟢높음/🟡보통/🔴낮음/⬛데이터부족) + 유형 태그(`[사실]`/`[추정]`/`[주장]`/`[의견]`)
 - 보고서 말미 기계 판독용 요약 블록(`<!-- confidence-summary ... verdict: 높음|보통|낮음 -->`)

@@ -55,7 +55,7 @@ $ARGUMENTS 에 대해 투자 논제 추적 검토를 실행한다.
 
 다음 소스에서 현재 주가, 밸류에이션 지표(PER, PBR, 배당수익률), 최신 실적 핵심 데이터를 수집해 밸류에이션 앵커를 채운다:
 
-**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+**데이터 소스** ([financial-data.md](skills/financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
 ⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 동일 종목에 대해 `/investment-team` 보고서가 이미 있다면 그 보고서를 우선 참조한다.
@@ -71,7 +71,7 @@ python3 tools/financial_rigor.py batch --spec '[
 ]'
 ```
 
-> **토큰 예산 ([token-budget.md](token-budget.md))** — 이 스킬은 Agent 팬아웃이 없는데도
+> **토큰 예산 ([token-budget.md](skills/token-budget.md))** — 이 스킬은 Agent 팬아웃이 없는데도
 > 2026-07-31 GOOGL 실행에서 16.1M을 썼다. 원인은 잔 도구 호출 누적이었다
 > (Bash 57회 · Edit 18회 · Read 16회). 도구 호출 1회 = 컨텍스트 전량 재전송이다.
 >
@@ -381,7 +381,7 @@ python3 tools/record_call.py \
 
 ## 데이터 신뢰도 표기 (필수)
 
-본 보고서는 **[data-confidence.md](data-confidence.md) 표준**을 적용한다:
+본 보고서는 **[data-confidence.md](skills/data-confidence.md) 표준**을 적용한다:
 
 - 논제 가정·검증 근거 옆에 **신뢰도 등급 + 유형 태그**를 단다 — 🟢높음(2+독립출처 교차검증 또는 SEC 원문 직접 확인) / 🟡보통(단일출처·경미편차·해석여지) / 🔴낮음(추정·미확정주장·구데이터) / ⬛데이터부족(공백 유지) + `[사실]`/`[추정]`/`[주장]`/`[의견]`.
 - **출처 독립성 주의**: 회사 IR·보도자료와 집계 사이트는 둘 다 회사 공시 파생이라 상호 독립이 아니다 → 🟢은 원문 직접 확인 또는 계보가 다른 두 출처를 요구한다.

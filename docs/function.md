@@ -40,12 +40,12 @@
 | **A2** | `/industry-funnel` | **S3** | `/bottleneck-hunter` |
 | **A3** | `/quality-screen` | **S5** | `/dyp-ask` |
 | **A4** | `/investment-checklist` | **S6** | `/investment-article` |
-| **A5+** | `/investment-team` | **S7** | `/financial-data` |
-| **A6** | `/thesis-tracker` (논제 수립 모드) | **T1** | `financial_rigor.py` |
-| **B1** | `/earnings-review` | **T2** | `report_audit.py` |
-| **B1+** | `/earnings-team` (B1 심화 대안) | **T3** | `site_preflight.py` |
-| **B2** | `/thesis-tracker` (분기검토 모드) | **T4** | `stock_screener.py` |
-| **C1** | `/portfolio-review` | **T5** | `morningstar_fair_value.py` |
+| **A5+** | `/investment-team` | **T1** | `financial_rigor.py` |
+| **A6** | `/thesis-tracker` (논제 수립 모드) | **T2** | `report_audit.py` |
+| **B1** | `/earnings-review` | **T3** | `site_preflight.py` |
+| **B1+** | `/earnings-team` (B1 심화 대안) | **T4** | `stock_screener.py` |
+| **B2** | `/thesis-tracker` (분기검토 모드) | **T5** | `morningstar_fair_value.py` |
+| **C1** | `/portfolio-review` | | |
 | **C2** | `/thesis-tracker` (분기검토, 종목별 반복) | | |
 
 ---
@@ -221,25 +221,39 @@
 
 ### [S3] `/bottleneck-hunter` ⚠️ 🔧
 
-**언제**: 메가트렌드에서 공급망 병목 고리를 찾아 차익거래 기회를 발굴할 때
+**언제**: 메가트렌드에서 공급망 병목 고리를 찾아 차익거래 기회를 발굴할 때.
+섹터명을 이미 아는 경우는 [A1] `/industry-research` 가 낫다 — 이쪽은 **섹터가 아니라 트렌드만
+있을 때의 진입점**이고, 시총 $100B 미만을 우선해 대형주를 의도적으로 뒤로 미룬다.
 
 **동작**: 공급망을 Layer 0~4로 분해 → 병목 고리 식별 → 관련 상장 기업 발굴 → 밸류에이션 확인
 
-**의존성**: WebSearch, Agent SDK (Task 병렬)
+**자동 실행 (2026-08-06 설정)**: Windows 작업 스케줄러가 **매일 09:00 KST**에
+`tools/schedule_bottleneck_scan.ps1` 을 돌린다(작업명 `AI-Berkshire-Bottleneck-Scan`).
+새 신호가 없으면 파일을 만들지 않으며, 산출물은 대시보드 **'병목 신호' 탭**에 모인다.
+세션 크론·클라우드 루틴을 쓰지 않는 이유는 스크립트 헤더 주석 참조(요약: 클라우드는
+로컬 `.env.local` 의 Supabase 키에 접근할 수 없어 발행이 끊긴다).
+
+**의존성**: WebSearch, `claude` CLI 헤드리스(`-p`), `tools/publish_changed_reports.py`
 
 **위험 요소**:
 | 위험 | 내용 | 심각도 |
 |------|------|--------|
-| 복잡한 디렉토리 구조 | 시간별 폴더 자동 생성 — 파일 관리 복잡 | ⚠️ 중간 |
+| PC 전원 의존 | 09:00에 PC가 꺼져 있으면 그날 스캔은 건너뛴다(누락 알림 없음) | ⚠️ 중간 |
 | 소형 공급업체 데이터 부족 | Layer 2/3 기업은 데이터 소스가 거의 없을 수 있음 | ⚠️ 중간 |
+| 미검증 스킬 | 2026-08-06 기준 실행 이력 0건 — 자동 스캔 2주 후 산출물로 존폐 판단 | ⚠️ 중간 |
 
 ---
 
 ### [S5] `/dyp-ask` ✅
 
-**언제**: 투자 아이디어나 결정을 단융핑의 시각으로 검토받고 싶을 때
+**언제**: 풀 리서치를 돌리기 전, 아이디어를 단융핑 시각으로 빠르게 걸러볼 때
 
 **동작**: 단융핑 본인으로서 어떤 질문에도 답변 (순수 추론, 외부 의존 없음, 파일 저장 없음)
+
+> ⚠️ **롤플레이 스킬이다 — 데이터를 조회하지 않는다.** 여기서 나온 답변은 보고서에
+> **근거로 인용하지 않는다**(`skills/data-confidence.md` 기준 🔴[의견]에도 못 미친다 — 출처가 없다).
+> 실제 데이터 위에서 같은 프레임워크를 돌리는 것은 `/investment-team` 의
+> `01-BusinessModel-DYP-Perspective.md` 다.
 
 ---
 
@@ -256,9 +270,19 @@
 
 ---
 
-### [S7] `/financial-data` ✅
+## 4-1. 공용 표준 문서 (슬래시 커맨드 아님)
 
-**동작**: 재무 데이터 수집·교차검증 기준 참조 문서. 실행이 아닌 표준 정의용.
+`skills/` 에 있으나 **실행 스킬이 아니다** — 위 스킬들이 참조하는 규칙집이다.
+`~/.claude/commands/` 에 설치하지 않는다(호출해도 산출물이 없고 오발동 대상만 늘린다).
+
+| 문서 | 정의하는 것 | 참조 스킬 |
+|------|-----------|----------|
+| `skills/data-confidence.md` | 신뢰도 4등급(🟢🟡🔴⬛) · 유형 태그 · `<!-- confidence-summary -->` 블록 규격 | 11개 |
+| `skills/financial-data.md` | 출처 우선순위 · 교차검증 오차 규칙(1%/5%) · SEC 공시 유형 | 10개 |
+| `skills/token-budget.md` | 하드 규칙 TB-1~TB-7 (손자 에이전트 금지 · 재시도 1회 · 7일 내 산출물 재사용) | 8개 |
+
+> ⚠️ `data-confidence.md` 의 요약 블록 규격은 **대시보드가 파싱하는 기계 계약**이다
+> (`dashboard/lib/report-helpers.ts`). 형식을 바꾸면 신뢰도 pill이 깨진다.
 
 ---
 

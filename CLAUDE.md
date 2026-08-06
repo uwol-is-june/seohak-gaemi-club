@@ -212,7 +212,12 @@ reports/{티커}/
 
 ```bash
 cp skills/*.md ~/.claude/commands/
+rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 ```
+
+> 🔴 **두 번째 줄을 빼지 말 것.** `skills/` 의 이 3개는 실행 스킬이 아니라 **공용 표준 문서**다
+> (다른 스킬이 `skills/xxx.md` 경로로 참조한다). 슬래시 커맨드로 설치하면 호출해도 하는 일이
+> 없으면서 오발동 대상만 늘린다. 설치 대상은 **실행 스킬 14개**다.
 
 ## GitHub 운영 (코드 전용)
 
@@ -246,9 +251,10 @@ cp skills/*.md ~/.claude/commands/
 > 아래 명령은 전부 **저장소 루트에서** 실행한다.
 
 ```bash
-# Skills 설치 / 재설치
+# Skills 설치 / 재설치 (실행 스킬 14개만 — 공용 표준 문서 3종 제외)
 mkdir -p ~/.claude/commands
 cp skills/*.md ~/.claude/commands/
+rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 
 # 보고서 Supabase에 발행 (수동)
 python3 tools/publish_report.py reports/AAPL/AAPL-checklist-20260101.md

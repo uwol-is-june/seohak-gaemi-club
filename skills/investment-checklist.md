@@ -17,7 +17,7 @@ python3 tools/site_preflight.py quality-screen
 > **⛔ fetch 실패·차단으로 값을 못 구한 셀은 `⬛`(데이터부족)으로 남긴다. 절대 기억(parametric
 > memory)이나 추측으로 채우지 않는다.** 6게이트 표를 "완성"하는 것보다 빈칸이 정직한 것이다. 데이터를
 > 못 구한 게이트는 판정 보류(⬛)로 명시하고, 임의 수치로 통과/미통과를 매기지 않는다.
-> (근거: [data-confidence.md](data-confidence.md) 핵심 원칙 4 — 공백은 채우지 말고 남긴다.)
+> (근거: [data-confidence.md](skills/data-confidence.md) 핵심 원칙 4 — 공백은 채우지 말고 남긴다.)
 
 ---
 
@@ -45,7 +45,7 @@ $ARGUMENTS 에서 모든 종목명/티커를 파싱한다. 각 종목에 대해 
 
 Task 도구를 사용해 **각 종목마다** 독립 백그라운드 에이전트를 동시에 실행한다.
 
-> **토큰 예산 ([token-budget.md](token-budget.md))** — 종목 수만큼 팬아웃되므로 종목당 비용이
+> **토큰 예산 ([token-budget.md](skills/token-budget.md))** — 종목 수만큼 팬아웃되므로 종목당 비용이
 > 그대로 곱해진다. 아래는 권고가 아니라 상한이다:
 >
 > - **종목 1개면 에이전트를 띄우지 않고 본체에서 직접 수집**한다(에이전트 오버헤드가 더 크다).
@@ -69,7 +69,7 @@ Task 도구를 사용해 **각 종목마다** 독립 백그라운드 에이전�
 7. **경영진 이력**: CEO 경력, 주요 의사결정, 지분 보유, 자본 배분 실적
 8. **최신 동향**: 최근 6개월 중요 이벤트 (실적, M&A, 규제, 경영진 교체 등)
 
-**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+**데이터 소스** ([financial-data.md](skills/financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
 ⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 ### 3단계: 종목별 6개 관문 체크리스트 실행
@@ -303,7 +303,7 @@ python3 tools/record_call.py \
 
 ## 데이터 신뢰도 표기 (필수)
 
-본 보고서는 **[data-confidence.md](data-confidence.md) 표준**을 적용한다:
+본 보고서는 **[data-confidence.md](skills/data-confidence.md) 표준**을 적용한다:
 
 - 핵심 수치·판단 옆에 **신뢰도 등급 + 유형 태그**를 단다 — 🟢높음(2+독립출처 교차검증 또는 SEC 원문 직접 확인) / 🟡보통(단일출처·경미편차·해석여지) / 🔴낮음(추정·미확정주장·구데이터) / ⬛데이터부족(공백 유지) + `[사실]`/`[추정]`/`[주장]`/`[의견]`. 예: `FY2025 매출 $0.68M 🟢[사실]`, `2030 TAM 🔴[추정]`, `사기 의혹 🔴[주장](공매도, 미확정)`.
 - **출처 독립성 주의**: 회사 IR·보도자료와 집계 사이트는 둘 다 회사 공시 파생이라 상호 독립이 아니다 → 🟢은 SEC 원문 직접 확인 또는 계보가 다른 두 출처를 요구한다.

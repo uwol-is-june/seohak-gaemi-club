@@ -1,7 +1,7 @@
 # 데이터 신뢰도 표기 표준 (Data Confidence Standard)
 
 본 기준은 **모든 투자 리서치 보고서에 적용**되는 신뢰도 표기 공용 표준이다.
-[financial-data.md](financial-data.md)가 "데이터를 어떻게 수집·교차검증하는가"를 정의한다면,
+[financial-data.md](skills/financial-data.md)가 "데이터를 어떻게 수집·교차검증하는가"를 정의한다면,
 본 문서는 그 결과로 나온 **각 주장(claim)의 신뢰도를 어떻게 표기하는가**를 정의한다.
 
 ## 핵심 원칙
@@ -54,7 +54,7 @@
 
 `⚑`는 **핵심 가정(load-bearing)** 표시다. 논제 결론이 이 값에 의존하면 붙인다.
 
-교차검증 수치는 [financial-data.md](financial-data.md)의 형식(출처 2개 + 오차율)을 함께 남긴다.
+교차검증 수치는 [financial-data.md](skills/financial-data.md)의 형식(출처 2개 + 오차율)을 함께 남긴다.
 
 ## 보고서 말미 신뢰도 요약 블록 (필수 · 기계 판독용)
 

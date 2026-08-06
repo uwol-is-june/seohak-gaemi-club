@@ -44,7 +44,7 @@ $ARGUMENTS에 대해 투자 포트폴리오 점검 및 최적화를 수행한다
 
 Task 도구로 백그라운드 Agent를 실행하고, WebSearch를 통해 각 보유 종목에 대해 병렬로 다음 정보를 수집한다:
 
-> **토큰 예산 ([token-budget.md](token-budget.md))** — 보유 종목 수만큼 팬아웃되므로
+> **토큰 예산 ([token-budget.md](skills/token-budget.md))** — 보유 종목 수만큼 팬아웃되므로
 > 종목당 비용이 그대로 곱해진다. 이 단계는 **스냅샷 수집**이지 심층 리서치가 아니다:
 >
 > - 🔴 **Agent는 하위 Agent를 스폰하지 않는다** (TB-1). **동시 실행은 8개까지.**
@@ -58,7 +58,7 @@ Task 도구로 백그라운드 Agent를 실행하고, WebSearch를 통해 각 �
 3. 최근 주요 뉴스 및 이벤트 (실적 발표, 경영진 변경, M&A 등)
 4. 애널리스트 컨센서스 (Forward PER, 목표주가)
 
-**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+**데이터 소스** ([financial-data.md](skills/financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
 ⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 `tools/financial_rigor.py verify-valuation`으로 각 종목의 밸류에이션 데이터를 검증한다.
@@ -244,7 +244,7 @@ Task 도구로 백그라운드 Agent를 실행하고, WebSearch를 통해 각 �
 
 ## 데이터 신뢰도 표기 (필수)
 
-본 보고서는 **[data-confidence.md](data-confidence.md) 표준**을 적용한다:
+본 보고서는 **[data-confidence.md](skills/data-confidence.md) 표준**을 적용한다:
 
 - 핵심 수치·판단 옆에 **신뢰도 등급 + 유형 태그**를 단다 — 🟢높음(2+독립출처 교차검증 또는 SEC 원문 직접 확인) / 🟡보통(단일출처·경미편차·해석여지) / 🔴낮음(추정·미확정주장·구데이터) / ⬛데이터부족(공백 유지) + `[사실]`/`[추정]`/`[주장]`/`[의견]`.
 - **출처 독립성 주의**: 회사 IR·보도자료와 집계 사이트는 둘 다 회사 공시 파생이라 상호 독립이 아니다 → 🟢은 원문 직접 확인 또는 계보가 다른 두 출처를 요구한다.

@@ -121,7 +121,7 @@ TeamCreate가 **사용 가능한 경우에만** 팀을 생성한다:
 
 **반드시 동일한 메시지에서 Task 도구를 4회 병렬 호출한다.** (4개 고정 — 늘리지 않는다.)
 
-> **토큰 예산 ([token-budget.md](token-budget.md))** — 🔴 **Agent는 하위 Agent를 스폰하지
+> **토큰 예산 ([token-budget.md](skills/token-budget.md))** — 🔴 **Agent는 하위 Agent를 스폰하지
 > 않는다**(TB-1). Agent당 조사 상한은 **WebSearch 8회 · WebFetch 6회**이고, 결과는
 > **Write 1회**로 낸다. 재시도는 역할당 1회까지, 실패하면 그 차원을 "데이터 부족"으로
 > 표기하고 진행한다(TB-2). 이 스킬은 **빠른 원인 분석**이므로 정상 범위는 **1~3M 토큰**이다.
@@ -150,7 +150,7 @@ TeamCreate가 **사용 가능한 경우에만** 팀을 생성한다:
 **탐색 방법**:
 - 시의성 높은 쿼리는 WebSearch 우선 활용 (키워드에 날짜 또는 "latest", "recent", "2026" 추가)
 - 핵심 이벤트는 WebFetch로 원본 출처 정독 (공시 원문, 실적 자료, SEC 파일)
-- **데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+- **데이터 소스** ([financial-data.md](skills/financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
   ⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 - 각 이벤트에 "독립 출처 검증" 수행 — 루머는 독립적 출처 2개 이상 필요
 - **헤드라인 낚시에 속지 않는다**: 제목과 본문이 불일치하는 이벤트는 "헤드라인 미스리드"로 표시
@@ -261,7 +261,7 @@ TeamDelete로 팀 리소스를 정리한다.
 
 ## 데이터 신뢰도 표기 (필수)
 
-본 분석은 **[data-confidence.md](data-confidence.md) 표준**을 적용한다:
+본 분석은 **[data-confidence.md](skills/data-confidence.md) 표준**을 적용한다:
 
 - 이벤트·원인 판단 옆에 **신뢰도 등급 + 유형 태그**를 단다 — 🟢높음(2+독립출처 교차검증 또는 원문 직접 확인) / 🟡보통(단일출처·경미편차·해석여지) / 🔴낮음(추정·미확정주장·구데이터) / ⬛데이터부족(공백 유지) + `[사실]`/`[추정]`/`[주장]`/`[의견]`. 특히 "촉매"로 지목한 이벤트가 확인된 사실인지, 시점만 겹친 추정인지 태그로 구분한다.
 - **출처 독립성 주의**: 회사 IR·보도자료와 집계 사이트는 둘 다 회사 공시 파생이라 상호 독립이 아니다 → 🟢은 원문 직접 확인 또는 계보가 다른 두 출처를 요구한다.

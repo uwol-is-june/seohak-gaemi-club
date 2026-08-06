@@ -107,9 +107,18 @@ AI Berkshire solves the problem of **analysis quality and decision discipline**:
 ### Tools
 | Skill | Use Case |
 |-------|----------|
-| `/dyp-ask` | Duan Yongping-style thinking on any question |
-| `/financial-data` | Data sourcing and cross-validation standards |
+| `/dyp-ask` | Duan Yongping-style thinking on any question — roleplay, no data fetched; never cite as evidence |
 | `/investment-article` | Convert a finished research report into a publishable blog/newsletter article |
+
+### Shared Standards (not slash commands)
+Reference documents in `skills/`, consulted by the skills above. They are **not** installed to
+`~/.claude/commands/` because invoking them produces no output.
+
+| Document | Defines |
+|----------|---------|
+| `skills/data-confidence.md` | Confidence tiers (🟢🟡🔴⬛), claim-type tags, and the `<!-- confidence-summary -->` block the dashboard parses |
+| `skills/financial-data.md` | Source priority, cross-validation error thresholds (1% / 5%), SEC filing types |
+| `skills/token-budget.md` | Hard rules TB-1~TB-7 — no grandchild agents, retry once, reuse recent output |
 
 ---
 

@@ -34,7 +34,7 @@ python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py qua
 > **⛔ fetch 실패·차단으로 값을 못 구한 셀은 `⬛`(데이터부족)으로 남긴다. 절대 기억(parametric
 > memory)이나 추측으로 채우지 않는다.** 표를 "완성"하는 것보다 빈칸이 정직한 것이다. 지표를 못 구하면
 > 그 지표는 판정에서 제외하고 "데이터부족"으로 명시할 뿐, 임의 수치로 탈락/통과를 매기지 않는다.
-> (근거: [data-confidence.md](data-confidence.md) 핵심 원칙 4 — 공백은 채우지 말고 남긴다.)
+> (근거: [data-confidence.md](skills/data-confidence.md) 핵심 원칙 4 — 공백은 채우지 말고 남긴다.)
 
 **⓪ 결과 처리 (필수)**
 
@@ -107,7 +107,7 @@ python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py qua
 
 ### 2단계: 데이터 수집
 
-> **실행 방식 (토큰 예산 · [token-budget.md](token-budget.md))**
+> **실행 방식 (토큰 예산 · [token-budget.md](skills/token-budget.md))**
 >
 > | 대상 기업 수 | 방식 |
 > |---|---|
@@ -133,7 +133,7 @@ python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py qua
 6. **Net Margin**: 최근 10년 Net Margin 추세, 평균 계산
 7. **발행주식수 변화**: 5년 전과 현재의 주식수, 증가율 계산
 
-**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+**데이터 소스** ([financial-data.md](skills/financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
 ⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 > 🔴 **macrotrends가 차단됐을 때 WebSearch로 시계열을 채우려 하지 말 것.** 검색은 페이지
@@ -256,7 +256,7 @@ python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py qua
 
 ## 데이터 신뢰도 표기 (필수)
 
-본 보고서는 **[data-confidence.md](data-confidence.md) 표준**을 적용한다:
+본 보고서는 **[data-confidence.md](skills/data-confidence.md) 표준**을 적용한다:
 
 - 각 지표 판정 옆에 **신뢰도 등급 + 유형 태그**를 단다 — 🟢높음(2+독립출처 교차검증 또는 SEC 원문 직접 확인) / 🟡보통(단일출처·경미편차·해석여지) / 🔴낮음(추정·미확정주장·구데이터) / ⬛데이터부족(공백 유지) + `[사실]`/`[추정]`/`[주장]`/`[의견]`.
 - **출처 독립성 주의**: 회사 IR·보도자료와 집계 사이트는 둘 다 회사 공시 파생이라 상호 독립이 아니다 → 🟢은 원문 직접 확인 또는 계보가 다른 두 출처를 요구한다.

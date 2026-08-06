@@ -88,10 +88,11 @@ export const skills: DashboardItem[] = [
     flowGroup: "S",
     name: "/bottleneck-hunter",
     status: "warning",
-    description: "메가트렌드 공급망 Layer 0~4 분해 → 병목 고리 식별 → 상장 기업 발굴",
+    description:
+      "메가트렌드 공급망 Layer 0~4 분해 → 병목 고리 식별 → 상장 기업 발굴. 매일 09:00 자동 스캔 → '병목 신호' 탭",
     tags: ["agent-sdk"],
     risks: [
-      { label: "시간별 폴더 자동 생성 — 파일 관리 복잡", severity: "medium" },
+      { label: "09:00에 PC가 꺼져 있으면 그날 스캔 누락(알림 없음)", severity: "medium" },
       { label: "Layer 2/3 소형 공급업체 데이터 부족", severity: "medium" },
     ],
   },
@@ -99,10 +100,12 @@ export const skills: DashboardItem[] = [
     code: "S5",
     flowGroup: "S",
     name: "/dyp-ask",
-    status: "ok",
-    description: "단융핑 방식으로 어떤 질문에도 답변. 외부 의존 없음",
+    status: "warning",
+    description: "단융핑 방식으로 어떤 질문에도 답변. 롤플레이 — 데이터 조회 없음",
     tags: [],
-    risks: [],
+    risks: [
+      { label: "데이터 미조회 — 보고서에 근거로 인용 금지", severity: "medium" },
+    ],
   },
   {
     code: "S6",
@@ -114,15 +117,6 @@ export const skills: DashboardItem[] = [
     risks: [
       { label: "보고서 미존재 시 WebSearch만으로 품질 저하", severity: "medium" },
     ],
-  },
-  {
-    code: "S7",
-    flowGroup: "S",
-    name: "/financial-data",
-    status: "ok",
-    description: "재무 데이터 수집·교차검증 기준 참조 문서. 실행 아닌 표준 정의용",
-    tags: [],
-    risks: [],
   },
 ];
 
