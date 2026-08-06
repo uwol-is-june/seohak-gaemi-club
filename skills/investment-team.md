@@ -81,17 +81,22 @@ python3 tools/fetch_financials.py {티커} --years 10 --cross
 5. **도구가 실패하면**(외국기업 XBRL 미제출, 신규 상장 등) 그대로 **기존 WebFetch 경로로
    진행**한다. 다이어트는 정확도보다 우선하지 않는다.
 
-### 2단계: 팀 생성
+### 2단계: 팀 생성 (선택 — 없으면 건너뛴다)
 
-TeamCreate를 사용해 팀을 생성합니다:
+TeamCreate가 **사용 가능한 경우에만** 팀을 생성합니다:
 - team_name: `{기업명}-research` (영문 소문자, 예: `apple-research`)
 - agent_type: `team-lead`
 
-**TeamCreate 실패 시**: 이 도구는 Claude Agent SDK 전용이라 일반 대화 모드(API 단독 호출 등)에서는 호출 자체가 실패한다. 실패하면 즉시 사용자에게 "Claude Code CLI 환경에서 실행 중인지" 확인을 요청하고, 대체 실행 경로 없이 중단한다.
+> 🔴 **TeamCreate·TaskCreate·TaskUpdate는 agent-teams 기능이 켜진 환경에서만 존재한다.**
+> 도구 목록에 없으면 **호출하지 말고 그냥 건너뛴다** — 리서치를 중단하지 않는다.
+> 실제 분석은 4단계의 **Agent 팬아웃**이 수행하며, 팀·태스크는 진행 표시용 부기일 뿐이다.
+> 없을 때는 TodoWrite로 4개 역할의 진행 상황을 대신 표시한다.
 
-### 3단계: 4개 태스크 생성
+### 3단계: 4개 태스크 정의
 
-TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject, description, activeForm 포함):
+아래 4개 태스크 정의는 **4단계 Agent 프롬프트의 원본**입니다. TaskCreate가 사용 가능하면
+같은 내용으로 태스크를 등록하고(subject, description, activeForm), 없으면 등록을 건너뛴 채
+정의만 그대로 4단계에서 사용합니다:
 
 #### 태스크 1: 비즈니스 모델 분석
 - subject: `{기업명}의 비즈니스 모델, MOAT, 고객 가치 분석`
@@ -234,11 +239,12 @@ Task 도구를 사용해 4개 Agent를 동시에 시작합니다 (**반드시 �
    - industry-researcher → `reports/{기업명}/03-IndustryCompetition-Munger-Perspective.md`
    - risk-assessor     → `reports/{기업명}/04-RiskManagement-LiLu-Perspective.md`
    (회사 폴더가 없으면 먼저 생성)
-2. TaskUpdate로 태스크 #{번호}를 completed로 표시합니다
-3. SendMessage로 team-lead에게 **완료 보고를 보냅니다** (type: "message", recipient: "team-lead").
-   ⚠️ **보고서 전문을 메시지에 다시 붙여넣지 마십시오** — 같은 본문을 두 번 생성하는 것이고
+2. **최종 응답 텍스트로 완료 보고를 반환합니다** — 이 텍스트가 곧 team-lead가 받는 결과입니다.
+   (agent-teams 환경이면 TaskUpdate로 completed 표시 + SendMessage 전송도 함께 하되,
+   두 도구가 없으면 **호출하지 말고 반환값만으로 보고를 마칩니다** — 없는 도구를 부르면 실패합니다.)
+   ⚠️ **보고서 전문을 반환값에 다시 붙여넣지 마십시오** — 같은 본문을 두 번 생성하는 것이고
    (Write 1회 + 메시지 1회), team-lead 컨텍스트도 그만큼 부풀립니다. team-lead는 파일을
-   직접 읽습니다. 메시지에는 아래만 담습니다 (20줄 이내):
+   직접 읽습니다. 반환값에는 아래만 담습니다 (20줄 이내):
    - 저장한 파일 경로
    - ★ 평점과 한 줄 결론
    - 핵심 발견 3~5가지 (각 1~2줄)
@@ -277,7 +283,9 @@ ls -la reports/{티커}/0*.md 2>/dev/null
 
 ### 6단계: 팀원 종료
 
-모든 보고서를 수신한 후, 4개 Agent에게 shutdown_request를 전송합니다 (SendMessage 사용, type: "shutdown_request").
+(agent-teams 환경에 한해) 모든 보고서를 수신한 후 4개 Agent에게 shutdown_request를 전송합니다
+(SendMessage 사용, type: "shutdown_request"). **일반 백그라운드 Agent는 결과를 반환하는 즉시
+종료되므로 이 단계가 필요 없습니다** — 건너뜁니다.
 
 ### 7단계: 최종 보고서 통합
 

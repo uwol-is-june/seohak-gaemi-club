@@ -41,15 +41,21 @@ $ARGUMENTS 에서 제공되지 않은 정보는 사용자에게 다음을 확인
 
 각 Agent에게 등급을 전달하여 탐색 방식에 반영한다.
 
-### 3단계: 팀 구성
+### 3단계: 팀 구성 (선택 — 없으면 건너뛴다)
 
-TeamCreate로 팀을 생성한다:
+TeamCreate가 **사용 가능한 경우에만** 팀을 생성한다:
 - `team_name`: `{티커}-newspulse` (영문 소문자, 예: `aapl-newspulse`)
 - `agent_type`: `team-lead`
 
-### 4단계: 4개 탐색 태스크 생성
+> 🔴 **TeamCreate·TaskCreate·TaskUpdate는 agent-teams 기능이 켜진 환경에서만 존재한다.**
+> 도구 목록에 없으면 **호출하지 말고 그냥 건너뛴다** — 탐색을 중단하지 않는다.
+> 실제 탐색은 5단계의 **Agent 팬아웃**이 수행하며, 팀·태스크는 진행 표시용 부기일 뿐이다.
+> 없을 때는 TodoWrite로 4개 차원의 진행 상황을 대신 표시한다.
 
-TaskCreate로 다음 4개 태스크를 생성한다:
+### 4단계: 4개 탐색 태스크 정의
+
+아래 4개 태스크 정의는 **5단계 Agent 프롬프트의 원본**이다. TaskCreate가 사용 가능하면
+같은 내용으로 등록하고, 없으면 등록을 건너뛴 채 정의만 그대로 5단계에서 사용한다:
 
 #### 태스크 1: 기업 이벤트 탐색 (company-event-scout)
 
@@ -158,15 +164,17 @@ TaskCreate로 다음 4개 태스크를 생성한다:
 5. 사실과 추측을 엄격히 구분하고, CLAUDE.md 객관성 원칙을 준수한다
 
 **완료 후**:
-1. TaskUpdate로 태스크를 completed로 표시
-2. SendMessage로 완전한 탐색 보고서를 team-lead에게 전송 (type: "message", recipient: "team-lead")
+1. **최종 응답 텍스트로 탐색 보고서를 반환한다** — 이 텍스트가 곧 team-lead가 받는 결과다.
+2. agent-teams 환경이면 TaskUpdate(completed)·SendMessage도 함께 사용하되, **두 도구가 없으면
+   호출하지 않는다** — 없는 도구를 부르면 실패한다. 반환값만으로 보고가 완결된다.
 ```
 
 ### 6단계: 실시간 진행 상황 추적
 
 - 탐색 보고서가 들어올 때마다 해당 차원의 핵심 발견 3개를 사용자에게 즉시 표시
 - 4개 전부 수신할 때까지 대기
-- 전부 수신 후 SendMessage로 4개 Agent에 shutdown_request 전송
+- (agent-teams 환경에 한해) 전부 수신 후 SendMessage로 4개 Agent에 shutdown_request 전송.
+  일반 백그라운드 Agent는 반환과 동시에 종료되므로 별도 종료 신호가 필요 없다.
 
 ### 7단계: team-lead 종합 원인 분석
 

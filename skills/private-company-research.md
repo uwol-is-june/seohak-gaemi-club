@@ -68,15 +68,22 @@ python3 tools/site_preflight.py private-company-research
 | **tech-ip-analyst** | 기술 스택·특허·R&D 역량·기술 해자 분석 | "기술 장벽이 진짜인가, 얼마나 오래 갈 것인가" |
 | **signal-miner** | 대체 데이터 발굴: 채용·특허·소송·앱 데이터·공급망 | "통상적 정보 외에 숨겨진 신호가 있는가" |
 
-### 2단계: 팀 생성
+### 2단계: 팀 생성 (선택 — 없으면 건너뛴다)
 
-TeamCreate를 사용해 팀을 생성한다:
+TeamCreate가 **사용 가능한 경우에만** 팀을 생성한다:
 - team_name: `{회사명}-private-research` (영문 소문자, 예: `spacex-private-research`)
 - agent_type: `team-lead`
 
-### 3단계: 6개 태스크 생성
+> 🔴 **TeamCreate·TaskCreate·TaskUpdate는 agent-teams 기능이 켜진 환경에서만 존재한다.**
+> 도구 목록에 없으면 **호출하지 말고 그냥 건너뛴다** — 리서치를 중단하지 않는다.
+> 실제 분석은 4단계의 **Agent 팬아웃**이 수행하며, 팀·태스크는 진행 표시용 부기일 뿐이다.
+> 없을 때는 TodoWrite로 6개 역할의 진행 상황을 대신 표시한다.
 
-TaskCreate를 사용해 아래 6개 태스크를 생성한다 (각 태스크에 subject, description, activeForm 포함):
+### 3단계: 6개 태스크 정의
+
+아래 6개 태스크 정의는 **4단계 Agent 프롬프트의 원본**이다. TaskCreate가 사용 가능하면
+같은 내용으로 태스크를 등록하고(subject, description, activeForm), 없으면 등록을 건너뛴 채
+정의만 그대로 4단계에서 사용한다:
 
 ---
 
