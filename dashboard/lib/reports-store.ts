@@ -13,6 +13,9 @@ export interface ReportFile {
   name: string; // 예: "WST-checklist-20260723.md"
   summary?: string | null; // 열등주 스크리닝 판정
   confidence?: ConfidenceVerdict | null; // 데이터 신뢰도
+  // 발행(최종수정) 시각 ISO. 실적 캘린더가 "이 실적을 이미 점검했는가"를
+  // 판정하는 데 쓴다(발표일 이후 발행된 실적 보고서가 있으면 점검 완료).
+  committedAt?: string | null;
 }
 
 // 형식 가드: 경로가 reports/*.md 이고 상위 탈출(..)이 없어야 한다.
@@ -39,7 +42,7 @@ export async function listReportFiles(): Promise<ReportFile[]> {
   const sb = getSupabase();
   const { data, error } = await sb
     .from("reports")
-    .select("path, company, name, summary, confidence")
+    .select("path, company, name, summary, confidence, committed_at")
     .order("path", { ascending: true });
   if (error) {
     console.error("Supabase 오류(목록):", error.message);
@@ -53,6 +56,7 @@ export async function listReportFiles(): Promise<ReportFile[]> {
       name: string;
       summary?: string | null;
       confidence?: unknown;
+      committed_at?: unknown;
     };
     return {
       path: row.path,
@@ -60,6 +64,7 @@ export async function listReportFiles(): Promise<ReportFile[]> {
       name: row.name,
       summary: row.summary ?? null,
       confidence: normalizeConfidence(row.confidence),
+      committedAt: typeof row.committed_at === "string" ? row.committed_at : null,
     };
   });
 }

@@ -17,7 +17,9 @@ import { EarningsCalendar } from "./EarningsCalendar";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { SectorGroupEditor } from "./SectorGroupEditor";
 import { BottleneckSignalsView } from "./BottleneckSignalsView";
+import { ArticlesView } from "./ArticlesView";
 import { isBottleneckCompany } from "@/lib/bottleneck";
+import { isArticlePath } from "@/lib/articles";
 
 // 루트에 있지만 '섹터 리서치'가 아닌 문서(각자 전용 탭이 따로 있음).
 const ROOT_NON_SECTOR = new Set(["portfolio-latest.md", "track-record.md"]);
@@ -31,6 +33,7 @@ const TAB_HEADERS: Record<string, { eyebrow: string; title: string }> = {
   "portfolio-overview": { eyebrow: "PORTFOLIO", title: "포트폴리오" },
   "track-record": { eyebrow: "TRACK RECORD", title: "트랙레코드" },
   "bottleneck-signals": { eyebrow: "BOTTLENECK", title: "병목 신호" },
+  articles: { eyebrow: "ARTICLES", title: "아티클" },
 };
 
 export function HomeView({
@@ -141,11 +144,13 @@ export function HomeView({
   // 단, 섹터 리서치가 아닌 루트 문서는 제외한다:
   //   - portfolio-latest.md : '포트폴리오 점검' 탭 소관
   //   - track-record.md     : 수기 매매기록(자동 채점 '트랙레코드' 탭과 별개) — 섹터가 아님
+  //   - {주제}-article-*.md : 발행용 글 — '아티클' 탭 소관. 파일명이 섹터 규약과 안 맞아
+  //                           걸러내지 않으면 섹터 리서치의 '기타'로 섞인다.
   const rootFiles = useMemo(
     () =>
       files
         ? files.filter(
-            (f) => f.company === null && !ROOT_NON_SECTOR.has(f.name)
+            (f) => f.company === null && !ROOT_NON_SECTOR.has(f.name) && !isArticlePath(f.path)
           )
         : [],
     [files]
@@ -354,6 +359,9 @@ export function HomeView({
         // 보유 종목만 모아 보는 탭이 먼저 — 실제로 들고 있는 종목의 판단이 우선(TASK-86).
         { id: "holdings-reports", label: "보유 종목 보고서" },
         { id: "reports", label: "전체 보고서" },
+        // 발행용 글(/investment-article). 다른 결과물이 '내 판단용'이라면 이건 '남에게
+        // 보여줄 것'이라 축이 종목·섹터가 아니라 발행 상태다 → 결과물 그룹의 맨 끝.
+        { id: "articles", label: "아티클" },
       ],
     },
     {
@@ -535,6 +543,14 @@ export function HomeView({
           ) : flowTab === "bottleneck-signals" ? (
             /* 병목 신호 = 매일 09:00 자동 스캔(S3 /bottleneck-hunter) 산출물 피드. */
             <BottleneckSignalsView
+              files={files}
+              loadError={loadError}
+              onRetry={() => setReloadKey((k) => k + 1)}
+              onOpenReport={(p) => setModalPath(p)}
+            />
+          ) : flowTab === "articles" ? (
+            /* 아티클 = /investment-article 산출물 + 그 소재가 되는 보고서의 실행 명령. */
+            <ArticlesView
               files={files}
               loadError={loadError}
               onRetry={() => setReloadKey((k) => k + 1)}
@@ -872,7 +888,10 @@ export function HomeView({
                   {/* 실적 점검 플로우: 보유 종목의 실적 발표일 캘린더를 위에 얹어
                       "언제 점검할지"를 안내한다. '분석'은 1단계를 티커 프리필로 연다. */}
                   {flow.id === "earnings" && (
-                    <EarningsCalendar onAnalyze={(ticker) => onLaunchStep(flow, 0, ticker)} />
+                    <EarningsCalendar
+                      onAnalyze={(ticker) => onLaunchStep(flow, 0, ticker)}
+                      files={files}
+                    />
                   )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {flow.steps.map((step, i) => {

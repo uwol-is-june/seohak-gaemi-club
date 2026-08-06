@@ -5,47 +5,27 @@ import { Holding } from "@/lib/toss";
 import { ScoredCall } from "@/lib/calls";
 import { CALL_LABEL } from "@/lib/report-helpers";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
-
-interface EarningsInfo {
-  ticker: string;
-  date: string | null; // "YYYY-MM-DD"
-  epochMs: number | null;
-  estimate: boolean;
-}
+import { earningsDayInfo, earningsReviewedAt, EarningsInfo, REVIEW_WINDOW_DAYS } from "@/lib/earnings-day";
+import type { ReportFile } from "@/lib/reports-store";
 
 // /api/earnings-calendar 의 티커 상한(MAX_TICKERS)과 같은 값. 트랙레코드 전체는
 // 보유 목록보다 커질 수 있어 이 크기로 잘라 여러 번 요청한다(초과분이 조용히 버려지지 않게).
 const TICKERS_PER_REQUEST = 50;
-
-// 실적일 → D-day 라벨 + 정렬용 순위. 미래일수록 우선(다가오는 점검), 과거는 뒤로,
-// 미상(날짜 없음)은 맨 끝. rank가 작을수록 위로 온다.
-function earningsDayInfo(epochMs: number | null): {
-  label: string;
-  tone: string; // 색 톤 클래스
-  rank: number;
-} {
-  if (epochMs == null) return { label: "발표일 미상", tone: "text-mute", rank: 3_000_000 };
-  const dayMs = 86_400_000;
-  const today = new Date();
-  const todayMid = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-  const d = new Date(epochMs);
-  const dMid = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-  const days = Math.round((dMid - todayMid) / dayMs);
-  if (days > 0) {
-    // 임박(7일 이내)은 sunset로 강조, 그 외는 일반 본문색.
-    return { label: `D-${days}`, tone: days <= 7 ? "text-sunset-soft" : "text-body", rank: days };
-  }
-  if (days === 0) return { label: "오늘 발표", tone: "text-sunset", rank: -1 };
-  // 지난 실적: 점검 대기/완료 대상. 최근일수록 위(-days가 작을수록 위)로.
-  return { label: `${-days}일 전`, tone: "text-mute", rank: 1_000_000 + -days };
-}
 
 // 실적 캘린더의 대상 축. holdings=실제 보유(토스), calls=콜 원장에 판단이 기록된 전 종목.
 // 후자는 미보유 관망(hold)·회피(avoid)까지 포함한다 — 논제를 세워둔 종목의 실적도
 // 점검해야 진입/폐기 판단이 갱신되기 때문이다.
 type Axis = "holdings" | "calls";
 
-export function EarningsCalendar({ onAnalyze }: { onAnalyze: (ticker: string) => void }) {
+export function EarningsCalendar({
+  onAnalyze,
+  files,
+}: {
+  onAnalyze: (ticker: string) => void;
+  // 보고서 목록(상위가 이미 /api/reports 로 받아 둔 것). 여기서는 "이 실적을 이미
+  // 점검했는가"만 본다 — 없으면(null) 전부 미점검으로 두고 배지만 안 뜬다.
+  files: ReportFile[] | null;
+}) {
   const [axis, setAxis] = useState<Axis>("holdings");
   const [holdings, setHoldings] = useState<Holding[] | null>(holdingsCache);
   const [calls, setCalls] = useState<ScoredCall[] | null>(null);
@@ -151,12 +131,15 @@ export function EarningsCalendar({ onAnalyze }: { onAnalyze: (ticker: string) =>
     return m;
   }, [holdings]);
 
+  // 티커 → 가장 최근 실적 보고서 발행 시각. 발표일 이후면 '점검 완료'로 내려간다.
+  const reviewedAt = useMemo(() => earningsReviewedAt(files ?? []), [files]);
+
   // 두 축을 같은 행 모양으로 정규화한다(정렬·렌더 로직 공유).
   const rows = useMemo(() => {
     const build = (ticker: string, sub: string, call: ScoredCall | null) => {
       const key = ticker.trim().toUpperCase();
       const e = earnings[key];
-      return { key, ticker, sub, call, e, day: earningsDayInfo(e?.epochMs ?? null) };
+      return { key, ticker, sub, call, day: earningsDayInfo(e, new Date(), reviewedAt[key] ?? null) };
     };
     const list =
       axis === "holdings"
@@ -165,7 +148,7 @@ export function EarningsCalendar({ onAnalyze }: { onAnalyze: (ticker: string) =>
             build(c.ticker, nameByTicker.get(c.ticker.trim().toUpperCase()) ?? c.skill, c)
           );
     return list.sort((a, b) => a.day.rank - b.day.rank);
-  }, [axis, holdings, latestCalls, earnings, nameByTicker]);
+  }, [axis, holdings, latestCalls, earnings, nameByTicker, reviewedAt]);
 
   const AXES: { id: Axis; label: string; count: number | null }[] = [
     { id: "holdings", label: "보유 종목", count: holdings?.length ?? null },
@@ -197,9 +180,13 @@ export function EarningsCalendar({ onAnalyze }: { onAnalyze: (ticker: string) =>
       </div>
       <p className="text-xs text-mute mb-4 leading-relaxed">
         {axis === "holdings"
-          ? "보유 종목의 다가오는 실적 발표일. 발표 직후 아래 프로세스로 점검하세요."
+          ? "보유 종목의 실적 발표일. 발표 직후 아래 프로세스로 점검하세요."
           : "콜 원장에 판단이 기록된 전 종목의 실적 발표일. 미보유 관망·회피 종목도 실적으로 논제가 갱신됩니다."}
-        <span className="text-mute/70"> 날짜는 Yahoo 추정치로, 확정 전엔 바뀔 수 있습니다.</span>
+        <span className="text-mute/70">
+          {" "}
+          발표 후 {REVIEW_WINDOW_DAYS}일간은 D+로 맨 위에 남고, 그 사이 실적 보고서를 쓰면
+          &lsquo;점검 완료&rsquo;로 내려갑니다. 다가오는 날짜는 Yahoo 추정치로, 확정 전엔 바뀔 수 있습니다.
+        </span>
       </p>
 
       {/* 대상 축 탭 — 보유(토스) vs 트랙레코드 전체(콜 원장) */}
@@ -232,7 +219,7 @@ export function EarningsCalendar({ onAnalyze }: { onAnalyze: (ticker: string) =>
         <p className="text-xs text-mute">{emptyText}</p>
       ) : (
         <div className="flex flex-col divide-y divide-hairline">
-          {rows.map(({ key, ticker, sub, call, e, day }) => {
+          {rows.map(({ key, ticker, sub, call, day }) => {
             const cl = call ? CALL_LABEL[call.call] ?? CALL_LABEL.hold : null;
             return (
               <div key={key} className="flex items-center gap-3 py-2.5">
@@ -252,13 +239,31 @@ export function EarningsCalendar({ onAnalyze }: { onAnalyze: (ticker: string) =>
                         보유
                       </span>
                     )}
+                    {/* 발표가 끝난 종목은 "지금 할 일"이라 라벨을 붙여 임박(D-)과 구분한다.
+                        이미 실적 보고서를 쓴 건은 할 일이 없으므로 조용한 '점검 완료'로 바꾼다. */}
+                    {day.reviewDue && (
+                      <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-sunset-soft bg-sunset/10">
+                        점검 대기
+                      </span>
+                    )}
+                    {day.reviewed && (
+                      <span className="shrink-0 rounded-full border border-hairline px-1.5 py-0.5 text-[10px] text-mute">
+                        점검 완료
+                      </span>
+                    )}
                     <span className="text-xs text-mute truncate">{sub}</span>
                   </div>
                   <div className="mt-0.5 flex items-center gap-2 text-[11px]">
-                    <span className="font-mono text-mute">{e?.date ?? "—"}</span>
-                    {e?.estimate && e.date && (
+                    <span className="font-mono text-mute">{day.shownDate ?? "—"}</span>
+                    {day.shownEstimate && (
                       <span className="rounded-full px-1.5 py-0.5 text-[10px] text-mute bg-canvas-soft">
                         추정
+                      </span>
+                    )}
+                    {/* 지난 실적을 앞세운 행은 다음 예정일이 가려지므로 함께 보여준다. */}
+                    {day.nextDate && (
+                      <span className="text-mute/70">
+                        다음 <span className="font-mono">{day.nextDate}</span>
                       </span>
                     )}
                     {call && (

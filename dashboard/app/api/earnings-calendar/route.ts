@@ -1,5 +1,11 @@
-// 티커별 다음 실적 발표 예정일 라우트. 실적 점검 탭에서 "언제 실적을 점검할지"
-// (보유 종목의 다가오는 실적일 D-day)를 안내하는 데 쓴다.
+// 티커별 실적 발표일 라우트. 실적 점검 탭에서 "언제 실적을 점검할지"
+// (다가오는 실적일 D-day)와 "지금 점검해야 할 것"(직전 발표일 D+day)을 안내한다.
+//
+// 🔴 두 모듈이 필요한 이유: calendarEvents 는 **다음 예정일만** 준다 — 실적이 지나가면
+// 그 날짜가 다음 분기로 즉시 갱신돼 방금 끝난 실적이 화면에서 사라진다(실측 2026-08-06:
+// AAPL 은 07-30 발표 직후 D-84(10-29)로 넘어갔다). 정작 점검은 발표 **직후**에 하는 것이라
+// 이게 제일 필요한 순간에 사라지는 셈이다. 그래서 earnings 모듈의
+// earningsChart.quarterly[].reportedDate(실제 발표 이력)에서 직전 발표일을 함께 가져온다.
 //
 // quotes 라우트(Yahoo v8 chart, 무키)와 달리 실적일은 quoteSummary/calendarEvents
 // 모듈에서 나오며, 이 엔드포인트는 crumb+cookie 인증을 요구한다(2024년 이후 강화).
@@ -9,15 +15,8 @@
 
 import { requireAuth } from "@/lib/api-auth";
 import { mapLimit } from "@/lib/map-limit";
-
-interface EarningsInfo {
-  ticker: string;
-  date: string | null; // 다음(또는 최근) 실적 발표일 "YYYY-MM-DD", 불명 시 null
-  epochMs: number | null; // 같은 값의 epoch(ms) — 화면에서 D-day 계산용
-  // Yahoo가 확정일 대신 추정 범위(예: "Feb 1 – Feb 5")로 준 경우 true.
-  // 이때 date는 범위의 시작일이다. 확정 임박할수록 단일 확정일로 바뀐다.
-  estimate: boolean;
-}
+// 응답 타입·파서는 화면과 공유한다(lib/earnings-day.ts, 테스트도 거기 붙어 있다).
+import { emptyEarnings, parseEarnings, type EarningsInfo } from "@/lib/earnings-day";
 
 const TTL_MS = 6 * 60 * 60 * 1000; // 6시간 — 실적일은 자주 바뀌지 않는다
 const MAX_TICKERS = 50;
@@ -61,49 +60,18 @@ async function getCreds(): Promise<{ cookie: string; crumb: string } | null> {
   }
 }
 
-// calendarEvents.earnings.earningsDate → EarningsInfo.
-// earningsDate는 [{raw, fmt}] 배열: 길이 1이면 확정에 가깝고, 2면 추정 범위다.
-function parseEarnings(ticker: string, json: unknown): EarningsInfo {
-  const empty: EarningsInfo = { ticker, date: null, epochMs: null, estimate: false };
-  try {
-    const result = (json as { quoteSummary?: { result?: unknown[] } })?.quoteSummary?.result?.[0];
-    const earnings = (
-      result as {
-        calendarEvents?: {
-          earnings?: { earningsDate?: { raw?: number }[]; isEarningsDateEstimate?: boolean };
-        };
-      }
-    )?.calendarEvents?.earnings;
-    const arr = earnings?.earningsDate;
-    if (!Array.isArray(arr) || arr.length === 0) return empty;
-    const raws = arr.map((d) => d?.raw).filter((n): n is number => typeof n === "number");
-    if (raws.length === 0) return empty;
-    const first = Math.min(...raws); // 범위면 가장 이른 날
-    // Yahoo의 명시적 추정 플래그를 우선 사용하고, 없으면 범위(배열 길이>1)로 추론.
-    const est = earnings?.isEarningsDateEstimate;
-    return {
-      ticker,
-      date: new Date(first * 1000).toISOString().slice(0, 10),
-      epochMs: first * 1000,
-      estimate: typeof est === "boolean" ? est : raws.length > 1,
-    };
-  } catch {
-    return empty;
-  }
-}
-
 async function fetchEarnings(ticker: string): Promise<EarningsInfo> {
   const cached = cache.get(ticker);
   if (cached && cached.expiresAt > Date.now()) return cached.info;
 
-  const empty: EarningsInfo = { ticker, date: null, epochMs: null, estimate: false };
+  const empty = emptyEarnings(ticker);
   const c = await getCreds();
   if (!c) return empty;
 
   try {
     const url =
       `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(toYahooSymbol(ticker))}` +
-      `?modules=calendarEvents&crumb=${encodeURIComponent(c.crumb)}`;
+      `?modules=calendarEvents,earnings&crumb=${encodeURIComponent(c.crumb)}`;
     const res = await fetch(url, {
       headers: { "User-Agent": UA, Cookie: c.cookie },
       cache: "no-store",
@@ -115,8 +83,10 @@ async function fetchEarnings(ticker: string): Promise<EarningsInfo> {
     }
     if (!res.ok) throw new Error(`quoteSummary ${res.status}`);
     const info = parseEarnings(ticker, await res.json());
-    // 유효한 날짜를 얻었을 때만 캐시(일시 실패를 6시간 고정하지 않도록).
-    if (info.date != null) cache.set(ticker, { info, expiresAt: Date.now() + TTL_MS });
+    // 유효한 날짜를 하나라도 얻었을 때만 캐시(일시 실패를 6시간 고정하지 않도록).
+    if (info.date != null || info.lastDate != null) {
+      cache.set(ticker, { info, expiresAt: Date.now() + TTL_MS });
+    }
     return info;
   } catch {
     return empty;
