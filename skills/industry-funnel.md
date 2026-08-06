@@ -135,7 +135,7 @@ python3 tools/site_preflight.py industry-funnel
 
 | # | 지표 | 통과 기준 | 완화 조건 | 데이터 소스 |
 |---|------|---------|---------|-----------|
-| 1 | PER 밸류에이션 | 합리적 수준 (역사적 구간·동종업계 비교 기준) | 고성장주는 PEG < 1.5까지 허용 | macrotrends.net, stockanalysis.com |
+| 1 | PER 밸류에이션 | 합리적 수준 (역사적 구간·동종업계 비교 기준) | 고성장주는 PEG < 1.5까지 허용 | stockanalysis.com, macrotrends.net |
 | 2 | ROE | > 15% 또는 최근 3년 개선 추세 | 자본집약적 산업은 완화 가능 | stockanalysis.com/stocks/{ticker}/financials |
 | 3 | 영업 현금흐름 | 양(+)이고 순이익 대비 > 70% | — | SEC 10-K/10-Q, stockanalysis.com |
 | 4 | 부채비율 (D/E) | < 60% (또는 업종 표준 이내) | 유틸리티·인프라는 70%까지 허용 | stockanalysis.com, macrotrends.net |
