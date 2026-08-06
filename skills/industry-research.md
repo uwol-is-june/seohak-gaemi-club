@@ -48,7 +48,7 @@ AI 모델 파라미터 확장 경쟁
 | 단계 | 핵심 가정 | 검증 방법 | 데이터 출처 |
 |------|----------|----------|-----------|
 | A→B | | 산업 데이터/전망 검색 | macrotrends.net, SEC 10-K |
-| B→C | | 수급 분석 검색 | stockanalysis.com, WSJ |
+| B→C | | 수급 분석 검색 | SEC 10-K(Supply/Risk Factors), 기업 IR, cnbc.com |
 | C→D | | 실제 계약/사례 검색 | SEC 8-K, seekingalpha.com |
 
 ### 1.3 "이미 발생한 검증 이벤트" 찾기
@@ -123,11 +123,11 @@ Task 도구를 사용해 백그라운드 Agent를 실행하고, 해당 산업의
 > - ⚠️ 이 스킬 1회 실행의 정상 범위는 **5~12M 토큰**이다.
 
 ### 검색 출처
-- **주요 데이터**: macrotrends.net/stocks/charts/{TICKER}
-- **재무제표**: stockanalysis.com/stocks/{ticker}/financials
+- **주요 데이터·재무제표**: stockanalysis.com/stocks/{ticker}/financials
+- **교차검증**: macrotrends.net/stocks/charts/{TICKER} — ⚠️ 상시 봇 차단, ⓪단계에서 열렸을 때만
 - **SEC 공시**: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K)
 - **스크리닝**: finviz.com/screener
-- **뉴스/분석**: finance.yahoo.com, seekingalpha.com, wsj.com
+- **뉴스/분석**: finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
 
 ### 검색 목록
 - NYSE/NASDAQ/NYSE American 상장 관련 기업
@@ -165,8 +165,8 @@ Task 도구를 사용해 백그라운드 Agent를 실행하고, 해당 산업의
 - **핵심 질문**: 이것은 좋은 비즈니스인가? 왜인가?
 
 데이터 출처:
-- Gross Margin/매출 추세: macrotrends.net/stocks/charts/{TICKER}/gross-profit
-- 연간 재무제표: stockanalysis.com/stocks/{ticker}/financials
+- 연간 재무제표·Gross Margin/매출 추세: stockanalysis.com/stocks/{ticker}/financials
+- 교차검증(열렸을 때): macrotrends.net/stocks/charts/{TICKER}/gross-profit
 
 ### 4.2 해자 (MOAT, 버핏)
 5가지 해자 유형별 점수 (★1-5):
@@ -197,7 +197,7 @@ Task 도구를 사용해 백그라운드 Agent를 실행하고, 해당 산업의
 - 간략 평가: 비쌈/적정/저렴
 
 데이터 출처:
-- 주요 지표: macrotrends.net/stocks/charts/{TICKER}/pe-ratio
+- 주요 지표: stockanalysis.com/stocks/{ticker}/statistics (차단 시 대체 없음 — macrotrends `/pe-ratio`는 보조)
 - 경쟁사 비교: finviz.com/screener
 
 ### 4.6 추천도

@@ -106,7 +106,7 @@ python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py qua
 >
 > - 🔴 **Agent는 하위 Agent를 스폰하지 않는다** (TB-1). 팬아웃은 본체만, 깊이는 1단계.
 > - **기업 1개당 조사 상한**: WebSearch 6회 · WebFetch 5회. 지표 7개를 각각 따로 검색하지
->   말고 **한 소스에서 여러 지표를 한 번에** 걷는다(macrotrends 한 페이지에 대부분 있다).
+>   말고 **한 소스에서 여러 지표를 한 번에** 걷는다(stockanalysis 재무제표 한 페이지에 대부분 있다).
 > - 상한에 걸려 못 구한 지표는 `⬛`(데이터부족)으로 남기고 판정에서 제외한다 — 추측 금지.
 >   **상한은 정확도보다 우선하지 않는다**: 충돌하면 조사를 줄이고 빈칸을 남기는 쪽으로 푼다.
 > - 보고서는 **Write 1회로 저장**한다. 본문을 Edit로 나눠 붙이지 않는다(TB-5).
@@ -124,10 +124,15 @@ python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py qua
 7. **발행주식수 변화**: 5년 전과 현재의 주식수, 증가율 계산
 
 **데이터 소스 우선순위**:
-- 1순위: macrotrends.net/stocks/charts/{TICKER} (10년 이상 장기 데이터)
-- 2순위: stockanalysis.com/stocks/{ticker}/financials (재무제표 상세)
+- 1순위: stockanalysis.com/stocks/{ticker}/financials (재무제표 상세 + 연도별 추이)
+- 2순위: macrotrends.net/stocks/charts/{TICKER} (10년 이상 장기 데이터) — ⚠️ 상시 봇 차단, ⓪단계에서 열렸을 때만
 - 3순위: SEC 공시 (10-K, 10-Q) — sec.gov/cgi-bin/browse-edgar
-- 보조: finviz.com/screener (스크리닝 참고), finance.yahoo.com, wsj.com
+- 보조: finviz.com/screener (스크리닝 참고), finance.yahoo.com, cnbc.com
+
+> 🔴 **macrotrends가 차단됐을 때 WebSearch로 시계열을 채우려 하지 말 것.** 검색은 페이지
+> 메타 설명만 돌려주므로 **연도별 표가 나오지 않는다**(실측: 10년 ROE 질의 4회 재시도 → 값 0건).
+> 위 7개 지표는 전부 시계열이므로 **stockanalysis.com 재무제표 또는 SEC 10-K 원문**에서
+> 가져온다. 그래도 못 구한 연도는 `⬛`(데이터부족)으로 남긴다 — 추측 금지.
 
 ### 3단계: 7가지 지표 순서대로 검증
 

@@ -149,7 +149,7 @@ TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject
   5. 산업 트렌드: 기술 변화, 규제 영향, 신규 진입자(disruptors)
   6. 밸류체인 분석: 업스트림/미드스트림/다운스트림 가치 배분
   7. 최신 산업 데이터 및 경쟁 동향 반드시 검색할 것
-  8. 데이터 출처: finviz.com/screener, wsj.com, seekingalpha.com, finance.yahoo.com, SEC EDGAR 8-K
+  8. 데이터 출처: finviz.com/screener, finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유), SEC EDGAR 8-K
 
 #### 태스크 4: 리스크 & 경영진 평가
 - subject: `{기업명}의 투자 리스크 및 경영진 자질 평가`
@@ -162,7 +162,7 @@ TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject
   6. 지배구조(Corporate Governance): 주주 구조, 이해충돌 여부, 주주환원 정책(배당/자사주 매입)
   7. 장기 확실성: 10년 후 이 기업은 어떤 모습일까? 무엇이 비즈니스 모델을 무너뜨릴 수 있는가?
   8. 최신 규제 동향, 경영진 발언(earnings call 등) 반드시 검색할 것
-  9. 데이터 출처: SEC EDGAR (8-K, proxy statement), finance.yahoo.com, wsj.com, seekingalpha.com
+  9. 데이터 출처: SEC EDGAR (8-K, proxy statement), finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
 
 ### 4단계: 4개 Agent 동시 실행
 

@@ -38,6 +38,22 @@ $ARGUMENTS 에 대한 팀 기반 심층 연구를 수행한다. SpaceX, Stripe, 
 
 ## 실행 절차
 
+### ⓪단계: 사전 점검 — 대체 데이터 소스 접근 확인
+
+```bash
+python3 tools/site_preflight.py private-company-research
+```
+
+미상장 기업은 표준 재무제표가 없어 **대체 데이터(직원 리뷰·채용·인력 이동)** 의존도가 상장사보다
+훨씬 높다. 그런데 Glassdoor·LinkedIn은 봇 탐지가 가장 강한 축이라, 차단 여부를 모른 채
+`signal-miner`·`risk-governance-analyst`를 띄우면 두 Agent가 나란히 403을 만나 헛돈다.
+
+- 대상은 비상장사이므로 **티커를 넘기지 않는다**(sec/yahoo는 AAPL 기준 대리 테스트).
+- 차단 시 대체: Glassdoor → 웹 검색 `'회사명 employee reviews glassdoor'`,
+  LinkedIn → 웹 검색 `'회사명 CEO LinkedIn profile'`. 스크립트가 대체 경로를 직접 출력한다.
+- **차단 여부와 관계없이 리서치를 계속 진행한다.** 다만 차단된 소스에 의존하는 항목은
+  신뢰도를 🔴낮음으로 낮추고, 보고서 상단 "데이터 접근성"에 무엇이 막혔는지 기록한다.
+
 ### 1단계: 팀 프레임워크 제시
 
 아래 팀 구조를 사용자에게 보여주고, 확인 후 시작한다:
@@ -194,7 +210,7 @@ TaskCreate를 사용해 아래 6개 태스크를 생성한다 (각 태스크에 
 | 6 | PACER (연방 법원 기록) | 소송, 중재, 파산 서류 | 🟡중상 | PACER.gov에서 회사명 검색 |
 | 7 | 펀딩 뉴스 | Crunchbase, PitchBook, 밸류에이션·투자 금액·투자자 | 🟡중 | "회사명 + funding/valuation/Series" |
 | 8 | 서드파티 리서치 | 투자은행 리서치, 컨설팅사, 산업 협회 보고서 | 🟡중 | "회사명 + research report/analyst" |
-| 9 | 심층 미디어 보도 | The Information, Bloomberg, Reuters, TechCrunch, WSJ | 🟡중 | 해당 매체에서 회사명 직접 검색 |
+| 9 | 심층 미디어 보도 | The Information, Bloomberg, TechCrunch, CNBC | 🟡중 | 해당 매체에서 회사명 직접 검색 (Bloomberg는 WebSearch 경유) |
 | 10 | 산업 데이터 역산 | 산업 총량 × 시장 점유율로 역산 | 🔴낮음-중간 | |
 | 11 | 전·현직 직원 제보 | Glassdoor, Blind, Reddit | 🔴낮음 | 참고용으로만, 주요 근거 불가 |
 
@@ -828,8 +844,10 @@ Agent 도구를 사용해 6개 에이전트를 동시에 시작한다 (**반드�
    - 회사명 + 특정 경쟁사명 (경쟁 동향 검색)
 3. 주요 정보 출처:
    - 높은 신뢰도: SEC EDGAR S-1/10-K, 규제 서류, 상장사 연보의 관련 공시
-   - 중간 신뢰도: The Information, Bloomberg, Reuters, WSJ, TechCrunch, PitchBook, Crunchbase
+   - 중간 신뢰도: The Information, Bloomberg, TechCrunch, CNBC, PitchBook, Crunchbase
    - 보조 검증: Glassdoor, Blind, LinkedIn, Reddit, Hacker News, EquityZen
+   - ⚠️ **접근 불가 (사용 금지)**: WSJ · Reuters · MarketWatch · Barron's — Anthropic 크롤러 차단으로
+     WebFetch·WebSearch 모두 불가. Bloomberg·Glassdoor는 직접 접근은 막혔으나 WebSearch 경유는 가능.
 4. WebFetch를 사용해 핵심 기사의 전문을 가져옵니다 (검색 요약만 보지 않는다)
 5. 중요한 데이터는 최소 2개의 다른 출처로 교차 검증합니다
 

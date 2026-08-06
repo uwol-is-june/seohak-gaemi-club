@@ -52,7 +52,7 @@ Agent 도구를 사용해 백그라운드 Agent를 **병렬**로 실행하여 �
 | 직전 분기 실적/콜 트랜스크립트 | 상동 | 높음 (공약 추적 목적) |
 | **연간 재무 기준선** | **`reports/{티커}/_data.md` (0번째 단계에서 확보 — 재수집 금지)** | **최고** |
 | 재무 데이터(분기·보조) | macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials | 높음 |
-| 뉴스/애널리스트 반응 | finance.yahoo.com, wsj.com, seekingalpha.com | 보통 |
+| 뉴스/애널리스트 반응 | finance.yahoo.com(`/analyst-insights/`), cnbc.com, seekingalpha.com(WebSearch 경유) | 보통 |
 
 **자료 가용성 등급**:
 

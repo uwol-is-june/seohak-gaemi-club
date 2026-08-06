@@ -55,10 +55,10 @@ $ARGUMENTS 에 대해 투자 논제 추적 검토를 실행한다.
 
 다음 소스에서 현재 주가, 밸류에이션 지표(PER, PBR, 배당수익률), 최신 실적 핵심 데이터를 수집해 밸류에이션 앵커를 채운다:
 
-- **주가·재무 이력**: macrotrends.net/stocks/charts/{TICKER}
-- **재무제표**: stockanalysis.com/stocks/{ticker}/financials
+- **재무제표·주가 이력**: stockanalysis.com/stocks/{ticker}/financials
+- **장기 추이(보조)**: macrotrends.net/stocks/charts/{TICKER} (⚠️ 상시 봇 차단, 열렸을 때만)
 - **공시**: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K)
-- **뉴스·분석**: finance.yahoo.com, seekingalpha.com, wsj.com
+- **뉴스·분석**: finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
 
 동일 종목에 대해 `/investment-team` 보고서가 이미 있다면 그 보고서를 우선 참조한다.
 
@@ -213,9 +213,9 @@ A4 표를 채운 뒤, 아래 ASCII "가격 밴드"를 **반드시** 보고서에
    - stockanalysis.com/stocks/{ticker}/financials
    - SEC EDGAR 10-Q / 10-K: sec.gov/cgi-bin/browse-edgar
 2. **최근 중대 이벤트** (경영진 변동, 규제 정책, 경쟁 동향)
-   - finance.yahoo.com, seekingalpha.com, wsj.com
+   - finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
 3. **현재 주가 및 밸류에이션 지표**
-   - macrotrends.net/stocks/charts/{TICKER}, finviz.com/screener
+   - stockanalysis.com/stocks/{ticker}/statistics, finviz.com/screener
 4. **내부자 거래 기록** (임원·대주주 매수/매도)
    - SEC Form 4 공시 (sec.gov/cgi-bin/browse-edgar)
 

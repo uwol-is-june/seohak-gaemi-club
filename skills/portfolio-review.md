@@ -59,10 +59,10 @@ Task 도구로 백그라운드 Agent를 실행하고, WebSearch를 통해 각 �
 4. 애널리스트 컨센서스 (Forward PER, 목표주가)
 
 **데이터 출처 우선순위**:
-- 1순위: macrotrends.net/stocks/charts/{TICKER} (장기 재무 데이터)
-- 2순위: stockanalysis.com/stocks/{ticker}/financials (재무제표 요약)
+- 1순위: stockanalysis.com/stocks/{ticker}/financials (재무제표 요약)
+- 2순위: macrotrends.net/stocks/charts/{TICKER} (장기 재무 데이터) — ⚠️ 상시 봇 차단, 열렸을 때만
 - SEC 공시: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K)
-- 뉴스: finance.yahoo.com, seekingalpha.com, wsj.com
+- 뉴스: finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
 
 `tools/financial_rigor.py verify-valuation`으로 각 종목의 밸류에이션 데이터를 검증한다.
 

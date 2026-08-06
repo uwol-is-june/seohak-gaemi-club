@@ -40,13 +40,48 @@ Agent마다 같은 숫자를 다시 긁으면 토큰 낭비일 뿐 아니라 Age
 | 우선순위 | 출처 | URL | 접근 방법 |
 |----------|------|-----|-----------|
 | **0 (연간 핵심 재무)** | **SEC XBRL 추출기** | `tools/fetch_financials.py` → `_data.md` | **가장 먼저 실행 — 아래는 보완용** |
-| 1 (주) | **Macrotrends** | macrotrends.net/stocks/charts/{TICKER} | 무료 직접 접근, 회원가입 불필요 |
-| 2 (부) | **Stock Analysis** | stockanalysis.com/stocks/{ticker}/financials | 무료 직접 접근, 회원가입 불필요 |
+| 1 (주) | **Stock Analysis** | stockanalysis.com/stocks/{ticker}/financials | 무료 직접 접근, 회원가입 불필요 |
+| 2 (부) | **Macrotrends** | macrotrends.net/stocks/charts/{TICKER} | ⚠️ **상시 봇 차단(403)** — `site_preflight.py`가 열렸다고 보고할 때만 사용 |
 | 원본 1차 | **SEC EDGAR** | sec.gov/cgi-bin/browse-edgar | 10-K / 10-Q / 8-K 원문 |
 | 스크리닝 | **Finviz** | finviz.com/screener | 초기 종목 필터링 및 밸류에이션 스냅샷 |
-| 뉴스·논평 | **Yahoo Finance / SeekingAlpha / WSJ** | finance.yahoo.com / seekingalpha.com / wsj.com | 실적 발표, 경영진 코멘트, 애널리스트 반응 |
+| 뉴스·논평 1 | **Yahoo Finance** | finance.yahoo.com/quote/{TICKER} | 실적, 애널리스트 목표주가·레이팅 변동 (`/analyst-insights/`, `/analysis/`) |
+| 뉴스·논평 2 | **CNBC** | cnbc.com/quotes/{TICKER} | 실적 반응, 셀사이드 코멘트 인용 |
+| 뉴스·논평 3 | **Seeking Alpha / Bloomberg** | seekingalpha.com / bloomberg.com | 심층 분석 — ⚠️ 직접 접근 차단, **WebSearch 경유만** |
 
-> **제거된 출처 (사용 금지):** aastocks.com, eastmoney.com (동방재부), cninfo.com.cn, xueqiu.com (설구), hkexnews.hk — 미국 주식 리서치에는 해당 없음
+### 🔴 접근 차단 사이트 — "못 쓴다"와 "직접 못 연다"는 다르다
+
+403은 **직접 열기(WebFetch·curl)만 막힌 것**이고 WebSearch 색인은 살아 있다. 2026-08 실측에서
+macrotrends·Seeking Alpha·Glassdoor·Bloomberg 모두 검색으로 실제 수치·본문을 확인했다.
+
+| 대응 | 방법 | 신뢰도 상한 |
+|------|------|-----------|
+| 직접 접근 가능 | WebFetch로 원문 확인 | 🟢 (교차검증 시) |
+| 403 (검색은 가능) | `WebSearch(allowed_domains=['해당도메인'])` | **🟡** — 원문 직접 확인이 아니고 색인이 오래됐을 수 있음 |
+| 크롤러 차단 | 없음 — 소스에서 제외 | — |
+
+#### 🔴 검색 경유는 **연도별 시계열 표를 주지 않는다** (2026-08-06 실측)
+
+검색이 돌려주는 것은 페이지의 **메타 설명·요약 문장**이지 본문 HTML 표가 아니다. 그래서
+데이터 성격에 따라 성패가 갈린다:
+
+| 데이터 성격 | 검색 경유 | 실측 |
+|------------|----------|------|
+| 서술형 콘텐츠 (기사 논지, 애널리스트 코멘트, 직원 리뷰 평점) | ✅ 충분 | Seeking Alpha·Bloomberg·Glassdoor 모두 성공 |
+| 최신값 + 전년비 1~3개 | ✅ 대체로 가능 | "AAPL 2025 매출 $416.161B (+6.43%)" 확보 |
+| **연도별 시계열 표** | ❌ **불가** | AAPL 10년 ROE — 질의를 4번 바꿔도 값 0건. COST 5년 GM/OCF — TTM만 |
+
+**따라서 `/quality-screen`의 7개 지표(10년 ROE·5년 FCF·5년 GM 추세 등)를 macrotrends 검색으로
+채우려 하지 말 것** — 헛돈다. 시계열은 **0순위 `tools/fetch_financials.py`(SEC XBRL)** 와
+**1순위 stockanalysis.com(직접 접근)** 이 담당한다. 검색 경유 macrotrends는 단일 시점 값
+확인용 보조일 뿐이다.
+
+> **제거된 출처 (사용 금지)**
+> - **WSJ · Reuters · MarketWatch · Barron's** — Anthropic 크롤러를 robots.txt로 차단해
+>   **WebFetch도 WebSearch도 통하지 않는다**(2026-08-06 실측). 이 중 WSJ·MarketWatch·
+>   Barron's는 같은 Dow Jones/News Corp 계열이라 계열 내 대체도 불가. 대체는
+>   **Yahoo Finance(1순위·직접 접근) + CNBC(직접+검색) + Bloomberg/Seeking Alpha(검색 경유)**.
+> - aastocks.com, eastmoney.com (동방재부), cninfo.com.cn, xueqiu.com (설구), hkexnews.hk
+>   — 미국 주식 리서치에는 해당 없음
 
 ---
 
@@ -54,7 +89,7 @@ Agent마다 같은 숫자를 다시 긁으면 토큰 낭비일 뿐 아니라 Age
 
 ### 1단계: 데이터 수집
 
-각 재무 지표(매출, 순이익, 매출총이익률, 영업현금흐름, 부채비율 등)를 **출처 1 (Macrotrends)**과 **출처 2 (Stock Analysis)**에서 각각 수집한다.
+각 재무 지표(매출, 순이익, 매출총이익률, 영업현금흐름, 부채비율 등)를 **출처 1 (Stock Analysis)**과 **출처 2 (Macrotrends)**에서 각각 수집한다. Macrotrends가 차단돼 있으면 **SEC EDGAR 원문**을 두 번째 출처로 쓴다(교차검증 자체를 생략하지 않는다).
 
 수집 대상 핵심 지표:
 

@@ -100,7 +100,8 @@ TaskCreate로 다음 4개 태스크를 생성한다:
 - **subject**: `{종목명} 최근 {N}일간 시장 심리 및 기관 관점 변화 탐색`
 - **description**:
   1. **셀사이드 레이팅 변동**: Goldman Sachs, Morgan Stanley, JPMorgan 등 최근 레이팅/목표주가 조정
-     - 출처: finance.yahoo.com, seekingalpha.com, wsj.com 애널리스트 섹션
+     - 출처: finance.yahoo.com/quote/{티커}/analyst-insights/ 및 /analysis/ (목표주가·레이팅 변동 전용 페이지),
+       cnbc.com, seekingalpha.com(WebSearch 경유)
   2. **기관 포지션 변화**: 13F 공시 (분기별), Form 13G/13D (대량 보유 변경), 주요 ETF 비중 변화
   3. **공매도 데이터**: 공매도 비율, 신규 공매도 보고서 (Hindenburg, Citron 등)
   4. **옵션 시장 신호**: 이상 옵션 거래량, Put/Call Ratio 급변, 대형 블록 거래
@@ -144,13 +145,13 @@ TaskCreate로 다음 4개 태스크를 생성한다:
 - 시의성 높은 쿼리는 WebSearch 우선 활용 (키워드에 날짜 또는 "latest", "recent", "2026" 추가)
 - 핵심 이벤트는 WebFetch로 원본 출처 정독 (공시 원문, 실적 자료, SEC 파일)
 - 주요 출처:
-  - macrotrends.net/stocks/charts/{티커} — 역사적 재무/주가 데이터
-  - stockanalysis.com/stocks/{소문자티커}/financials — 재무제표
+  - stockanalysis.com/stocks/{소문자티커}/financials — 재무제표 (재무 1순위)
+  - macrotrends.net/stocks/charts/{티커} — 역사적 재무/주가 데이터 (⚠️ 상시 봇 차단, WebSearch 경유)
   - sec.gov/cgi-bin/browse-edgar — SEC 공시 (10-K, 10-Q, 8-K)
   - finviz.com/screener — 스크리닝 및 업종 비교
-  - finance.yahoo.com — 뉴스, 애널리스트 의견
-  - seekingalpha.com — 투자자 분석 및 뉴스
-  - wsj.com — Wall Street Journal 심층 기사
+  - finance.yahoo.com — 뉴스, 애널리스트 의견 (뉴스 1순위)
+  - cnbc.com — 실적 반응, 셀사이드 코멘트 인용
+  - seekingalpha.com / bloomberg.com — 심층 분석 (⚠️ 직접 접근 차단, WebSearch 경유)
 - 각 이벤트에 "독립 출처 검증" 수행 — 루머는 독립적 출처 2개 이상 필요
 - **헤드라인 낚시에 속지 않는다**: 제목과 본문이 불일치하는 이벤트는 "헤드라인 미스리드"로 표시
 

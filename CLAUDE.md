@@ -102,12 +102,26 @@ reports/{티커}/
 
 | 우선순위 | 소스 | URL | 용도 |
 |---------|------|-----|------|
-| 1순위 (주) | macrotrends | macrotrends.net/stocks/charts/{TICKER} | 재무 데이터 10년 추이 |
-| 2순위 (부) | stockanalysis | stockanalysis.com/stocks/{ticker}/financials | 재무제표 교차검증 |
+| 1순위 (주) | stockanalysis | stockanalysis.com/stocks/{ticker}/financials | 재무제표·10년 추이 |
+| 2순위 (부) | macrotrends | macrotrends.net/stocks/charts/{TICKER} | 교차검증 — ⚠️ **상시 봇 차단**, 열리면 사용 |
 | 원문 공시 | SEC EDGAR | sec.gov/cgi-bin/browse-edgar | 10-K, 10-Q, 8-K 원문 |
 | 스크리닝 | Finviz | finviz.com/screener | 종목 스크리닝 |
-| 뉴스 | Yahoo Finance | finance.yahoo.com | 뉴스·실적 발표 |
-| 뉴스/분석 | Seeking Alpha | seekingalpha.com | 심층 분석 기사 |
+| 뉴스 1순위 | Yahoo Finance | finance.yahoo.com/quote/{TICKER} | 뉴스·실적, 애널리스트 목표주가(`/analyst-insights/`) |
+| 뉴스 2순위 | CNBC | cnbc.com/quotes/{TICKER} | 실적 반응·셀사이드 코멘트 |
+| 뉴스/분석 | Seeking Alpha · Bloomberg | seekingalpha.com · bloomberg.com | 심층 분석 — ⚠️ **WebSearch 경유만** |
+
+> **🔴 403은 "못 쓴다"가 아니다** — 직접 열기(WebFetch)만 막힌 것이고 WebSearch 색인은 살아 있다.
+> `WebSearch(allowed_domains=['해당도메인'])`로 우회하되, 원문 직접 확인이 아니므로
+> 신뢰도는 **🟡가 상한**이다(`skills/data-confidence.md`).
+>
+> ⚠️ **단, 검색 경유는 연도별 시계열 표를 주지 않는다**(메타 설명만 색인됨 — 실측: 10년 ROE
+> 질의 4회 재시도에도 값 0건). 기사·리뷰 같은 서술형과 최신 단일값은 나오지만,
+> **10년 추이가 필요하면 `tools/fetch_financials.py`(SEC XBRL) 또는 stockanalysis.com 직접 접근**으로 간다.
+>
+> **사용 금지 (완전 차단)**: WSJ · Reuters · MarketWatch · Barron's — Anthropic 크롤러를
+> robots.txt로 차단해 WebFetch·WebSearch 모두 불가(2026-08-06 실측). 이 중 WSJ·MarketWatch·
+> Barron's는 동일 Dow Jones 계열이라 계열 내 대체도 불가. 접근성 확인은
+> `python3 tools/site_preflight.py <프로파일>`.
 
 ## 보고서 언어와 스타일
 

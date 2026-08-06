@@ -294,7 +294,7 @@ A = 데이터 충분하고 신뢰 가능; B = 일부 누락이 있으나 주요 
 - 재무 데이터: macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials
 - SEC 공시: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K)
 - 스크리닝: finviz.com/screener
-- 뉴스·분석: finance.yahoo.com, seekingalpha.com, wsj.com
+- 뉴스·분석: finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
 
 ---
 

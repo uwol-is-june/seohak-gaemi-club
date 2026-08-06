@@ -357,7 +357,7 @@ B급 병목 (압박 있음):
 
 1. **뉴스 스캔**: 지난 1~2시간의 공급망 관련 뉴스 검색
    - 키워드: supply chain bottleneck, shortage, capacity constraint, allocation, lead time, sole source, chip shortage, component shortage, price increase
-   - 커버리지: 영어 소스 중심 (finance.yahoo.com, wsj.com, seekingalpha.com, Reuters, Bloomberg)
+   - 커버리지: 영어 소스 중심 (finance.yahoo.com, cnbc.com, seekingalpha.com·bloomberg.com은 WebSearch 경유)
 2. **시장 신호**: 추적 중인 기업의 주가 변화 확인 (특히 5% 초과 이상 변동)
 3. **실적/공시**: 병목 관련 기업의 실적 발표 또는 중요 공시 여부 확인
 4. **밸류에이션 기회**: 관찰 목록 기업이 시장 하락 등으로 매수 구간에 진입했는지 확인
@@ -449,20 +449,20 @@ B급 병목 (압박 있음):
 ## 데이터 소스 가이드
 
 ### 1차 소스 (필수)
-- **macrotrends.net/stocks/charts/{TICKER}**: 장기 재무 추세, 매출/이익/EPS 히스토리
-- **stockanalysis.com/stocks/{ticker}/financials**: 재무제표, 밸류에이션 멀티플
+- **stockanalysis.com/stocks/{ticker}/financials**: 재무제표, 밸류에이션 멀티플, 장기 추세
 - **SEC EDGAR**: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K 공시)
+- **macrotrends.net/stocks/charts/{TICKER}**: 매출/이익/EPS 히스토리 — ⚠️ 상시 봇 차단, WebSearch 경유
 
 ### 2차 소스 (검증용)
 - **finviz.com/screener**: 주식 스크리닝, 섹터/시가총액 필터
 - **finance.yahoo.com**: 뉴스, 실적 발표, 애널리스트 추정치
-- **seekingalpha.com**: 심층 분석 기사, 업계 전문가 견해
-- **wsj.com**: 공급망 뉴스, 산업 동향
+- **cnbc.com**: 공급망 뉴스, 산업 동향, 셀사이드 코멘트
+- **seekingalpha.com / bloomberg.com**: 심층 분석 — ⚠️ 직접 접근 차단, WebSearch 경유
 
 ### 재무 데이터 검색 순서
-1. macrotrends.net에서 장기 추세 확인
-2. stockanalysis.com에서 멀티플 및 최근 분기 수치 확인
-3. SEC EDGAR에서 원본 공시 교차 검증
+1. stockanalysis.com에서 장기 추세·멀티플·최근 분기 수치 확인
+2. SEC EDGAR에서 원본 공시 교차 검증
+3. macrotrends.net은 열렸을 때만 보조 교차검증에 사용
 4. 불일치 시 SEC 공시를 기준으로 삼음
 
 ---
