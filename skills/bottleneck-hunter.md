@@ -349,13 +349,21 @@ B급 병목 (압박 있음):
 
 ---
 
-## 시간별 스캔 모드 (스케줄 태스크용)
+## 일일 스캔 모드 (스케줄 태스크용)
 
-매 시간 실행, "새로운 정보가 있을 때만 보고서 생성" 방식을 따른다:
+**매일 09:00 KST 1회** 실행하며, "새로운 정보가 있을 때만 보고서 생성" 방식을 따른다.
 
-### 스캔 절차 (매 시간)
+> **왜 09:00인가**: 미국 정규장 마감은 16:00 ET = **05:00 KST**(서머타임) / **06:00 KST**(표준시)다.
+> 기업은 실적을 마감 직후에 내고 그걸 해석한 기사·콜 코멘트는 몇 시간 뒤에 색인되므로,
+> 마감 +3~4시간인 09:00이면 애프터아워 반응까지 들어온다.
+>
+> 🔴 **매시간 실행 금지** — 스캔 1회가 `/news-pulse` 급(1~3M)이라 24회면 하루 수십 M이다
+> (`/investment-team` 심층분석 한 번이 5~10M). 공급망 리드타임은 시간 단위로 변하지 않으므로
+> 하루 1회로 놓치는 것이 없다. 실행 주체는 로컬 스케줄러(`tools/schedule_bottleneck_scan.ps1`).
 
-1. **뉴스 스캔**: 지난 1~2시간의 공급망 관련 뉴스 검색
+### 스캔 절차 (매일 1회)
+
+1. **뉴스 스캔**: 지난 24시간의 공급망 관련 뉴스 검색
    - 키워드: supply chain bottleneck, shortage, capacity constraint, allocation, lead time, sole source, chip shortage, component shortage, price increase
    - 커버리지: 영어 소스 중심 (finance.yahoo.com, cnbc.com, seekingalpha.com·bloomberg.com은 WebSearch 경유)
 2. **시장 신호**: 추적 중인 기업의 주가 변화 확인 (특히 5% 초과 이상 변동)
@@ -374,10 +382,15 @@ B급 병목 (압박 있음):
 | 상황 | 파일명 형식 | 예시 |
 |------|-----------|------|
 | 명확한 투자 대상 발견 | `HH-MM-티커1-티커2.md` | `09-00-FORM-IPGP.md` |
-| 병목 신호 있으나 명확한 투자 대상 없음 | `HH-MM-신호스캔.md` | `14-00-신호스캔.md` |
+| 병목 신호 있으나 명확한 투자 대상 없음 | `HH-MM-신호스캔.md` | `09-00-신호스캔.md` |
 | 새로운 발견 없음 | 파일 미생성 | — |
 
 **파일명의 티커 = 밸류에이션 확인 통과, 심층 연구 가치 있는 기업.** 신호 스캔 단계에서만 등장하고 밸류에이션 부적합 판정된 기업은 파일명에 포함하지 않는다.
+
+> 🔴 **이 파일명 규약은 대시보드가 파싱한다** — '병목 신호' 탭(`dashboard/lib/bottleneck.ts`)이
+> `HH-MM-` 뒤의 토큰이 전부 티커 형태인지로 **후보 발견 / 신호만**을 갈라 배지를 붙인다.
+> 따라서 티커가 아닌 말을 티커 자리에 섞으면(`09-00-FORM-검토필요.md`) 후보가 아니라
+> '신호만'으로 표시된다. 규약을 바꾸려면 `dashboard/lib/bottleneck.test.ts` 를 함께 고친다.
 
 ### 보고서 템플릿 (투자 대상 있을 때)
 
@@ -448,7 +461,7 @@ B급 병목 (압박 있음):
 
 ## 데이터 소스 가이드
 
-**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+**데이터 소스** ([financial-data.md](skills/financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
 ⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 ### 재무 데이터 검색 순서
@@ -476,9 +489,13 @@ B급 병목 (압박 있음):
 
 1. **보고서 위치**:
    - 전체 스캔: `reports/bottleneck-map/{트렌드명}-bottleneck-{YYYYMMDD}.md`
-   - 시간별 스캔: `reports/bottleneck-map/YYYY-MM-DD/HH-MM-*.md`
+   - 일일 스캔: `reports/bottleneck-map/YYYY-MM-DD/HH-MM-*.md`
    - 병목 전체 맵: `reports/bottleneck-map/master-map.md`
    - 관찰 목록: `reports/bottleneck-map/watchlist.md`
+
+   > 위 4종은 모두 대시보드 **'병목 신호' 탭**(좌측 nav '개요' 그룹)에 모인다. Stop 훅이
+   > Supabase로 발행하므로 별도 조작은 없다. ⚠️ `reports/bottleneck-map/` 은 티커 폴더가
+   > 아니므로 **종목 보고서 탭에는 나타나지 않는다**(`isBottleneckCompany()` 로 제외).
 2. **언어**: 한국어
 3. **스타일**: 직접적, 날카롭게, 군더더기 없이
 4. **데이터**: 모든 데이터에 출처 표시, 추정값은 "추정" 명시
@@ -489,7 +506,7 @@ B급 병목 (압박 있음):
 
 ## 데이터 신뢰도 표기 (필수)
 
-본 보고서는 **[data-confidence.md](data-confidence.md) 표준**을 적용한다:
+본 보고서는 **[data-confidence.md](skills/data-confidence.md) 표준**을 적용한다:
 
 - 병목·차익 판단과 핵심 수치 옆에 **신뢰도 등급 + 유형 태그**를 단다 — 🟢높음(2+독립출처 교차검증 또는 원문 직접 확인) / 🟡보통(단일출처·경미편차·해석여지) / 🔴낮음(추정·미확정주장·구데이터) / ⬛데이터부족(공백 유지) + `[사실]`/`[추정]`/`[주장]`/`[의견]`. 공급망 역산·점유율 추정은 대부분 🔴[추정].
 - **출처 독립성 주의**: 회사 IR·보도자료와 집계 사이트는 둘 다 회사 공시 파생이라 상호 독립이 아니다 → 🟢은 원문 직접 확인 또는 계보가 다른 두 출처를 요구한다.

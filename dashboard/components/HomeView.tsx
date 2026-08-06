@@ -16,9 +16,22 @@ import { TrackRecordView } from "./TrackRecordView";
 import { EarningsCalendar } from "./EarningsCalendar";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { SectorGroupEditor } from "./SectorGroupEditor";
+import { BottleneckSignalsView } from "./BottleneckSignalsView";
+import { isBottleneckCompany } from "@/lib/bottleneck";
 
 // 루트에 있지만 '섹터 리서치'가 아닌 문서(각자 전용 탭이 따로 있음).
 const ROOT_NON_SECTOR = new Set(["portfolio-latest.md", "track-record.md"]);
+
+// 탭별 상단바 라벨(eyebrow = GeistMono 대문자, title = 한글). 리서치 프로세스(flows)
+// 탭은 여기 없고 activeFlow.title 로 폴백한다.
+const TAB_HEADERS: Record<string, { eyebrow: string; title: string }> = {
+  reports: { eyebrow: "REPORTS", title: "전체 보고서" },
+  "holdings-reports": { eyebrow: "HOLDINGS REPORTS", title: "보유 종목 보고서" },
+  "sector-reports": { eyebrow: "SECTOR", title: "섹터 리서치" },
+  "portfolio-overview": { eyebrow: "PORTFOLIO", title: "포트폴리오" },
+  "track-record": { eyebrow: "TRACK RECORD", title: "트랙레코드" },
+  "bottleneck-signals": { eyebrow: "BOTTLENECK", title: "병목 신호" },
+};
 
 export function HomeView({
   onLaunchStep,
@@ -108,10 +121,19 @@ export function HomeView({
   // 파생 데이터는 useMemo 로 캐시한다 — HomeView 는 상태가 많아 자주 리렌더되는데,
   // 아래 스캔·정렬(특히 screenByCompany 의 O(companies×files))을 매 렌더마다 다시 돌면
   // 불필요한 비용이 든다(TASK-48).
+  // 종목 축 목록. 'bottleneck-map' 은 티커 폴더가 아니라 병목 신호 저장소인데
+  // publish_report.py 의 company_from_path 가 reports/{2번째 세그먼트}를 티커로 읽어
+  // 가짜 종목으로 섞인다 → 여기서 걸러내고 '병목 신호' 탭이 따로 다룬다.
   const companies = useMemo<string[]>(
     () =>
       files
-        ? Array.from(new Set(files.map((f) => f.company).filter((c): c is string => c !== null))).sort()
+        ? Array.from(
+            new Set(
+              files
+                .map((f) => f.company)
+                .filter((c): c is string => c !== null && !isBottleneckCompany(c))
+            )
+          ).sort()
         : [],
     [files]
   );
@@ -320,6 +342,9 @@ export function HomeView({
       items: [
         { id: "portfolio-overview", label: "포트폴리오" },
         { id: "track-record", label: "트랙레코드" },
+        // 매일 09:00 자동 스캔이 남기는 공급망 병목 신호(S3). 사람이 실행하는 다른
+        // 탭과 달리 '들여다보는' 성격이라 개요 그룹에 둔다.
+        { id: "bottleneck-signals", label: "병목 신호" },
       ],
     },
     {
@@ -345,30 +370,8 @@ export function HomeView({
   // 모바일 가로 탭 로우와 각종 조회는 평탄화한 목록을 쓴다.
   const contentTabs = navGroups.flatMap((g) => g.items);
   const activeFlow = flows.find((f) => f.id === flowTab);
-  const headerEyebrow =
-    flowTab === "reports"
-      ? "REPORTS"
-      : flowTab === "holdings-reports"
-        ? "HOLDINGS REPORTS"
-        : flowTab === "sector-reports"
-          ? "SECTOR"
-          : flowTab === "portfolio-overview"
-            ? "PORTFOLIO"
-            : flowTab === "track-record"
-              ? "TRACK RECORD"
-              : flowTab.toUpperCase();
-  const headerTitle =
-    flowTab === "reports"
-      ? "전체 보고서"
-      : flowTab === "holdings-reports"
-        ? "보유 종목 보고서"
-        : flowTab === "sector-reports"
-          ? "섹터 리서치"
-          : flowTab === "portfolio-overview"
-            ? "포트폴리오"
-            : flowTab === "track-record"
-              ? "트랙레코드"
-              : (activeFlow?.title ?? "");
+  const headerEyebrow = TAB_HEADERS[flowTab]?.eyebrow ?? flowTab.toUpperCase();
+  const headerTitle = TAB_HEADERS[flowTab]?.title ?? activeFlow?.title ?? "";
   const logout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
@@ -529,6 +532,14 @@ export function HomeView({
           ) : flowTab === "track-record" ? (
             /* 트랙레코드 = 콜(예측) 자동 채점만. 수기 매매기록(실보유)은 포트폴리오 탭으로 이동(TASK-74). */
             <TrackRecordView />
+          ) : flowTab === "bottleneck-signals" ? (
+            /* 병목 신호 = 매일 09:00 자동 스캔(S3 /bottleneck-hunter) 산출물 피드. */
+            <BottleneckSignalsView
+              files={files}
+              loadError={loadError}
+              onRetry={() => setReloadKey((k) => k + 1)}
+              onOpenReport={(p) => setModalPath(p)}
+            />
           ) : flowTab === "sector-reports" ? (
             /* ── 섹터 리서치: /industry-research·/industry-funnel 등 섹터/스크리닝 결과물 ── */
             <div>

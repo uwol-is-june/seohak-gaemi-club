@@ -1,4 +1,6 @@
 logs/command-log.jsonl
+# 병목 신호 일일 스캔 로그 (로컬 실행 기록 — 보고서는 Supabase로 발행됨)
+logs/bottleneck-scan/
 reports/美团/command-log.jsonl
 .DS_Store
 reports/.DS_Store
