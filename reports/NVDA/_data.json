@@ -4,7 +4,7 @@
   "companyName": "NVIDIA CORP",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-08-06T00:11:29.953529+00:00",
+  "generatedAt": "2026-08-06T01:13:30.580116+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001045810.json",
@@ -136,11 +136,11 @@
       },
       "derived": {
         "fcf": null,
-        "grossMarginPct": 58.8,
-        "operatingMarginPct": 27.99,
-        "netMarginPct": 24.11,
-        "roePct": 28.91,
-        "debtToEquity": 0.703
+        "grossMarginPct": 58.798842,
+        "operatingMarginPct": 27.988423,
+        "netMarginPct": 24.109986,
+        "roePct": 28.913572,
+        "debtToEquity": 0.702534
       }
     },
     "2018": {
@@ -248,11 +248,11 @@
       },
       "derived": {
         "fcf": null,
-        "grossMarginPct": 59.93,
-        "operatingMarginPct": 33.05,
-        "netMarginPct": 31.37,
-        "roePct": 40.78,
-        "debtToEquity": 0.505
+        "grossMarginPct": 59.934116,
+        "operatingMarginPct": 33.04509,
+        "netMarginPct": 31.367099,
+        "roePct": 40.784366,
+        "debtToEquity": 0.504618
       }
     },
     "2019": {
@@ -360,11 +360,11 @@
       },
       "derived": {
         "fcf": null,
-        "grossMarginPct": 61.21,
-        "operatingMarginPct": 32.47,
-        "netMarginPct": 35.34,
-        "roePct": 44.33,
-        "debtToEquity": 0.423
+        "grossMarginPct": 61.206897,
+        "operatingMarginPct": 32.468419,
+        "netMarginPct": 35.344828,
+        "roePct": 44.326697,
+        "debtToEquity": 0.422822
       }
     },
     "2020": {
@@ -472,11 +472,11 @@
       },
       "derived": {
         "fcf": null,
-        "grossMarginPct": 61.99,
-        "operatingMarginPct": 26.07,
-        "netMarginPct": 25.61,
-        "roePct": 22.91,
-        "debtToEquity": 0.419
+        "grossMarginPct": 61.989375,
+        "operatingMarginPct": 26.067045,
+        "netMarginPct": 25.609086,
+        "roePct": 22.910521,
+        "debtToEquity": 0.418797
       }
     },
     "2021": {
@@ -584,11 +584,11 @@
       },
       "derived": {
         "fcf": null,
-        "grossMarginPct": 62.34,
-        "operatingMarginPct": 27.18,
-        "netMarginPct": 25.98,
-        "roePct": 25.64,
-        "debtToEquity": 0.704
+        "grossMarginPct": 62.344828,
+        "operatingMarginPct": 27.178411,
+        "netMarginPct": 25.97901,
+        "roePct": 25.643758,
+        "debtToEquity": 0.704315
       }
     },
     "2022": {
@@ -703,11 +703,11 @@
       },
       "derived": {
         "fcf": 8132000000,
-        "grossMarginPct": 64.93,
-        "operatingMarginPct": 37.31,
-        "netMarginPct": 36.23,
-        "roePct": 36.65,
-        "debtToEquity": 0.66
+        "grossMarginPct": 64.929033,
+        "operatingMarginPct": 37.307721,
+        "netMarginPct": 36.23393,
+        "roePct": 36.645123,
+        "debtToEquity": 0.660416
       }
     },
     "2023": {
@@ -822,11 +822,11 @@
       },
       "derived": {
         "fcf": 3808000000,
-        "grossMarginPct": 56.93,
-        "operatingMarginPct": 15.66,
-        "netMarginPct": 16.19,
-        "roePct": 19.76,
-        "debtToEquity": 0.863
+        "grossMarginPct": 56.928894,
+        "operatingMarginPct": 15.659524,
+        "netMarginPct": 16.193371,
+        "roePct": 19.763812,
+        "debtToEquity": 0.863355
       }
     },
     "2024": {
@@ -941,11 +941,11 @@
       },
       "derived": {
         "fcf": 27021000000,
-        "grossMarginPct": 72.72,
-        "operatingMarginPct": 54.12,
-        "netMarginPct": 48.85,
-        "roePct": 69.24,
-        "debtToEquity": 0.529
+        "grossMarginPct": 72.717573,
+        "operatingMarginPct": 54.121664,
+        "netMarginPct": 48.849348,
+        "roePct": 69.24473,
+        "debtToEquity": 0.529341
       }
     },
     "2025": {
@@ -1060,11 +1060,11 @@
       },
       "derived": {
         "fcf": 60853000000,
-        "grossMarginPct": 74.99,
-        "operatingMarginPct": 62.42,
-        "netMarginPct": 55.85,
-        "roePct": 91.87,
-        "debtToEquity": 0.407
+        "grossMarginPct": 74.988697,
+        "operatingMarginPct": 62.417527,
+        "netMarginPct": 55.848027,
+        "roePct": 91.872881,
+        "debtToEquity": 0.406848
       }
     },
     "2026": {
@@ -1179,17 +1179,17 @@
       },
       "derived": {
         "fcf": 96676000000,
-        "grossMarginPct": 71.07,
-        "operatingMarginPct": 60.38,
-        "netMarginPct": 55.6,
-        "roePct": 76.33,
-        "debtToEquity": 0.315
+        "grossMarginPct": 71.068084,
+        "operatingMarginPct": 60.381684,
+        "netMarginPct": 55.602534,
+        "roePct": 76.33334,
+        "debtToEquity": 0.314763
       }
     }
   },
   "crossValidation": {
     "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/NVDA?symbol=NVDA&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374883889&period2=1786061489",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/NVDA?symbol=NVDA&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374887610&period2=1786065210",
     "worst": "중대 불일치",
     "items": [
       {

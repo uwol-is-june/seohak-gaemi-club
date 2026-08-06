@@ -172,8 +172,15 @@ def main() -> None:
     ap.add_argument("--target-low", type=float, help="목표가 밴드 하단(USD)")
     ap.add_argument("--target-high", type=float, help="목표가 밴드 상단(USD)")
     ap.add_argument("--horizon-months", type=int, help="목표 도달 기간(개월)")
-    ap.add_argument("--load-bearing", nargs="*", default=[], help="핵심 가정(⚑)들")
-    ap.add_argument("--invalidation", nargs="*", default=[], help="무효화/레드라인 조건들")
+    # action="extend" — 한 플래그에 값 여러 개(`--load-bearing "A" "B"`)도, 플래그 반복
+    # (`--load-bearing "A" --load-bearing "B"`)도 모두 누적된다. nargs="*" 단독이면 플래그를
+    # 반복했을 때 앞의 값이 **조용히 덮어써져 마지막 1개만 남는다**(실측: NVDA 콜 2건에서
+    # 가정 5개·레드라인 8개가 각각 1개로 잘렸다). default=None 은 argparse 가 기본 리스트를
+    # 프로세스 간 재사용하는 함정을 피하기 위한 것이다.
+    ap.add_argument("--load-bearing", nargs="*", action="extend", default=None,
+                    help="핵심 가정(⚑)들 — 값 여러 개 또는 플래그 반복 모두 누적됨")
+    ap.add_argument("--invalidation", nargs="*", action="extend", default=None,
+                    help="무효화/레드라인 조건들 — 값 여러 개 또는 플래그 반복 모두 누적됨")
     args = ap.parse_args()
 
     row = build_call(args)

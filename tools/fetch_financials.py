@@ -404,13 +404,17 @@ def build_annual(
         nm = _safe_div(v.get("netIncome"), v.get("revenue"))
         roe = _safe_div(v.get("netIncome"), v.get("equity"))
         de = _safe_div(v.get("totalLiabilities"), v.get("equity"))
+        # 저장 정밀도는 표시 정밀도보다 충분히 높게 유지한다(6자리).
+        # 표시용으로 미리 반올림해 두면 렌더링에서 한 번 더 반올림돼 **이중 반올림**이 된다
+        # (실측: NVDA FY2026 D/E 0.3148 → round(,3)=0.315 → f"{:.2f}"=0.32. 올바른 값은 0.31).
+        # 반올림은 표시 계층에서 딱 한 번만 한다.
         row["derived"] = {
             "fcf": fcf,
-            "grossMarginPct": None if gm is None else round(gm * 100, 2),
-            "operatingMarginPct": None if om is None else round(om * 100, 2),
-            "netMarginPct": None if nm is None else round(nm * 100, 2),
-            "roePct": None if roe is None else round(roe * 100, 2),
-            "debtToEquity": None if de is None else round(de, 3),
+            "grossMarginPct": None if gm is None else round(gm * 100, 6),
+            "operatingMarginPct": None if om is None else round(om * 100, 6),
+            "netMarginPct": None if nm is None else round(nm * 100, 6),
+            "roePct": None if roe is None else round(roe * 100, 6),
+            "debtToEquity": None if de is None else round(de, 6),
         }
         annual[str(fy)] = row
 
