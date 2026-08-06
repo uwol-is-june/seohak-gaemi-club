@@ -4,7 +4,7 @@
   "companyName": "Constellation Energy Corp",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-07-31T05:24:57.577210+00:00",
+  "generatedAt": "2026-08-06T01:33:12.794449+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001868275.json",
@@ -27,7 +27,7 @@
   },
   "freshness": {
     "latestPeriodEnd": "2025-12-31",
-    "monthsOld": 7.0,
+    "monthsOld": 7.2,
     "stale": false
   },
   "annual": {
@@ -158,9 +158,9 @@
       "derived": {
         "fcf": -1163000000,
         "grossMarginPct": null,
-        "operatingMarginPct": 1.45,
-        "netMarginPct": 3.35,
-        "roePct": 4.01,
+        "operatingMarginPct": 1.454298,
+        "netMarginPct": 3.346021,
+        "roePct": 4.013355,
         "debtToEquity": null
       }
     },
@@ -270,10 +270,10 @@
       "derived": {
         "fcf": -2667000000,
         "grossMarginPct": null,
-        "operatingMarginPct": -1.76,
-        "netMarginPct": -1.04,
-        "roePct": -1.83,
-        "debtToEquity": 3.251
+        "operatingMarginPct": -1.760904,
+        "netMarginPct": -1.04331,
+        "roePct": -1.827257,
+        "debtToEquity": 3.250914
       }
     },
     "2022": {
@@ -382,10 +382,10 @@
       "derived": {
         "fcf": -4042000000,
         "grossMarginPct": null,
-        "operatingMarginPct": 2.03,
-        "netMarginPct": -0.65,
-        "roePct": -1.45,
-        "debtToEquity": 3.225
+        "operatingMarginPct": 2.025368,
+        "netMarginPct": -0.654664,
+        "roePct": -1.452169,
+        "debtToEquity": 3.225359
       }
     },
     "2023": {
@@ -494,10 +494,10 @@
       "derived": {
         "fcf": -7723000000,
         "grossMarginPct": null,
-        "operatingMarginPct": 6.46,
-        "netMarginPct": 6.51,
-        "roePct": 14.86,
-        "debtToEquity": 3.613
+        "operatingMarginPct": 6.461193,
+        "netMarginPct": 6.513364,
+        "roePct": 14.855835,
+        "debtToEquity": 3.612998
       }
     },
     "2024": {
@@ -606,10 +606,10 @@
       "derived": {
         "fcf": -5029000000,
         "grossMarginPct": null,
-        "operatingMarginPct": 18.47,
-        "netMarginPct": 15.91,
-        "roePct": 28.47,
-        "debtToEquity": 2.992
+        "operatingMarginPct": 18.465716,
+        "netMarginPct": 15.907162,
+        "roePct": 28.474859,
+        "debtToEquity": 2.991569
       }
     },
     "2025": {
@@ -718,16 +718,16 @@
       "derived": {
         "fcf": 1288000000,
         "grossMarginPct": null,
-        "operatingMarginPct": 12.09,
-        "netMarginPct": 9.08,
-        "roePct": 15.97,
-        "debtToEquity": 2.92
+        "operatingMarginPct": 12.08632,
+        "netMarginPct": 9.082364,
+        "roePct": 15.974375,
+        "debtToEquity": 2.920438
       }
     }
   },
   "crossValidation": {
     "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/CEG?symbol=CEG&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374384297&period2=1785561897",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/CEG?symbol=CEG&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374888792&period2=1786066392",
     "worst": "중대 불일치",
     "items": [
       {

@@ -4,7 +4,7 @@
   "companyName": "QUALYS, INC.",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-07-31T04:40:18.961453+00:00",
+  "generatedAt": "2026-08-06T01:33:14.620242+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001107843.json",
@@ -27,7 +27,7 @@
   },
   "freshness": {
     "latestPeriodEnd": "2025-12-31",
-    "monthsOld": 7.0,
+    "monthsOld": 7.2,
     "stale": false
   },
   "annual": {
@@ -136,11 +136,11 @@
       },
       "derived": {
         "fcf": 46065000,
-        "grossMarginPct": 78.21,
-        "operatingMarginPct": 15.21,
-        "netMarginPct": 9.71,
-        "roePct": 7.44,
-        "debtToEquity": 0.575
+        "grossMarginPct": 78.209928,
+        "operatingMarginPct": 15.211317,
+        "netMarginPct": 9.71277,
+        "roePct": 7.439254,
+        "debtToEquity": 0.575014
       }
     },
     "2017": {
@@ -248,11 +248,11 @@
       },
       "derived": {
         "fcf": 69828000,
-        "grossMarginPct": 77.65,
-        "operatingMarginPct": 16.13,
-        "netMarginPct": 17.52,
-        "roePct": 11.77,
-        "debtToEquity": 0.565
+        "grossMarginPct": 77.654357,
+        "operatingMarginPct": 16.134524,
+        "netMarginPct": 17.519538,
+        "roePct": 11.771418,
+        "debtToEquity": 0.564647
       }
     },
     "2018": {
@@ -360,11 +360,11 @@
       },
       "derived": {
         "fcf": 102689000,
-        "grossMarginPct": 76.27,
-        "operatingMarginPct": 18.06,
-        "netMarginPct": 20.55,
-        "roePct": 16.01,
-        "debtToEquity": 0.636
+        "grossMarginPct": 76.268336,
+        "operatingMarginPct": 18.057722,
+        "netMarginPct": 20.547243,
+        "roePct": 16.007196,
+        "debtToEquity": 0.636028
       }
     },
     "2019": {
@@ -472,11 +472,11 @@
       },
       "derived": {
         "fcf": 133034000,
-        "grossMarginPct": 78.38,
-        "operatingMarginPct": 22.47,
-        "netMarginPct": 21.56,
-        "roePct": 17.93,
-        "debtToEquity": 0.747
+        "grossMarginPct": 78.384488,
+        "operatingMarginPct": 22.46624,
+        "netMarginPct": 21.559232,
+        "roePct": 17.925404,
+        "debtToEquity": 0.746646
       }
     },
     "2020": {
@@ -584,11 +584,11 @@
       },
       "derived": {
         "fcf": 150049000,
-        "grossMarginPct": 78.17,
-        "operatingMarginPct": 26.63,
-        "netMarginPct": 25.23,
-        "roePct": 22.64,
-        "debtToEquity": 0.822
+        "grossMarginPct": 78.172431,
+        "operatingMarginPct": 26.629161,
+        "netMarginPct": 25.229018,
+        "roePct": 22.639326,
+        "debtToEquity": 0.821636
       }
     },
     "2021": {
@@ -696,11 +696,11 @@
       },
       "derived": {
         "fcf": 176192000,
-        "grossMarginPct": 78.25,
-        "operatingMarginPct": 21.33,
-        "netMarginPct": 17.26,
-        "roePct": 16.25,
-        "debtToEquity": 0.865
+        "grossMarginPct": 78.247789,
+        "operatingMarginPct": 21.325139,
+        "netMarginPct": 17.257984,
+        "roePct": 16.24862,
+        "debtToEquity": 0.8652
       }
     },
     "2022": {
@@ -808,11 +808,11 @@
       },
       "derived": {
         "fcf": 183493000,
-        "grossMarginPct": 79.01,
-        "operatingMarginPct": 26.66,
-        "netMarginPct": 22.05,
-        "roePct": 37.35,
-        "debtToEquity": 1.424
+        "grossMarginPct": 79.010992,
+        "operatingMarginPct": 26.657314,
+        "netMarginPct": 22.05165,
+        "roePct": 37.350802,
+        "debtToEquity": 1.424319
       }
     },
     "2023": {
@@ -920,11 +920,11 @@
       },
       "derived": {
         "fcf": 235819000,
-        "grossMarginPct": 80.61,
-        "operatingMarginPct": 29.41,
-        "netMarginPct": 27.34,
-        "roePct": 41.17,
-        "debtToEquity": 1.207
+        "grossMarginPct": 80.614402,
+        "operatingMarginPct": 29.410523,
+        "netMarginPct": 27.341115,
+        "roePct": 41.174825,
+        "debtToEquity": 1.207157
       }
     },
     "2024": {
@@ -1032,11 +1032,11 @@
       },
       "derived": {
         "fcf": 231760000,
-        "grossMarginPct": 81.65,
-        "operatingMarginPct": 30.81,
-        "netMarginPct": 28.59,
-        "roePct": 36.4,
-        "debtToEquity": 1.04
+        "grossMarginPct": 81.651198,
+        "operatingMarginPct": 30.810555,
+        "netMarginPct": 28.58596,
+        "roePct": 36.402049,
+        "debtToEquity": 1.040462
       }
     },
     "2025": {
@@ -1144,17 +1144,17 @@
       },
       "derived": {
         "fcf": 304410000,
-        "grossMarginPct": 82.85,
-        "operatingMarginPct": 33.17,
-        "netMarginPct": 29.64,
-        "roePct": 35.34,
-        "debtToEquity": 0.951
+        "grossMarginPct": 82.848048,
+        "operatingMarginPct": 33.170484,
+        "netMarginPct": 29.638707,
+        "roePct": 35.34152,
+        "debtToEquity": 0.951484
       }
     }
   },
   "crossValidation": {
     "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/QLYS?symbol=QLYS&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374381618&period2=1785559218",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/QLYS?symbol=QLYS&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374888794&period2=1786066394",
     "worst": "중대 불일치",
     "items": [
       {

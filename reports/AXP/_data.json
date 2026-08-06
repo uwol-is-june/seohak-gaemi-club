@@ -4,7 +4,7 @@
   "companyName": "AMERICAN EXPRESS CO",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-08-04T01:12:02.466209+00:00",
+  "generatedAt": "2026-08-06T01:33:10.848546+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000004962.json",
@@ -27,7 +27,7 @@
   },
   "freshness": {
     "latestPeriodEnd": "2025-12-31",
-    "monthsOld": 7.1,
+    "monthsOld": 7.2,
     "stale": false
   },
   "annual": {
@@ -124,9 +124,9 @@
         "fcf": 6916000000,
         "grossMarginPct": null,
         "operatingMarginPct": null,
-        "netMarginPct": 22.18,
-        "roePct": 26.19,
-        "debtToEquity": 6.743
+        "netMarginPct": 22.178667,
+        "roePct": 26.190128,
+        "debtToEquity": 6.743264
       }
     },
     "2017": {
@@ -222,9 +222,9 @@
         "fcf": 12478000000,
         "grossMarginPct": null,
         "operatingMarginPct": null,
-        "netMarginPct": 11.09,
-        "roePct": 15.05,
-        "debtToEquity": 8.923
+        "netMarginPct": 11.089588,
+        "roePct": 15.048464,
+        "debtToEquity": 8.922567
       }
     },
     "2018": {
@@ -320,9 +320,9 @@
         "fcf": 7620000000,
         "grossMarginPct": null,
         "operatingMarginPct": null,
-        "netMarginPct": 26.01,
-        "roePct": 31.05,
-        "debtToEquity": 7.461
+        "netMarginPct": 26.011952,
+        "roePct": 31.049798,
+        "debtToEquity": 7.461283
       }
     },
     "2019": {
@@ -425,9 +425,9 @@
         "fcf": 11987000000,
         "grossMarginPct": null,
         "operatingMarginPct": null,
-        "netMarginPct": 24.0,
-        "roePct": 29.3,
-        "debtToEquity": 7.596
+        "netMarginPct": 24.002983,
+        "roePct": 29.296519,
+        "debtToEquity": 7.596116
       }
     },
     "2020": {
@@ -530,9 +530,9 @@
         "fcf": 4113000000,
         "grossMarginPct": null,
         "operatingMarginPct": null,
-        "netMarginPct": 14.27,
-        "roePct": 13.64,
-        "debtToEquity": 7.326
+        "netMarginPct": 14.266861,
+        "roePct": 13.639923,
+        "debtToEquity": 7.326096
       }
     },
     "2021": {
@@ -635,9 +635,9 @@
         "fcf": 13095000000,
         "grossMarginPct": null,
         "operatingMarginPct": null,
-        "netMarginPct": 29.08,
-        "roePct": 36.34,
-        "debtToEquity": 7.502
+        "netMarginPct": 29.080675,
+        "roePct": 36.34396,
+        "debtToEquity": 7.501961
       }
     },
     "2022": {
@@ -740,9 +740,9 @@
         "fcf": 19224000000,
         "grossMarginPct": null,
         "operatingMarginPct": null,
-        "netMarginPct": 21.96,
-        "roePct": 30.41,
-        "debtToEquity": 8.241
+        "netMarginPct": 21.958561,
+        "roePct": 30.407511,
+        "debtToEquity": 8.240986
       }
     },
     "2023": {
@@ -845,9 +845,9 @@
         "fcf": 16996000000,
         "grossMarginPct": null,
         "operatingMarginPct": null,
-        "netMarginPct": 22.5,
-        "roePct": 29.85,
-        "debtToEquity": 8.306
+        "netMarginPct": 22.499866,
+        "roePct": 29.846384,
+        "debtToEquity": 8.306341
       }
     },
     "2024": {
@@ -950,9 +950,9 @@
         "fcf": 12139000000,
         "grossMarginPct": null,
         "operatingMarginPct": null,
-        "netMarginPct": 26.09,
-        "roePct": 33.47,
-        "debtToEquity": 7.97
+        "netMarginPct": 26.08886,
+        "roePct": 33.468808,
+        "debtToEquity": 7.969766
       }
     },
     "2025": {
@@ -1055,15 +1055,15 @@
         "fcf": 16003000000,
         "grossMarginPct": null,
         "operatingMarginPct": null,
-        "netMarginPct": 26.23,
-        "roePct": 32.36,
-        "debtToEquity": 7.964
+        "netMarginPct": 26.227484,
+        "roePct": 32.362431,
+        "debtToEquity": 7.963733
       }
     }
   },
   "crossValidation": {
     "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/AXP?symbol=AXP&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374714722&period2=1785892322",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/AXP?symbol=AXP&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374888790&period2=1786066390",
     "worst": "중대 불일치",
     "items": [
       {
