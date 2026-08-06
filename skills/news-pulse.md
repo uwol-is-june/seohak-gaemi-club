@@ -144,14 +144,8 @@ TaskCreate로 다음 4개 태스크를 생성한다:
 **탐색 방법**:
 - 시의성 높은 쿼리는 WebSearch 우선 활용 (키워드에 날짜 또는 "latest", "recent", "2026" 추가)
 - 핵심 이벤트는 WebFetch로 원본 출처 정독 (공시 원문, 실적 자료, SEC 파일)
-- 주요 출처:
-  - stockanalysis.com/stocks/{소문자티커}/financials — 재무제표 (재무 1순위)
-  - macrotrends.net/stocks/charts/{티커} — 역사적 재무/주가 데이터 (⚠️ 상시 봇 차단, WebSearch 경유)
-  - sec.gov/cgi-bin/browse-edgar — SEC 공시 (10-K, 10-Q, 8-K)
-  - finviz.com/screener — 스크리닝 및 업종 비교
-  - finance.yahoo.com — 뉴스, 애널리스트 의견 (뉴스 1순위)
-  - cnbc.com — 실적 반응, 셀사이드 코멘트 인용
-  - seekingalpha.com / bloomberg.com — 심층 분석 (⚠️ 직접 접근 차단, WebSearch 경유)
+- **데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+  ⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 - 각 이벤트에 "독립 출처 검증" 수행 — 루머는 독립적 출처 2개 이상 필요
 - **헤드라인 낚시에 속지 않는다**: 제목과 본문이 불일치하는 이벤트는 "헤드라인 미스리드"로 표시
 

@@ -298,11 +298,8 @@ A = 데이터 충분하고 신뢰 가능; B = 일부 누락이 있으나 주요 
 
 모든 데이터·결론의 출처 링크를 분류하여 나열한다 (SEC 공시, 재무 데이터 사이트, 뉴스, 산업 리포트).
 
-**권장 데이터 소스**:
-- 재무 데이터: macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials
-- SEC 공시: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K)
-- 스크리닝: finviz.com/screener
-- 뉴스·분석: finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
+**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 ---
 

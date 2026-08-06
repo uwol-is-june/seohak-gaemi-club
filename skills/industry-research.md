@@ -158,11 +158,9 @@ Task 도구를 사용해 백그라운드 Agent를 실행하고, 해당 산업의
 > - ⚠️ 이 스킬 1회 실행의 정상 범위는 **5~12M 토큰**이다.
 
 ### 검색 출처
-- **주요 데이터·재무제표**: stockanalysis.com/stocks/{ticker}/financials
-- **교차검증**: macrotrends.net/stocks/charts/{TICKER} — ⚠️ 상시 봇 차단, ⓪단계에서 열렸을 때만
-- **SEC 공시**: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K)
-- **스크리닝**: finviz.com/screener
-- **뉴스/분석**: finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
+
+**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 ### 검색 목록
 - NYSE/NASDAQ/NYSE American 상장 관련 기업

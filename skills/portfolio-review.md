@@ -58,11 +58,8 @@ Task 도구로 백그라운드 Agent를 실행하고, WebSearch를 통해 각 �
 3. 최근 주요 뉴스 및 이벤트 (실적 발표, 경영진 변경, M&A 등)
 4. 애널리스트 컨센서스 (Forward PER, 목표주가)
 
-**데이터 출처 우선순위**:
-- 1순위: stockanalysis.com/stocks/{ticker}/financials (재무제표 요약)
-- 2순위: macrotrends.net/stocks/charts/{TICKER} (장기 재무 데이터) — ⚠️ 상시 봇 차단, 열렸을 때만
-- SEC 공시: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K)
-- 뉴스: finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
+**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 `tools/financial_rigor.py verify-valuation`으로 각 종목의 밸류에이션 데이터를 검증한다.
 

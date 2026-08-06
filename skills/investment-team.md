@@ -103,7 +103,8 @@ TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject
   5. 사업 포트폴리오와 시너지 효과
   6. 단융핑의 "좋은 사업" 기준 평가: 차별화, 가격 결정력(pricing power), 지속 가능한 경쟁 우위
   7. 최신 IR 자료, 10-K, 산업 리포트 등 공개 정보를 반드시 검색할 것
-  8. 데이터 출처: macrotrends.net, stockanalysis.com, SEC EDGAR (10-K/10-Q), finance.yahoo.com, seekingalpha.com
+  8. 데이터 출처: stockanalysis.com(1순위), SEC EDGAR (10-K/10-Q), finance.yahoo.com, cnbc.com
+     — macrotrends·seekingalpha는 직접 접근 차단이므로 WebSearch 경유(신뢰도 🟡 상한)
 
 #### 태스크 2: 재무 & 밸류에이션 분석
 - subject: `{기업명}의 재무 데이터, 수익성, 밸류에이션 분석`
@@ -136,8 +137,8 @@ TaskCreate를 사용해 아래 4개 태스크를 생성합니다 (각각 subject
      - 교차검증할 항목이 여럿이면 `cross-validate` 스텝을 배열에 더 넣는다(여전히 호출 1회).
      - 도구 출력 결과를 보고서에 그대로 삽입하여 검증 기록으로 남길 것
   8. 데이터 출처: **1순위 `reports/{기업명}/_data.md`(SEC XBRL 기계추출·교차검증 완료)**,
-     보완용으로 macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials,
-     SEC EDGAR 10-K/10-Q 원문
+     보완용으로 stockanalysis.com/stocks/{ticker}/financials, SEC EDGAR 10-K/10-Q 원문
+     (macrotrends는 직접 접근 차단 — WebSearch 경유이며 연도별 시계열 표는 안 나온다)
 
 #### 태스크 3: 산업 & 경쟁 분석
 - subject: `{산업명} 산업 구도 및 {기업명}의 경쟁 포지션 분석`
@@ -196,7 +197,7 @@ Task 도구를 사용해 4개 Agent를 동시에 시작합니다 (**반드시 �
 - 그 외 정보는 WebSearch로 최신 공개 자료를 검색합니다 (10-K/10-Q/8-K 본문 해설, IR 자료,
   산업 리포트, 뉴스).
 - **`_data.md` 밖의 재무 수치를 새로 인용할 때는 여전히 두 개의 독립 출처**에서 확인합니다:
-  - macrotrends.net/stocks/charts/{TICKER} · stockanalysis.com/stocks/{ticker}/financials
+  - stockanalysis.com/stocks/{ticker}/financials (직접 접근 가능·1순위)
   - SEC 공시 원문: sec.gov (10-K, 10-Q, 8-K)
   - 두 출처 간 오차가 1% 초과 시 반드시 표기
 - `_data.md` 에 ⚠️ 교차검증 미완료 / ❌ 중대 불일치 / 🔴 신선도 경고가 있으면 **그 항목은
@@ -379,7 +380,7 @@ python3 tools/report_audit.py extract \
    **대조 비용이 0**이다. 여기서 일치가 확인된 항목은 웹 확인을 **하지 않는다**
    (이미 🟢[사실] 등급이며, 다시 긁어도 같은 계보의 출처일 뿐이다).
 2. **`_data.md` 에 없는 항목만** 신뢰할 수 있는 출처에서 직접 확인한다
-   (macrotrends.net, stockanalysis.com, SEC EDGAR). 같은 페이지에서 여러 항목을 한 번에
+   (stockanalysis.com, SEC EDGAR). 같은 페이지에서 여러 항목을 한 번에
    확인할 수 있으면 묶어서 확인한다.
 
 ```bash

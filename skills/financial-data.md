@@ -169,21 +169,21 @@ macrotrends·Seeking Alpha·Glassdoor·Bloomberg 모두 검색으로 실제 수�
 
 ## 빠른 참조 색인 — 주요 종목
 
-| 종목 | 티커 | 주요 출처 | 보조 출처 |
+| 종목 | 티커 | 주요 출처 (직접 접근·🟢) | 보조 (⚠️ 차단·WebSearch 경유·🟡) |
 |------|------|-----------|-----------|
-| Apple | AAPL | macrotrends.net/stocks/charts/AAPL | stockanalysis.com/stocks/aapl |
-| Microsoft | MSFT | macrotrends.net/stocks/charts/MSFT | stockanalysis.com/stocks/msft |
-| Alphabet (Google) | GOOGL | macrotrends.net/stocks/charts/GOOGL | stockanalysis.com/stocks/googl |
-| Amazon | AMZN | macrotrends.net/stocks/charts/AMZN | stockanalysis.com/stocks/amzn |
-| NVIDIA | NVDA | macrotrends.net/stocks/charts/NVDA | stockanalysis.com/stocks/nvda |
-| Meta | META | macrotrends.net/stocks/charts/META | stockanalysis.com/stocks/meta |
-| Berkshire Hathaway | BRK.B | macrotrends.net/stocks/charts/BRK.B | stockanalysis.com/stocks/brk.b |
-| JPMorgan Chase | JPM | macrotrends.net/stocks/charts/JPM | stockanalysis.com/stocks/jpm |
-| Visa | V | macrotrends.net/stocks/charts/V | stockanalysis.com/stocks/v |
-| Costco | COST | macrotrends.net/stocks/charts/COST | stockanalysis.com/stocks/cost |
-| Netflix | NFLX | macrotrends.net/stocks/charts/NFLX | stockanalysis.com/stocks/nflx |
-| Tesla | TSLA | macrotrends.net/stocks/charts/TSLA | stockanalysis.com/stocks/tsla |
-| UnitedHealth | UNH | macrotrends.net/stocks/charts/UNH | stockanalysis.com/stocks/unh |
+| Apple | AAPL | stockanalysis.com/stocks/aapl | macrotrends.net/stocks/charts/AAPL |
+| Microsoft | MSFT | stockanalysis.com/stocks/msft | macrotrends.net/stocks/charts/MSFT |
+| Alphabet (Google) | GOOGL | stockanalysis.com/stocks/googl | macrotrends.net/stocks/charts/GOOGL |
+| Amazon | AMZN | stockanalysis.com/stocks/amzn | macrotrends.net/stocks/charts/AMZN |
+| NVIDIA | NVDA | stockanalysis.com/stocks/nvda | macrotrends.net/stocks/charts/NVDA |
+| Meta | META | stockanalysis.com/stocks/meta | macrotrends.net/stocks/charts/META |
+| Berkshire Hathaway | BRK.B | stockanalysis.com/stocks/brk.b | macrotrends.net/stocks/charts/BRK.B |
+| JPMorgan Chase | JPM | stockanalysis.com/stocks/jpm | macrotrends.net/stocks/charts/JPM |
+| Visa | V | stockanalysis.com/stocks/v | macrotrends.net/stocks/charts/V |
+| Costco | COST | stockanalysis.com/stocks/cost | macrotrends.net/stocks/charts/COST |
+| Netflix | NFLX | stockanalysis.com/stocks/nflx | macrotrends.net/stocks/charts/NFLX |
+| Tesla | TSLA | stockanalysis.com/stocks/tsla | macrotrends.net/stocks/charts/TSLA |
+| UnitedHealth | UNH | stockanalysis.com/stocks/unh | macrotrends.net/stocks/charts/UNH |
 
 ---
 

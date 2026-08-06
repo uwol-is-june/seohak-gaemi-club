@@ -69,12 +69,8 @@ Task 도구를 사용해 **각 종목마다** 독립 백그라운드 에이전�
 7. **경영진 이력**: CEO 경력, 주요 의사결정, 지분 보유, 자본 배분 실적
 8. **최신 동향**: 최근 6개월 중요 이벤트 (실적, M&A, 규제, 경영진 교체 등)
 
-**데이터 소스 우선순위**:
-- 1차: stockanalysis.com/stocks/{ticker}/financials (재무제표 상세)
-- 2차: macrotrends.net/stocks/charts/{TICKER} (장기 재무 추이) — ⚠️ 상시 봇 차단, ⓪단계에서 열렸을 때만
-- SEC 공시: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K)
-- 스크리닝: finviz.com/screener
-- 뉴스: finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
+**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 ### 3단계: 종목별 6개 관문 체크리스트 실행
 

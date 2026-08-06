@@ -59,10 +59,8 @@ SEC EDGAR는 거의 차단되지 않으나 Seeking Alpha 어닝스 콜 트랜스
 4. **투자자의 날 / 애널리스트 데이 자료** (최근에 개최된 경우)
 
 원문을 확보하지 못한 경우, 다음 표준 데이터 소스를 활용하되 반드시 "원본 재무 보고서 아님, 3자 요약 출처"라고 명시해야 한다:
-- **Primary**: stockanalysis.com/stocks/{ticker}/financials
-- **Secondary**: macrotrends.net/stocks/charts/{TICKER} (⚠️ 상시 봇 차단 — 열렸을 때만)
-- **뉴스 및 맥락**: finance.yahoo.com, cnbc.com, seekingalpha.com(WebSearch 경유)
-- **스크리닝 보조**: finviz.com/screener
+**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 핵심 데이터는 반드시 2개 이상의 출처에서 교차 검증하며, 오차가 1%를 초과하면 표시해야 한다.
 
@@ -229,7 +227,7 @@ python3 tools/report_audit.py extract \
   --report reports/{종목명}/{종목명}-earnings-{기간}.md
 
 # Step 2 — 체크리스트 각 항목을 신뢰할 수 있는 출처에서 재확인
-#           (macrotrends.net, stockanalysis.com, SEC EDGAR 활용)
+#           (stockanalysis.com, SEC EDGAR 활용 — 직접 접근 가능한 출처로만 검증)
 
 # Step 3 — 검증 결과 판정 출력
 python3 tools/report_audit.py verdict \

@@ -448,22 +448,13 @@ B급 병목 (압박 있음):
 
 ## 데이터 소스 가이드
 
-### 1차 소스 (필수)
-- **stockanalysis.com/stocks/{ticker}/financials**: 재무제표, 밸류에이션 멀티플, 장기 추세
-- **SEC EDGAR**: sec.gov/cgi-bin/browse-edgar (10-K, 10-Q, 8-K 공시)
-- **macrotrends.net/stocks/charts/{TICKER}**: 매출/이익/EPS 히스토리 — ⚠️ 상시 봇 차단, WebSearch 경유
-
-### 2차 소스 (검증용)
-- **finviz.com/screener**: 주식 스크리닝, 섹터/시가총액 필터
-- **finance.yahoo.com**: 뉴스, 실적 발표, 애널리스트 추정치
-- **cnbc.com**: 공급망 뉴스, 산업 동향, 셀사이드 코멘트
-- **seekingalpha.com / bloomberg.com**: 심층 분석 — ⚠️ 직접 접근 차단, WebSearch 경유
+**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 ### 재무 데이터 검색 순서
 1. stockanalysis.com에서 장기 추세·멀티플·최근 분기 수치 확인
 2. SEC EDGAR에서 원본 공시 교차 검증
-3. macrotrends.net은 열렸을 때만 보조 교차검증에 사용
-4. 불일치 시 SEC 공시를 기준으로 삼음
+3. 불일치 시 SEC 공시를 기준으로 삼음
 
 ---
 

@@ -51,7 +51,7 @@ Agent 도구를 사용해 백그라운드 Agent를 **병렬**로 실행하여 �
 | 주주 서한 | 연간 보고서(10-K) 내 추출 | 높음 (연간 보고서 시에만) |
 | 직전 분기 실적/콜 트랜스크립트 | 상동 | 높음 (공약 추적 목적) |
 | **연간 재무 기준선** | **`reports/{티커}/_data.md` (0번째 단계에서 확보 — 재수집 금지)** | **최고** |
-| 재무 데이터(분기·보조) | macrotrends.net/stocks/charts/{TICKER}, stockanalysis.com/stocks/{ticker}/financials | 높음 |
+| 재무 데이터(분기·보조) | stockanalysis.com/stocks/{ticker}/financials (macrotrends는 직접 접근 차단·WebSearch 경유🟡) | 높음 |
 | 뉴스/애널리스트 반응 | finance.yahoo.com(`/analyst-insights/`), cnbc.com, seekingalpha.com(WebSearch 경유) | 보통 |
 
 **자료 가용성 등급**:
@@ -143,11 +143,13 @@ Agent 도구를 사용해 **같은 메시지 내**에서 4개의 백그라운드
    - 매출(Revenue), 매출총이익(Gross Profit), 영업이익(Operating Income), 순이익(Net Income) — GAAP과 Non-GAAP 모두 확인
      (GAAP 연간 = `_data.md` / **분기치와 Non-GAAP은 8-K·10-Q·실적자료에서 별도 수집**)
    - GAAP vs Non-GAAP 차이: 얼마나 차이나는가, 어디서 차이가 나는가, 격차가 확대되는가 축소되는가
-   - `_data.md` 에 없는 수치(분기·Non-GAAP·세그먼트)는 최소 2개 출처 교차 검증 (macrotrends.net + stockanalysis.com)
+   - `_data.md` 에 없는 수치(분기·Non-GAAP·세그먼트)는 최소 2개 출처 교차 검증
+     (**stockanalysis.com + SEC 8-K/10-Q 원문**. macrotrends는 직접 접근 차단이라
+     교차검증 상대로 쓸 수 없다 — 검색 경유 값은 원문 확인이 아니므로 🟢 근거가 못 된다)
 
    ```bash
    python3 tools/financial_rigor.py cross-validate \
-     --metric "revenue" --values {value1} {value2} --sources "macrotrends" "stockanalysis"
+     --metric "revenue" --values {value1} {value2} --sources "stockanalysis" "sec-10q"
    ```
 
 2. **현금흐름 분석 (가장 중요)**

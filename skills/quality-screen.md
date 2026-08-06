@@ -133,11 +133,8 @@ python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py qua
 6. **Net Margin**: 최근 10년 Net Margin 추세, 평균 계산
 7. **발행주식수 변화**: 5년 전과 현재의 주식수, 증가율 계산
 
-**데이터 소스 우선순위**:
-- 1순위: stockanalysis.com/stocks/{ticker}/financials (재무제표 상세 + 연도별 추이)
-- 2순위: macrotrends.net/stocks/charts/{TICKER} (10년 이상 장기 데이터) — ⚠️ 상시 봇 차단, ⓪단계에서 열렸을 때만
-- 3순위: SEC 공시 (10-K, 10-Q) — sec.gov/cgi-bin/browse-edgar
-- 보조: finviz.com/screener (스크리닝 참고), finance.yahoo.com, cnbc.com
+**데이터 소스** ([financial-data.md](financial-data.md) 표준) — 재무 `stockanalysis.com/stocks/{ticker}/financials`(1순위) · 공시 `sec.gov/cgi-bin/browse-edgar` · 스크리닝 `finviz.com/screener` · 뉴스 `finance.yahoo.com`·`cnbc.com`
+⚠️ macrotrends·Seeking Alpha·Bloomberg는 직접 접근 차단 → WebSearch 경유(신뢰도 🟡 상한, 연도별 시계열 표는 안 나옴)
 
 > 🔴 **macrotrends가 차단됐을 때 WebSearch로 시계열을 채우려 하지 말 것.** 검색은 페이지
 > 메타 설명만 돌려주므로 **연도별 표가 나오지 않는다**(실측: 10년 ROE 질의 4회 재시도 → 값 0건).

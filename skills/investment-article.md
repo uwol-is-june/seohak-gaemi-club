@@ -20,7 +20,7 @@ description: 투자 인사이트 아티클 작성 — 완성된 투자 리서치
 
 입력이 보고서 파일이면 해당 파일을 읽는다.
 입력이 주제/회사명이면 최근 작성된 관련 보고서를 `reports/` 디렉토리에서 찾는다.
-보고서가 없으면 핵심 데이터를 웹에서 수집한다 (macrotrends, stockanalysis, SEC EDGAR).
+보고서가 없으면 핵심 데이터를 웹에서 수집한다 (stockanalysis, SEC EDGAR).
 
 ### 2단계: 아티클 구조 선택
 
