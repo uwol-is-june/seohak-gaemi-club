@@ -4,7 +4,7 @@
 
 **혼자서도 투자 리서치 팀 하나를 굴리기 위한 도구 모음입니다.**
 
-[Claude Code](https://claude.ai/code) 위에서 동작하는 **미국 주식 가치투자 리서치 Skill 14개**와,
+[Claude Code](https://claude.ai/code) 위에서 동작하는 **미국 주식 가치투자 리서치 Skill 13개**와,
 그 결과물을 모아 보는 **웹 대시보드**로 이루어져 있습니다.
 버핏 · 멍거 · 단융핑 · 리루 — 네 명의 가치투자 대가가 쓰는 판단 기준을 각각의 AI 에이전트로 만들어,
 **서로 반박하게 시켜** 한 종목을 뜯어봅니다.
@@ -22,7 +22,7 @@
 - [이게 뭔가요?](#이게-뭔가요)
 - [그냥 AI한테 물어보면 안 되나요?](#그냥-ai한테-물어보면-안-되나요)
 - [빠른 시작](#빠른-시작)
-- [스킬 14개](#스킬-14개)
+- [스킬 13개](#스킬-13개)
 - [파이썬 도구](#파이썬-도구)
 - [대시보드](#대시보드)
 - [데이터 소스](#데이터-소스)
@@ -100,7 +100,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 
 > ⚠️ **마지막 줄을 빼지 마세요.** `skills/` 안의 이 3개는 실행 스킬이 아니라 다른 스킬이
 > 참조하는 **공용 표준 문서**입니다. 슬래시 커맨드로 설치하면 호출해도 하는 일이 없으면서
-> 오발동 대상만 늘어납니다. 실제 설치 대상은 **실행 스킬 14개**입니다.
+> 오발동 대상만 늘어납니다. 실제 설치 대상은 **실행 스킬 13개**입니다.
 
 ### 3. 사용
 
@@ -124,9 +124,9 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 /thesis-tracker AAPL
 /news-pulse NVDA
 
-# 아이디어 발굴 · 사고 도구
+# 아이디어 발굴 · 발행
 /bottleneck-hunter AI infrastructure
-/dyp-ask 애플의 진짜 해자는 무엇인가?
+/investment-article AAPL
 ```
 
 **API 키가 필요 없습니다.** 모든 데이터 소스는 무료·공개 접근입니다.
@@ -134,7 +134,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 
 ---
 
-## 스킬 14개
+## 스킬 13개
 
 ### 리서치
 
@@ -168,11 +168,10 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 | `/thesis-tracker` | 매수 후 규율 — 논제가 깨지고 있는지 추적 |
 | `/news-pulse` | 주가 급변동 원인 10분 분석 |
 
-### 사고 도구
+### 발행
 
 | 스킬 | 하는 일 |
 |---|---|
-| `/dyp-ask` | 단융핑식 사고로 아무 질문이나 — **롤플레이이며 데이터를 조회하지 않습니다. 근거로 인용 금지** |
 | `/investment-article` | 완성된 리서치를 블로그·뉴스레터용 아티클로 변환 |
 
 ### 공용 표준 문서 (슬래시 커맨드 아님)
@@ -415,7 +414,7 @@ Copyright (c) 2026 xbtlin (원본) · uwol-is-june (US Edition).
 
 ## 2. 스킬 변경
 
-원본 20개 → US Edition 17개 파일 (**실행 스킬 14개 + 공용 표준 문서 3개**).
+원본 20개 → US Edition 16개 파일 (**실행 스킬 13개 + 공용 표준 문서 3개**).
 
 ### 새로 만든 것
 
@@ -427,10 +426,20 @@ Copyright (c) 2026 xbtlin (원본) · uwol-is-june (US Edition).
 
 ### 정리한 것
 
-원본의 `deep-company-series`, `income-investment`, `investment-research`,
+**역할 중복** — 원본의 `deep-company-series`, `income-investment`, `investment-research`,
 `management-deep-dive`, `thesis-drift` 를 제거했습니다. 기능이 다른 스킬과 겹치거나
 (`investment-research` ↔ `investment-team`, `thesis-drift` ↔ `thesis-tracker`),
 미국 시장에서 별도 스킬로 둘 실익이 적다고 판단한 것들입니다.
+
+**데이터를 조회하지 않는 스킬** — 원본의 `dyp-ask` 를 제거했습니다. 단융핑 1인칭으로
+어떤 질문에도 답하는 롤플레이 스킬인데, **외부 데이터를 전혀 조회하지 않고** 파일도 남기지
+않습니다. 이 프로젝트의 최우선 원칙("모든 분석은 사실과 데이터 기반, 주관적 추측 금지")과
+정면으로 충돌하고, 어떤 다른 스킬도 이 파일을 참조하지 않아 파이프라인에서 완전히 고립돼
+있었습니다. 무엇보다 **생존 인물의 1인칭 발언을 데이터 없이 생성**하는 형태라, 대가를
+*인용*하는 나머지 스킬들과 성격이 다릅니다.
+
+> 같은 프레임워크를 **실제 데이터 위에서** 돌리는 것은 `/investment-team` 의
+> `01-BusinessModel-DYP-Perspective.md` 입니다. 단융핑 관점 자체는 그쪽에 살아 있습니다.
 
 **스킬 수를 줄인 게 개선입니다.** 슬래시 커맨드가 20개면 무엇을 언제 쓸지 헷갈리고,
 Claude가 엉뚱한 스킬을 오발동시킵니다.
@@ -571,7 +580,7 @@ US Edition은 콜을 낼 때마다 `data/calls.jsonl` 에 **append-only로 박�
 | **비용** | 토큰 규율로 재시도 폐기분 제거 (실측 50.4M → 정상 범위 5~10M) |
 | **관리성** | 대시보드로 수십 개 보고서를 분야·섹터·종목 위계로 탐색 |
 | **이식성** | 절대경로 제거 — 어느 머신에서 클론해도 동작 |
-| **명료성** | 스킬 20개 → 14개. 역할 중복 제거로 오발동 감소 |
+| **명료성** | 스킬 20개 → 13개. 역할 중복·비데이터 스킬 제거로 오발동 감소 |
 
 **원본이 없었으면 이 프로젝트도 없습니다.** 4대가 병렬 에이전트라는 발상, 결론을 강제하는 구조,
 LLM 암산을 Python으로 대체한 판단 — 전부 원저자의 것입니다.

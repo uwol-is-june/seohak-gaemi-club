@@ -97,17 +97,6 @@ export const skills: DashboardItem[] = [
     ],
   },
   {
-    code: "S5",
-    flowGroup: "S",
-    name: "/dyp-ask",
-    status: "warning",
-    description: "단융핑 방식으로 어떤 질문에도 답변. 롤플레이 — 데이터 조회 없음",
-    tags: [],
-    risks: [
-      { label: "데이터 미조회 — 보고서에 근거로 인용 금지", severity: "medium" },
-    ],
-  },
-  {
     code: "S6",
     flowGroup: "S",
     name: "/investment-article",

@@ -38,8 +38,8 @@
 |------|-----------|------|-----------|
 | **A1** | `/industry-research` | **S2** | `/news-pulse` |
 | **A2** | `/industry-funnel` | **S3** | `/bottleneck-hunter` |
-| **A3** | `/quality-screen` | **S5** | `/dyp-ask` |
-| **A4** | `/investment-checklist` | **S6** | `/investment-article` |
+| **A3** | `/quality-screen` | **S6** | `/investment-article` |
+| **A4** | `/investment-checklist` | | |
 | **A5+** | `/investment-team` | **T1** | `financial_rigor.py` |
 | **A6** | `/thesis-tracker` (논제 수립 모드) | **T2** | `report_audit.py` |
 | **B1** | `/earnings-review` | **T3** | `site_preflight.py` |
@@ -244,16 +244,19 @@
 
 ---
 
-### [S5] `/dyp-ask` ✅
+### [S5] `/dyp-ask` — ❌ 제거됨 (2026-08-07)
 
-**언제**: 풀 리서치를 돌리기 전, 아이디어를 단융핑 시각으로 빠르게 걸러볼 때
+데이터를 조회하지 않는 롤플레이 스킬이라 제거했다. 근거:
 
-**동작**: 단융핑 본인으로서 어떤 질문에도 답변 (순수 추론, 외부 의존 없음, 파일 저장 없음)
+- 외부 데이터 미조회 · 파일 저장 없음 → `skills/data-confidence.md` 기준 🔴[의견]에도 못 미침(출처 없음)
+- 어떤 스킬도 `dyp-ask.md` 를 참조하지 않아 파이프라인에서 고립돼 있었음
+- 프로젝트 최우선 원칙("사실과 데이터 기반, 주관적 추측 금지")과 충돌
+- 생존 인물의 1인칭 발언을 데이터 없이 생성 — 대가를 *인용*하는 다른 스킬과 성격이 다름
 
-> ⚠️ **롤플레이 스킬이다 — 데이터를 조회하지 않는다.** 여기서 나온 답변은 보고서에
-> **근거로 인용하지 않는다**(`skills/data-confidence.md` 기준 🔴[의견]에도 못 미친다 — 출처가 없다).
-> 실제 데이터 위에서 같은 프레임워크를 돌리는 것은 `/investment-team` 의
-> `01-BusinessModel-DYP-Perspective.md` 다.
+> 단융핑 관점을 **실제 데이터 위에서** 돌리는 것은 `/investment-team` 의
+> `01-BusinessModel-DYP-Perspective.md` 다. 관점 자체는 거기 살아 있다.
+>
+> S5 코드는 재사용하지 않는다(과거 보고서·로그의 코드 참조가 어긋나지 않도록).
 
 ---
 
