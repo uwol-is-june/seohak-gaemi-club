@@ -50,7 +50,8 @@ reports/
 | /investment-checklist | `{티커}/{티커}-checklist-{YYYYMMDD}.md` | `reports/NVDA/NVDA-checklist-20260627.md` |
 | /industry-research | `{섹터명}-industry-{YYYYMMDD}.md` (루트) | `reports/AI-Semiconductors-industry-20260627.md` |
 | /industry-funnel | `{섹터명}-funnel-{YYYYMMDD}.md` (루트) | `reports/SP500-Fintech-funnel-20260627.md` |
-| /earnings-review | `{티커}/{티커}-earnings-{기간}.md` | `reports/AAPL/AAPL-earnings-2025Q4.md` |
+| /earnings-team | `{티커}/{티커}-earnings-{기간}.md` + 서브보고서 6종(`-연구초안`·`-단용평`·`-버핏`·`-멍거`·`-이루`·`-독자검토`) | `reports/AMZN/AMZN-earnings-2026Q2.md` |
+| /earnings-review (폐기 예정) | `{티커}/{티커}-earnings-{기간}.md` — ⚠️ earnings-team과 **파일명 충돌** | `reports/AAPL/AAPL-earnings-2025Q4.md` |
 | /thesis-tracker | `{티커}/{티커}-thesis.md` (장기 유지) | `reports/AAPL/AAPL-thesis.md` |
 | /portfolio-review | `portfolio-latest.md` (루트, 지속 업데이트) | `reports/portfolio-latest.md` |
 
@@ -91,6 +92,7 @@ reports/{티커}/
 |------|------|
 | `/investment-team` | 5~10M |
 | `/industry-research` · `/industry-funnel` | 5~12M |
+| `/earnings-team` (종목 1개·1분기) | 5~10M (추정 — 실측 전) |
 | `/investment-checklist` (종목 1개) | 2~5M |
 | `/quality-screen` · `/thesis-tracker` · `/news-pulse` (종목 1개) | 1~3M |
 

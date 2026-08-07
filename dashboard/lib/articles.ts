@@ -137,7 +137,8 @@ export function classifySource(input: ArticleInput): Omit<ArticleSource, "hasArt
   if (company && name.includes("-checklist-")) {
     return mk("B", "deep", "버핏 6-게이트", "4대가 중 버핏 시각만 — 나머지 3인 보강 필요", company);
   }
-  // /earnings-review 산출물. /earnings-team 으로 돌린 건이면 이미 아티클 단계를 자체 수행하므로
+  // 실적 분석 산출물(/earnings-team, 폐기 예정인 /earnings-review 포함).
+  // /earnings-team 으로 돌린 건이면 이미 아티클 단계를 자체 수행하므로
   // (skills/earnings-team.md Agent 5) 중복이다 — 그래서 A가 아니라 B.
   if (company && name.includes("-earnings-")) {
     return mk("B", "deep", "실적 분석", "/earnings-team 으로 돌렸다면 아티클이 이미 있다", company);

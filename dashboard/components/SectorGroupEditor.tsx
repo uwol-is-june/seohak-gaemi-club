@@ -250,5 +250,5 @@ export function SectorGroupEditor({
 // 보여준다 — 실적 점검은 종목별 발표일에 트리거되는 이벤트라, "언제 점검할지"를
 // 한눈에 안내한다. 대상은 두 축(보유 종목 / 트랙레코드 전체)에서 고른다.
 // 발표일은 /api/earnings-calendar(Yahoo calendarEvents)에서 온다.
-// 각 행의 '분석'은 /earnings-review 단계를 그 티커로 프리필해 연다.
+// 각 행의 '분석'은 실적 정밀 분석(/earnings-team) 단계를 그 티커로 프리필해 연다.
 

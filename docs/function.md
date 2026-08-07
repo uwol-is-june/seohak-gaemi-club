@@ -42,7 +42,7 @@
 | **A4** | `/investment-checklist` | | |
 | **A5+** | `/investment-team` | **T1** | `financial_rigor.py` |
 | **A6** | `/thesis-tracker` (논제 수립 모드) | **T2** | `report_audit.py` |
-| **B1** | `/earnings-review` | **T3** | `site_preflight.py` |
+| **B1** | `/earnings-team` | **T3** | `site_preflight.py` |
 | **B1+** | `/earnings-team` (B1 심화 대안) | **T4** | `stock_screener.py` |
 | **B2** | `/thesis-tracker` (분기검토 모드) | **T5** | `morningstar_fair_value.py` |
 | **C1** | `/portfolio-review` | | |
@@ -130,22 +130,34 @@
 
 ---
 
-### Step 1 [B1] — `/earnings-review` ⚠️
+### Step 1 [B1] — `/earnings-team` ⚠️ 🔧
 
-**동작**: SEC 10-K/10-Q 원문 독해 → 재무 데이터 추출·검증 → 경영진 어조 분석 → 주석 발굴
+**동작**: SEC XBRL 재무 기준선 1회 확보(`_data.md`) → 4대 거장 병렬 실적 해석 → Team Lead 합성 → 편집·독자검토
+
+**왜 `/earnings-review` 가 아닌가** (2026-08-07 교체):
+`/earnings-review` 는 `fetch_financials.py`(SEC XBRL 기계추출)를 **쓰지 않는다** — 웹에서 긁어
+2개 출처로 대조하는데, 2순위 macrotrends가 상시 봇 차단이라 두 번째 출처를 못 구하면 🟡로 떨어진다.
+`/earnings-team` 은 0번째 단계에서 XBRL 기준선을 박제하고 재수집을 금지하므로 🟢[사실] 등급을 유지한다.
+그 밖의 기능(약속 이행 추적·가이던스 대비·MD&A 어조·주석 발굴)은 양쪽이 거의 같고,
+`/earnings-team` 에만 동기간 경쟁사 비교와 4관점 모순점 추출이 추가로 있다.
 
 **의존성**:
+- `tools/fetch_financials.py` (0번째 단계 · fetch-once)
 - WebSearch (SEC EDGAR, Seeking Alpha earnings call transcript)
-- `tools/financial_rigor.py`
-- `tools/site_preflight.py` (0단계 사전 접근 점검)
+- `tools/financial_rigor.py`, `tools/report_audit.py`
 
 **위험 요소**:
 | 위험 | 내용 | 심각도 |
 |------|------|--------|
+| **실행 이력 0건** | 첫 실행으로 검증 필요. 검증 전까지 `/earnings-review` 를 fallback 으로 남겨둔다 | 🔴 높음 |
+| 6-Agent 팬아웃 | 토큰 예산표 미등재 — investment-team급(5~10M) 추정 | ⚠️ 중간 |
+| 분기 수치는 수작업 | `_data.md` 는 **연간(10-K/20-F)만** 제공 — 분기치는 8-K/10-Q에서 별도 수집 | ⚠️ 중간 |
 | SEC EDGAR 응답 지연 | 특정 시간대 EDGAR 서버 느림 | ⚠️ 낮음 |
-| 상대경로 사용 | `tools/financial_rigor.py` 상대경로 사용 — 프로젝트 루트 외에서 실행 시 실패 | ⚠️ 낮음 |
 
-> **심화 대안 [B1+] — `/earnings-team` ⚠️ 🔧**: 4대 거장 병렬 실적 해석 → 편집 Agent → 최종 아티클. `/investment-team`(A5+) + `/earnings-review`(B1)의 위험이 중첩되는 가장 복잡한 파이프라인.
+> **폐기 예정 [B1-old] — `/earnings-review`**: 단일 Agent 실적 정독. XBRL 기준선이 없어
+> 정확도가 낮다. **첫 `/earnings-team` 실행이 검증되면 제거한다.** 그 전까지는 fallback.
+> ⚠️ 두 스킬의 최종 산출 파일명이 `{티커}-earnings-{기간}.md` 로 **동일**하다 — 같은
+> 종목·분기에 둘 다 돌리면 덮어쓴다.
 
 ---
 

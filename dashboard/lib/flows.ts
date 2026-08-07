@@ -144,11 +144,17 @@ export const flows: Flow[] = [
     steps: [
       {
         title: "실적 정밀 분석",
-        description: "SEC 10-K/10-Q 원문과 어닝스 콜을 직접 독해해 숨겨진 신호를 발굴합니다.",
-        inputLabel: "종목명 + 분기",
-        inputPlaceholder: "Apple 2025Q4",
-        commandTemplate: "/earnings-review {input}",
-        outputFiles: ["reports/{input}/{input}-earnings-{기간}.md"],
+        description:
+          "SEC XBRL로 재무 기준선을 1회 확보한 뒤, 4대 거장이 병렬로 실적을 해석합니다. 원문과 어닝스 콜을 직접 독해해 숨겨진 신호를 발굴합니다.",
+        inputLabel: "티커 + 분기",
+        inputPlaceholder: "AMZN 2026Q2",
+        commandTemplate: "/earnings-team {input}",
+        outputFiles: [
+          "reports/{티커}/{티커}-earnings-{기간}.md",
+          "reports/{티커}/{티커}-earnings-{기간}-연구초안.md",
+          "reports/{티커}/{티커}-earnings-{기간}-{거장}.md (4건)",
+          "reports/{티커}/{티커}-earnings-{기간}-독자검토.md",
+        ],
       },
       {
         title: "논제 건강도 점검",

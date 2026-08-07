@@ -56,9 +56,9 @@
      │                  │                           │
      ▼                  ▼                           ▼
 ┌──────────┐   ┌─────────────────┐    ┌────────────────────┐
-│/news-pulse│   │/earnings-review │    │/portfolio-review   │
+│/news-pulse│   │/earnings-team   │    │/portfolio-review   │
 │10분 뉴스  │   │실적 정밀 분석    │    │포트폴리오 점검       │
-│원인 분석  │   │→ reports/{회사}/ │    │→ reports/          │
+│원인 분석  │   │→ reports/{티커}/ │    │→ reports/          │
 │           │   │  earnings-{기간} │    │  portfolio-latest  │
 └──────────┘   └─────────────────┘    └────────────────────┘
 
