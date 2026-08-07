@@ -8,6 +8,11 @@ It systemizes the methodologies of four value investing masters — Buffett, Mun
 
 **One person + Claude = One investment research team.**
 
+> **Attribution** — This project is a fork of [xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire)
+> (MIT), originally written for China/HK markets. This "US Edition" rewrites the Skills for
+> US equities and adds a Supabase-backed dashboard, a call ledger with automated scoring,
+> and sector funnel tooling. All credit for the original framework goes to the upstream authors.
+
 ---
 
 ## Quick Start
@@ -258,7 +263,10 @@ This project is for educational and research purposes only. Nothing here constit
 
 ## License
 
-MIT License
+MIT License — see [LICENSE](LICENSE).
+
+Copyright (c) 2026 xbtlin (original work) and uwol-is-june (US Edition).
+Derived from [xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire) under the MIT License.
 
 ---
 
