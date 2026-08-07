@@ -1,275 +1,584 @@
 # AI Berkshire — US Edition
 
-> "Price is what you pay, value is what you get." — Warren Buffett
+> "가격은 당신이 지불하는 것이고, 가치는 당신이 얻는 것이다." — 워런 버핏
 
-**AI Berkshire** is a collection of investment research Skills built on [Claude Code](https://claude.ai/code), focused on **US stock analysis** (NYSE/NASDAQ/S&P 500).
+**혼자서도 투자 리서치 팀 하나를 굴리기 위한 도구 모음입니다.**
 
-It systemizes the methodologies of four value investing masters — Buffett, Munger, Duan Yongping, and Li Lu — and delivers professional-grade research through AI Agents.
+[Claude Code](https://claude.ai/code) 위에서 동작하는 **미국 주식 가치투자 리서치 Skill 14개**와,
+그 결과물을 모아 보는 **웹 대시보드**로 이루어져 있습니다.
+버핏 · 멍거 · 단융핑 · 리루 — 네 명의 가치투자 대가가 쓰는 판단 기준을 각각의 AI 에이전트로 만들어,
+**서로 반박하게 시켜** 한 종목을 뜯어봅니다.
 
-**One person + Claude = One investment research team.**
-
-> **Attribution** — This project is a fork of [xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire)
-> (MIT), originally written for China/HK markets. This "US Edition" rewrites the Skills for
-> US equities and adds a Supabase-backed dashboard, a call ledger with automated scoring,
-> and sector funnel tooling. All credit for the original framework goes to the upstream authors.
+> **출처 (Attribution)**
+> 이 프로젝트는 [xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire) (MIT) 의 포크입니다.
+> 원본은 중화권(A주·홍콩) 시장용으로 만들어졌고, 이 **US Edition** 은 미국 주식에 맞춰 다시 쓴
+> 버전입니다. 프레임워크의 원안에 대한 공은 전부 원저자에게 있습니다.
+> 무엇이 바뀌었는지는 맨 아래 **[Appendix](#appendix--원본-대비-무엇이-달라졌나)** 를 보세요.
 
 ---
 
-## Quick Start
+## 목차
 
-### 1. Install Claude Code
+- [이게 뭔가요?](#이게-뭔가요)
+- [그냥 AI한테 물어보면 안 되나요?](#그냥-ai한테-물어보면-안-되나요)
+- [빠른 시작](#빠른-시작)
+- [스킬 14개](#스킬-14개)
+- [파이썬 도구](#파이썬-도구)
+- [대시보드](#대시보드)
+- [데이터 소스](#데이터-소스)
+- [4대가 프레임워크](#4대가-프레임워크)
+- [트랙레코드 — 판단을 박제하고 채점한다](#트랙레코드--판단을-박제하고-채점한다)
+- [로드맵](#로드맵)
+- [면책](#면책)
+- [Appendix — 원본 대비 무엇이 달라졌나](#appendix--원본-대비-무엇이-달라졌나)
+
+---
+
+## 이게 뭔가요?
+
+Claude Code 에 슬래시 명령어를 치면, 미리 짜둔 리서치 절차대로 AI가 자료를 찾아 읽고
+**한국어 보고서 파일**을 만들어 줍니다.
+
+```
+/investment-team AAPL
+```
+
+이 한 줄이면 4개의 에이전트가 **동시에** 움직입니다.
+
+| 에이전트 | 담당 | 보는 것 |
+|---|---|---|
+| 단융핑 | 사업 모델 | 이게 애초에 좋은 사업인가? |
+| 버핏 | 재무·밸류에이션 | 얼마면 싼가? 지금 사도 되나? |
+| 멍거 | 산업·경쟁 | 이 회사는 어떻게 죽는가? (역발상) |
+| 리루 | 리스크 | 10년 뒤에도 존재할까? |
+
+결과물은 `reports/AAPL/` 폴더에 관점별 보고서 4개 + 종합 보고서로 저장됩니다.
+
+**핵심은 "AI가 답을 준다"가 아니라 "판단 과정을 규율한다"입니다.** 결론을 강제로 내리게 하고,
+근거에 신뢰도 등급을 붙이고, 낸 판단을 원장에 박제해 나중에 실제 주가로 채점합니다.
+
+---
+
+## 그냥 AI한테 물어보면 안 되나요?
+
+Claude 에게 그냥 "애플 살 만해?" 라고 물어도 답은 나옵니다. "한편으로는… 다른 한편으로는…"
+으로 균형 잡힌 분석이 나오고 "투자는 본인 책임입니다"로 끝납니다.
+
+**그 분석은 그럴듯해 보이지만, 그걸로는 결정을 못 합니다.**
+
+| 그냥 AI에게 질문 | AI Berkshire |
+|---|---|
+| 양비론, 결론 회피 | **결론 강제** — 매수 / 회피 / 회색지대 + 구체적 목표가 |
+| 단일 시각 | **4대가 대립** — 서로 반박하게 시켜 사각지대를 드러냄 |
+| 편향 통제 없음 | **5중 편향 방지 장치** |
+| LLM 암산 (오류 잦음) | **Python `Decimal` 정밀 계산** — 부동소수점 오차 없음 |
+| 매번 다른 형식 | **재현 가능한 구조** — 같은 입력 → 같은 형식 |
+| 컨텍스트 1개 | **4개 병렬 에이전트 = 4배의 정보량** |
+| 근거의 확실성이 불분명 | **신뢰도 등급 표기** (🟢 원문 확인 / 🟡 2차 출처 / 🔴 추정 / ⬛ 데이터 없음) |
+| 틀려도 아무도 모름 | **콜 원장에 박제 후 실제 주가로 자동 채점** |
+
+---
+
+## 빠른 시작
+
+### 1. Claude Code 설치
 
 ```bash
 npm install -g @anthropic-ai/claude-code
 ```
 
-### 2. Install Skills
+### 2. 스킬 설치
 
 ```bash
 git clone https://github.com/uwol-is-june/reality-escape-device.git
+cd reality-escape-device
+
 mkdir -p ~/.claude/commands
-cp reality-escape-device/skills/*.md ~/.claude/commands/
+cp skills/*.md ~/.claude/commands/
+rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 ```
 
-### 3. Use
+> ⚠️ **마지막 줄을 빼지 마세요.** `skills/` 안의 이 3개는 실행 스킬이 아니라 다른 스킬이
+> 참조하는 **공용 표준 문서**입니다. 슬래시 커맨드로 설치하면 호출해도 하는 일이 없으면서
+> 오발동 대상만 늘어납니다. 실제 설치 대상은 **실행 스킬 14개**입니다.
+
+### 3. 사용
 
 ```bash
-# Deep research
-/investment-team Apple
+# 심층 리서치
+/investment-team AAPL
 /private-company-research SpaceX
 
-# Earnings
-/earnings-review Apple 2025Q4
-/earnings-team Microsoft FY2025
+# 실적 분석
+/earnings-review AAPL 2025Q4
+/earnings-team MSFT FY2025
 
-# Sector screening
+# 섹터 스크리닝
 /industry-research AI Semiconductors
 /industry-funnel S&P500 Fintech
 /quality-screen Nasdaq 100
 /investment-checklist AAPL, MSFT, GOOGL, AMZN
 
-# Portfolio management
-/portfolio-review AAPL 30%, MSFT 20%, NVDA 20%, Cash 30%
-/thesis-tracker Apple
-/news-pulse NVIDIA
+# 포트폴리오 관리
+/portfolio-review AAPL 30%, MSFT 20%, NVDA 20%, 현금 30%
+/thesis-tracker AAPL
+/news-pulse NVDA
 
-# Idea generation & thinking tools
+# 아이디어 발굴 · 사고 도구
 /bottleneck-hunter AI infrastructure
-/dyp-ask What is Apple's real moat?
+/dyp-ask 애플의 진짜 해자는 무엇인가?
 ```
 
----
-
-## Why Not Just Ask AI?
-
-You can ask Claude directly: "Is Apple worth buying?" You'll get a balanced "on one hand... on the other hand..." analysis ending with "invest at your own risk."
-
-**That analysis looks right, but you can't make a decision with it.**
-
-AI Berkshire solves the problem of **analysis quality and decision discipline**:
-
-| Regular AI | AI Berkshire |
-|-----------|-------------|
-| Balanced, non-committal | **Forced conclusion**: Buy / Pass / Gray zone with specific price targets |
-| Single perspective | **4 masters in opposition**: Real conflicts that expose blind spots |
-| No bias control | **5-layer anti-bias system** |
-| LLM mental math (error-prone) | **Python decimal precision**, no floating point |
-| Inconsistent format | **Reproducible structure**: same input → same output format |
-| One context window | **4 parallel agents = 4x information volume** |
+**API 키가 필요 없습니다.** 모든 데이터 소스는 무료·공개 접근입니다.
+(대시보드까지 쓰려면 Supabase 무료 계정 하나만 있으면 됩니다.)
 
 ---
 
-## 15 Skills
+## 스킬 14개
 
-### Research
-| Skill | Use Case |
-|-------|----------|
-| `/investment-team` | 4 agents in parallel — 4-masters comprehensive analysis |
-| `/private-company-research` | Pre-IPO companies (SpaceX, Stripe, OpenAI, etc.) |
-| `/bottleneck-hunter` | Megatrend supply chain bottleneck → listed company discovery |
+### 리서치
 
-### Earnings
-| Skill | Use Case |
-|-------|----------|
-| `/earnings-review` | Read 10-K/10-Q directly, no second-hand research |
-| `/earnings-team` | 4 masters parallel earnings interpretation → publishable article |
+| 스킬 | 하는 일 |
+|---|---|
+| `/investment-team` | 4개 에이전트 병렬 — 4대가 종합 분석. 이 프로젝트의 메인 |
+| `/private-company-research` | 미상장 기업 (SpaceX, Stripe, OpenAI 등) |
+| `/bottleneck-hunter` | 메가트렌드 공급망에서 병목 지점을 찾아 상장사로 연결 |
 
-### Screening
-| Skill | Use Case |
-|-------|----------|
-| `/industry-research` | Full sector value chain scan |
-| `/industry-funnel` | Full market → ≤10 → 3 best picks |
-| `/quality-screen` | 7 hard criteria to eliminate bad companies |
-| `/investment-checklist` | Buffett pre-buy checklist, 6 gates, 10-minute decision |
+### 실적
 
-### Portfolio
-| Skill | Use Case |
-|-------|----------|
-| `/portfolio-review` | Position sizing, concentration, rebalancing |
-| `/thesis-tracker` | Post-buy discipline: track if thesis is being disproved |
-| `/news-pulse` | 10-minute stock move attribution |
+| 스킬 | 하는 일 |
+|---|---|
+| `/earnings-review` | 10-K / 10-Q 원문을 직접 읽음. 2차 리서치 인용 안 함 |
+| `/earnings-team` | 4대가 병렬 실적 해석 → 발행 가능한 아티클까지 |
 
-### Tools
-| Skill | Use Case |
-|-------|----------|
-| `/dyp-ask` | Duan Yongping-style thinking on any question — roleplay, no data fetched; never cite as evidence |
-| `/investment-article` | Convert a finished research report into a publishable blog/newsletter article |
+### 스크리닝
 
-### Shared Standards (not slash commands)
-Reference documents in `skills/`, consulted by the skills above. They are **not** installed to
-`~/.claude/commands/` because invoking them produces no output.
+| 스킬 | 하는 일 |
+|---|---|
+| `/industry-research` | 섹터 가치사슬 전체 스캔 + 병목 판정 |
+| `/industry-funnel` | 전체 시장 → 10종목 이하 → 최종 3종목 |
+| `/quality-screen` | 7가지 하드 기준으로 2류 기업 빠르게 탈락 |
+| `/investment-checklist` | 버핏식 매수 전 체크리스트, 6개 관문, 10분 판정 |
 
-| Document | Defines |
-|----------|---------|
-| `skills/data-confidence.md` | Confidence tiers (🟢🟡🔴⬛), claim-type tags, and the `<!-- confidence-summary -->` block the dashboard parses |
-| `skills/financial-data.md` | Source priority, cross-validation error thresholds (1% / 5%), SEC filing types |
-| `skills/token-budget.md` | Hard rules TB-1~TB-7 — no grandchild agents, retry once, reuse recent output |
+### 포트폴리오
 
----
+| 스킬 | 하는 일 |
+|---|---|
+| `/portfolio-review` | 비중 조절, 집중도, 리밸런싱 |
+| `/thesis-tracker` | 매수 후 규율 — 논제가 깨지고 있는지 추적 |
+| `/news-pulse` | 주가 급변동 원인 10분 분석 |
 
-## Data Sources
+### 사고 도구
 
-| Priority | Source | URL |
-|---------|--------|-----|
-| Primary | macrotrends | macrotrends.net/stocks/charts/{TICKER} |
-| Secondary | stockanalysis | stockanalysis.com/stocks/{ticker}/financials |
-| Official filings | SEC EDGAR | sec.gov/cgi-bin/browse-edgar |
-| Screening | Finviz | finviz.com/screener |
-| News | Yahoo Finance | finance.yahoo.com |
-| Analysis | Seeking Alpha | seekingalpha.com |
+| 스킬 | 하는 일 |
+|---|---|
+| `/dyp-ask` | 단융핑식 사고로 아무 질문이나 — **롤플레이이며 데이터를 조회하지 않습니다. 근거로 인용 금지** |
+| `/investment-article` | 완성된 리서치를 블로그·뉴스레터용 아티클로 변환 |
 
-All data sources are **free and publicly accessible** — no API keys required.
+### 공용 표준 문서 (슬래시 커맨드 아님)
+
+`skills/` 안에 있지만 위 스킬들이 참조하는 규칙 문서입니다.
+
+| 문서 | 정하는 것 |
+|---|---|
+| `skills/data-confidence.md` | 신뢰도 등급 (🟢🟡🔴⬛), 주장 유형 태그, 대시보드가 파싱하는 `<!-- confidence-summary -->` 블록 |
+| `skills/financial-data.md` | 출처 우선순위, 교차검증 오차 임계값 (1% / 5%), SEC 공시 유형 |
+| `skills/token-budget.md` | 토큰 규율 TB-1~TB-7 — 손자 에이전트 금지, 재시도 1회, 최근 산출물 재사용 |
 
 ---
 
-## Architecture
+## 파이썬 도구
 
-```
-┌──────────────────────────────────────────┐
-│           You (Team Lead)                │
-│     Coordinate · Synthesize · Decide     │
-├──────────┬──────────┬──────────┬─────────┤
-│ Agent 1  │ Agent 2  │ Agent 3  │ Agent 4 │
-│ Business │Financial │ Industry │  Risk & │
-│  Model   │Valuation │ Analysis │  Mgmt   │
-│  (DYP)   │(Buffett) │ (Munger) │ (Li Lu) │
-└──────────┴──────────┴──────────┴─────────┘
-     ↓ parallel research, real-time progress ↓
-              Final Synthesis Report
-```
+`tools/` 안에 있습니다. 외부 의존성이 거의 없고, 전부 저장소 루트에서 상대경로로 실행합니다.
 
-**Three-layer design:**
-- **Skill Layer**: 15 entry points covering the full investment lifecycle
-- **Agent Layer**: 4 independent agents per skill — they research, argue, and challenge each other
-- **Tool Layer**: Precise calculation (`financial_rigor.py`), pre-publish data audit (`report_audit.py`), stock screening
+### 정밀 계산 — `financial_rigor.py`
 
----
-
-## Python Tools
-
-### Financial Rigor (`tools/financial_rigor.py`)
-
-LLM mental math is unreliable. AI Berkshire calls Python for all calculations:
+LLM 암산은 못 믿습니다. 모든 계산은 Python `decimal.Decimal` 로 넘깁니다.
 
 ```bash
-# Market cap verification
+# 시가총액 검산
 python3 tools/financial_rigor.py verify-market-cap \
   --price 189.30 --shares 15.4e9 --reported 2.915e12 --currency USD
 
-# Valuation metrics
+# 밸류에이션 지표
 python3 tools/financial_rigor.py verify-valuation \
   --price 189.30 --eps 6.57 --bvps 3.77 --fcf-per-share 7.12 --dividend 1.00
 
-# Cross-validate data from multiple sources
+# 여러 출처 교차 검증
 python3 tools/financial_rigor.py cross-validate \
-  --field revenue --values '{"macrotrends": 391035, "stockanalysis": 391035}' --unit M
+  --field revenue --values '{"stockanalysis": 391035, "sec": 391035}' --unit M
 
-# Three-scenario valuation
+# 3시나리오 밸류에이션
 python3 tools/financial_rigor.py three-scenario \
   --price 189.30 --eps 6.57 --shares 15.4 \
-  --growth 0.12 0.08 0.03 \
-  --pe 28 24 18 --years 3 --currency USD
+  --growth 0.12 0.08 0.03 --pe 28 24 18 --years 3 --currency USD
 ```
 
-All calculations use Python `decimal.Decimal` — no floating-point drift.
+### SEC 재무 데이터 직접 추출 — `fetch_financials.py`
 
-### Report Audit (`tools/report_audit.py`)
+10-K HTML을 통째로 컨텍스트에 삼키는 대신, **실제로 쓰는 수치만** SEC XBRL API에서 직접 뽑아
+컴팩트 JSON + 요약표로 만듭니다. 웹 스크래핑이 막혀도 동작하고, 10년 시계열을 정확히 가져옵니다.
 
-Pre-publish data verification: randomly samples 15% of financial figures in a report and issues a pass/fail verdict after cross-checking against external sources.
+### 보고서 사전 감사 — `report_audit.py`
 
-```bash
-# Step 1 — extract checklist
-python3 tools/report_audit.py extract --report reports/Apple/FinalReport.md
+발행 전 검증. 보고서 안 재무 수치의 **15%를 무작위 표본**으로 뽑아 외부 대조 후 pass/fail 판정.
+괄호 음수 `(123.4)`, 영문 단위 `K / mn / bn`, 비정형 표 구조를 처리합니다.
 
-# Step 2 — manually fill in fetched_value from macrotrends / stockanalysis / SEC
+### 그 외
 
-# Step 3 — verdict
-python3 tools/report_audit.py verdict --results '[...]'
-```
-
-Handles parenthesized negatives `(123.4)`, English scale units `K / mn / bn`, and non-standard table structures. Zero external dependencies.
+| 도구 | 하는 일 |
+|---|---|
+| `record_call.py` | 매수/보유/관망/회피 **콜을 원장에 박제** (시점가는 Yahoo 실측) |
+| `score_calls.py` | 원장을 **Yahoo 실측 주가로 자동 채점** — 방향 적중률 집계 |
+| `site_preflight.py` | 데이터 소스 접근 가능 여부 사전 점검 (봇 차단 확인) |
+| `publish_report.py` · `publish_changed_reports.py` | 보고서를 Supabase에 발행 |
+| `pull_reports_from_supabase.py` | 역방향 복구 — 로컬 파일이 유실됐을 때 되받기 |
+| `sync_sector_map.py` | 보고서의 섹터 마커를 읽어 '티커 → 섹터' 맵 자동 생성 |
+| `stock_screener.py` · `morningstar_fair_value.py` | 스크리닝, 모닝스타 적정가치 대비 상승여력 |
+| `token_diet_measure.py` | 토큰 사용량 계측 + 정확도 회귀 가드 |
 
 ---
 
-## 4 Masters Framework
+## 대시보드
+
+`dashboard/` — **Next.js + Supabase** 로 만든 웹 뷰어입니다. 보고서가 쌓이면 파일 탐색기로는
+관리가 안 되기 때문에 만들었습니다.
+
+| 탭 | 내용 |
+|---|---|
+| **개요** | 리서치 플로우, 진행 상황 |
+| **종목별 보고서** | 분야 → 섹터 → 종목 3단 위계. 섹터는 보고서 마커에서 자동 배정 |
+| **트랙레코드** | 콜 원장을 **Yahoo 실측가로 자동 채점** — 방향 적중률, 목표 도달 여부 |
+| **아티클** | 발행용으로 변환된 글 모음 |
+| **실적 캘린더** | 실적 발표 일정 + 발표 직후 D+ 점검 대기/완료 |
+| **병목 신호** | 공급망 병목 스캔 결과 (자동 스캔) |
+
+동작 방식: Claude가 보고서를 쓰면 **응답이 끝날 때마다 훅이 자동으로 Supabase에 발행**합니다.
+사용자가 따로 할 일이 없습니다.
+
+**보안**: Supabase 테이블은 RLS를 켜고 **정책을 두지 않아** anon 키로는 아무것도 못 읽습니다.
+서버 전용 `service_role` 키만 접근하며, 키는 `.env.local` (gitignore) 에만 둡니다.
+
+---
+
+## 데이터 소스
+
+| 우선순위 | 소스 | 용도 |
+|---|---|---|
+| **1순위** | stockanalysis.com | 재무제표 · 10년 추이 |
+| 2순위 | macrotrends.net | 교차검증 — ⚠️ 상시 봇 차단, 열릴 때만 |
+| 원문 공시 | SEC EDGAR | 10-K, 10-Q, 8-K 원문 |
+| 스크리닝 | Finviz | 종목 스크리닝 |
+| 뉴스 1순위 | Yahoo Finance | 뉴스 · 실적 · 애널리스트 목표주가 |
+| 뉴스 2순위 | CNBC | 실적 반응 · 셀사이드 코멘트 |
+| 심층 분석 | Seeking Alpha · Bloomberg | ⚠️ 검색 경유만 가능 |
+
+> **⚠️ 접근 불가 (2026-08-06 실측)** — WSJ · Reuters · MarketWatch · Barron's 는
+> robots.txt 로 크롤러를 차단해 직접 열기·검색 모두 불가합니다. 이 중 WSJ·MarketWatch·Barron's
+> 는 같은 Dow Jones 계열이라 계열 내 대체도 안 됩니다.
+> 접근성 확인은 `python3 tools/site_preflight.py <프로파일>`.
+
+**403은 "못 쓴다"가 아닙니다** — 직접 열기만 막힌 것이고 검색 색인은 살아 있는 경우가 많습니다.
+다만 검색 경유는 원문 직접 확인이 아니므로 **신뢰도는 🟡가 상한**입니다.
+
+---
+
+## 4대가 프레임워크
 
 ```
               ┌──────────────────┐
-              │  Duan Yongping   │
-              │  "Right Business"│
-              │  Business Model  │
+              │     단융핑       │
+              │  "옳은 사업"     │
+              │   사업 모델      │
               └────────┬─────────┘
                        │
     ┌──────────────────┼──────────────────┐
     │                  │                  │
     ▼                  ▼                  ▼
 ┌─────────┐    ┌──────────┐     ┌─────────┐
-│ Buffett │    │  Munger  │     │  Li Lu  │
-│  Moat   │    │ Inversion│     │Civiliz. │
-│Valuation│    │ Risk List│     │  Trend  │
-│  Mgmt   │    │Bias Check│     │ 20-year │
+│  버핏   │    │   멍거   │     │  리루   │
+│  해자   │    │  역발상  │     │  문명   │
+│밸류에이션│    │리스크목록│     │  추세   │
+│  경영진 │    │ 편향점검 │     │  20년   │
 └─────────┘    └──────────┘     └─────────┘
 ```
 
-The four masters are designed to **challenge each other**:
-- DYP says "great business" → Munger asks "how does it die?"
-- Buffett says "cheap enough" → Li Lu asks "will it exist in 10 years?"
+**핵심은 서로 반박하게 만드는 것입니다.**
+
+- 단융핑이 "훌륭한 사업" → 멍거가 "그래서 이건 어떻게 죽는데?"
+- 버핏이 "충분히 싸다" → 리루가 "10년 뒤에도 존재하나?"
+
+### 분석 원칙
+
+- **객관성** — 모든 분석은 사실과 데이터 기반. 주관적 추측 금지
+- 사실과 의견을 엄격히 구분. 의견에는 반드시 "(추정)" 표기
+- **입장 선입견 금지** — 강세/약세 전제 없이 데이터 → 논리 → 결론 순서
+- **양면 제시** — 모든 핵심 판단에 반대 근거 첨부
+- 불확실하면 솔직하게 "불확실" 또는 "데이터 부족"으로 표기
 
 ---
 
-## Roadmap
+## 트랙레코드 — 판단을 박제하고 채점한다
 
-- [x] Multi-agent parallel research team — 4-masters comprehensive analysis (`/investment-team`)
-- [x] Buffett pre-buy checklist (`/investment-checklist`)
-- [x] Sector research & funnel (`/industry-research` + `/industry-funnel`)
-- [x] Pre-IPO company research (`/private-company-research`)
-- [x] Financial rigor toolkit (precise math, market cap verification, cross-validation)
-- [x] Stock price move attribution (`/news-pulse`)
-- [x] Earnings analysis (`/earnings-review` + `/earnings-team`)
-- [x] Portfolio management (`/portfolio-review`)
-- [x] Thesis tracking (`/thesis-tracker`)
-- [x] Quality screen — 7 hard criteria (`/quality-screen`)
-- [ ] Real-time price alerts (smartphone push notifications)
-- [ ] SEC EDGAR direct integration
-- [ ] Historical backtest: AI reports vs. actual stock performance
+**기록하지 않은 판단은 없던 판단입니다.** 맞은 것만 기억하는 생존편향을 막기 위해,
+콜을 낼 때마다 원장(`data/calls.jsonl`)에 append 합니다. 수정 불가입니다.
 
----
+| 콜 종류 | 뜻 | 적중 조건 |
+|---|---|---|
+| `buy` | 현재가 매수 권고 | 상승 |
+| `keep` | 보유 중 계속 보유 | 하락 없음 |
+| `hold` | **관망** (미보유, 진입가 대기) | 진입 밴드로 회귀 |
+| `avoid` | 회피 | 하락 |
 
-## Disclaimer
+> ⚠️ `keep` 과 `hold` 는 **정반대를 예측**합니다. 실제 보유 여부로만 구분합니다.
 
-This project is for educational and research purposes only. Nothing here constitutes investment advice. Always do your own due diligence (DYOR).
+**보유 상태의 기본값은 항상 "미보유 · 관망"입니다.** 주가가 진입 밴드에 왔다는 이유로,
+사업이 훌륭하다는 이유로 보유로 추측하지 않습니다. 사용자가 매수를 알렸을 때만 보유로 전환합니다.
+
+시점가(`priceAtCall`)는 도구가 Yahoo에서 실측해 박제합니다 — **모델 기억값을 쓰지 않습니다.**
 
 ---
 
-## License
+## 로드맵
 
-MIT License — see [LICENSE](LICENSE).
-
-Copyright (c) 2026 xbtlin (original work) and uwol-is-june (US Edition).
-Derived from [xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire) under the MIT License.
+- [x] 4대가 병렬 리서치 팀 (`/investment-team`)
+- [x] 버핏 매수 전 체크리스트 (`/investment-checklist`)
+- [x] 섹터 리서치 & 퍼널 (`/industry-research` + `/industry-funnel`)
+- [x] 미상장 기업 리서치 (`/private-company-research`)
+- [x] 정밀 계산 툴킷 (시가총액 검산, 교차 검증)
+- [x] 주가 변동 원인 분석 (`/news-pulse`)
+- [x] 실적 분석 (`/earnings-review` + `/earnings-team`)
+- [x] 포트폴리오 관리 (`/portfolio-review`)
+- [x] 논제 추적 (`/thesis-tracker`)
+- [x] 열등주 스크리닝 — 7가지 하드 기준 (`/quality-screen`)
+- [x] **SEC EDGAR 직접 연동** (`fetch_financials.py` — XBRL API)
+- [x] **웹 대시보드** (Next.js + Supabase)
+- [x] **콜 원장 + 실측 자동 채점** (`record_call.py` + `score_calls.py`)
+- [ ] 실시간 가격 알림 (모바일 푸시)
+- [ ] 장기 백테스트 — AI 보고서 vs 실제 주가 성과 누적 검증
 
 ---
 
-> "The best investment you can make is in yourself." — Warren Buffett
+## 면책
+
+**이 프로젝트는 교육 및 연구 목적으로만 제공됩니다.**
+
+여기의 어떤 내용도 투자 자문이 아닙니다. 보고서에 "매수 권고", 목표가, 별점 같은 단정적 표현이
+등장하지만, 이는 **분석 프레임워크의 출력 형식**일 뿐이며 특정 종목의 매매를 권유하는 것이 아닙니다.
+저자는 투자 자문업 등록자가 아닙니다.
+
+AI가 생성한 분석에는 사실 오류가 포함될 수 있습니다. 신뢰도 등급(🟢🟡🔴⬛)을 붙이고 교차 검증
+장치를 두었지만 완전하지 않습니다. **모든 투자 판단과 그 결과에 대한 책임은 전적으로 본인에게
+있습니다.** 반드시 직접 확인하세요 (DYOR).
+
+---
+
+## 라이선스
+
+MIT License — [LICENSE](LICENSE) 참조.
+
+Copyright (c) 2026 xbtlin (원본) · uwol-is-june (US Edition).
+[xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire) 를 MIT 라이선스 하에 개작했습니다.
+
+---
+---
+
+# Appendix — 원본 대비 무엇이 달라졌나
+
+원본 [xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire) 는 **중화권(A주·홍콩) 시장**을
+전제로 만들어진 훌륭한 프레임워크입니다. 이 포크는 그 골격 — 4대가 병렬 에이전트, 결론 강제,
+정밀 계산 — 을 그대로 가져오되, **미국 주식**에 맞춰 데이터 계층을 갈아끼우고 그 위에
+**결과물 관리·검증 계층**을 새로 얹었습니다.
+
+한 줄 요약: **원본은 "좋은 보고서를 만드는 법"에 집중했고, 이 포크는 거기에 "그 보고서를 쌓고,
+관리하고, 나중에 채점하는 법"을 더했습니다.**
+
+---
+
+## 1. 시장 전환 — 중화권 → 미국
+
+가장 근본적인 변경입니다. 데이터 계층이 통째로 교체됐습니다.
+
+| 구분 | 원본 | US Edition |
+|---|---|---|
+| 대상 시장 | A주 · 홍콩 · 대만 | **NYSE · NASDAQ · S&P 500** |
+| 재무 데이터 | 雪球(xueqiu) 스크레이퍼, `ashare_data.py`, `twstock_data.py` | **SEC XBRL API**, stockanalysis.com |
+| 공시 원문 | 巨潮资讯 등 | **SEC EDGAR** (10-K / 10-Q / 8-K) |
+| 통화 | CNY / HKD / TWD | **USD 단일** |
+| 보고서 언어 | 중국어 | **한국어** |
+| 폴더 명명 | 종목명 혼용 (`美团`, `拼多多`) | **미국 티커로 통일** (`AAPL`, `NVDA`) — 대시보드 집계를 위해 필수 |
+
+**제거된 것**: `xueqiu_scraper.py` (雪球 로그인 쿠키 필요), `ashare_data.py`, `twstock_data.py`.
+로그인 상태 캐시에 의존하던 스크래핑 경로를 없애고, **인증 없이 접근 가능한 공개 API**로 대체했습니다.
+
+---
+
+## 2. 스킬 변경
+
+원본 20개 → US Edition 17개 파일 (**실행 스킬 14개 + 공용 표준 문서 3개**).
+
+### 새로 만든 것
+
+| 스킬 | 왜 만들었나 |
+|---|---|
+| `skills/data-confidence.md` | **신뢰도 등급 체계** (🟢 원문 확인 / 🟡 2차 출처 / 🔴 추정 / ⬛ 없음). 원본에는 근거의 확실성을 표기하는 표준이 없었습니다. 대시보드가 이 마커를 파싱해 보고서별 신뢰도를 집계합니다 |
+| `skills/token-budget.md` | **토큰 규율 TB-1~TB-7**. 아래 §5 참조 |
+| `/investment-article` | 원본 `wechat-article` (위챗 공중계정용) 을 플랫폼 중립적인 블로그·뉴스레터용으로 재작성 |
+
+### 정리한 것
+
+원본의 `deep-company-series`, `income-investment`, `investment-research`,
+`management-deep-dive`, `thesis-drift` 를 제거했습니다. 기능이 다른 스킬과 겹치거나
+(`investment-research` ↔ `investment-team`, `thesis-drift` ↔ `thesis-tracker`),
+미국 시장에서 별도 스킬로 둘 실익이 적다고 판단한 것들입니다.
+
+**스킬 수를 줄인 게 개선입니다.** 슬래시 커맨드가 20개면 무엇을 언제 쓸지 헷갈리고,
+Claude가 엉뚱한 스킬을 오발동시킵니다.
+
+### 역할 분담을 계약으로 고정
+
+`/industry-research` 와 `/industry-funnel` 은 원본에서 기능이 겹쳐 어느 쪽을 불러야 할지
+모호했습니다. 두 스킬 사이의 **입출력 계약을 문서로 명시**해 중복 실행을 막았습니다.
+
+---
+
+## 3. 새로 생긴 것 — 대시보드 (원본에 없음)
+
+원본은 **결과물이 마크다운 파일로만 남습니다.** 보고서가 수십 개 쌓이면 파일 탐색기로는
+"어떤 종목을 언제 봤고 결론이 뭐였는지"를 알 수 없습니다.
+
+`dashboard/` 를 **Next.js + Supabase** 로 새로 만들었습니다.
+
+| 기능 | 설명 |
+|---|---|
+| 분야 → 섹터 → 종목 3단 위계 | 섹터는 보고서의 HTML 주석 마커에서 **자동 배정** (`sync_sector_map.py`) |
+| 트랙레코드 자동 채점 | 콜 원장을 Yahoo 실측가로 채점해 방향 적중률 집계 |
+| 실적 캘린더 | 발표 일정 + 발표 직후 D+ 점검 대기/완료 상태 |
+| 병목 신호 | 공급망 병목 스캔 결과 (매일 자동 스캔) |
+| 아티클 | 발행용 변환 글 모음 |
+| 신뢰도 표시 | 보고서의 `<!-- confidence-summary -->` 를 파싱해 표시 |
+
+**저장소가 파일 → Supabase 로 바뀌었습니다.** Claude가 보고서를 쓰면 **응답이 끝날 때마다
+Stop 훅이 자동 발행**합니다. 발행 실패 시 커밋하지 않아 다음 턴에 재시도되고,
+훅은 어떤 경우에도 세션을 막지 않습니다.
+
+**보안 설계**: Supabase 테이블은 RLS를 켜되 **정책을 두지 않아** anon 키로는 아무것도 못 읽습니다.
+서버 전용 `service_role` 키만 RLS를 우회하며, 키는 `.env.local` (gitignore) 에만 존재합니다.
+
+---
+
+## 4. 새로 생긴 것 — 콜 원장과 자동 채점 (원본에 없음)
+
+**이게 가장 큰 개념적 추가입니다.**
+
+원본에는 판단의 사후 검증 장치가 없습니다. 보고서를 쓰고 끝입니다. 그러면 **맞은 것만 기억하는
+생존편향**을 피할 수 없습니다.
+
+US Edition은 콜을 낼 때마다 `data/calls.jsonl` 에 **append-only로 박제**합니다.
+
+```json
+{"ticker":"TSM","date":"2026-07-24","call":"hold","priceAtCall":415.58,
+ "target":{"low":350.0,"high":370.0,"horizonMonths":12},
+ "loadBearing":["선단 90%+ 점유율 유지","GM 55%+ 유지"],
+ "invalidation":["GM 2분기 연속 <50%","삼성 2nm 수율 70% 돌파"]}
+```
+
+설계 포인트 4가지:
+
+1. **시점가는 도구가 Yahoo에서 실측**해 박제합니다. 모델의 기억값을 쓰지 않습니다
+2. **채점도 외부 실측**입니다 (`score_calls.py`). 자기신고가 아니라 외부 대조여야
+   시스템이 체계적으로 틀리는지 배울 수 있습니다
+3. **`loadBearing`(논제를 떠받치는 가정) 과 `invalidation`(무효화 조건) 을 미리 적습니다.**
+   나중에 "생각이 바뀌었다"고 얼버무리지 못하게 만드는 장치입니다
+4. **관망(`hold`)도 채점 대상**입니다. 매수한 것만 기록하면 "안 산 게 정답이었던 경우"가
+   통계에서 사라집니다
+
+그리고 **보유 상태의 기본값을 "미보유·관망"으로 못 박았습니다.** AI가 "좋은 회사네" →
+"보유 중이겠지"로 추측해 트랙레코드를 오염시키는 사고를 막습니다.
+
+---
+
+## 5. 새로 생긴 것 — 토큰 규율 (원본에 없음)
+
+멀티 에이전트는 비용이 **호출 횟수의 제곱**으로 늡니다. 도구 호출 1회 = 컨텍스트 전량 재전송이기
+때문입니다. 원본에는 이걸 통제하는 규칙이 없습니다.
+
+실측에서 문제가 드러났습니다 — **`/investment-team` 1회 실행에 50.4M 토큰**이 나왔고,
+그중 **58%가 재시도 폐기분**이었습니다. 같은 스킬이 다른 종목에서는 5.9M이었는데
+**산출물 품질은 사실상 같았습니다.**
+
+`skills/token-budget.md` 에 하드 규칙 TB-1~TB-7 을 만들었습니다. 핵심 3가지:
+
+| 규칙 | 내용 |
+|---|---|
+| **TB-1** | 서브에이전트는 **하위 에이전트를 스폰하지 않는다.** 팬아웃은 본체만, 깊이는 1단계. 이 금지는 에이전트 프롬프트에 **인라인으로** 박아야 합니다 (에이전트는 스킬 문서를 읽지 않습니다) |
+| **TB-2** | **재시도는 역할당 1회.** 재시도 전에 산출물 파일부터 확인하고, 2회차도 실패하면 "제외하고 진행". 웨이브 통째 재실행 금지 |
+| **TB-7** | **7일 이내 산출물이 있으면 전체 재실행하지 않는다.** 갱신 모드로 묻습니다 |
+
+스킬별 정상 토큰 범위를 명시해 두어, 범위를 크게 넘으면 **재시도 루프나 손자 에이전트가
+돌고 있다는 신호**로 삼습니다. `token_diet_measure.py` 로 실제 바이트를 재서
+"토큰만 줄고 정확도는 안 떨어졌음"을 데이터로 증명합니다.
+
+---
+
+## 6. 도구 변화
+
+| 도구 | 상태 | 비고 |
+|---|---|---|
+| `financial_rigor.py` | 계승 | 정밀 계산 — 원본의 핵심 자산 |
+| `report_audit.py` | 계승 | 발행 전 15% 표본 감사 |
+| `stock_screener.py` · `morningstar_fair_value.py` | 계승 | |
+| `xueqiu_scraper.py` · `ashare_data.py` · `twstock_data.py` | **제거** | 중화권 전용. 로그인 쿠키 의존 |
+| `momentum_backtest.py` · `star_history_chart.py` | **제거** | 가치투자 프레임워크와 무관 |
+| **`fetch_financials.py`** | **신규** | SEC XBRL 직접 추출. HTML 통삼킴 대신 필요한 수치만 |
+| **`record_call.py`** · **`score_calls.py`** · `test_score_calls.py` | **신규** | 콜 원장 + 자동 채점 (테스트 포함) |
+| **`publish_report.py`** 외 3종 | **신규** | Supabase 발행 · 역방향 복구 · 일괄 이관 |
+| **`sync_sector_map.py`** | **신규** | 보고서 마커 → 섹터 자동 배정 |
+| **`site_preflight.py`** | **신규** | 데이터 소스 봇 차단 사전 점검 |
+| **`token_diet_measure.py`** | **신규** | 토큰 계측 + 정확도 회귀 가드 |
+
+---
+
+## 7. 운영 규칙 정비
+
+원본을 실제로 굴리면서 깨진 것들을 고쳤습니다.
+
+**경로 규칙** — 원본 문서에는 절대경로가 박혀 있어 **다른 머신에서 전부 깨졌습니다.**
+(실제 사고: 스킬 문서의 홈 경로가 존재하지 않아 첫 명령이 실패했고, 그 경로가 4개 서브에이전트
+프롬프트에 그대로 복사됐습니다.) 모든 명령·문서·에이전트 프롬프트를 **저장소 루트 기준
+상대경로만** 쓰도록 통일했습니다.
+
+**스킬 설치본 동기화** — `skills/` 만 고치고 `~/.claude/commands/` 가 구버전이면 새 절차가
+**실행되지 않습니다** (실제 콜 기록 누락 발생). 재설치 절차를 문서에 명시했습니다.
+
+**공용 표준 문서 분리** — `data-confidence` · `financial-data` · `token-budget` 3종은
+슬래시 커맨드로 설치하면 **호출해도 하는 일이 없으면서 오발동 대상만 늘립니다.**
+설치 대상에서 명시적으로 제외했습니다.
+
+**폴더 명명 규칙** — 한 종목 폴더명을 **티커로 고정**했습니다. 티커·영문명·한글명을 섞어 쓰면
+대시보드에서 별개 종목으로 분리 표시됩니다.
+
+---
+
+## 8. 요약 — 무엇이 좋아졌나
+
+| 축 | 개선 |
+|---|---|
+| **신뢰성** | 근거마다 신뢰도 등급(🟢🟡🔴⬛) 표기. "어디까지가 확인된 사실인가"를 독자가 판단 가능 |
+| **검증 가능성** | 콜 원장 + Yahoo 실측 자동 채점. **틀렸는지 아닌지가 데이터로 남음** |
+| **정직성** | 관망도 채점. 보유 기본값은 미보유. 생존편향 차단 |
+| **데이터 무결성** | SEC XBRL 직접 접근 — 스크래핑 차단·로그인 의존 제거 |
+| **비용** | 토큰 규율로 재시도 폐기분 제거 (실측 50.4M → 정상 범위 5~10M) |
+| **관리성** | 대시보드로 수십 개 보고서를 분야·섹터·종목 위계로 탐색 |
+| **이식성** | 절대경로 제거 — 어느 머신에서 클론해도 동작 |
+| **명료성** | 스킬 20개 → 14개. 역할 중복 제거로 오발동 감소 |
+
+**원본이 없었으면 이 프로젝트도 없습니다.** 4대가 병렬 에이전트라는 발상, 결론을 강제하는 구조,
+LLM 암산을 Python으로 대체한 판단 — 전부 원저자의 것입니다.
+[xbtlin/ai-berkshire](https://github.com/xbtlin/ai-berkshire) 에 ⭐ 를 눌러주세요.
+
+---
+
+> "당신이 할 수 있는 최고의 투자는 자기 자신에 대한 투자다." — 워런 버핏
 >
-> AI Berkshire: Give everyone their own investment research team.
+> AI Berkshire: 누구에게나 자기만의 투자 리서치 팀을.
