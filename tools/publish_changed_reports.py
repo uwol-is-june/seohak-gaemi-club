@@ -69,6 +69,13 @@ def changed_reports() -> tuple[list[str], list[str]]:
         path = path.strip('"')
         if not path.endswith(".md"):
             continue
+        # `_` 로 시작하는 파일/폴더는 **보고서가 아니라 원자료 캐시·공유 코퍼스**다
+        # (예: reports/{티커}/_data.md — SEC XBRL 기계추출 결과,
+        #      reports/{티커}/_q2-primary/*.md — Agent 들이 공유하는 1차 자료 발췌).
+        # 발행하면 대시보드 '종목별 보고서'에 원자료가 보고서로 섞여 뜬다.
+        # dashboard/lib/articles.ts 도 같은 이유로 `_data.md/json` 을 제외한다.
+        if any(seg.startswith("_") for seg in path.split("/")[1:]):
+            continue
         if "D" in status:
             deleted.append(path)
         else:
