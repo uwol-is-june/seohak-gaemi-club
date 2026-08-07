@@ -16,7 +16,7 @@
 
 ### 사이트 접근 차단 사전 점검 도구 추가 ✅
 
-[T3] `tools/site_preflight.py` 신설 — [A1] `/industry-research`, [A2] `/industry-funnel`, [A3] `/quality-screen`, [B1] `/earnings-review` 4개 Skill의 실행 0단계에 사전 접근 점검을 삽입. macrotrends, Seeking Alpha, WSJ, finviz 등 차단 가능 사이트를 HTTP 상태 코드로 사전 확인하고, 차단 시 대체 소스를 즉시 안내한다. (`/investment-research`는 폐지되어 `/investment-team`으로 통합됨 — `/investment-team`은 site_preflight 적용 대상이 아니다.)
+[T3] `tools/site_preflight.py` 신설 — [A1] `/industry-research`, [A2] `/industry-funnel`, [A3] `/quality-screen`, [B1] `/earnings-team` 4개 Skill의 실행 0단계에 사전 접근 점검을 삽입. macrotrends, Seeking Alpha, WSJ, finviz 등 차단 가능 사이트를 HTTP 상태 코드로 사전 확인하고, 차단 시 대체 소스를 즉시 안내한다. (`/investment-research`는 폐지되어 `/investment-team`으로 통합됨 — `/investment-team`은 site_preflight 적용 대상이 아니다.)
 
 ### 대시보드 가이드 플로우에 CLI 필수 경고 추가 ✅
 
@@ -74,7 +74,7 @@
 
 ---
 
-### [B1] `/earnings-review`
+### [B1] `/earnings-team`
 
 | 위험 | 내용 | 상태 |
 |------|------|------|

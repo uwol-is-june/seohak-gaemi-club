@@ -124,7 +124,7 @@ export function getReportCategory(name: string): ReportCategory {
   if (name.includes("-quality-screen-")) return "quality-screen";
   if (name.includes("-checklist-")) return "checklist";
   if (name.endsWith("-thesis.md")) return "thesis";
-  // 실적 점검 = /earnings-review·/earnings-team 산출물({티커}-earnings-{기간}[-거장].md).
+  // 실적 점검 = /earnings-team 산출물({티커}-earnings-{기간}[-거장].md).
   // 심층분석(종목 1회성 리서치)과 달리 분기마다 반복되는 축이라 별도 유형으로 둔다(TASK-91).
   if (name.includes("-earnings-")) return "earnings";
   // 급변동 분석 = /news-pulse 산출물({회사}-news-{YYYYMMDD}.md)

@@ -9,7 +9,7 @@
   industry-research          stockanalysis / macrotrends / sec / yahoo / cnbc / seekingalpha / finviz
   industry-funnel            stockanalysis / macrotrends / finviz / sec
   quality-screen             stockanalysis / macrotrends
-  earnings-review            sec / yahoo / cnbc / seekingalpha
+  earnings-team              sec / yahoo / cnbc / seekingalpha
   private-company-research   glassdoor / linkedin / sec / bloomberg / yahoo
   all                        전체 사이트
 
@@ -143,7 +143,7 @@ PROFILES = {
     "industry-research":        ["stockanalysis", "macrotrends", "sec", "yahoo", "cnbc", "seekingalpha", "finviz"],
     "industry-funnel":          ["stockanalysis", "macrotrends", "finviz", "sec"],
     "quality-screen":           ["stockanalysis", "macrotrends"],
-    "earnings-review":          ["sec", "yahoo", "cnbc", "seekingalpha"],
+    "earnings-team":            ["sec", "yahoo", "cnbc", "seekingalpha"],
     "private-company-research": ["glassdoor", "linkedin", "sec", "bloomberg", "yahoo"],
     "all":                      list(SITES.keys()),
 }

@@ -4,7 +4,7 @@
 
 **혼자서도 투자 리서치 팀 하나를 굴리기 위한 도구 모음입니다.**
 
-[Claude Code](https://claude.ai/code) 위에서 동작하는 **미국 주식 가치투자 리서치 Skill 13개**와,
+[Claude Code](https://claude.ai/code) 위에서 동작하는 **미국 주식 가치투자 리서치 Skill 12개**와,
 그 결과물을 모아 보는 **웹 대시보드**로 이루어져 있습니다.
 버핏 · 멍거 · 단융핑 · 리루 — 네 명의 가치투자 대가가 쓰는 판단 기준을 각각의 AI 에이전트로 만들어,
 **서로 반박하게 시켜** 한 종목을 뜯어봅니다.
@@ -22,7 +22,7 @@
 - [이게 뭔가요?](#이게-뭔가요)
 - [그냥 AI한테 물어보면 안 되나요?](#그냥-ai한테-물어보면-안-되나요)
 - [빠른 시작](#빠른-시작)
-- [스킬 13개](#스킬-13개)
+- [스킬 12개](#스킬-12개)
 - [파이썬 도구](#파이썬-도구)
 - [대시보드](#대시보드)
 - [데이터 소스](#데이터-소스)
@@ -100,7 +100,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 
 > ⚠️ **마지막 줄을 빼지 마세요.** `skills/` 안의 이 3개는 실행 스킬이 아니라 다른 스킬이
 > 참조하는 **공용 표준 문서**입니다. 슬래시 커맨드로 설치하면 호출해도 하는 일이 없으면서
-> 오발동 대상만 늘어납니다. 실제 설치 대상은 **실행 스킬 13개**입니다.
+> 오발동 대상만 늘어납니다. 실제 설치 대상은 **실행 스킬 12개**입니다.
 
 ### 3. 사용
 
@@ -110,8 +110,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 /private-company-research SpaceX
 
 # 실적 분석
-/earnings-review AAPL 2025Q4
-/earnings-team MSFT FY2025
+/earnings-team AMZN 2026Q2
 
 # 섹터 스크리닝
 /industry-research AI Semiconductors
@@ -134,7 +133,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 
 ---
 
-## 스킬 13개
+## 스킬 12개
 
 ### 리서치
 
@@ -148,8 +147,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 
 | 스킬 | 하는 일 |
 |---|---|
-| `/earnings-review` | 10-K / 10-Q 원문을 직접 읽음. 2차 리서치 인용 안 함 |
-| `/earnings-team` | 4대가 병렬 실적 해석 → 발행 가능한 아티클까지 |
+| `/earnings-team` | SEC XBRL 기준선 확보 → 4대가 병렬 실적 해석 → 편집·독자검토 → 발행 아티클 |
 
 ### 스크리닝
 
@@ -346,7 +344,7 @@ python3 tools/financial_rigor.py three-scenario \
 - [x] 미상장 기업 리서치 (`/private-company-research`)
 - [x] 정밀 계산 툴킷 (시가총액 검산, 교차 검증)
 - [x] 주가 변동 원인 분석 (`/news-pulse`)
-- [x] 실적 분석 (`/earnings-review` + `/earnings-team`)
+- [x] 실적 분석 (`/earnings-team`)
 - [x] 포트폴리오 관리 (`/portfolio-review`)
 - [x] 논제 추적 (`/thesis-tracker`)
 - [x] 열등주 스크리닝 — 7가지 하드 기준 (`/quality-screen`)
@@ -414,7 +412,7 @@ Copyright (c) 2026 xbtlin (원본) · uwol-is-june (US Edition).
 
 ## 2. 스킬 변경
 
-원본 20개 → US Edition 16개 파일 (**실행 스킬 13개 + 공용 표준 문서 3개**).
+원본 20개 → US Edition 15개 파일 (**실행 스킬 12개 + 공용 표준 문서 3개**).
 
 ### 새로 만든 것
 
@@ -580,7 +578,7 @@ US Edition은 콜을 낼 때마다 `data/calls.jsonl` 에 **append-only로 박�
 | **비용** | 토큰 규율로 재시도 폐기분 제거 (실측 50.4M → 정상 범위 5~10M) |
 | **관리성** | 대시보드로 수십 개 보고서를 분야·섹터·종목 위계로 탐색 |
 | **이식성** | 절대경로 제거 — 어느 머신에서 클론해도 동작 |
-| **명료성** | 스킬 20개 → 13개. 역할 중복·비데이터 스킬 제거로 오발동 감소 |
+| **명료성** | 스킬 20개 → 12개. 역할 중복·비데이터 스킬 제거로 오발동 감소 |
 
 **원본이 없었으면 이 프로젝트도 없습니다.** 4대가 병렬 에이전트라는 발상, 결론을 강제하는 구조,
 LLM 암산을 Python으로 대체한 판단 — 전부 원저자의 것입니다.

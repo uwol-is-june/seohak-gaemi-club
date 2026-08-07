@@ -23,6 +23,17 @@ SEC XBRL에서 직접 뽑아 컴팩트 JSON + 요약표로 만든다.
 SEC 요청 예절: SEC는 연락처가 담긴 User-Agent를 요구한다. 환경변수로 지정 권장:
     SEC_USER_AGENT="Your Name your@email.com"
 
+🔴 두 호스트의 요구 수준이 다르다 (2026-08-07 실측):
+    data.sec.gov           (XBRL API)  — 기본 UA로 통과. 이 스크립트가 쓰는 경로.
+    www.sec.gov/Archives/  (공시 원문) — 기본 UA로 **403 Forbidden**.
+                                          **이메일이 포함된 UA**를 요구한다.
+따라서 10-Q·8-K **원문**을 받으려면 SEC_USER_AGENT 를 반드시 이메일 형식으로 설정한다:
+    export SEC_USER_AGENT="AI-Berkshire-Research you@example.com"
+아래 http_get() 은 user_agent 인자로 호출자가 UA를 덮어쓸 수 있다 — 다른 스크립트에서
+    import fetch_financials as ff
+    ff.http_get(archives_url, user_agent="Name you@example.com")
+형태로 재사용하면 Archives 접근이 된다.
+
 외부 의존성 없음 (stdlib만). Python >= 3.9.
 """
 from __future__ import annotations

@@ -129,7 +129,7 @@ verdict: 보통
 
 ## 스킬 연동
 
-데이터를 다루는 모든 스킬(investment-team, investment-checklist, earnings-review,
+데이터를 다루는 모든 스킬(investment-team, investment-checklist, earnings-team,
 industry-research, industry-funnel, quality-screen, portfolio-review, thesis-tracker,
 private-company-research 등)은 보고서 작성 시 본 표준을 적용한다:
 1. 핵심 주장에 인라인 신뢰도 등급 + 유형 태그

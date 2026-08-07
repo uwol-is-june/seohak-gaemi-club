@@ -46,8 +46,8 @@ export const skills: DashboardItem[] = [
       "SEC XBRL 재무 기준선 1회 확보 → 4대 거장 병렬 실적 해석 → 편집·독자검토",
     tags: ["agent-sdk"],
     risks: [
-      { label: "실행 이력 0건 — 첫 실행으로 검증 필요 (검증 후 /earnings-review 폐기 예정)", severity: "high" },
-      { label: "6-Agent 팬아웃 — 토큰 예산표 미등재 (investment-team급 5~10M 추정)", severity: "medium" },
+      { label: "6-Agent 팬아웃 — 산출물 7종. 가벼운 분기 점검은 /thesis-tracker 분기검토로", severity: "medium" },
+      { label: "10-Q 미발간 시점(발표 당일~D+2) 실행 시 자동 B등급 — 주석 기반 분석 제한", severity: "medium" },
       { label: "Seeking Alpha 어닝스 콜 유료 장벽 — site_preflight.py로 완화", severity: "medium" },
       { label: "SEC EDGAR 응답 지연 (특정 시간대)", severity: "low" },
     ],
