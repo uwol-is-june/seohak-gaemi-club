@@ -38,7 +38,7 @@ eq(
 
 // ─── Tier A: 급변동 분석 (마케팅 1순위) ─────────────────────────────────────
 eq("A: 급변동", classifySource(co("ADBE", "ADBE-news-20260731.md"))?.tier, "A");
-eq("A: 급변동 shape", classifySource(co("ADBE", "ADBE-news-20260731.md"))?.shape, "market");
+eq("A: 급변동 shape", classifySource(co("ADBE", "ADBE-news-20260731.md"))?.shape, "news");
 eq("A: 급변동 subject", classifySource(co("ADBE", "ADBE-news-20260731.md"))?.subject, "ADBE");
 eq("A: 급변동 날짜", classifySource(co("ADBE", "ADBE-news-20260731.md"))?.date, "2026-07-31");
 eq(

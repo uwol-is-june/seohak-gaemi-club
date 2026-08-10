@@ -19,10 +19,11 @@
 
 export type ArticleTier = "A" | "B";
 
-// 아티클 유형 = skills/investment-article.md 2단계의 3가지 구조.
-export type ArticleShape = "deep" | "compare" | "market";
+// 아티클 유형 = skills/investment-article.md 2단계의 4가지 구조.
+export type ArticleShape = "news" | "deep" | "compare" | "market";
 
 export const SHAPE_LABEL: Record<ArticleShape, string> = {
+  news: "이슈 해설형",
   deep: "심층 분석형",
   compare: "비교 분석형",
   market: "시장 시각형",
@@ -122,7 +123,7 @@ export function classifySource(input: ArticleInput): Omit<ArticleSource, "hasArt
   // 다른 소재와 달리 **유효기간이 있다** — 사건 직후가 관심의 정점이고 며칠이면 식는다.
   // 그래서 목록에서 항상 맨 위에 두고 날짜 최신순으로 민다.
   if (company && name.includes("-news-")) {
-    return mk("A", "market", "급변동 분석", "이벤트 직후가 관심의 정점 — 신선할 때 발행한다", company);
+    return mk("A", "news", "급변동 분석", "이벤트 직후가 관심의 정점 — 신선할 때 발행한다", company);
   }
 
   // ── Tier B: 상시 소재 — 재료는 더 충실하지만 발행 시점 압박이 없다 ──

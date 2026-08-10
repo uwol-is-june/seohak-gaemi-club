@@ -24,6 +24,7 @@ import { ReportContentView } from "./ReportContentView";
 // 원천적으로 안 탄다. 판정 규칙과 근거는 lib/articles.ts 참조.
 
 const SHAPE_TINT: Record<string, string> = {
+  news: "text-sunset bg-sunset/10",
   deep: "text-breeze bg-breeze/10",
   compare: "text-teal-300 bg-teal-500/10",
   market: "text-cyan-300 bg-cyan-500/10",
@@ -154,6 +155,8 @@ export function ArticlesView({
         <p className="text-[11px] text-mute mb-2 leading-relaxed">
 /news-pulse 산출물이다. <span className="text-body">유효기간이 있는 유일한 소재</span> — 사건
           직후가 관심의 정점이고 며칠이면 식는다. 최신순으로 정렬돼 있으니 위에서부터 쓴다.
+          스킬은 <span className="text-body">이슈 해설형</span> 템플릿(타임라인 → 원인 분해 → 논제
+          재검토)으로 자동 전환된다.
         </p>
         {index.tierA.length === 0 ? (
           <p className="text-xs text-mute">
