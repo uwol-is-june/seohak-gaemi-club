@@ -23,6 +23,15 @@ const TICKER_RE = /^[A-Z][A-Z0-9.\-]{0,9}$/;
 const TIER_FUNNEL = 0;
 const TIER_META = 1;
 
+// 마커는 계약상 **H1 바로 다음 줄**에 온다. 그래서 본문 전체가 아니라 머리말만 훑는다.
+// 전문을 훑으면 마커 규칙을 *설명하는* 문장(백틱 안이라도)이 진짜 마커로 잡혀
+// 섹터 충돌 경고를 낸다 — 실제로 NVDA 서브보고서에서 발생했다.
+const HEAD_LINES = 12;
+
+function head(content: string): string {
+  return content.split("\n", HEAD_LINES).join("\n");
+}
+
 function fileDate(name: string): string {
   return name.match(/(\d{8})/)?.[1] ?? "00000000";
 }
@@ -56,10 +65,11 @@ export async function buildSectorAutoMap(): Promise<Record<string, string>> {
 
   for (const r of reports) {
     const isRoot = r.path.split("/").length === 2;
+    const top = head(r.content);
 
     if (isRoot) {
       // 1) 퍼널 보고서(루트) — 최종 선정 종목 전부를 그 섹터에 배정
-      const m = r.content.match(FUNNEL_MARKER);
+      const m = top.match(FUNNEL_MARKER);
       if (!m) continue;
       const sector = m[1].trim();
       if (!sector) continue;
@@ -74,7 +84,7 @@ export async function buildSectorAutoMap(): Promise<Record<string, string>> {
     // 2) 종목 보고서 — 폴더 티커에 직접 섹터 지정(퍼널보다 우선)
     const ticker = companyFromPath(r.path);
     if (!ticker) continue;
-    const m = r.content.match(META_MARKER);
+    const m = top.match(META_MARKER);
     const sector = m?.[1].trim();
     if (sector) offer(ticker, sector, TIER_META, fileDate(r.name));
   }
