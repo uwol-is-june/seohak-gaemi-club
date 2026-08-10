@@ -7,11 +7,15 @@
 // 탭은 "이미 있는 보고서 중 소재가 되는 것"만 골라 명령을 만들어 준다 — 사용자가 티커만
 // 던져 웹 수집 경로로 새는 것을 막는 게 핵심 목적이다.
 //
-// 적합도(tier)를 나누는 기준은 아티클 템플릿이 요구하는 재료 4가지다
-// (skills/investment-article.md 3단계): ① 재무 수치 ② 4대가 시각 ③ 반대 논거 ④ 결론(밸류에이션).
-//   A = 넷 다 갖춘 보고서 → 그대로 재배열하면 글이 된다
-//   B = 일부만 → 쓸 수는 있으나 모자란 부분을 새로 채워야 한다(웹 수집 위험 구간)
-//   제외 = 서사가 없는 판정표(열등주 스크리닝 등)
+// **아티클의 용도는 마케팅이다**(2026-08-10 방침). 그래서 tier 를 가르는 1순위 기준이
+// "재료가 다 있는가"에서 **"지금 독자가 관심 있는가"**로 바뀌었다.
+//   A = 급변동 분석(/news-pulse) — 이벤트 직후가 관심의 정점이라 발행 타이밍이 곧 성과다
+//   B = 심층 리서치(종합본·퍼널·산업·논제·체크리스트·실적) — 언제 써도 되는 상시 소재
+//   제외 = 서사가 없는 판정표(열등주 스크리닝 등)·개인정보·조각 파일
+//
+// ⚠️ 급변동 보고서는 아티클 템플릿의 재료 4가지(재무·4대가·반대논거·밸류에이션) 중
+// 일부가 비어 있다. 마케팅 글로는 그게 맞지만(사건 해설이 본문이다), 수치를 보태다
+// 웹 수집 경로로 새지 않도록 소재 보고서 경로를 박은 명령을 그대로 쓴다.
 
 export type ArticleTier = "A" | "B";
 
@@ -113,22 +117,28 @@ export function classifySource(input: ArticleInput): Omit<ArticleSource, "hasArt
     command: `/investment-article ${path}`,
   });
 
-  // ── Tier A: 재료 4가지가 이미 다 있는 보고서 ──
+  // ── Tier A: 급변동 분석 — 마케팅 1순위 ──
+  // /news-pulse. 이벤트 타임라인 + 원인 판단 + 논제 재검토가 이미 서사 형태다.
+  // 다른 소재와 달리 **유효기간이 있다** — 사건 직후가 관심의 정점이고 며칠이면 식는다.
+  // 그래서 목록에서 항상 맨 위에 두고 날짜 최신순으로 민다.
+  if (company && name.includes("-news-")) {
+    return mk("A", "market", "급변동 분석", "이벤트 직후가 관심의 정점 — 신선할 때 발행한다", company);
+  }
+
+  // ── Tier B: 상시 소재 — 재료는 더 충실하지만 발행 시점 압박이 없다 ──
   // /investment-team 종합본. 4차원 평점(4대가) + 핵심데이터 + Bull vs Bear(반대논거) +
   // 최종 투자의견(밸류에이션)이 한 파일에 다 있어 재배열만 하면 된다.
   if (name === "FinalReport.md" && company) {
-    return mk("A", "deep", "심층분석 종합", "4대가 평점·반대논거·밸류에이션 모두 포함", company);
+    return mk("B", "deep", "심층분석 종합", "4대가 평점·반대논거·밸류에이션 모두 포함", company);
   }
   // /industry-funnel. 최종 3종목 = 아티클 '비교 분석형'의 2~3종목과 정확히 맞는다.
   if (!company && /-funnel-\d{8}\.md$/i.test(name)) {
-    return mk("A", "compare", "퍼널 최종 선정", "최종 3종목 비교 + 4대가 심층분석 포함", rootSubject(name));
+    return mk("B", "compare", "퍼널 최종 선정", "최종 3종목 비교 + 4대가 심층분석 포함", rootSubject(name));
   }
   // /industry-research. 가치사슬 + 병목 판정 = 트렌드 인사이트 소재.
   if (!company && /-industry-\d{8}\.md$/i.test(name)) {
-    return mk("A", "market", "산업 가치사슬", "가치사슬 지도 + 병목 판정 = 트렌드 서사", rootSubject(name));
+    return mk("B", "market", "산업 가치사슬", "가치사슬 지도 + 병목 판정 = 트렌드 서사", rootSubject(name));
   }
-
-  // ── Tier B: 일부 재료만 — 모자란 부분을 새로 채워야 한다 ──
   // /thesis-tracker. 논제·앵커가·트리거는 있으나 개인 포지션 성격이 강해 공개 전 손질 필요.
   if (company && /-thesis\.md$/i.test(name)) {
     return mk("B", "deep", "투자 논제", "논제·트리거는 있으나 개인 포지션 노출 주의", company);
@@ -137,19 +147,33 @@ export function classifySource(input: ArticleInput): Omit<ArticleSource, "hasArt
   if (company && name.includes("-checklist-")) {
     return mk("B", "deep", "버핏 6-게이트", "4대가 중 버핏 시각만 — 나머지 3인 보강 필요", company);
   }
-  // 실적 분석 산출물(/earnings-team). 이미 아티클 단계를 자체 수행하므로
-  // (skills/earnings-team.md Agent 5) 중복이다 — 그래서 A가 아니라 B.
+  // 실적 분석 산출물(/earnings-team). 이미 아티클 단계를 자체 수행한다
+  // (skills/earnings-team.md Agent 5) — 중복 발행에 주의.
   if (company && name.includes("-earnings-")) {
     return mk("B", "deep", "실적 분석", "/earnings-team 으로 돌렸다면 아티클이 이미 있다", company);
   }
 
   // ── 제외: 서사가 없거나 개인 정보이거나 조각 파일 ──
   //  -quality-screen-  판정표만 (통과/탈락) — 4대가·밸류에이션·서사 전부 없음
-  //  -news-           며칠이면 낡음
   //  01~04-*, README  FinalReport 가 이미 종합한 조각
   //  portfolio-latest 개인 자산 노출
   //  _data.md/json    원자료 캐시
   return null;
+}
+
+/**
+ * 이 소재를 덮는 아티클이 이미 나왔는가.
+ *
+ * 주제만 비교하면 **같은 종목에 사건이 반복되는 급변동 소재가 무너진다** — ADBE 첫 글을
+ * 한 번 쓰면 이후 급변동이 몇 번 나든 전부 '발행됨'으로 접힌다. 그래서 소재에 날짜가
+ * 있으면 **그 날짜 이후에 나온 아티클만** 그 소재를 덮은 것으로 본다.
+ * (날짜 없는 소재 — FinalReport·thesis 등 — 는 종전대로 주제 일치만 본다.)
+ */
+function isCovered(articles: Article[], subject: string, date: string | null): boolean {
+  const key = subject.toUpperCase();
+  return articles.some(
+    (a) => a.subject.toUpperCase() === key && (!date || !a.date || a.date >= date)
+  );
 }
 
 export function buildArticleIndex(files: ArticleInput[]): ArticleIndex {
@@ -161,12 +185,10 @@ export function buildArticleIndex(files: ArticleInput[]): ArticleIndex {
   // 최신 우선.
   articles.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "") || a.name.localeCompare(b.name));
 
-  const covered = new Set(articles.map((a) => a.subject.toUpperCase()));
-
   const sources: ArticleSource[] = [];
   for (const f of files) {
     const s = classifySource(f);
-    if (s) sources.push({ ...s, hasArticle: covered.has(s.subject.toUpperCase()) });
+    if (s) sources.push({ ...s, hasArticle: isCovered(articles, s.subject, s.date) });
   }
   // 아직 아티클이 없는 것 먼저(= 지금 쓸 것), 그다음 최신순.
   sources.sort(

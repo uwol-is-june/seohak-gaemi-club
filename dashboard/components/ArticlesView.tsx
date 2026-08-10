@@ -14,6 +14,10 @@ import { ReportContentView } from "./ReportContentView";
 // 다른 탭은 '내가 판단하기 위한 자료'를 보여주지만 이 탭은 '남에게 보여줄 글'을 다룬다.
 // 그래서 축이 종목도 섹터도 아닌 **발행 상태**다 — 이미 쓴 글이 위, 아직 안 쓴 소재가 아래.
 //
+// **아티클은 마케팅 용도다**(2026-08-10 방침). 소재 순서도 재료의 충실도가 아니라 발행
+// 타이밍으로 정렬한다 — 급변동 분석이 1순위이고, 심층 리서치는 언제든 쓸 수 있는 상시 소재로
+// 접어 둔다. 판정 규칙과 근거는 lib/articles.ts 참조.
+//
 // 소재 목록을 굳이 대시보드에 두는 이유: /investment-article 은 소재 보고서를 못 찾으면
 // 조용히 웹 수집으로 빠진다(skills/investment-article.md:23). 티커만 던지면 검증 없는
 // 데이터가 대외 공개용 글이 된다. 여기서 **경로가 박힌 명령**을 복사해 쓰면 그 경로를
@@ -90,15 +94,18 @@ export function ArticlesView({
         <div className="eyebrow text-[10px] text-ink mb-3">발행 현황</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Stat label="발행된 아티클" value={String(index.articles.length)} hint="reports/ 안의 -article- 파일" />
-          <Stat label="권장 소재" value={String(index.tierA.length)} hint="재료가 다 있는 보고서" />
-          <Stat label="보강 필요" value={String(index.tierB.length)} hint="일부 재료만 있음" />
+          <Stat label="급변동 소재" value={String(index.tierA.length)} hint="마케팅 1순위" />
+          <Stat label="상시 소재" value={String(index.tierB.length)} hint="심층 리서치" />
           <Stat label="미발행 소재" value={String(pending)} hint="아직 글이 없는 주제" />
         </div>
         <p className="mt-4 pt-4 border-t border-hairline text-xs text-mute leading-relaxed">
+          <span className="text-body">아티클은 마케팅용이다</span> — 그래서 소재 1순위는 재료가 가장
+          충실한 보고서가 아니라 <span className="text-body">지금 독자가 궁금해하는 것</span>, 즉 급변동
+          분석이다. 심층 리서치는 아래 상시 소재로 내려 두었다.
+          <br />
           <span className="text-body">/investment-article 은 변환기다</span> — 기존 보고서를 읽어 산문으로
           재배열할 뿐 새로 조사하지 않는다. 단, <span className="text-body">소재 보고서를 못 찾으면 조용히
-          웹 수집으로 빠진다.</span> 그 경로는 다른 리서치 스킬의 교차검증·신뢰도 표기를 거치지 않는데
-          산출물은 대외 공개용 글이다. 아래 <span className="text-body">경로가 박힌 명령</span>을 복사해
+          웹 수집으로 빠진다.</span> 아래 <span className="text-body">경로가 박힌 명령</span>을 복사해
           쓰면 그 경로를 타지 않는다.
         </p>
       </div>
@@ -141,16 +148,17 @@ export function ArticlesView({
       {/* ── 권장 소재 (Tier A) ── */}
       <section>
         <div className="flex items-baseline gap-2 mb-1">
-          <span className="eyebrow text-[10px] text-ink">권장 소재</span>
+          <span className="eyebrow text-[10px] text-ink">급변동 소재</span>
           <span className="text-[11px] text-mute">{index.tierA.length}건</span>
         </div>
         <p className="text-[11px] text-mute mb-2 leading-relaxed">
-          아티클 템플릿이 요구하는 재료 4가지(재무 수치 · 4대가 시각 · 반대 논거 · 밸류에이션)를 이미
-          갖춘 보고서다. 재조사 없이 재배열만으로 글이 된다.
+/news-pulse 산출물이다. <span className="text-body">유효기간이 있는 유일한 소재</span> — 사건
+          직후가 관심의 정점이고 며칠이면 식는다. 최신순으로 정렬돼 있으니 위에서부터 쓴다.
         </p>
         {index.tierA.length === 0 ? (
           <p className="text-xs text-mute">
-            권장 소재가 없습니다 — /investment-team · /industry-research · /industry-funnel 을 먼저 실행하세요.
+            급변동 소재가 없습니다 — 주가가 크게 움직인 종목에 /news-pulse 를 돌리면 여기 쌓입니다.
+            아래 상시 소재로도 쓸 수 있습니다.
           </p>
         ) : (
           <div className="flex flex-col gap-1.5">
@@ -168,13 +176,13 @@ export function ArticlesView({
             onClick={() => setShowTierB((v) => !v)}
             className="flex items-baseline gap-2 mb-1 transition-colors hover:text-ink active:scale-[0.99]"
           >
-            <span className="eyebrow text-[10px] text-ink">보강 필요 소재</span>
+            <span className="eyebrow text-[10px] text-ink">상시 소재</span>
             <span className="text-[11px] text-mute">{index.tierB.length}건</span>
             <span className="text-[11px] text-mute">{showTierB ? "접기" : "펼치기"}</span>
           </button>
           <p className="text-[11px] text-mute mb-2 leading-relaxed">
-            재료가 일부만 있어 모자란 부분을 새로 채워야 한다 — 그 과정에서 웹 수집 경로를 탈 수 있으니
-            수치는 따로 검증한다.
+심층 리서치 산출물이다. 재료는 더 충실하지만 발행 시점 압박이 없어 급변동 뒤로 미뤄 둔다.
+            모자란 부분을 채우다 웹 수집 경로를 탈 수 있으니 수치는 따로 검증한다.
           </p>
           {showTierB && (
             <div className="flex flex-col gap-1.5">

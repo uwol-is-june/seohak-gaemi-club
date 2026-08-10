@@ -4,6 +4,8 @@
 // (skills/investment-article.md:23) — 검증 없는 데이터가 대외 공개용 글로 나간다.
 // 그 경계를 고정한다.
 //
+// tier 정책(2026-08-10, 마케팅 용도): A = 급변동 분석(발행 타이밍이 성과), B = 심층 리서치(상시).
+//
 // 실행(Node 24+ 타입 스트리핑):  node dashboard/lib/articles.test.ts
 import { buildArticleIndex, classifySource, isArticlePath, parseArticle } from "./articles.ts";
 
@@ -34,27 +36,36 @@ eq(
   "Fintech-Payments"
 );
 
-// ─── Tier A: 재료 4가지가 다 있는 것 ────────────────────────────────────────
-eq("A: FinalReport", classifySource(co("GOOGL", "FinalReport.md"))?.tier, "A");
-eq("A: FinalReport shape", classifySource(co("GOOGL", "FinalReport.md"))?.shape, "deep");
-eq("A: FinalReport subject", classifySource(co("GOOGL", "FinalReport.md"))?.subject, "GOOGL");
-eq("A: 퍼널", classifySource(root("Defense-funnel-20260730.md"))?.tier, "A");
-eq("A: 퍼널 shape", classifySource(root("Defense-funnel-20260730.md"))?.shape, "compare");
-eq("A: 퍼널 subject", classifySource(root("Defense-funnel-20260730.md"))?.subject, "Defense");
-eq("A: 산업리서치", classifySource(root("Copper-industry-20260804.md"))?.tier, "A");
-eq("A: 산업리서치 shape", classifySource(root("Copper-industry-20260804.md"))?.shape, "market");
+// ─── Tier A: 급변동 분석 (마케팅 1순위) ─────────────────────────────────────
+eq("A: 급변동", classifySource(co("ADBE", "ADBE-news-20260731.md"))?.tier, "A");
+eq("A: 급변동 shape", classifySource(co("ADBE", "ADBE-news-20260731.md"))?.shape, "market");
+eq("A: 급변동 subject", classifySource(co("ADBE", "ADBE-news-20260731.md"))?.subject, "ADBE");
+eq("A: 급변동 날짜", classifySource(co("ADBE", "ADBE-news-20260731.md"))?.date, "2026-07-31");
 eq(
-  "A: 하이픈 섹터명 보존",
+  "A: 급변동 명령 문자열",
+  classifySource(co("ADBE", "ADBE-news-20260731.md"))?.command,
+  "/investment-article reports/ADBE/ADBE-news-20260731.md"
+);
+
+// ─── Tier B: 상시 소재(심층 리서치) ─────────────────────────────────────────
+eq("B: FinalReport", classifySource(co("GOOGL", "FinalReport.md"))?.tier, "B");
+eq("B: FinalReport shape", classifySource(co("GOOGL", "FinalReport.md"))?.shape, "deep");
+eq("B: FinalReport subject", classifySource(co("GOOGL", "FinalReport.md"))?.subject, "GOOGL");
+eq("B: 퍼널", classifySource(root("Defense-funnel-20260730.md"))?.tier, "B");
+eq("B: 퍼널 shape", classifySource(root("Defense-funnel-20260730.md"))?.shape, "compare");
+eq("B: 퍼널 subject", classifySource(root("Defense-funnel-20260730.md"))?.subject, "Defense");
+eq("B: 산업리서치", classifySource(root("Copper-industry-20260804.md"))?.tier, "B");
+eq("B: 산업리서치 shape", classifySource(root("Copper-industry-20260804.md"))?.shape, "market");
+eq(
+  "B: 하이픈 섹터명 보존",
   classifySource(root("Fintech-Payments-funnel-20260729.md"))?.subject,
   "Fintech-Payments"
 );
 eq(
-  "A: 명령 문자열",
+  "B: 명령 문자열",
   classifySource(co("GOOGL", "FinalReport.md"))?.command,
   "/investment-article reports/GOOGL/FinalReport.md"
 );
-
-// ─── Tier B: 일부 재료만 ────────────────────────────────────────────────────
 eq("B: 투자논제", classifySource(co("ADBE", "ADBE-thesis.md"))?.tier, "B");
 eq("B: 체크리스트", classifySource(co("NOC", "NOC-checklist-20260730.md"))?.tier, "B");
 eq("B: 실적", classifySource(co("AMZN", "AMZN-earnings-2026Q2.md"))?.tier, "B");
@@ -62,7 +73,6 @@ eq("B: 날짜 없는 논제", classifySource(co("ADBE", "ADBE-thesis.md"))?.date
 
 // ─── 제외 대상 (여기가 이 테스트의 핵심) ────────────────────────────────────
 eq("제외: 열등주 스크리닝", classifySource(co("NOC", "NOC-quality-screen-20260730.md")), null);
-eq("제외: 급변동", classifySource(co("ADBE", "ADBE-news-20260731.md")), null);
 eq("제외: 관점 조각(01)", classifySource(co("GOOGL", "01-BusinessModel-DYP-Perspective.md")), null);
 eq("제외: 관점 조각(04)", classifySource(co("GOOGL", "04-RiskManagement-LiLu-Perspective.md")), null);
 eq("제외: README", classifySource(co("GOOGL", "README.md")), null);
@@ -78,27 +88,40 @@ const index = buildArticleIndex([
   co("GOOGL", "GOOGL-quality-screen-20260728.md"),
   co("ADBE", "FinalReport.md"),
   co("ADBE", "ADBE-article-20260805.md"),
+  co("ADBE", "ADBE-news-20260731.md"), // 아티클(08-05)보다 앞 → 이미 덮였다
+  co("ADBE", "ADBE-news-20260809.md"), // 아티클보다 뒤 → 아직 안 쓴 사건
   root("Defense-funnel-20260730.md"),
   root("Copper-industry-20260804.md"),
   co("NOC", "NOC-checklist-20260730.md"),
 ]);
 eq("인덱스: 아티클 수", index.articles.length, 1);
-// GOOGL·ADBE 의 FinalReport 2건 + 퍼널 1건 + 산업리서치 1건.
-eq("인덱스: Tier A 수", index.tierA.length, 4);
-eq("인덱스: Tier B 수", index.tierB.length, 1);
+// 급변동 2건만 A. 나머지(FinalReport 2 + 퍼널 + 산업 + 체크리스트)는 전부 B.
+eq("인덱스: Tier A 수", index.tierA.length, 2);
+eq("인덱스: Tier B 수", index.tierB.length, 5);
 eq("인덱스: 스크리닝은 제외됨", index.sources.some((s) => s.name.includes("quality-screen")), false);
 // 이미 아티클이 있는 소재는 표시돼야 한다(중복 발행 방지) — 그리고 뒤로 밀린다.
 eq(
-  "인덱스: ADBE는 아티클 보유 표시",
-  index.tierA.find((s) => s.subject === "ADBE")?.hasArticle,
+  "인덱스: ADBE FinalReport 는 아티클 보유 표시",
+  index.tierB.find((s) => s.name === "FinalReport.md" && s.subject === "ADBE")?.hasArticle,
   true
 );
 eq(
-  "인덱스: GOOGL은 미보유",
-  index.tierA.find((s) => s.subject === "GOOGL")?.hasArticle,
+  "인덱스: GOOGL 은 미보유",
+  index.tierB.find((s) => s.subject === "GOOGL")?.hasArticle,
   false
 );
-eq("인덱스: 미보유가 먼저 온다", index.tierA[index.tierA.length - 1].subject, "ADBE");
+// 날짜 인식: 같은 ADBE 라도 아티클(08-05) 이전 사건은 덮였고 이후 사건은 미발행이다.
+eq(
+  "인덱스: 아티클 이전 급변동은 발행됨",
+  index.tierA.find((s) => s.name === "ADBE-news-20260731.md")?.hasArticle,
+  true
+);
+eq(
+  "인덱스: 아티클 이후 급변동은 미발행",
+  index.tierA.find((s) => s.name === "ADBE-news-20260809.md")?.hasArticle,
+  false
+);
+eq("인덱스: 미발행 급변동이 맨 위", index.tierA[0].name, "ADBE-news-20260809.md");
 
 // ─── 결과 ───────────────────────────────────────────────────────────────────
 if (failures.length) {
