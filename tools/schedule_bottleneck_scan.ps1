@@ -2,10 +2,10 @@
 #
 # 왜 로컬 스케줄러인가:
 #   Claude Code의 세션 크론(CronCreate)은 세션이 살아 있을 때만 돌고 창을 닫으면 사라진다.
-#   클라우드 루틴(/schedule)은 세션과 무관하게 돌지만 **로컬 환경변수에 접근할 수 없어**
-#   dashboard/.env.local 의 SUPABASE_SERVICE_KEY 를 못 읽는다 → 발행이 안 되고 대시보드
-#   '병목 신호' 탭이 비게 된다. 이 저장소에서 스캔 → 발행 → 대시보드까지 이어지는 유일한
-#   경로가 로컬 실행이다. (대가: 09:00에 PC가 켜져 있어야 한다.)
+#   클라우드 루틴(/schedule)은 세션과 무관하게 돌지만 **이 PC의 파일시스템에 쓰지 못한다**
+#   → 산출물이 reports/ 에 남지 않아 대시보드 '병목 신호' 탭이 비게 된다. 대시보드는
+#   로컬 reports/*.md 를 직접 읽으므로, 스캔 → 저장 → 대시보드로 이어지는 유일한 경로가
+#   로컬 실행이다. (대가: 09:00에 PC가 켜져 있어야 한다.)
 #
 # 등록/해제:
 #   등록 확인:  schtasks /query /tn "AI-Berkshire-Bottleneck-Scan"
@@ -96,17 +96,18 @@ if ($DryRun) {
   }
 }
 
-# ─── Supabase 발행 (안전망) ───
-# 정상적으로는 Stop 훅이 발행하지만, 헤드리스 실행에서 훅이 돌지 않아도 신호가 대시보드에
-# 도달하도록 명시적으로 한 번 더 돌린다. publish_changed_reports.py 는 git status 기반
-# 멱등 동작이라 이미 발행됐으면 대상 0건으로 조용히 끝난다.
+# ─── 로컬 git 커밋 (안전망) ───
+# 대시보드 반영 자체는 파일을 쓴 시점에 끝나지만, 이력·백업이 남도록 커밋한다.
+# 정상적으로는 Stop 훅이 커밋하며, 헤드리스 실행에서 훅이 돌지 않는 경우를 대비해
+# 한 번 더 돌린다. commit_reports.py 는 git status 기반 멱등 동작이라 이미 커밋됐으면
+# 대상 0건으로 조용히 끝난다.
 try {
-  $publishArgs = @('tools/publish_changed_reports.py')
+  $publishArgs = @('tools/commit_reports.py')
   if ($DryRun) { $publishArgs += '--dry-run' }
   python3 @publishArgs 2>&1 | ForEach-Object { Add-Content -Path $log -Value $_ -Encoding utf8 }
-  Write-Log "발행 확인 완료"
+  Write-Log "커밋 확인 완료"
 } catch {
-  Write-Log "WARN: 발행 실패 — 다음 세션의 Stop 훅이 재시도한다. ($_)"
+  Write-Log "WARN: 커밋 실패 — 다음 세션의 Stop 훅이 재시도한다. ($_)"
 }
 
 # 로그는 30일치만 유지(무한 증식 방지).

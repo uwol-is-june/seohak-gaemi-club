@@ -1,15 +1,15 @@
-import { getSupabase } from "@/lib/supabase";
+import { CONFIG_FILES, readConfig, writeConfig } from "@/lib/config-store";
 import { requireAuth } from "@/lib/api-auth";
 import { DEFAULT_DOMAIN_GROUPS } from "@/lib/report-helpers";
 import type { DomainGroup } from "@/lib/sector-domains";
 
 // '섹터 리서치' 탭의 분야(도메인) 그룹 설정 — 이름 + 포함 **섹터명**(티커가 아니다).
-// app_config('sector_domain_groups')에 저장한다. 종목별 보고서 탭의 섹터 그룹
-// ('sector_groups', /api/sector-groups)과는 다른 축이라 키를 분리한다(TASK-82).
+// data/sector-domain-groups.json 에 저장한다. 종목별 보고서 탭의 섹터 그룹
+// (data/sector-groups.json, /api/sector-groups)과는 다른 축이라 파일을 분리한다(TASK-82).
 // 저장값이 없으면 프로세스 가이드 '섹터 구조 파악'의 섹터 피커에서 파생한 기본 시드를 준다.
-const CONFIG_KEY = "sector_domain_groups";
+const CONFIG_FILE = CONFIG_FILES.sectorDomainGroups;
 
-// 인증된 클라이언트라도 거대 blob 을 app_config 에 저장하지 못하도록 상한을 둔다(TASK-54).
+// 인증된 클라이언트라도 거대 blob 을 설정 파일에 저장하지 못하도록 상한을 둔다(TASK-54).
 const MAX_GROUPS = 100;
 const MAX_MEMBERS_PER_GROUP = 500;
 const MAX_STR = 200;
@@ -45,18 +45,10 @@ export async function GET() {
   const unauth = await requireAuth();
   if (unauth) return unauth;
   try {
-    const sb = getSupabase();
-    const { data, error } = await sb
-      .from("app_config")
-      .select("value")
-      .eq("key", CONFIG_KEY)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    const value = data ? (data as { value: unknown }).value : null;
-    const groups = sanitizeGroups(value) ?? DEFAULT_DOMAIN_GROUPS;
+    const groups = sanitizeGroups(await readConfig(CONFIG_FILE)) ?? DEFAULT_DOMAIN_GROUPS;
     return Response.json({ groups });
   } catch (err) {
-    // 원시 DB 에러 메시지를 클라이언트에 노출하지 않는다(TASK-53).
+    // 원시 에러 메시지를 클라이언트에 노출하지 않는다(TASK-53).
     console.error("sector-domain-groups GET:", err);
     return Response.json({ error: "분야 그룹을 불러오지 못했습니다." }, { status: 500 });
   }
@@ -71,14 +63,10 @@ export async function PUT(request: Request) {
     if (!groups) {
       return Response.json({ error: "groups 형식이 올바르지 않습니다." }, { status: 400 });
     }
-    const sb = getSupabase();
-    const { error } = await sb
-      .from("app_config")
-      .upsert({ key: CONFIG_KEY, value: groups, updated_at: new Date().toISOString() });
-    if (error) throw new Error(error.message);
+    await writeConfig(CONFIG_FILE, groups);
     return Response.json({ groups });
   } catch (err) {
-    // 원시 DB 에러 메시지를 클라이언트에 노출하지 않는다(TASK-53).
+    // 원시 에러 메시지를 클라이언트에 노출하지 않는다(TASK-53).
     console.error("sector-domain-groups PUT:", err);
     return Response.json({ error: "분야 그룹을 저장하지 못했습니다." }, { status: 500 });
   }

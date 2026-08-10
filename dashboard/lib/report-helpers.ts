@@ -164,8 +164,8 @@ export const SCREEN_GROUPS: {
 ];
 
 // '종목별 보고서' 탭의 1차 구분 = 섹터(그룹). 보고서 파일에는 섹터 메타데이터가 없으므로
-// 사용자가 직접 그룹 이름과 포함 종목을 정한다(그룹 편집 UI). 설정은 서버(Supabase
-// app_config)에 저장돼 기기 간 공유된다 — /api/sector-groups GET/PUT.
+// 사용자가 직접 그룹 이름과 포함 종목을 정한다(그룹 편집 UI). 설정은 서버
+// (data/sector-groups.json)에 저장돼 git 으로 공유된다 — /api/sector-groups GET/PUT.
 // 탭 노출 순서 = 그룹 배열 순서. 어느 그룹에도 없는 종목은 '미분류' 탭(항상 맨 끝).
 export type SectorGroup = { id: string; name: string; tickers: string[] };
 export const UNCLASSIFIED_SECTOR = "미분류";

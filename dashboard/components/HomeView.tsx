@@ -256,7 +256,7 @@ export function HomeView({
     [sectorTab, rootFiles]
   );
 
-  // 저장된 섹터 그룹 설정을 서버(Supabase)에서 불러온다. 실패 시 기본값 유지.
+  // 저장된 섹터 그룹 설정을 서버(data/sector-groups.json)에서 불러온다. 실패 시 기본값 유지.
   useEffect(() => {
     let cancelled = false;
     fetch("/api/sector-groups")
@@ -264,7 +264,7 @@ export function HomeView({
       .then((d) => {
         if (cancelled) return;
         if (Array.isArray(d.groups)) setSectorGroups(d.groups);
-        // 자동 맵은 같은 응답에 실려 온다(보고서 마커 → Stop 훅이 갱신).
+        // 자동 맵은 같은 응답에 실려 온다(서버가 보고서 마커에서 요청 시점에 파생).
         if (d.autoMap && typeof d.autoMap === "object") setSectorAutoMap(d.autoMap);
       })
       .catch(() => {
@@ -275,7 +275,7 @@ export function HomeView({
     };
   }, []);
 
-  // 섹터 그룹 저장: 화면 즉시 갱신(낙관적) + 서버(Supabase) 영속화.
+  // 섹터 그룹 저장: 화면 즉시 갱신(낙관적) + 서버(JSON 파일) 영속화.
   const saveSectorGroups = (groups: SectorGroup[]) => {
     setSectorGroups(groups);
     fetch("/api/sector-groups", {
@@ -287,7 +287,7 @@ export function HomeView({
     });
   };
 
-  // 저장된 분야 그룹 설정을 서버(Supabase)에서 불러온다. 실패 시 기본 시드 유지.
+  // 저장된 분야 그룹 설정을 서버(data/sector-domain-groups.json)에서 불러온다. 실패 시 기본 시드 유지.
   useEffect(() => {
     let cancelled = false;
     fetch("/api/sector-domain-groups")
@@ -303,7 +303,7 @@ export function HomeView({
     };
   }, []);
 
-  // 분야 그룹 저장: 화면 즉시 갱신(낙관적) + 서버(Supabase) 영속화.
+  // 분야 그룹 저장: 화면 즉시 갱신(낙관적) + 서버(JSON 파일) 영속화.
   const saveDomainGroups = (groups: DomainGroup[]) => {
     setDomainGroups(groups);
     fetch("/api/sector-domain-groups", {

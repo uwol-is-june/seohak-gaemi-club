@@ -266,10 +266,10 @@ confidence 블록 · SEC UA 문서화).
 **자동 실행 (2026-08-06 설정)**: Windows 작업 스케줄러가 **매일 09:00 KST**에
 `tools/schedule_bottleneck_scan.ps1` 을 돌린다(작업명 `AI-Berkshire-Bottleneck-Scan`).
 새 신호가 없으면 파일을 만들지 않으며, 산출물은 대시보드 **'병목 신호' 탭**에 모인다.
-세션 크론·클라우드 루틴을 쓰지 않는 이유는 스크립트 헤더 주석 참조(요약: 클라우드는
-로컬 `.env.local` 의 Supabase 키에 접근할 수 없어 발행이 끊긴다).
+세션 크론·클라우드 루틴을 쓰지 않는 이유는 스크립트 헤더 주석 참조(요약: 대시보드가
+읽는 것은 이 PC의 `reports/` 파일이라 클라우드에서 돌려봐야 산출물이 도달하지 않는다).
 
-**의존성**: WebSearch, `claude` CLI 헤드리스(`-p`), `tools/publish_changed_reports.py`
+**의존성**: WebSearch, `claude` CLI 헤드리스(`-p`), `tools/commit_reports.py`
 
 **위험 요소**:
 | 위험 | 내용 | 심각도 |

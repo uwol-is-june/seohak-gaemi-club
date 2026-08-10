@@ -128,8 +128,8 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 /investment-article AAPL
 ```
 
-**API 키가 필요 없습니다.** 모든 데이터 소스는 무료·공개 접근입니다.
-(대시보드까지 쓰려면 Supabase 무료 계정 하나만 있으면 됩니다.)
+**API 키가 필요 없습니다.** 모든 데이터 소스는 무료·공개 접근이고,
+대시보드도 외부 서비스 없이 로컬에서 `npm run dev` 로 바로 돕니다.
 
 ---
 
@@ -228,9 +228,7 @@ python3 tools/financial_rigor.py three-scenario \
 | `record_call.py` | 매수/보유/관망/회피 **콜을 원장에 박제** (시점가는 Yahoo 실측) |
 | `score_calls.py` | 원장을 **Yahoo 실측 주가로 자동 채점** — 방향 적중률 집계 |
 | `site_preflight.py` | 데이터 소스 접근 가능 여부 사전 점검 (봇 차단 확인) |
-| `publish_report.py` · `publish_changed_reports.py` | 보고서를 Supabase에 발행 |
-| `pull_reports_from_supabase.py` | 역방향 복구 — 로컬 파일이 유실됐을 때 되받기 |
-| `sync_sector_map.py` | 보고서의 섹터 마커를 읽어 '티커 → 섹터' 맵 자동 생성 |
+| `commit_reports.py` | 변경된 보고서를 로컬 git 에 커밋 (이력·백업) |
 | `stock_screener.py` · `morningstar_fair_value.py` | 스크리닝, 모닝스타 적정가치 대비 상승여력 |
 | `token_diet_measure.py` | 토큰 사용량 계측 + 정확도 회귀 가드 |
 
@@ -238,8 +236,8 @@ python3 tools/financial_rigor.py three-scenario \
 
 ## 대시보드
 
-`dashboard/` — **Next.js + Supabase** 로 만든 웹 뷰어입니다. 보고서가 쌓이면 파일 탐색기로는
-관리가 안 되기 때문에 만들었습니다.
+`dashboard/` — **Next.js** 로 만든 웹 뷰어입니다. 보고서가 쌓이면 파일 탐색기로는
+관리가 안 되기 때문에 만들었습니다. DB 없이 `reports/*.md` 를 직접 읽습니다.
 
 | 탭 | 내용 |
 |---|---|
@@ -250,11 +248,15 @@ python3 tools/financial_rigor.py three-scenario \
 | **실적 캘린더** | 실적 발표 일정 + 발표 직후 D+ 점검 대기/완료 |
 | **병목 신호** | 공급망 병목 스캔 결과 (자동 스캔) |
 
-동작 방식: Claude가 보고서를 쓰면 **응답이 끝날 때마다 훅이 자동으로 Supabase에 발행**합니다.
-사용자가 따로 할 일이 없습니다.
+동작 방식: Claude가 보고서를 쓰면 **그 순간 대시보드에 반영**됩니다(발행 단계 없음).
+응답이 끝날 때마다 훅이 로컬 git 에 커밋해 이력·백업을 남깁니다. 사용자가 따로 할 일이 없습니다.
 
-**보안**: Supabase 테이블은 RLS를 켜고 **정책을 두지 않아** anon 키로는 아무것도 못 읽습니다.
-서버 전용 `service_role` 키만 접근하며, 키는 `.env.local` (gitignore) 에만 둡니다.
+**로컬 전용인 이유**: 토스증권 Open API 가 IP 허용목록을 요구해 배포 서버에서는 포트폴리오·
+당일체크·실적캘린더가 동작하지 않습니다. 폰에서 보려면 배포 대신 같은 네트워크 접속
+(`next dev -H 0.0.0.0`)이나 Cloudflare Tunnel/Tailscale 로 이 PC에 연결하세요.
+
+**보안**: 모든 페이지·API 는 `SITE_PASSWORD` 로그인 뒤에 있습니다(`proxy.ts` + 라우트별 재검증).
+토스 키 등 비밀값은 `.env.local` (gitignore) 에만 둡니다.
 
 ---
 
@@ -357,7 +359,7 @@ python3 tools/financial_rigor.py three-scenario \
 - [x] 논제 추적 (`/thesis-tracker`)
 - [x] 열등주 스크리닝 — 7가지 하드 기준 (`/quality-screen`)
 - [x] **SEC EDGAR 직접 연동** (`fetch_financials.py` — XBRL API)
-- [x] **웹 대시보드** (Next.js + Supabase)
+- [x] **웹 대시보드** (Next.js, 로컬 전용)
 - [x] **콜 원장 + 실측 자동 채점** (`record_call.py` + `score_calls.py`)
 - [ ] 실시간 가격 알림 (모바일 푸시)
 - [ ] 장기 백테스트 — AI 보고서 vs 실제 주가 성과 누적 검증
@@ -481,23 +483,37 @@ Claude가 엉뚱한 스킬을 오발동시킵니다. 지금은 **12개**이고, 
 원본은 **결과물이 마크다운 파일로만 남습니다.** 보고서가 수십 개 쌓이면 파일 탐색기로는
 "어떤 종목을 언제 봤고 결론이 뭐였는지"를 알 수 없습니다.
 
-`dashboard/` 를 **Next.js + Supabase** 로 새로 만들었습니다.
+`dashboard/` 를 **Next.js** 로 새로 만들었습니다. (저장소는 처음엔 GitHub API, 이후 Supabase를
+거쳐 2026-08-10 파일시스템으로 정착했습니다 — 아래 이력 참조.)
 
 | 기능 | 설명 |
 |---|---|
-| 분야 → 섹터 → 종목 3단 위계 | 섹터는 보고서의 HTML 주석 마커에서 **자동 배정** (`sync_sector_map.py`) |
+| 분야 → 섹터 → 종목 3단 위계 | 섹터는 보고서의 HTML 주석 마커에서 **자동 배정** (`lib/sector-auto-map.ts`) |
 | 트랙레코드 자동 채점 | 콜 원장을 Yahoo 실측가로 채점해 방향 적중률 집계 |
 | 실적 캘린더 | 발표 일정 + 발표 직후 D+ 점검 대기/완료 상태 |
 | 병목 신호 | 공급망 병목 스캔 결과 (매일 자동 스캔) |
 | 아티클 | 발행용 변환 글 모음 |
 | 신뢰도 표시 | 보고서의 `<!-- confidence-summary -->` 를 파싱해 표시 |
 
-**저장소가 파일 → Supabase 로 바뀌었습니다.** Claude가 보고서를 쓰면 **응답이 끝날 때마다
-Stop 훅이 자동 발행**합니다. 발행 실패 시 커밋하지 않아 다음 턴에 재시도되고,
-훅은 어떤 경우에도 세션을 막지 않습니다.
+### 저장소를 GitHub API → Supabase → 파일시스템으로 되돌린 이유 (2026-08-10)
 
-**보안 설계**: Supabase 테이블은 RLS를 켜되 **정책을 두지 않아** anon 키로는 아무것도 못 읽습니다.
-서버 전용 `service_role` 키만 RLS를 우회하며, 키는 `.env.local` (gitignore) 에만 존재합니다.
+처음엔 GitHub API로 보고서를 읽었는데 목록마다 본문을 파일당 1회씩 받아오는 N+1이 났고,
+그래서 **Supabase**로 옮겨 파싱 결과(판정·신뢰도)를 컬럼에 저장했습니다. 그러다 전제를
+다시 봤습니다 — **이 대시보드는 배포할 수가 없습니다.** 토스증권 Open API가 IP 허용목록을
+요구해서, 서버리스에 올리면 포트폴리오·당일체크·실적캘린더·평단가가 전부 죽습니다.
+콜 원장도 로컬 `data/calls.jsonl` 을 직접 읽고 있었습니다.
+
+즉 **DB의 유일한 이점(원격 접근)이 성립하지 않는데** 매 응답마다 발행 훅이 돌고,
+파일과 DB가 갈릴 위험을 감수하고(그래서 역방향 복구 도구까지 있었습니다),
+신규 사용자는 키 없이는 대시보드를 못 켜는 상태였습니다. N+1 문제도 **로컬 디스크에서는
+애초에 존재하지 않습니다**(160개 파일 파싱에 140ms).
+
+그래서 걷어냈습니다. 지금은 `reports/*.md` 가 원본이고, 판정·신뢰도·섹터 자동 맵은
+**읽는 시점에 본문에서 파싱**합니다. 저장된 파생 데이터가 없으니 원본과 어긋날 수 없습니다.
+Claude가 보고서를 쓰면 **그 순간 대시보드에 반영**되고, Stop 훅은 이력·백업용 로컬 커밋만 합니다.
+
+**보안 설계**: 모든 페이지·API 는 `SITE_PASSWORD` 로그인 뒤에 있습니다
+(`proxy.ts` 미들웨어 + 라우트별 재검증). 토스 키 등 비밀값은 `.env.local` (gitignore) 에만 둡니다.
 
 ---
 
@@ -571,8 +587,7 @@ US Edition은 콜을 낼 때마다 `data/calls.jsonl` 에 **append-only로 박�
 | `momentum_backtest.py` · `star_history_chart.py` | **제거** | 가치투자 프레임워크와 무관 |
 | **`fetch_financials.py`** | **신규** | SEC XBRL 직접 추출. HTML 통삼킴 대신 필요한 수치만 |
 | **`record_call.py`** · **`score_calls.py`** · `test_score_calls.py` | **신규** | 콜 원장 + 자동 채점 (테스트 포함) |
-| **`publish_report.py`** 외 3종 | **신규** | Supabase 발행 · 역방향 복구 · 일괄 이관 |
-| **`sync_sector_map.py`** | **신규** | 보고서 마커 → 섹터 자동 배정 |
+| **`commit_reports.py`** | **신규** | 변경된 보고서 로컬 커밋 (이력·백업) |
 | **`site_preflight.py`** | **신규** | 데이터 소스 봇 차단 사전 점검. `/earnings-team` 의 ⓪ 자료등급 판정에서 호출 |
 | **`token_diet_measure.py`** | **신규** | 토큰 계측 + 정확도 회귀 가드 |
 

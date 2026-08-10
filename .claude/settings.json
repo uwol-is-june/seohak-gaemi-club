@@ -9,9 +9,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PROJECT_DIR:-.}/tools/publish_changed_reports.py\"",
-            "timeout": 300,
-            "statusMessage": "보고서 Supabase 발행 중..."
+            "command": "python3 \"${CLAUDE_PROJECT_DIR:-.}/tools/commit_reports.py\"",
+            "timeout": 120,
+            "statusMessage": "보고서 로컬 커밋 중..."
           }
         ]
       }

@@ -350,7 +350,7 @@ ls -la reports/{티커}/0*.md 2>/dev/null
 섹터 토큰(`reports/{섹터}-funnel-{YYYYMMDD}.md`)과 **정확히 같은 표기**를 씁니다
 (예: `Defense`, `GLP-1-Obesity`). 퍼널을 거치지 않고 종목부터 시작했다면 그 종목이 속한 섹터명을
 같은 어휘로 적고, 판단이 어려우면 마커를 생략합니다(임의 신조어 금지 — 대시보드에서 섹터가 갈립니다).
-이 마커로 대시보드가 종목을 분야·섹터 위계에 자동 배치합니다(`tools/sync_sector_map.py`).
+이 마커로 대시보드가 종목을 분야·섹터 위계에 자동 배치합니다(`dashboard/lib/sector-auto-map.ts`).
 
 추가로 `reports/{기업명}/README.md` 를 생성합니다. 포함 내용:
 - 리서치 수행 날짜

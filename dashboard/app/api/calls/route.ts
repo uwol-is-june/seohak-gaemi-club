@@ -1,6 +1,6 @@
 // 콜 트랙레코드 라우트 (TASK-38 Phase 3). 원장(data/calls.jsonl)을 파일시스템에서
 // 읽어 Yahoo 시세로 채점해 돌려준다. 원장은 git 추적 append-only 단일 소스이고
-// 대시보드는 로컬 전용(npm run dev)이라 Supabase가 아닌 파일을 직접 읽는다.
+// 대시보드는 로컬 전용(npm run dev)이라 파일시스템을 직접 읽는다(보고서도 동일).
 // (콜의 불변성 원칙: 채점은 매 요청마다 라이브로 하되 원장 값은 절대 수정하지 않는다.)
 
 import { readFile } from "node:fs/promises";

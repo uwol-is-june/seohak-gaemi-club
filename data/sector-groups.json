@@ -1,0 +1,78 @@
+[
+  {
+    "id": "healthcare",
+    "name": "헬스케어",
+    "tickers": [
+      "LLY",
+      "NVO",
+      "WST"
+    ]
+  },
+  {
+    "id": "semi",
+    "name": "반도체·AI",
+    "tickers": [
+      "NVDA",
+      "TSM",
+      "INTC"
+    ]
+  },
+  {
+    "id": "quantum",
+    "name": "양자컴퓨터",
+    "tickers": [
+      "QUBT"
+    ]
+  },
+  {
+    "id": "space",
+    "name": "우주·항공",
+    "tickers": [
+      "SPCX",
+      "JOBY"
+    ]
+  },
+  {
+    "id": "fd84a70a-d78c-46ff-a0d5-6b5170141180",
+    "name": "Enterprise SW",
+    "tickers": [
+      "SAP",
+      "PEGA",
+      "ADBE"
+    ]
+  },
+  {
+    "id": "5b23688c-d1d4-41c0-adf5-e25dcd805536",
+    "name": "AI Infra",
+    "tickers": [
+      "CEG",
+      "VRT",
+      "POWL"
+    ]
+  },
+  {
+    "id": "1d1ff8f9-b62c-4bd7-8166-4113660d5691",
+    "name": "E-commerce",
+    "tickers": [
+      "AMZN",
+      "PDD",
+      "MELI"
+    ]
+  },
+  {
+    "id": "48c76cb6-151f-4a85-9f40-502f018a66bd",
+    "name": "Cloud Computing",
+    "tickers": [
+      "GOOGL",
+      "PANW"
+    ]
+  },
+  {
+    "id": "501e7b2a-243a-4889-b7e9-cd0c975c63b5",
+    "name": "Fintech",
+    "tickers": [
+      "AXP",
+      "PYPL"
+    ]
+  }
+]

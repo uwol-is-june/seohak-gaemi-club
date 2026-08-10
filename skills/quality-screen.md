@@ -174,7 +174,7 @@ python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py qua
 >    섹터명은 그 종목이 나온 섹터 리서치 보고서 파일명의 섹터 토큰(`reports/{섹터}-funnel-{YYYYMMDD}.md`)과
 >    **정확히 같은 표기**(예: `Defense`, `GLP-1-Obesity`). 퍼널을 거치지 않고 종목부터 시작했다면 그
 >    종목이 속한 섹터명을 같은 어휘로 적고, 판단이 어려우면 생략한다(임의 신조어 금지). 이 마커로
->    대시보드가 종목을 분야·섹터 위계에 자동 배치한다(`tools/sync_sector_map.py`).
+>    대시보드가 종목을 분야·섹터 위계에 자동 배치한다(`dashboard/lib/sector-auto-map.ts`).
 
 #### 출력 형식
 

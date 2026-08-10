@@ -26,7 +26,7 @@ proj_report/     — 프로젝트 자체 분석 문서
 > 섞어 쓰면 대시보드 보고서 탭에서 별개 종목으로 분리 표시된다. 폴더 안 파일명 접두사도
 > 동일 티커를 사용한다(예: `SPCX/SPCX-checklist-20260723.md`). 기존 폴더가 티커가 아닌
 > 이름으로 있으면 티커로 정리하고, 부득이하게 폴더명이 갈린 경우 대시보드
-> `dashboard/lib/github.ts`의 `COMPANY_ALIAS_GROUPS`에 별칭을 등록해 병합한다.
+> `dashboard/lib/report-meta.ts`의 `COMPANY_ALIAS_GROUPS`에 별칭을 등록해 병합한다.
 
 ```
 reports/
@@ -134,31 +134,30 @@ reports/{티커}/
 - 재무 용어는 영어 그대로 사용 가능 (PER, EPS, ROE, FCF, EBITDA 등)
 - 버핏/멍거/단융핑/리루 어록 인용으로 포인트 강조
 
-## 보고서 저장소 = Supabase (대시보드 소스 오브 트루스)
+## 보고서 저장소 = 파일시스템 + git (대시보드 소스 오브 트루스)
 
-보고서는 이제 **Supabase**에 저장되고 대시보드는 거기서 읽는다. GitHub push는 더 이상
-보고서 반영 경로가 아니다(코드/스킬 변경에만 git 사용).
+보고서는 **`reports/` 아래의 .md 파일 그 자체**가 원본이고, 대시보드가 그 파일을 직접 읽는다.
+**보고서를 쓰면 그 순간 대시보드에 반영된다** — 발행이라는 별도 단계가 없다.
+(2026-08-10 Supabase 폐지. 대시보드는 토스 API가 IP 허용목록을 요구해 구조적으로 로컬 전용이라,
+DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력·백업은 git이 이미 하고 있다.)
 
-- **자동 발행**: **매 응답 종료 시**(Stop) 훅(`.claude/settings.json`)이 `tools/publish_changed_reports.py`를
-  실행한다 — `git status`로 `reports/` 변경 .md를 감지해 `tools/publish_report.py`로 upsert하고,
-  발행 성공한 파일만 로컬 git 커밋(변경 감지/백업용, **push 없음**). 발행 실패 시 커밋하지 않아
-  다음 턴에 재시도된다. 훅은 어떤 경우에도 세션을 막지 않는다(항상 exit 0).
-  > ⚠️ Stop 훅은 **Claude가 한 응답을 마칠 때마다** 돈다 — 창을 닫을 때가 아니다.
-  > 따라서 보고서를 쓴 응답이 끝나는 즉시 발행되며, 사용자가 별도로 할 일은 없다.
-  > 발행 여부는 `git log --oneline -3`(발행 커밋 존재) 또는
-  > `python3 tools/publish_changed_reports.py --dry-run`(대상 0건)으로 확인한다.
-- **수동 발행**: `python3 tools/publish_report.py reports/{티커}/{파일}.md`
-  (변경분 일괄: `python3 tools/publish_changed_reports.py`, 대상 확인만: `--dry-run`)
-- **로컬 복구(역방향)**: `python3 tools/pull_reports_from_supabase.py`
-  Supabase에는 있는데 로컬 파일이 유실됐을 때 되받는다. 기본은 없는 파일만 생성하고,
-  내용이 다른 파일은 건드리지 않는다(`--overwrite`로 DB 버전 강제 적용).
-- **섹터 자동 배정**: 발행 직후 `tools/sync_sector_map.py` 가 보고서의 섹터 마커를 스캔해
-  '티커 → 섹터' 맵을 `app_config('sector_auto_map')` 에 저장한다(아래 "섹터 마커" 참조).
-- **일괄 이관(1회)**: `python3 tools/migrate_reports_to_supabase.py`
+- **자동 커밋**: **매 응답 종료 시**(Stop) 훅(`.claude/settings.json`)이 `tools/commit_reports.py`를
+  실행한다 — `git status`로 `reports/` 변경 .md를 감지해 로컬 커밋(**push 없음**).
+  화면 반영이 목적이 아니라 **이력·백업**이 목적이다(실수로 지워도 `git checkout`으로 복구).
+  훅은 어떤 경우에도 세션을 막지 않는다(항상 exit 0).
+  > 확인: `git log --oneline -3` 또는 `python3 tools/commit_reports.py --dry-run`(대상 0건).
+- **수동 커밋**: `python3 tools/commit_reports.py`
+- **파일 유실 복구**: `git checkout -- reports/{경로}` (git이 유일한 백업이다 —
+  중요한 산출물은 커밋된 상태로 둔다).
+- **파생 메타데이터**: summary(스크리닝 판정)·confidence(신뢰도)·섹터 자동 맵은 전부
+  **읽는 시점에 본문에서 파싱**한다(`dashboard/lib/report-meta.ts`, `lib/sector-auto-map.ts`).
+  별도 저장이 없어 원본과 어긋날 일이 없다.
+- **as-of(신선도) 시각**: 파일의 마지막 git 커밋 시각. 미커밋 파일은 mtime으로 폴백한다.
+- **앱 설정**: 섹터 그룹·분야 그룹은 `data/sector-groups.json` · `data/sector-domain-groups.json`
+  (대시보드 그룹 편집 UI가 쓴다. git으로 이력·공유가 따라온다).
+- **내부 산출물 제외**: `_`로 시작하는 파일·폴더(`_data.md`, `_q2-primary/`)는 보고서가
+  아니라 원자료 캐시라 목록에서 자동 제외된다.
 - ⚠️ 이 환경에는 `python`이 없다 — 반드시 `python3`을 쓴다.
-- **자격증명**: `dashboard/.env.local`의 `SUPABASE_URL` / `SUPABASE_SERVICE_KEY`
-  (service_role 키 — 서버 전용, 절대 커밋 금지). 스키마는 `dashboard/supabase/schema.sql`.
-- summary(스크리닝 판정)·confidence(신뢰도)는 발행 시점에 파싱돼 컬럼으로 저장된다.
 
 ## 섹터 마커 (분야·섹터 자동 정리)
 
@@ -175,7 +174,8 @@ reports/{티커}/
   (`Defense-funnel-20260730.md` → `Defense`). 표기가 갈리면 대시보드에서 섹터가 둘로 나뉜다.
 - 우선순위: 종목 마커 > 퍼널 마커(같은 티어면 최신 날짜). **수동 그룹 편집이 자동보다 항상 우선** —
   자동 맵은 어느 수동 그룹에도 없는 티커의 빈칸만 채운다.
-- 수동 실행/확인: `python3 tools/sync_sector_map.py --dry-run` (저장은 `--dry-run` 없이).
+- 파싱은 `dashboard/lib/sector-auto-map.ts` 가 **요청 시점에** 보고서를 스캔해 수행한다 —
+  동기화 명령이 없고 마커를 고치면 새로고침만으로 반영된다.
 
 ## 트랙레코드 = 콜 원장 (판단 이력의 소스 오브 트루스)
 
@@ -226,7 +226,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 - 원격 저장소: `https://github.com/uwol-is-june/reality-escape-device.git`
 - 푸시 전 반드시 `git pull --rebase origin main`
 - 커밋 메시지: 영어 또는 한국어, 변경 내용 명확히 기술
-- git push는 **코드(skills/tools/dashboard) 변경용**. 보고서는 Supabase로 발행.
+- git push는 **코드(skills/tools/dashboard) 변경용**. 보고서도 git에 커밋되지만 push는 선택.
 
 ## 경로 규칙 (필수)
 
@@ -257,14 +257,15 @@ mkdir -p ~/.claude/commands
 cp skills/*.md ~/.claude/commands/
 rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 
-# 보고서 Supabase에 발행 (수동)
-python3 tools/publish_report.py reports/AAPL/AAPL-checklist-20260101.md
+# 변경된 보고서 로컬 커밋 (Stop 훅과 동일 동작)
+python3 tools/commit_reports.py
+python3 tools/commit_reports.py --dry-run   # 대상만 확인
 
-# 변경된 보고서 일괄 발행 + 로컬 커밋 (Stop 훅과 동일 동작)
-python3 tools/publish_changed_reports.py
+# 지운 보고서 복구
+git checkout -- reports/AAPL/AAPL-checklist-20260101.md
 
-# Supabase → 로컬 복구 (유실 파일 되받기)
-python3 tools/pull_reports_from_supabase.py --dry-run
+# 대시보드 실행 (로컬 전용)
+cd dashboard && npm run dev
 ```
 
 ## 주의사항
@@ -272,4 +273,4 @@ python3 tools/pull_reports_from_supabase.py --dry-run
 - 시가총액 반드시 수동 검산: 주가 × 발행주식수, 보고서 수치와 비교
 - 통화 단위 USD로 명확히 표기
 - PER/ROE 등 지표 계산은 tools/financial_rigor.py 사용
-- 보고서 작성 후 Supabase 발행 여부 확인(Stop 훅이 자동 처리 — 실패 시 수동 발행)
+- 보고서는 파일로 쓰는 즉시 대시보드에 반영된다(발행 단계 없음). 커밋은 Stop 훅이 자동 처리

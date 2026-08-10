@@ -1,7 +1,7 @@
 import { getReportContent, getReportCommitDate, deleteReport } from "@/lib/reports-store";
 import { requireAuth } from "@/lib/api-auth";
 
-// 발행/수정 직후 최신 본문이 즉시 보이도록 캐시를 끈다(브라우저·CDN 휴리스틱 캐싱 방지).
+// 수정 직후 최신 본문이 즉시 보이도록 캐시를 끈다(브라우저·CDN 휴리스틱 캐싱 방지).
 const NO_STORE = { "Cache-Control": "no-store" } as const;
 
 export async function GET(request: Request) {
@@ -26,7 +26,8 @@ export async function GET(request: Request) {
   }
 }
 
-// 보고서 삭제(개발 단계 정리용). Supabase reports 행 삭제 — 되돌릴 수 없으니 주의.
+// 보고서 삭제(개발 단계 정리용). 작업트리의 .md 파일을 지운다 —
+// git 추적 파일이라 `git checkout -- <path>` 로 되돌릴 수 있다.
 export async function DELETE(request: Request) {
   const unauth = await requireAuth();
   if (unauth) return unauth;

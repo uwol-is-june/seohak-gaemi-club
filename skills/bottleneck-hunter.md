@@ -494,7 +494,7 @@ B급 병목 (압박 있음):
    - 관찰 목록: `reports/bottleneck-map/watchlist.md`
 
    > 위 4종은 모두 대시보드 **'병목 신호' 탭**(좌측 nav '개요' 그룹)에 모인다. Stop 훅이
-   > Supabase로 발행하므로 별도 조작은 없다. ⚠️ `reports/bottleneck-map/` 은 티커 폴더가
+   > Stop 훅이 로컬 git 에 커밋하고 대시보드는 파일을 직접 읽으므로 별도 조작은 없다. ⚠️ `reports/bottleneck-map/` 은 티커 폴더가
    > 아니므로 **종목 보고서 탭에는 나타나지 않는다**(`isBottleneckCompany()` 로 제외).
 2. **언어**: 한국어
 3. **스타일**: 직접적, 날카롭게, 군더더기 없이
