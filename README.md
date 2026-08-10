@@ -90,8 +90,8 @@ npm install -g @anthropic-ai/claude-code
 ### 2. 스킬 설치
 
 ```bash
-git clone https://github.com/uwol-is-june/reality-escape-device.git
-cd reality-escape-device
+git clone https://github.com/uwol-is-june/seohak-gaemi-club.git
+cd seohak-gaemi-club
 
 mkdir -p ~/.claude/commands
 cp skills/*.md ~/.claude/commands/

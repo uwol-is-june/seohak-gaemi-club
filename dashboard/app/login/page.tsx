@@ -40,8 +40,8 @@ function LoginForm() {
     <div className="min-h-screen bg-canvas text-body flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="eyebrow text-[10px] mb-2">REALITY ESCAPE DEVICE</div>
-          <h1 className="text-4xl tracking-[-0.03em] text-ink">현생 탈출 장치</h1>
+          <div className="eyebrow text-[10px] mb-2">SEOHAK GAEMI CLUB</div>
+          <h1 className="text-4xl tracking-[-0.03em] text-ink">서학개미클럽</h1>
           <p className="mt-2 text-sm text-mute">계속하려면 비밀번호를 입력하세요.</p>
         </div>
 

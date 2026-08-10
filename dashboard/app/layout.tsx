@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "현생 탈출 장치",
+  title: "서학개미클럽",
   description: "미국 주식 가치투자 리서치 대시보드",
 };
 

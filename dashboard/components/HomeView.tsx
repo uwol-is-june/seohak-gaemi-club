@@ -418,8 +418,8 @@ export function HomeView({
       {/* ── 사이드바 (데스크톱) — xAI app-shell ── */}
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-hairline sticky top-0 h-screen">
         <div className="px-5 py-5 border-b border-hairline">
-          <div className="eyebrow text-[10px]">REALITY ESCAPE</div>
-          <div className="mt-1.5 text-lg tracking-[-0.02em] text-ink">현생 탈출 장치</div>
+          <div className="eyebrow text-[10px]">SEOHAK GAEMI CLUB</div>
+          <div className="mt-1.5 text-lg tracking-[-0.02em] text-ink">서학개미클럽</div>
         </div>
         <nav className="flex-1 p-3 flex flex-col gap-4 overflow-y-auto">
           {navGroups.map((group) => (
@@ -458,7 +458,7 @@ export function HomeView({
       <main className="flex-1 min-w-0 flex flex-col">
         {/* 모바일 상단바 */}
         <div className="md:hidden sticky top-0 z-40 bg-canvas/90 backdrop-blur border-b border-hairline px-5 h-14 flex items-center justify-between">
-          <span className="text-ink tracking-[-0.02em]">현생 탈출 장치</span>
+          <span className="text-ink tracking-[-0.02em]">서학개미클럽</span>
           <div className="flex items-center gap-2">
             <button onClick={logout} className="rounded-full border border-hairline px-3 py-1 text-xs text-body active:scale-95">로그아웃</button>
           </div>

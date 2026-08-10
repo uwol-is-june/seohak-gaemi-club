@@ -1,10 +1,12 @@
-# AI Berkshire US Edition — 프로젝트 지침
+# 서학개미클럽 (seohak-gaemi-club) — 프로젝트 지침
+
+> 원본 오픈소스 "AI Berkshire"(xbtlin)의 포크. 저작권 표기는 LICENSE 참조.
 
 ## 프로젝트 개요
 
 Claude Code 기반 미국 주식 가치투자 리서치 Skill 모음.
 4대가 프레임워크: 버핏(Buffett), 멍거(Munger), 단융핑(Duan Yongping), 리루(Li Lu).
-GitHub: uwol-is-june/reality-escape-device
+GitHub: uwol-is-june/seohak-gaemi-club
 
 ## 프로젝트 구조
 
@@ -225,7 +227,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 ## GitHub 운영 (코드 전용)
 
 - 로컬 클론 경로: **머신마다 다르다** — 문서에 하드코딩하지 않는다(아래 "경로 규칙" 참조)
-- 원격 저장소: `https://github.com/uwol-is-june/reality-escape-device.git`
+- 원격 저장소: `https://github.com/uwol-is-june/seohak-gaemi-club.git`
 - 푸시 전 반드시 `git pull --rebase origin main`
 - 커밋 메시지: 영어 또는 한국어, 변경 내용 명확히 기술
 - git push는 **코드(skills/tools/dashboard) 변경용**. 보고서도 git에 커밋되지만 push는 선택.
@@ -235,7 +237,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 > 🔴 **모든 명령·문서·서브Agent 프롬프트는 저장소 루트 기준 상대경로만 쓴다.**
 > 클론 위치는 머신마다 다르다(`~/Desktop/...`, `~/dev/...`, WSL, macOS 등). 절대경로를
 > 문서에 박으면 **다른 머신에서 전부 깨진다** — 2026-07-31 `/investment-team` 실행 시
-> 실제 발생(스킬 문서의 `~/Desktop/reality-escape-device` 가 존재하지 않아 첫 명령 실패,
+> 실제 발생(스킬 문서의 `~/Desktop/{저장소이름}` 이 하드코딩돼 존재하지 않아 첫 명령 실패,
 > 그 경로가 4개 서브Agent 프롬프트에 그대로 복사됨).
 
 | 상황 | 쓸 것 | 쓰지 말 것 |
