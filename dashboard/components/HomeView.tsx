@@ -5,8 +5,6 @@ import { flows, DISCOVERY_SECTOR_GROUPS, type Flow } from "@/lib/flows";
 import { ReportFile } from "@/lib/reports-store";
 import { getFileBadge, getResultPill, getConfidencePill, type SectorGroup, DEFAULT_SECTOR_GROUPS, DEFAULT_DOMAIN_GROUPS, sectorOfWith, getSectorReportInfo, SECTOR_SECTIONS, reportDateLabel } from "@/lib/report-helpers";
 import { domainOfSector, mergeAutoSectorGroups, sectorsInDomain, UNCLASSIFIED_DOMAIN, type AutoSectorMap, type DomainGroup } from "@/lib/sector-domains";
-import { fetchHoldingsShared, holdingsCache, hydratePortfolioCache } from "@/lib/portfolio-cache";
-import type { Holding } from "@/lib/toss";
 import { ReportContentView } from "./ReportContentView";
 import { ReportModal } from "./ReportModal";
 import { CompanyReportsView } from "./CompanyReportsView";
@@ -38,7 +36,6 @@ const DOMAIN_TABS = [...DISCOVERY_SECTOR_GROUPS.map((g) => g.label), UNCLASSIFIE
 // 탭별 상단바 라벨(eyebrow = GeistMono 대문자, title = 한글). 리서치 프로세스(flows)
 // 탭은 여기 없고 activeFlow.title 로 폴백한다. 분야 탭도 여기 없고 분야명으로 폴백한다.
 const TAB_HEADERS: Record<string, { eyebrow: string; title: string }> = {
-  "holdings-reports": { eyebrow: "HOLDINGS REPORTS", title: "보유 종목 보고서" },
   "portfolio-overview": { eyebrow: "PORTFOLIO", title: "포트폴리오" },
   "track-record": { eyebrow: "TRACK RECORD", title: "트랙레코드" },
   "bottleneck-signals": { eyebrow: "BOTTLENECK", title: "병목 신호" },
@@ -59,13 +56,10 @@ export function HomeView({
   // 표시할 때만 병합한다 — 편집 모달에는 수동 원본만 올려야 자동분이 수동으로 굳지 않는다.
   const [sectorAutoMap, setSectorAutoMap] = useState<AutoSectorMap>({});
   const [editingSectors, setEditingSectors] = useState(false);
-  // 종목 축 보고서 탭('전체 보고서'·'보유 종목 보고서')의 위계·선택 상태는
-  // CompanyReportsView 인스턴스가 각자 들고 있다(TASK-86). 여기서는 외부 드릴다운
-  // (포트폴리오 카드 → 그 티커의 보고서)만 nonce로 밀어 넣는다.
+  // 분야 탭 안 종목 패널의 위계·선택 상태는 CompanyReportsView 인스턴스가 들고 있다
+  // (TASK-86). 여기서는 외부 드릴다운(포트폴리오 카드 → 그 티커의 보고서)만
+  // nonce로 밀어 넣는다.
   const [reportFocus, setReportFocus] = useState<{ ticker: string; nonce: number } | null>(null);
-  // 보유 종목 티커(대문자). '보유 종목 보고서' 탭의 종목 목록을 이 집합으로 좁힌다.
-  // null = 아직 로드 전(빈 배열과 구분해 안내 문구를 다르게 한다).
-  const [holdingTickers, setHoldingTickers] = useState<string[] | null>(null);
   // 분야 탭의 섹터 리서치 위계: 분야(1차 = 좌측 nav) → 섹터(2차) → 보고서 유형(3차) → 생성일자(4차).
   // 분야 그룹(이름 + 포함 섹터명)은 서버(/api/sector-domain-groups)에서 불러오고,
   // 그룹 편집 모달에서 갱신한다. 로드 전에는 섹터 피커에서 파생한 기본 시드를 쓴다.
@@ -104,30 +98,6 @@ export function HomeView({
       cancelled = true;
     };
   }, [reloadKey]);
-
-  // 보유 종목 티커 로드('보유 종목 보고서' 탭의 필터). 포트폴리오 배너와 같은
-  // /api/holdings 를 공유 요청(fetchHoldingsShared)으로 쓰므로 중복 호출은 없다.
-  // 캐시가 있으면 먼저 그것으로 채워 탭이 즉시 그려지게 한다.
-  useEffect(() => {
-    hydratePortfolioCache();
-    if (holdingsCache && holdingsCache.length > 0) {
-      setHoldingTickers(holdingsCache.map((h) => h.ticker.toUpperCase()));
-    }
-    let cancelled = false;
-    fetchHoldingsShared()
-      .then((d) => {
-        if (cancelled || !Array.isArray(d.holdings)) return;
-        // 에러 응답의 빈 배열로 캐시 값을 '보유 없음'으로 덮지 않는다.
-        if (d.error && d.holdings.length === 0) return;
-        setHoldingTickers((d.holdings as Holding[]).map((h) => h.ticker.toUpperCase()));
-      })
-      .catch(() => {
-        // 실패 시 캐시(있으면) 유지 — 탭은 안내 문구로 폴백한다.
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // 좌측 nav에서 분야 탭을 고른 상태면 그 분야명, 아니면 null(TASK-91).
   // 분야 선택은 nav(= flowTab)가 유일한 출처다 — 별도 상태로 들고 있지 않으므로
@@ -193,25 +163,17 @@ export function HomeView({
   );
   // 보고서가 존재하는 티커(대문자) — 포트폴리오 카드 드릴다운 가능 여부 판정(TASK-77).
   const reportedTickers = useMemo(() => new Set(companies.map((c) => c.toUpperCase())), [companies]);
-  // 보유 종목 → 그 티커의 '보유 종목 보고서'로 이동. 실보유(포트폴리오)와 분석(보고서)을
-  // 티커 축으로 잇는다. 선택 위계 정렬은 CompanyReportsView가 focusTicker로 처리한다.
-  const drillToTicker = useCallback((ticker: string) => {
-    setReportFocus((prev) => ({ ticker, nonce: (prev?.nonce ?? 0) + 1 }));
-    setFlowTab("holdings-reports");
-  }, []);
-  // '보유 종목 보고서' 탭이 다룰 종목 = 보고서가 있는 종목 ∩ 보유 종목(대문자 비교).
-  const holdingCompanies = useMemo(() => {
-    if (!holdingTickers) return [];
-    const held = new Set(holdingTickers);
-    return companies.filter((c) => held.has(c.toUpperCase()));
-  }, [companies, holdingTickers]);
-  // 보유 탭이 비었을 때의 사유 구분: 아직 로드 전 / 보유 없음 / 보유했지만 보고서 없음.
-  const holdingsEmptyText =
-    holdingTickers === null
-      ? "보유 정보를 불러오는 중..."
-      : holdingTickers.length === 0
-        ? "보유한 해외주식이 없습니다."
-        : "보유 종목 중 보고서가 있는 종목이 없습니다.";
+  // 포트폴리오 카드 → 그 종목이 속한 분야 탭으로 이동(TASK-91). 실보유(포트폴리오)와
+  // 분석(보고서)을 티커 축으로 잇는다. 분야 탭 안의 섹터·종목 선택 정렬은
+  // CompanyReportsView가 focusTicker로 처리한다.
+  // 분야 판정이 안 되는 종목은 '미분류' 탭으로 간다 — 그쪽도 탭이 있으므로 막다른 길이 없다.
+  const drillToTicker = useCallback(
+    (ticker: string) => {
+      setReportFocus((prev) => ({ ticker, nonce: (prev?.nonce ?? 0) + 1 }));
+      setFlowTab(`${DOMAIN_TAB_PREFIX}${domainOf(sectorOf(ticker))}`);
+    },
+    [domainOf, sectorOf]
+  );
 
   // 종목별 '최신 열등주 스크리닝 결과' 맵. 종목 탭을 통과/탈락 등으로 구획 분리하는 데 쓴다.
   // 파일명에 날짜(YYYYMMDD)가 박혀 사전식 정렬의 마지막이 최신. 최신부터 결과가 파싱된 것 채택.
@@ -253,6 +215,8 @@ export function HomeView({
   );
   // 이 분야에 보여줄 섹터 리서치가 있는가(없으면 빈 상태 안내).
   const hasSectorResearch = domainSectors.length > 0;
+  // 드릴다운 대상 종목이 속한 분야. 그 분야 탭에만 focusTicker를 넘긴다.
+  const focusDomain = reportFocus ? domainOf(sectorOf(reportFocus.ticker)) : null;
 
   // 분야 그룹 편집 모달에 올릴 '섹터명' 후보 목록. 분야 표를 두 탭이 공유하므로
   // 섹터 리서치 축(루트 보고서 파일명에서 파싱한 섹터명)과 종목 축(사용자 종목 그룹명)의
@@ -353,7 +317,7 @@ export function HomeView({
   }, [sectorTab, files]);
 
   // 사이드바/모바일 공용 네비. 비슷한 성격끼리 그룹으로 묶는다:
-  //  개요(대시보드) · 분야(보고서의 주 축) · 모아 보기(분야로 안 잘리는 축) · 리서치 프로세스
+  //  개요(대시보드) · 분야(보고서의 주 축) · 발행(대외용 글) · 리서치 프로세스(실행 플로우)
   const navGroups = [
     {
       label: "개요",
@@ -373,15 +337,10 @@ export function HomeView({
       items: DOMAIN_TABS.map((d) => ({ id: `${DOMAIN_TAB_PREFIX}${d}`, label: d })),
     },
     {
-      // 분야로는 안 잘리는 축들. 같은 보고서를 다른 기준으로 모아 본다.
-      label: "모아 보기",
-      items: [
-        // 보유 여부 축. 포트폴리오 카드 드릴다운(drillToTicker)의 착지점이기도 하다(TASK-86).
-        { id: "holdings-reports", label: "보유 종목 보고서" },
-        // 발행 상태 축. 발행용 글(/investment-article)은 '내 판단용'이 아니라 '남에게
-        // 보여줄 것'이라 종목·분야로 묶이지 않는다.
-        { id: "articles", label: "아티클" },
-      ],
+      // 발행용 글(/investment-article). 다른 보고서가 '내 판단용'이라면 이건 '남에게
+      // 보여줄 것'이라 축이 종목·분야가 아니라 발행 상태다.
+      label: "발행",
+      items: [{ id: "articles", label: "아티클" }],
     },
     {
       label: "리서치 프로세스",
@@ -824,36 +783,14 @@ export function HomeView({
                       setDeletePath(p);
                     }}
                     hideDomainPicker
+                    // 포트폴리오 카드 드릴다운의 착지점(TASK-91). 드릴한 종목의 분야 탭에만
+                    // 넘긴다 — 다른 분야 탭까지 받으면 그 목록에 없는 티커를 찾다 헛돈다.
+                    focusTicker={focusDomain === activeDomain ? reportFocus : null}
                     emptyText={`'${activeDomain}' 분야로 분류된 종목 보고서가 없습니다.`}
                   />
                 </div>
               )}
             </div>
-          ) : flowTab === "holdings-reports" ? (
-            /* ── 보유 종목 보고서 — 실제 보유 중인 티커로만 좁힌 종목 축 패널.
-               분야 탭과 같은 CompanyReportsView 를 쓰되, 대상이 몇 개뿐이라 위계 없이
-               종목 칩만 바로 깐다. 포트폴리오 카드 드릴다운(focusTicker)의 착지점. */
-            <CompanyReportsView
-              files={files}
-              companies={holdingCompanies}
-              loadError={loadError}
-              onRetry={() => setReloadKey((k) => k + 1)}
-              sectorGroups={effectiveSectorGroups}
-              domainGroups={domainGroups}
-              screenByCompany={screenByCompany}
-              onEditSectorGroups={() => setEditingSectors(true)}
-              onEditDomainGroups={() => setEditingDomains(true)}
-              onLaunchStep={onLaunchStep}
-              onOpenReport={setModalPath}
-              onRequestDelete={(p) => {
-                setDeleteError(null);
-                setDeletePath(p);
-              }}
-              focusTicker={reportFocus}
-              // 보유 종목은 몇 개뿐 → 분야·섹터 필터 없이 종목 칩만 바로 노출(TASK-87).
-              flatCompanyPicker
-              emptyText={holdingsEmptyText}
-            />
           ) : (
             /* ── 플로우 탭 ── */
             (() => {

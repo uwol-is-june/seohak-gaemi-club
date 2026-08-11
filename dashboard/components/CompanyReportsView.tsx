@@ -19,8 +19,9 @@ import { domainOfSector, orderedDomains, sectorsInDomain, type DomainGroup } fro
 import { ReportContentView } from "./ReportContentView";
 
 // 종목 축 보고서 패널(분야 → 섹터 → 종목 → 보고서 유형 → 생성일자).
-// '전체 보고서'와 '보유 종목 보고서' 탭이 같은 UI를 공유한다(TASK-86) — 차이는
-// companies(다룰 종목 목록)뿐이며, 선택 상태는 인스턴스마다 독립적이다.
+// 분야 탭이 이 패널을 쓴다(TASK-91). 분야는 nav가 이미 정했으므로 companies 는 그
+// 분야로 좁혀져 들어오고 1차 줄은 hideDomainPicker 로 감춘다. 선택 상태는 인스턴스마다
+// 독립이라 탭을 옮기면(바깥 tab-panel key 재마운트) 초기화된다.
 export function CompanyReportsView({
   files,
   companies,
@@ -36,11 +37,10 @@ export function CompanyReportsView({
   onRequestDelete,
   focusTicker,
   emptyText = "아직 보고서가 없습니다.",
-  flatCompanyPicker = false,
   hideDomainPicker = false,
 }: {
   files: ReportFile[] | null;
-  // 이 패널이 다룰 종목(이미 필터링된 목록). 전체 탭=보고서 있는 전 종목, 보유 탭=보유 종목만.
+  // 이 패널이 다룰 종목(이미 필터링된 목록) = 그 분야로 분류된, 보고서가 있는 종목.
   companies: string[];
   loadError: boolean;
   onRetry: () => void;
@@ -56,9 +56,6 @@ export function CompanyReportsView({
   // nonce를 증가시켜 전달한다.
   focusTicker?: { ticker: string; nonce: number } | null;
   emptyText?: string;
-  // true면 분야·섹터 위계를 건너뛰고 종목 칩만 바로 보여준다(TASK-87).
-  // 보유 종목처럼 대상이 몇 개뿐일 때 2단 필터가 클릭만 늘리므로.
-  flatCompanyPicker?: boolean;
   // true면 1차(분야) 줄만 감춘다 — companies가 이미 한 분야로 좁혀져 들어온 경우
   // (분야 탭·TASK-91) 칩이 하나뿐이라 자리만 차지한다. 섹터 → 종목 위계는 유지.
   hideDomainPicker?: boolean;
@@ -88,10 +85,9 @@ export function CompanyReportsView({
     [reportDomainTab, domainGroups, reportSectors]
   );
   // 선택된 섹터에 속한 종목만. 섹터 미선택 시(로드 전) 전체.
-  // flat 모드는 섹터로 좁히지 않고 항상 전체를 쓴다.
   const sectorCompanies = useMemo(
-    () => (!flatCompanyPicker && reportSectorTab ? tabs.filter((t) => sectorOf(t) === reportSectorTab) : tabs),
-    [flatCompanyPicker, reportSectorTab, tabs, sectorOf]
+    () => (reportSectorTab ? tabs.filter((t) => sectorOf(t) === reportSectorTab) : tabs),
+    [reportSectorTab, tabs, sectorOf]
   );
   const currentFiles = useMemo(
     () => sortCompanyFiles(files?.filter((f) => f.company === reportTab) ?? []),
@@ -118,12 +114,11 @@ export function CompanyReportsView({
   // 섹터가 바뀌거나 그 섹터 구성원이 바뀌면 선택 종목을 유효한 값으로 맞춘다
   // (현재 종목이 이 섹터에 속해 있으면 유지).
   const sectorCompaniesKey = sectorCompanies.join("|");
-  // flat 모드는 섹터 선택이 없으니 종목 목록만 보고 맞춘다.
   useEffect(() => {
-    if (!flatCompanyPicker && !reportSectorTab) return;
+    if (!reportSectorTab) return;
     setReportTab((prev) => (prev && sectorCompanies.includes(prev) ? prev : (sectorCompanies[0] ?? null)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flatCompanyPicker, reportSectorTab, sectorCompaniesKey]);
+  }, [reportSectorTab, sectorCompaniesKey]);
 
   // 종목이 바뀌거나 목록이 로드되면 보고서 선택을 그 종목의 첫 보고서로 맞춘다.
   // (현재 선택이 이 종목에 속해 있으면 유지.)
@@ -220,9 +215,8 @@ export function CompanyReportsView({
               <div className="flex items-baseline gap-2 min-w-0">
                 <span className="eyebrow text-[10px] text-ink">종목 선택</span>
               </div>
-              {/* 3단 위계라 편집 축이 둘이다: 종목→섹터(종목 축 전용) / 섹터→분야(섹터 리서치 탭과 공유).
-                  flat 모드는 두 축을 쓰지 않으므로 편집 버튼도 감춘다. */}
-              <div className={`flex shrink-0 gap-1.5 ${flatCompanyPicker ? "hidden" : ""}`}>
+              {/* 편집 축이 둘이다: 종목→섹터(종목 축 전용) / 섹터→분야(분야 탭과 공유). */}
+              <div className="flex shrink-0 gap-1.5">
                 <button
                   onClick={onEditDomainGroups}
                   className="shrink-0 rounded-full border border-hairline px-2.5 py-1 text-[11px] text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
@@ -238,9 +232,8 @@ export function CompanyReportsView({
               </div>
             </div>
 
-            {/* 1차: 분야 — 섹터 리서치 탭과 같은 분야 그룹 표를 쓴다(TASK-84).
-                flat 모드, 그리고 이미 한 분야로 좁혀진 분야 탭에선 생략. */}
-            {!flatCompanyPicker && !hideDomainPicker && (
+            {/* 1차: 분야 — 이미 한 분야로 좁혀진 분야 탭에선 생략. */}
+            {!hideDomainPicker && (
             <div className="mb-4">
               <div className="eyebrow text-[10px] text-mute mb-1.5">분야</div>
               <div className="flex gap-1 overflow-x-auto pb-1">
@@ -271,8 +264,7 @@ export function CompanyReportsView({
             </div>
             )}
 
-            {/* 2차: 선택 분야 안의 섹터. flat 모드에선 생략. */}
-            {!flatCompanyPicker && (
+            {/* 2차: 선택 분야 안의 섹터. */}
             <div className="border-t border-hairline pt-4 mb-4">
               <div className="eyebrow text-[10px] text-mute mb-1.5">섹터</div>
               <div className="flex gap-1 overflow-x-auto pb-1">
@@ -297,31 +289,10 @@ export function CompanyReportsView({
                 })}
               </div>
             </div>
-            )}
 
-            {/* 종목 칩. flat 모드는 한 줄로 쭉(판정 색점만 유지), 아니면 열등주 스크리닝
-                판정(통과/면제 통과/탈락/데이터 부족/미검사)으로 구획 분리.
-                여기서 고른 종목의 상세 보고서(열등주 스크리닝 리포트 포함)는 아래 '보고서 레이어'에 나온다. */}
-            {flatCompanyPicker ? (
-              <div className="flex gap-1 flex-wrap">
-                {sectorCompanies.map((tab) => {
-                  const g = SCREEN_GROUPS.find((x) => x.match(screenByCompany[tab] ?? null));
-                  return (
-                    <button
-                      key={tab}
-                      onClick={() => setReportTab(tab)}
-                      title={screenByCompany[tab] ?? "미검사"}
-                      className={`shrink-0 rounded-full pl-2 pr-3 py-1.5 text-xs font-medium transition-colors active:scale-95 flex items-center gap-1.5 ${
-                        reportTab === tab ? "bg-white text-canvas" : "text-mute hover:text-ink hover:bg-canvas-soft"
-                      }`}
-                    >
-                      {g && <span className={`inline-block w-1.5 h-1.5 rounded-full ${g.dot}`} />}
-                      {tab}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
+            {/* 종목 칩 — 열등주 스크리닝 판정(통과/면제 통과/탈락/데이터 부족/미검사)으로
+                구획 분리. 여기서 고른 종목의 상세 보고서(열등주 스크리닝 리포트 포함)는
+                아래 '보고서 레이어'에 나온다. */}
             <div className="border-t border-hairline pt-4">
               <div className="eyebrow text-[10px] text-mute mb-2.5">선별 결과 · 열등주 스크리닝 판정</div>
               <div className="flex flex-row flex-wrap gap-x-6 gap-y-4">
@@ -354,7 +325,6 @@ export function CompanyReportsView({
                 })}
               </div>
             </div>
-            )}
           </div>
 
           {/* 종목 상세: 보고서 유형(2차) → 생성일자(3차) 위계 + 선택 보고서 인라인 표시 */}
