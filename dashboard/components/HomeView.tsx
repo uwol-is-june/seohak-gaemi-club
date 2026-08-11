@@ -1,10 +1,10 @@
 "use client";
 import { readJsonSafe } from "@/lib/fetch-json";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { flows, type Flow } from "@/lib/flows";
+import { flows, DISCOVERY_SECTOR_GROUPS, type Flow } from "@/lib/flows";
 import { ReportFile } from "@/lib/reports-store";
 import { getFileBadge, getResultPill, getConfidencePill, type SectorGroup, DEFAULT_SECTOR_GROUPS, DEFAULT_DOMAIN_GROUPS, sectorOfWith, getSectorReportInfo, SECTOR_SECTIONS, reportDateLabel } from "@/lib/report-helpers";
-import { domainOfSector, mergeAutoSectorGroups, orderedDomains, sectorsInDomain, type AutoSectorMap, type DomainGroup } from "@/lib/sector-domains";
+import { domainOfSector, mergeAutoSectorGroups, sectorsInDomain, UNCLASSIFIED_DOMAIN, type AutoSectorMap, type DomainGroup } from "@/lib/sector-domains";
 import { fetchHoldingsShared, holdingsCache, hydratePortfolioCache } from "@/lib/portfolio-cache";
 import type { Holding } from "@/lib/toss";
 import { ReportContentView } from "./ReportContentView";
@@ -24,12 +24,21 @@ import { isArticlePath } from "@/lib/articles";
 // 루트에 있지만 '섹터 리서치'가 아닌 문서(각자 전용 탭이 따로 있음).
 const ROOT_NON_SECTOR = new Set(["portfolio-latest.md", "track-record.md"]);
 
+// 좌측 nav의 '분야' 탭(TASK-91). 리서치 단계(프로세스) 축과 별개로, 분야를 1차 축으로
+// 삼아 그 분야의 섹터 리서치 + 종목 보고서를 한 화면에서 본다. 분야명은 프로세스 가이드의
+// 섹터 피커·분야 그룹 표와 **같은 목록**을 쓴다(flows.ts DISCOVERY_SECTOR_GROUPS) —
+// 여기서 이름을 따로 적으면 표기가 갈려 분야 판정(domainOfSector)과 어긋난다.
+// 맨 끝에 '미분류'를 붙인다 — 어느 분야에도 안 붙은 섹터·종목(domainOfSector가
+// UNCLASSIFIED_DOMAIN을 주는 것들)을 찾아 '분야 그룹' 편집으로 분류하는 입구다.
+// 화면 안 분야 칩(orderedDomains)과 달리 항목이 비어도 항상 노출한다 — nav 목록이
+// 보고서 유무에 따라 늘었다 줄었다 하지 않게.
+const DOMAIN_TAB_PREFIX = "domain:";
+const DOMAIN_TABS = [...DISCOVERY_SECTOR_GROUPS.map((g) => g.label), UNCLASSIFIED_DOMAIN];
+
 // 탭별 상단바 라벨(eyebrow = GeistMono 대문자, title = 한글). 리서치 프로세스(flows)
-// 탭은 여기 없고 activeFlow.title 로 폴백한다.
+// 탭은 여기 없고 activeFlow.title 로 폴백한다. 분야 탭도 여기 없고 분야명으로 폴백한다.
 const TAB_HEADERS: Record<string, { eyebrow: string; title: string }> = {
-  reports: { eyebrow: "REPORTS", title: "전체 보고서" },
   "holdings-reports": { eyebrow: "HOLDINGS REPORTS", title: "보유 종목 보고서" },
-  "sector-reports": { eyebrow: "SECTOR", title: "섹터 리서치" },
   "portfolio-overview": { eyebrow: "PORTFOLIO", title: "포트폴리오" },
   "track-record": { eyebrow: "TRACK RECORD", title: "트랙레코드" },
   "bottleneck-signals": { eyebrow: "BOTTLENECK", title: "병목 신호" },
@@ -57,12 +66,11 @@ export function HomeView({
   // 보유 종목 티커(대문자). '보유 종목 보고서' 탭의 종목 목록을 이 집합으로 좁힌다.
   // null = 아직 로드 전(빈 배열과 구분해 안내 문구를 다르게 한다).
   const [holdingTickers, setHoldingTickers] = useState<string[] | null>(null);
-  // 섹터 리서치 탭 위계: 분야(1차) → 섹터(2차) → 보고서 유형(3차) → 생성일자(4차).
+  // 분야 탭의 섹터 리서치 위계: 분야(1차 = 좌측 nav) → 섹터(2차) → 보고서 유형(3차) → 생성일자(4차).
   // 분야 그룹(이름 + 포함 섹터명)은 서버(/api/sector-domain-groups)에서 불러오고,
   // 그룹 편집 모달에서 갱신한다. 로드 전에는 섹터 피커에서 파생한 기본 시드를 쓴다.
   const [domainGroups, setDomainGroups] = useState<DomainGroup[]>(DEFAULT_DOMAIN_GROUPS);
   const [editingDomains, setEditingDomains] = useState(false);
-  const [domainTab, setDomainTab] = useState<string | null>(null);
   const [sectorTab, setSectorTab] = useState<string | null>(null);
   const [sectorReport, setSectorReport] = useState<string | null>(null);
   const [modalPath, setModalPath] = useState<string | null>(null);
@@ -121,6 +129,13 @@ export function HomeView({
     };
   }, []);
 
+  // 좌측 nav에서 분야 탭을 고른 상태면 그 분야명, 아니면 null(TASK-91).
+  // 분야 선택은 nav(= flowTab)가 유일한 출처다 — 별도 상태로 들고 있지 않으므로
+  // reconciliation 이펙트와 서로 되돌리며 싸울 일이 없다.
+  const activeDomain = flowTab.startsWith(DOMAIN_TAB_PREFIX)
+    ? flowTab.slice(DOMAIN_TAB_PREFIX.length)
+    : null;
+
   // 파생 데이터는 useMemo 로 캐시한다 — HomeView 는 상태가 많아 자주 리렌더되는데,
   // 아래 스캔·정렬(특히 screenByCompany 의 O(companies×files))을 매 렌더마다 다시 돌면
   // 불필요한 비용이 든다(TASK-48).
@@ -140,7 +155,7 @@ export function HomeView({
         : [],
     [files]
   );
-  // 루트 레벨 보고서(회사 폴더 밖)는 섹터/스크리닝 결과물이다 → '섹터 리서치' 탭에서 보여준다.
+  // 루트 레벨 보고서(회사 폴더 밖)는 섹터/스크리닝 결과물이다 → 분야 탭의 섹터 리서치 영역에서 보여준다.
   // 단, 섹터 리서치가 아닌 루트 문서는 제외한다:
   //   - portfolio-latest.md : '포트폴리오 점검' 탭 소관
   //   - track-record.md     : 수기 매매기록(자동 채점 '트랙레코드' 탭과 별개) — 섹터가 아님
@@ -220,20 +235,25 @@ export function HomeView({
     return map;
   }, [files, companies]);
 
-  // 섹터 리서치 탭: 루트 파일을 섹터명으로 묶는다 (2차 = 섹터).
+  // 루트 파일을 섹터명으로 묶는다 — 분야 탭의 섹터 칩 목록이 여기서 온다.
   const sectors = useMemo(
     () => Array.from(new Set(rootFiles.map((f) => getSectorReportInfo(f.name).sector))).sort(),
     [rootFiles]
   );
-  // 1차 = 분야(도메인). 섹터명을 사용자 그룹 설정으로 유관 분야에 묶는다(TASK-81).
-  // 판정 함수 domainOf 는 종목 축과 공유하므로 위쪽에 한 번만 정의한다(TASK-84).
-  // 보고서가 존재하는 분야만, 그룹 순서대로(미분류는 맨 끝).
-  const sectorDomains = useMemo(() => orderedDomains(domainGroups, sectors), [domainGroups, sectors]);
-  // 선택된 분야에 속한 섹터만. 분야 미선택 시(로드 전) 전체.
+  // 선택된 분야에 속한 섹터만. 분야 미선택(분야 탭이 아님) 시 전체.
+  // 판정 함수 domainOf 는 종목 축과 공유한다(TASK-84).
   const domainSectors = useMemo(
-    () => (domainTab ? sectorsInDomain(domainGroups, sectors, domainTab) : sectors),
-    [domainTab, domainGroups, sectors]
+    () => (activeDomain ? sectorsInDomain(domainGroups, sectors, activeDomain) : sectors),
+    [activeDomain, domainGroups, sectors]
   );
+  // 분야 탭이 다룰 종목 = 보고서가 있는 종목 중 (종목→섹터→분야) 판정이 이 분야인 것.
+  const domainCompanies = useMemo(
+    () => (activeDomain ? companies.filter((c) => domainOf(sectorOf(c)) === activeDomain) : []),
+    [activeDomain, companies, domainOf, sectorOf]
+  );
+  // 이 분야에 보여줄 섹터 리서치가 있는가(없으면 빈 상태 안내).
+  const hasSectorResearch = domainSectors.length > 0;
+
   // 분야 그룹 편집 모달에 올릴 '섹터명' 후보 목록. 분야 표를 두 탭이 공유하므로
   // 섹터 리서치 축(루트 보고서 파일명에서 파싱한 섹터명)과 종목 축(사용자 종목 그룹명)의
   // 합집합을 보여준다 — 그래야 '반도체·AI' 같은 종목 그룹명도 분야에 넣을 수 있다(TASK-84).
@@ -315,21 +335,14 @@ export function HomeView({
     });
   };
 
-  // 분야 목록이 바뀌면(로드·그룹 편집) 섹터 리서치 1차 탭을 유효한 값으로 맞춘다.
-  const domainKey = sectorDomains.join("|");
-  useEffect(() => {
-    setDomainTab((prev) => (prev && sectorDomains.includes(prev) ? prev : (sectorDomains[0] ?? null)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [domainKey]);
-
-  // 분야가 바뀌거나 그 분야 구성원이 바뀌면 2차(섹터) 선택을 유효한 값으로 맞춘다
+  // 분야 탭이 바뀌거나 그 분야의 섹터 구성이 바뀌면 섹터 선택을 유효한 값으로 맞춘다
   // (현재 섹터가 이 분야에 속해 있으면 유지). domainSectors 는 files 파생이라
   // 보고서 로드도 이 키로 같이 커버된다.
   const domainSectorsKey = domainSectors.join("|");
   useEffect(() => {
     setSectorTab((prev) => (prev && domainSectors.includes(prev) ? prev : (domainSectors[0] ?? null)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [domainTab, domainSectorsKey]);
+  }, [activeDomain, domainSectorsKey]);
 
   // 섹터 탭이 바뀌거나 목록이 로드되면 선택 보고서를 그 섹터의 첫 보고서로 맞춘다.
   useEffect(() => {
@@ -340,7 +353,7 @@ export function HomeView({
   }, [sectorTab, files]);
 
   // 사이드바/모바일 공용 네비. 비슷한 성격끼리 그룹으로 묶는다:
-  //  개요(대시보드) · 결과물(보고서) · 리서치 프로세스(실행 플로우)
+  //  개요(대시보드) · 분야(보고서의 주 축) · 모아 보기(분야로 안 잘리는 축) · 리서치 프로세스
   const navGroups = [
     {
       label: "개요",
@@ -353,14 +366,20 @@ export function HomeView({
       ],
     },
     {
-      label: "결과물",
+      // 보고서를 보는 **주 축**(TASK-91). 한 분야를 고르면 그 분야의 섹터 리서치와
+      // 종목 보고서가 한 화면에 함께 온다. 미분류 탭까지 있어 모든 보고서가 이 8개
+      // 탭 중 정확히 하나에 들어간다 — 그래서 '섹터 리서치'·'전체 보고서' 탭을 없앴다.
+      label: "분야",
+      items: DOMAIN_TABS.map((d) => ({ id: `${DOMAIN_TAB_PREFIX}${d}`, label: d })),
+    },
+    {
+      // 분야로는 안 잘리는 축들. 같은 보고서를 다른 기준으로 모아 본다.
+      label: "모아 보기",
       items: [
-        { id: "sector-reports", label: "섹터 리서치" },
-        // 보유 종목만 모아 보는 탭이 먼저 — 실제로 들고 있는 종목의 판단이 우선(TASK-86).
+        // 보유 여부 축. 포트폴리오 카드 드릴다운(drillToTicker)의 착지점이기도 하다(TASK-86).
         { id: "holdings-reports", label: "보유 종목 보고서" },
-        { id: "reports", label: "전체 보고서" },
-        // 발행용 글(/investment-article). 다른 결과물이 '내 판단용'이라면 이건 '남에게
-        // 보여줄 것'이라 축이 종목·섹터가 아니라 발행 상태다 → 결과물 그룹의 맨 끝.
+        // 발행 상태 축. 발행용 글(/investment-article)은 '내 판단용'이 아니라 '남에게
+        // 보여줄 것'이라 종목·분야로 묶이지 않는다.
         { id: "articles", label: "아티클" },
       ],
     },
@@ -378,8 +397,8 @@ export function HomeView({
   // 모바일 가로 탭 로우와 각종 조회는 평탄화한 목록을 쓴다.
   const contentTabs = navGroups.flatMap((g) => g.items);
   const activeFlow = flows.find((f) => f.id === flowTab);
-  const headerEyebrow = TAB_HEADERS[flowTab]?.eyebrow ?? flowTab.toUpperCase();
-  const headerTitle = TAB_HEADERS[flowTab]?.title ?? activeFlow?.title ?? "";
+  const headerEyebrow = activeDomain ? "DOMAIN" : (TAB_HEADERS[flowTab]?.eyebrow ?? flowTab.toUpperCase());
+  const headerTitle = activeDomain ?? TAB_HEADERS[flowTab]?.title ?? activeFlow?.title ?? "";
   const logout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
@@ -556,8 +575,11 @@ export function HomeView({
               onRetry={() => setReloadKey((k) => k + 1)}
               onOpenReport={(p) => setModalPath(p)}
             />
-          ) : flowTab === "sector-reports" ? (
-            /* ── 섹터 리서치: /industry-research·/industry-funnel 등 섹터/스크리닝 결과물 ── */
+          ) : activeDomain ? (
+            /* ── 분야 탭(TASK-91): 한 분야를 섹터 축과 종목 축 양쪽에서 본다 ──
+                 · 위 = 섹터 리서치(/industry-research·/industry-funnel 등 루트 결과물)
+                        1차 축(분야)은 좌측 nav가 맡으므로 여기선 섹터부터 고른다
+                 · 아래 = 그 분야의 종목 보고서 */
             <div>
               {/* 상단 실행 카드 ROW: 프로세스 가이드 1·2단계(섹터 구조 파악·후보 종목 압축)를
                   결과물을 보는 자리에서 바로 실행. 클릭 시 onLaunchStep 모달(홈 컨텍스트 유지). */}
@@ -613,9 +635,11 @@ export function HomeView({
                 </div>
               )}
 
-              {files && rootFiles.length === 0 && (
+              {files && !hasSectorResearch && (
                 <div className="rounded-lg border border-dashed border-hairline bg-canvas-card px-5 py-8 text-center">
-                  <p className="text-sm text-body">아직 섹터 리서치 결과물이 없습니다.</p>
+                  <p className="text-sm text-body">
+                    아직 &apos;{activeDomain}&apos; 분야의 섹터 리서치 결과물이 없습니다.
+                  </p>
                   <p className="mt-1.5 text-xs text-mute leading-relaxed">
                     <code className="font-mono text-breeze">/industry-research {"{섹터}"}</code> 또는{" "}
                     <code className="font-mono text-breeze">/industry-funnel {"{섹터}"}</code>를 실행하면
@@ -624,7 +648,7 @@ export function HomeView({
                 </div>
               )}
 
-              {files && rootFiles.length > 0 && (
+              {files && hasSectorResearch && (
                 <>
                   {/* ── 선별 레이어: 분야(1차) → 섹터(2차) ──
                       종목 축 보고서 탭의 '종목 선택' 카드와 동일한 패턴. 분야 분류는
@@ -641,34 +665,8 @@ export function HomeView({
                       </button>
                     </div>
 
-                    {/* 1차: 분야 */}
-                    <div className="mb-4">
-                      <div className="eyebrow text-[10px] text-mute mb-1.5">분야</div>
-                      <div className="flex gap-1 overflow-x-auto pb-1">
-                        {sectorDomains.map((d) => {
-                          const count = sectors.filter((s) => domainOf(s) === d).length;
-                          return (
-                            <button
-                              key={d}
-                              onClick={() => {
-                                setDomainTab(d);
-                                const first = sectors.find((s) => domainOf(s) === d);
-                                if (first) setSectorTab(first);
-                              }}
-                              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 flex items-center gap-1.5 ${
-                                domainTab === d ? "bg-white text-canvas" : "text-mute hover:text-ink hover:bg-canvas-soft"
-                              }`}
-                            >
-                              {d}
-                              <span className={domainTab === d ? "text-canvas/60" : "text-mute"}>{count}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* 2차: 선택 분야 안의 섹터 */}
-                    <div className="border-t border-hairline pt-4">
+                    {/* 이 분야 안의 섹터. 1차(분야)는 좌측 nav가 이미 정했다. */}
+                    <div>
                       <div className="eyebrow text-[10px] text-mute mb-2">섹터</div>
                       <div className="flex flex-wrap gap-1">
                         {domainSectors.map((s) => (
@@ -801,15 +799,43 @@ export function HomeView({
                   })()}
                 </>
               )}
+
+              {/* ── 이 분야의 종목 보고서 ──
+                  같은 분야를 섹터(리서치) 축과 종목 축 양쪽에서 한 화면에 놓는다.
+                  1차(분야)는 이미 nav에서 정해졌으므로 패널 안에서는 감춘다(hideDomainPicker).
+                  선택 상태는 분야마다 독립이다 — 바깥 tab-panel의 key가 탭 전환 시 재마운트한다. */}
+              {activeDomain && (
+                <div className="mt-12 border-t border-hairline pt-8">
+                  <div className="eyebrow text-[10px] text-mute mb-4">종목 보고서</div>
+                  <CompanyReportsView
+                    files={files}
+                    companies={domainCompanies}
+                    loadError={loadError}
+                    onRetry={() => setReloadKey((k) => k + 1)}
+                    sectorGroups={effectiveSectorGroups}
+                    domainGroups={domainGroups}
+                    screenByCompany={screenByCompany}
+                    onEditSectorGroups={() => setEditingSectors(true)}
+                    onEditDomainGroups={() => setEditingDomains(true)}
+                    onLaunchStep={onLaunchStep}
+                    onOpenReport={setModalPath}
+                    onRequestDelete={(p) => {
+                      setDeleteError(null);
+                      setDeletePath(p);
+                    }}
+                    hideDomainPicker
+                    emptyText={`'${activeDomain}' 분야로 분류된 종목 보고서가 없습니다.`}
+                  />
+                </div>
+              )}
             </div>
-          ) : flowTab === "reports" || flowTab === "holdings-reports" ? (
-            /* ── 종목 축 보고서 — '전체 보고서'와 '보유 종목 보고서'가 같은 패널(레이아웃·
-               위계·UI 동일)을 공유한다. 차이는 다룰 종목 목록뿐: 보유 탭은 보유 티커로
-               좁힌다. 선택 상태는 탭마다 독립(외곽 tab-panel의 key로 재마운트) — TASK-86. */
+          ) : flowTab === "holdings-reports" ? (
+            /* ── 보유 종목 보고서 — 실제 보유 중인 티커로만 좁힌 종목 축 패널.
+               분야 탭과 같은 CompanyReportsView 를 쓰되, 대상이 몇 개뿐이라 위계 없이
+               종목 칩만 바로 깐다. 포트폴리오 카드 드릴다운(focusTicker)의 착지점. */
             <CompanyReportsView
-              key={flowTab}
               files={files}
-              companies={flowTab === "holdings-reports" ? holdingCompanies : companies}
+              companies={holdingCompanies}
               loadError={loadError}
               onRetry={() => setReloadKey((k) => k + 1)}
               sectorGroups={effectiveSectorGroups}
@@ -823,12 +849,10 @@ export function HomeView({
                 setDeleteError(null);
                 setDeletePath(p);
               }}
-              focusTicker={flowTab === "holdings-reports" ? reportFocus : null}
+              focusTicker={reportFocus}
               // 보유 종목은 몇 개뿐 → 분야·섹터 필터 없이 종목 칩만 바로 노출(TASK-87).
-              flatCompanyPicker={flowTab === "holdings-reports"}
-              emptyText={
-                flowTab === "holdings-reports" ? holdingsEmptyText : "아직 보고서가 없습니다."
-              }
+              flatCompanyPicker
+              emptyText={holdingsEmptyText}
             />
           ) : (
             /* ── 플로우 탭 ── */

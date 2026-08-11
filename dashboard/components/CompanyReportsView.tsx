@@ -37,6 +37,7 @@ export function CompanyReportsView({
   focusTicker,
   emptyText = "아직 보고서가 없습니다.",
   flatCompanyPicker = false,
+  hideDomainPicker = false,
 }: {
   files: ReportFile[] | null;
   // 이 패널이 다룰 종목(이미 필터링된 목록). 전체 탭=보고서 있는 전 종목, 보유 탭=보유 종목만.
@@ -58,6 +59,9 @@ export function CompanyReportsView({
   // true면 분야·섹터 위계를 건너뛰고 종목 칩만 바로 보여준다(TASK-87).
   // 보유 종목처럼 대상이 몇 개뿐일 때 2단 필터가 클릭만 늘리므로.
   flatCompanyPicker?: boolean;
+  // true면 1차(분야) 줄만 감춘다 — companies가 이미 한 분야로 좁혀져 들어온 경우
+  // (분야 탭·TASK-91) 칩이 하나뿐이라 자리만 차지한다. 섹터 → 종목 위계는 유지.
+  hideDomainPicker?: boolean;
 }) {
   // 위계: 분야(1차) → 섹터(2차) → 종목(3차) → 보고서 유형 → 생성일자.
   const [reportDomainTab, setReportDomainTab] = useState<string | null>(null);
@@ -234,8 +238,9 @@ export function CompanyReportsView({
               </div>
             </div>
 
-            {/* 1차: 분야 — 섹터 리서치 탭과 같은 분야 그룹 표를 쓴다(TASK-84). flat 모드에선 생략. */}
-            {!flatCompanyPicker && (
+            {/* 1차: 분야 — 섹터 리서치 탭과 같은 분야 그룹 표를 쓴다(TASK-84).
+                flat 모드, 그리고 이미 한 분야로 좁혀진 분야 탭에선 생략. */}
+            {!flatCompanyPicker && !hideDomainPicker && (
             <div className="mb-4">
               <div className="eyebrow text-[10px] text-mute mb-1.5">분야</div>
               <div className="flex gap-1 overflow-x-auto pb-1">
