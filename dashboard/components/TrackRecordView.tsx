@@ -1,26 +1,12 @@
 "use client";
 import { readJsonSafe } from "@/lib/fetch-json";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-import { ScoredCall, CallAggregate, CallStatus, CallType } from "@/lib/calls";
+import { ScoredCall, CallStatus, CallType } from "@/lib/calls";
 import { CALL_LABEL } from "@/lib/report-helpers";
 import type { Holding } from "@/lib/toss";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
 import { ReportModal } from "./ReportModal";
 
-// 진행중 콜의 예상 첫 채점일 = 콜일 + horizon(개월), horizon 미지정 시 +30일(MIN_RESOLVE_DAYS).
-// lib/calls.ts 채점 규칙의 근사치 — 빈 상태 안내(TASK-78)용.
-function expectedResolveDate(c: ScoredCall): Date | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(c.date)) return null;
-  const d = new Date(`${c.date}T00:00:00Z`);
-  if (Number.isNaN(d.getTime())) return null;
-  if (c.horizonMonths != null) {
-    const r = new Date(d);
-    r.setUTCMonth(r.getUTCMonth() + c.horizonMonths);
-    return r;
-  }
-  return new Date(d.getTime() + 30 * 86_400_000);
-}
-const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
 
 const STATUS_STYLE: Record<CallStatus, { label: string; color: string; dot: string }> = {
   적중: { label: "적중", color: "text-emerald-300 bg-emerald-500/15", dot: "bg-emerald-400" },
@@ -72,7 +58,6 @@ const AXIS_DESC: Record<Axis, string> = {
 
 export function TrackRecordView() {
   const [calls, setCalls] = useState<ScoredCall[] | null>(null);
-  const [agg, setAgg] = useState<CallAggregate | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalPath, setModalPath] = useState<string | null>(null);
@@ -101,7 +86,6 @@ export function TrackRecordView() {
         if (d.error) setError(d.error);
         else {
           setCalls(Array.isArray(d.calls) ? d.calls : []);
-          setAgg(d.aggregate ?? null);
         }
       })
       .catch((e) => setError(String(e)))
@@ -141,16 +125,6 @@ export function TrackRecordView() {
     () => new Set((holdings ?? []).map((h) => h.ticker.trim().toUpperCase())),
     [holdings]
   );
-
-  // 진행중 콜들의 예상 첫 채점일 중 가장 이른 날짜(TASK-78 빈 상태 안내).
-  const earliestResolve = useMemo(() => {
-    const dates = (calls ?? [])
-      .filter((c) => c.status === "진행중")
-      .map(expectedResolveDate)
-      .filter((d): d is Date => d != null);
-    if (dates.length === 0) return null;
-    return dates.reduce((a, b) => (a < b ? a : b));
-  }, [calls]);
 
   // 종목당 최신 콜 1건으로 접는다 — "누가 기록했나"가 아니라 "이 종목의 현재 판단"이
   // 표의 주인공이 되게. 같은 종목의 이전 콜(스킬 이력)은 행을 펼치면 나온다.
@@ -198,11 +172,7 @@ export function TrackRecordView() {
 
   return (
     <div>
-      <p className="text-sm text-mute mb-6 leading-relaxed">
-        과거 매수/보유/회피 콜을 <span className="text-body">외부 실측(Yahoo 시세)</span>으로
-        채점합니다. 콜 시점가는 낸 순간 박제되어 수정되지 않으며, 채점 기준은 모델이 아니라 시장입니다.
-      </p>
-
+      {/* 상단 설명 문단은 제거됨(2026-08-12 요청). 채점 규칙은 표 아래 범례가 담는다. */}
       {loading && !calls && <p className="text-xs text-mute">불러오는 중...</p>}
 
       {error && (
@@ -229,29 +199,10 @@ export function TrackRecordView() {
         </div>
       )}
 
-      {calls && calls.length > 0 && agg && (
+      {/* 집계(agg) 게이트를 뺐다 — '확정 콜 0건' 안내가 사라져 agg를 쓸 데가 없고,
+          그대로 두면 집계가 없을 때 표까지 안 뜬다. */}
+      {calls && calls.length > 0 && (
         <>
-          {/* 확정 콜 0건: "왜 비어있는지"를 명시(TASK-78). 콜은 있으나 전부 채점 기준일
-              미경과라 방향 적중률이 "—"로 뜨는 상황을 빈 화면처럼 오해하지 않게 한다. */}
-          {agg.resolvedCount === 0 && (
-            <div className="mb-5 rounded-lg border border-hairline bg-canvas-card px-5 py-4">
-              <div className="flex items-start gap-2.5">
-                <span className="mt-1 inline-block w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                <div className="text-xs leading-relaxed text-body">
-                  <span className="text-ink">아직 확정된 콜이 없습니다.</span> 콜 {calls.length}건이
-                  모두 채점 기준일(목표 horizon, 미지정 시 최소 30일) 미경과라 방향 적중률을 낼 수
-                  없습니다. 아래 진행 중 콜은 채점 대기 상태입니다.
-                  {earliestResolve && (
-                    <>
-                      {" "}가장 이른 첫 채점 예정:{" "}
-                      <span className="font-mono text-ink">{fmtDate(earliestResolve)}</span>.
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* 콜 목록 표 — 넓은 화면에서 표, 좁으면 자체 가로 스크롤.
               상단 집계 카드(KPI 4 + 성적표 2)는 제거됨 — 표 자체가 판단 근거다. */}
           {/* 대상 축 탭 — 실제 보유 vs 아직 안 산 것. 실적 캘린더의 축 탭과 같은 어휘·모양.
