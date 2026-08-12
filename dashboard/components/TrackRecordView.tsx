@@ -60,6 +60,16 @@ function moveColor(v: number | null | undefined): string {
   return v >= 0 ? "text-red-400" : "text-breeze";
 }
 
+// 표시 축 — '실제 들고 있는 것'과 '아직 안 산 것'은 읽는 목적이 다르다.
+// 보유는 "지금 어떻게 되고 있나"(손익·논제 훼손 여부), 관찰은 "언제 살 수 있나"(진입 밴드까지 거리).
+// 실적 캘린더(EarningsCalendar)의 대상 축 탭과 같은 어휘를 쓴다.
+type Axis = "all" | "held" | "watch";
+const AXIS_DESC: Record<Axis, string> = {
+  all: "기록된 모든 콜. 보유 여부와 무관하게 판단 이력 전체를 봅니다.",
+  held: "포트폴리오(토스)에 실제로 있는 종목. 매수가 열이 채워지고, 관심사는 '논제가 아직 유효한가'입니다.",
+  watch: "논제만 세우고 사지 않은 종목(관망·회피). 관심사는 '진입 밴드까지 얼마나 남았나'입니다.",
+};
+
 export function TrackRecordView() {
   const [calls, setCalls] = useState<ScoredCall[] | null>(null);
   const [agg, setAgg] = useState<CallAggregate | null>(null);
@@ -70,6 +80,8 @@ export function TrackRecordView() {
   // 포트폴리오(토스)에서 평단가를 가져와 붙인다. 이 열이 비어도 표는 그대로 유효하므로
   // 실패는 조용히 무시하고 '—'로 둔다(트랙레코드가 보유 조회에 발목 잡히지 않게).
   const [holdings, setHoldings] = useState<Holding[] | null>(holdingsCache);
+  // 표시 축(보유 / 관찰 / 전체). 기본은 전체 — 축을 나누기 전 동작을 그대로 유지한다.
+  const [axis, setAxis] = useState<Axis>("all");
   // 진행중 콜 상세(핵심 가정·무효화 조건) 펼침 상태(TASK-79). 여러 행 동시 펼침 허용.
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const toggleExpand = (id: string) =>
@@ -122,6 +134,14 @@ export function TrackRecordView() {
     return m;
   }, [holdings]);
 
+  // 보유 판정은 **포트폴리오 보유 목록**으로만 한다 — 콜 종류(keep/buy)로 추론하지 않는다.
+  // buy 콜은 "지금 사도 좋다"는 분석 결론일 뿐 사용자가 샀다는 뜻이 아니기 때문이다
+  // (CLAUDE.md '보유 상태의 기본값은 항상 미보유·관망'과 같은 규칙).
+  const heldTickers = useMemo(
+    () => new Set((holdings ?? []).map((h) => h.ticker.trim().toUpperCase())),
+    [holdings]
+  );
+
   // 진행중 콜들의 예상 첫 채점일 중 가장 이른 날짜(TASK-78 빈 상태 안내).
   const earliestResolve = useMemo(() => {
     const dates = (calls ?? [])
@@ -148,6 +168,33 @@ export function TrackRecordView() {
     }
     return { latest: Array.from(seen.values()), historyByTicker: hist };
   }, [calls]);
+
+  // 축별 행 목록. 보유 조회가 실패/미로딩이면 held/watch를 가를 근거가 없으므로
+  // 분리를 시도하지 않고 전체를 그대로 보여준다(빈 표로 오해하지 않게 안내는 따로 띄운다).
+  const holdingsReady = holdings != null && holdings.length > 0;
+  const rows = useMemo(() => {
+    if (axis === "all" || !holdingsReady) return latest;
+    const held = (c: ScoredCall) => heldTickers.has(c.ticker.trim().toUpperCase());
+    return latest.filter((c) => (axis === "held" ? held(c) : !held(c)));
+  }, [axis, latest, heldTickers, holdingsReady]);
+
+  const AXES: { id: Axis; label: string; count: number | null }[] = [
+    { id: "all", label: "전체", count: latest.length },
+    {
+      id: "held",
+      label: "보유 종목",
+      count: holdingsReady
+        ? latest.filter((c) => heldTickers.has(c.ticker.trim().toUpperCase())).length
+        : null,
+    },
+    {
+      id: "watch",
+      label: "관찰 논제",
+      count: holdingsReady
+        ? latest.filter((c) => !heldTickers.has(c.ticker.trim().toUpperCase())).length
+        : null,
+    },
+  ];
 
   return (
     <div>
@@ -207,9 +254,45 @@ export function TrackRecordView() {
 
           {/* 콜 목록 표 — 넓은 화면에서 표, 좁으면 자체 가로 스크롤.
               상단 집계 카드(KPI 4 + 성적표 2)는 제거됨 — 표 자체가 판단 근거다. */}
-          <p className="text-[11px] text-mute mb-2">
-            종목당 <span className="text-body">최신 콜 1건</span>만 표시합니다. 같은 종목의 이전
-            콜(스킬 이력)은 행을 눌러 펼치면 나옵니다.
+          {/* 대상 축 탭 — 실제 보유 vs 아직 안 산 것. 실적 캘린더의 축 탭과 같은 어휘·모양.
+              보유 판정은 포트폴리오(토스) 목록으로만 하고 콜 종류로 추론하지 않는다. */}
+          <div
+            role="group"
+            aria-label="트랙레코드 대상"
+            className="mb-3 inline-flex rounded-full border border-hairline bg-canvas-soft p-0.5"
+          >
+            {AXES.map((a) => {
+              const active = axis === a.id;
+              const disabled = a.id !== "all" && !holdingsReady;
+              return (
+                <button
+                  key={a.id}
+                  onClick={() => !disabled && setAxis(a.id)}
+                  aria-pressed={active}
+                  disabled={disabled}
+                  title={disabled ? "보유 정보를 불러오지 못해 축을 나눌 수 없습니다." : AXIS_DESC[a.id]}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium transition-colors active:scale-95 ${
+                    active ? "bg-white text-canvas" : "text-mute hover:text-ink"
+                  } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
+                >
+                  {a.label}
+                  {a.count != null && (
+                    <span className={active ? "text-canvas/60" : "text-mute/70"}>{a.count}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="text-[11px] text-mute mb-2 leading-relaxed">
+            {AXIS_DESC[axis]} 종목당 <span className="text-body">최신 콜 1건</span>만 표시하며,
+            같은 종목의 이전 콜(스킬 이력)은 행을 눌러 펼치면 나옵니다.
+            {!holdingsReady && (
+              <span className="text-amber-300">
+                {" "}보유 정보를 불러오지 못해 <span className="text-body">보유·관찰 분리가 비활성</span>입니다 —
+                전체만 표시합니다.
+              </span>
+            )}
           </p>
           <div className="rounded-lg border border-hairline bg-canvas-card overflow-hidden">
             <div className="overflow-x-auto scroll-slim">
@@ -226,7 +309,16 @@ export function TrackRecordView() {
                   </tr>
                 </thead>
                 <tbody>
-                  {latest.map((c) => {
+                  {rows.length === 0 && (
+                    <tr>
+                      <td colSpan={8} className="px-3 py-8 text-center text-xs text-mute">
+                        {axis === "held"
+                          ? "보유 종목 중 콜이 기록된 것이 없습니다."
+                          : "관찰 논제가 없습니다 — 기록된 콜이 전부 보유 종목입니다."}
+                      </td>
+                    </tr>
+                  )}
+                  {rows.map((c) => {
                     const cl = CALL_LABEL[c.call] ?? CALL_LABEL.hold;
                     const st = STATUS_STYLE[c.status] ?? STATUS_STYLE.unknown;
                     const band = bandOf(c);
@@ -250,6 +342,13 @@ export function TrackRecordView() {
                               ▶
                             </span>
                             <span className="font-mono text-ink">{c.ticker}</span>
+                            {/* '전체' 축에서는 어느 게 실제 보유인지 행 단위로 보이게 한다
+                                (보유 축에서는 전부 보유라 중복 표기가 된다). */}
+                            {axis === "all" && heldTickers.has(c.ticker.trim().toUpperCase()) && (
+                              <span className="shrink-0 rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute">
+                                보유
+                              </span>
+                            )}
                             {history.length > 0 && (
                               <span className="shrink-0 rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute">
                                 이력 {history.length}
