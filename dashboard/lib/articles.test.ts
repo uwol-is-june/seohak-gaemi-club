@@ -28,7 +28,13 @@ eq("아티클: 날짜 없으면 아님", isArticlePath("reports/GOOGL/GOOGL-arti
 eq(
   "아티클 파싱: 종목",
   parseArticle(co("GOOGL", "GOOGL-article-20260806.md")),
-  { path: "reports/GOOGL/GOOGL-article-20260806.md", name: "GOOGL-article-20260806.md", subject: "GOOGL", date: "2026-08-06" }
+  {
+    path: "reports/GOOGL/GOOGL-article-20260806.md",
+    name: "GOOGL-article-20260806.md",
+    subject: "GOOGL",
+    date: "2026-08-06",
+    cardCommand: "/article-cards reports/GOOGL/GOOGL-article-20260806.md",
+  }
 );
 eq(
   "아티클 파싱: 루트 주제(섹터명 복원)",

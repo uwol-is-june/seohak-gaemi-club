@@ -60,15 +60,17 @@ export function ArticlesView({
     setSelected((prev) => (prev && articleKey.includes(prev) ? prev : firstArticle));
   }, [articleKey, firstArticle]);
 
-  const copyCmd = async (s: ArticleSource) => {
+  // 소재 행과 아티클 행이 같은 경로를 쓸 일은 없지만, 표시 키는 용도별로 분리해 둔다.
+  const copy = async (key: string, command: string) => {
     try {
-      await navigator.clipboard.writeText(s.command);
-      setCopied(s.path);
-      setTimeout(() => setCopied((c) => (c === s.path ? null : c)), 2000);
+      await navigator.clipboard.writeText(command);
+      setCopied(key);
+      setTimeout(() => setCopied((c) => (c === key ? null : c)), 2000);
     } catch {
       // 클립보드 API 미지원/거부 시 무시(성공 표시 안 함).
     }
   };
+  const copyCmd = (s: ArticleSource) => copy(s.path, s.command);
 
   if (!files && !loadError) return <p className="text-xs text-mute">불러오는 중...</p>;
 
@@ -113,10 +115,16 @@ export function ArticlesView({
 
       {/* ── 발행된 아티클 ── */}
       <section>
-        <div className="flex items-baseline gap-2 mb-2">
+        <div className="flex items-baseline gap-2 mb-1">
           <span className="eyebrow text-[10px] text-ink">발행된 아티클</span>
           <span className="text-[11px] text-mute">{index.articles.length}건</span>
         </div>
+        <p className="text-[11px] text-mute mb-2 leading-relaxed">
+          행을 누르면 본문이 펼쳐진다. <span className="text-body">카드뉴스</span> 를 누르면 SNS용
+          카드(1080×1350 PNG) 제작 명령이 복사된다 — 산출물은{" "}
+          <span className="font-mono text-body">assets/cards/</span> 로 나가고 대시보드에는 뜨지 않는다.
+          카드는 <span className="text-body">아티클 본문만 재편집</span>할 뿐 새로 조사하지 않는다.
+        </p>
         {index.articles.length === 0 ? (
           <div className="rounded-lg border border-hairline bg-canvas-soft p-8 text-center">
             <div className="text-base text-ink tracking-[-0.02em]">아직 쓴 아티클이 없습니다</div>
@@ -126,25 +134,31 @@ export function ArticlesView({
             </p>
           </div>
         ) : (
+          /* 행 = 토글. 본문이 목록 아래 따로 뜨면 어느 행의 글인지 눈으로 이어야 했다.
+             누른 자리에서 바로 펼쳐지고, 다시 누르면 접힌다(한 번에 하나만). */
           <div className="flex flex-col gap-1.5">
-            {index.articles.map((a) => (
-              <ArticleRow
-                key={a.path}
-                article={a}
-                active={selected === a.path}
-                onSelect={() => setSelected(a.path)}
-              />
-            ))}
+            {index.articles.map((a) => {
+              const open = selected === a.path;
+              return (
+                <div key={a.path} className="flex flex-col">
+                  <ArticleRow
+                    article={a}
+                    open={open}
+                    onToggle={() => setSelected(open ? null : a.path)}
+                    copied={copied === `cards:${a.path}`}
+                    onCopyCards={() => copy(`cards:${a.path}`, a.cardCommand)}
+                  />
+                  {open && (
+                    <div className="mt-1.5 rounded-lg border border-hairline bg-canvas-card p-5 sm:p-6">
+                      <ReportContentView path={a.path} onOpenReport={onOpenReport} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </section>
-
-      {/* ── 선택한 아티클 본문 ── */}
-      {selected && (
-        <div className="rounded-lg border border-hairline bg-canvas-card p-5 sm:p-6">
-          <ReportContentView path={selected} onOpenReport={onOpenReport} />
-        </div>
-      )}
 
       {/* ── 권장 소재 (Tier A) ── */}
       <section>
@@ -210,30 +224,70 @@ function Stat({ label, value, hint }: { label: string; value: string; hint: stri
   );
 }
 
+// 행 전체가 토글이지만 카드뉴스 pill 이 그 안에 있다 — 버튼 중첩은 유효하지 않은 HTML 이라
+// 바깥을 div 로 두고 제목 영역만 버튼으로 만든다(SourceRow 와 같은 구성).
 function ArticleRow({
   article,
-  active,
-  onSelect,
+  open,
+  onToggle,
+  copied,
+  onCopyCards,
 }: {
   article: Article;
-  active: boolean;
-  onSelect: () => void;
+  open: boolean;
+  onToggle: () => void;
+  copied: boolean;
+  onCopyCards: () => void;
 }) {
   return (
-    <button
-      onClick={onSelect}
-      className={`w-full text-left rounded-lg border px-4 py-3 transition-all active:scale-[0.99] flex items-center gap-3 ${
-        active
+    <div
+      className={`rounded-lg border px-4 py-3 transition-all flex items-center gap-3 ${
+        open
           ? "border-white/30 bg-canvas-soft"
           : "border-hairline bg-canvas-card hover:border-white/20 hover:bg-canvas-soft"
       }`}
     >
-      <span className="shrink-0 rounded-full px-2 py-0.5 text-[11px] text-emerald-300 bg-emerald-500/15">
-        아티클
-      </span>
-      <span className="min-w-0 flex-1 truncate text-sm text-ink tracking-[-0.01em]">{article.subject}</span>
-      <span className="shrink-0 text-[11px] font-mono text-mute">{article.date ?? "—"}</span>
-    </button>
+      <button
+        onClick={onToggle}
+        aria-expanded={open}
+        title={open ? "본문 접기" : "본문 펼치기"}
+        className="min-w-0 flex-1 text-left flex items-center gap-3 transition-transform active:scale-[0.99]"
+      >
+        {/* 보고서 카드(CollapsibleReportCard)와 같은 꺾쇠 — 펼침이면 90° 회전. */}
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className={`shrink-0 text-mute transition-transform ${open ? "rotate-90" : ""}`}
+        >
+          <path d="m9 6 6 6-6 6" />
+        </svg>
+        <span className="shrink-0 rounded-full px-2 py-0.5 text-[11px] text-emerald-300 bg-emerald-500/15">
+          아티클
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm text-ink tracking-[-0.01em]">{article.subject}</span>
+      </button>
+      <span className="shrink-0 text-[11px] font-mono text-mute hidden sm:inline">{article.date ?? "—"}</span>
+      {/* 발행된 글에서만 만들 수 있으므로 소재가 아니라 이 행에 붙인다.
+          산출물은 assets/cards/{slug}/ 로 나가고 대시보드는 읽지 않는다(SNS 업로드용). */}
+      <button
+        onClick={onCopyCards}
+        title={article.cardCommand}
+        className={`shrink-0 rounded-full px-3 py-1 text-xs transition-colors active:scale-95 ${
+          copied
+            ? "bg-white text-canvas"
+            : "border border-hairline text-body hover:text-ink hover:bg-canvas-soft"
+        }`}
+      >
+        {copied ? "복사됨 ✓" : "카드뉴스"}
+      </button>
+    </div>
   );
 }
 

@@ -47,6 +47,9 @@ export interface Article {
   name: string;
   subject: string;
   date: string | null;
+  // 카드뉴스 제작 명령(/article-cards). 소재를 못 찾으면 웹으로 빠지는 /investment-article 과
+  // 같은 이유로 여기서도 **경로를 박아** 넘긴다 — 티커만 주면 스킬이 파일을 다시 찾아야 한다.
+  cardCommand: string;
 }
 
 export interface ArticleIndex {
@@ -89,6 +92,7 @@ export function parseArticle(input: ArticleInput): Article | null {
     name: input.name,
     subject: input.company ?? rootSubject(input.name),
     date: articleDate(input.name),
+    cardCommand: `/article-cards ${input.path}`,
   };
 }
 
