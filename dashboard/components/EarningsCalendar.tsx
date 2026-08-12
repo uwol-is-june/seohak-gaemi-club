@@ -5,7 +5,7 @@ import { Holding } from "@/lib/toss";
 import { ScoredCall } from "@/lib/calls";
 import { CALL_LABEL } from "@/lib/report-helpers";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
-import { earningsDayInfo, earningsReviewedAt, EarningsInfo, REVIEW_WINDOW_DAYS } from "@/lib/earnings-day";
+import { earningsDayInfo, earningsReviewedAt, EarningsInfo } from "@/lib/earnings-day";
 import type { ReportFile } from "@/lib/reports-store";
 
 // /api/earnings-calendar 의 티커 상한(MAX_TICKERS)과 같은 값. 트랙레코드 전체는
@@ -172,22 +172,11 @@ export function EarningsCalendar({
 
   return (
     <section className="mb-8 rounded-lg border border-hairline bg-canvas-card p-5">
-      <div className="flex items-center justify-between gap-3 mb-1">
-        <h2 className="eyebrow text-[11px]">실적 캘린더</h2>
-        {(loading || (axis === "calls" && callsLoading)) && (
-          <span className="text-[11px] text-mute">불러오는 중…</span>
-        )}
-      </div>
-      <p className="text-xs text-mute mb-4 leading-relaxed">
-        {axis === "holdings"
-          ? "보유 종목의 실적 발표일. 발표 직후 아래 프로세스로 점검하세요."
-          : "콜 원장에 판단이 기록된 전 종목의 실적 발표일. 미보유 관망·회피 종목도 실적으로 논제가 갱신됩니다."}
-        <span className="text-mute/70">
-          {" "}
-          발표 후 {REVIEW_WINDOW_DAYS}일간은 D+로 맨 위에 남고, 그 사이 실적 보고서를 쓰면
-          &lsquo;점검 완료&rsquo;로 내려갑니다. 다가오는 날짜는 Yahoo 추정치로, 확정 전엔 바뀔 수 있습니다.
-        </span>
-      </p>
+      {/* 제목·설명 문구는 제거됨(2026-08-12 요청) — 축 탭과 D± 배지가 같은 정보를
+          이미 담고 있어 중복이었다. 로딩 표시만 남긴다. */}
+      {(loading || (axis === "calls" && callsLoading)) && (
+        <p className="text-[11px] text-mute mb-3">불러오는 중…</p>
+      )}
 
       {/* 대상 축 탭 — 보유(토스) vs 트랙레코드 전체(콜 원장) */}
       <div

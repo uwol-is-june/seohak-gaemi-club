@@ -35,7 +35,8 @@ export interface FlowQuarter {
 export interface Flow {
   id: string;
   title: string;
-  subtitle: string;
+  /** 플로우 부제. 없으면 렌더하지 않는다(실적 점검은 의도적으로 비워둠). */
+  subtitle?: string;
   color: string;
   steps: FlowStep[];
   startPoints?: FlowStartPoint[];
@@ -139,7 +140,6 @@ export const flows: Flow[] = [
   {
     id: "earnings",
     title: "실적 점검",
-    subtitle: "실적 발표 후 → 원본 분석 → 논제 업데이트",
     color: "brand",
     steps: [
       {

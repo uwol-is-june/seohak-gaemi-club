@@ -53,7 +53,9 @@ export function FlowModal({ flow, onClose }: { flow: Flow; onClose: () => void }
             </button>
           </div>
           <div className="px-6 py-6">
-            <p className="text-sm text-mute mb-4 leading-relaxed">{flow.subtitle}</p>
+            {flow.subtitle && (
+              <p className="text-sm text-mute mb-4 leading-relaxed">{flow.subtitle}</p>
+            )}
             <div className="flex flex-col gap-2">
               {flow.steps.map((step, i) => (
                 <StepCard
