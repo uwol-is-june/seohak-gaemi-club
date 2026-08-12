@@ -36,6 +36,14 @@ const html = template.replace(
   `<script>window.CARD_DATA = ${JSON.stringify(data).replace(/</g, "\\u003c")};</script>\n<script>`,
 );
 
+// 표지에 종목명이 없으면 무슨 글인지 모른 채 넘어간다 — 조용히 넘기지 않는다.
+if (data.cards?.some((c) => c.type === "cover") && !data.company) {
+  console.error(
+    `⚠ company 가 없다 — 표지에 티커(${data.ticker})만 뜬다.\n` +
+      `  한글 종목명을 넣어라: "company": "스페이스X", "exchange": "NASDAQ"`
+  );
+}
+
 if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
 
 const browser = await chromium.launch({ channel: "chrome" });

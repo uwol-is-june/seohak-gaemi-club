@@ -1,6 +1,8 @@
 {
   "source": "reports/SPCX/SPCX-article-20260810.md",
   "ticker": "SPCX",
+  "company": "스페이스X",
+  "exchange": "NASDAQ",
   "meta": "2026.08.10",
   "brand": "서학개미클럽",
   "footDefault": "출처: SPCX-news-20260810.md",

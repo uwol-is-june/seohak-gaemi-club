@@ -10,6 +10,8 @@
     --fg: #e8edf3;
     --fg-dim: #8b949e;
     --accent: #4da3ff;
+    --accent-soft: rgba(77, 163, 255, 0.12);
+    --accent-line: rgba(77, 163, 255, 0.35);
     --up: #ff5f56;      /* 한국 관행: 상승 = 빨강 */
     --down: #3b9dff;
   }
@@ -90,6 +92,20 @@
   .body > * + .tl,
   .body > * + table { margin-top: 60px; }
   .cover .lead { margin-top: 40px; font-size: 34px; }
+
+  /* 커버의 종목 표시 — 무슨 종목 글인지가 표지에서 3초 안에 안 읽히면 안 넘긴다.
+     카피에 회사명을 넣는 건 매번 잊는다(2026-08-12 실제 누락) → 데이터에서 자동으로 박는다. */
+  .company {
+    display: flex; align-items: center; gap: 20px;
+    font-size: 46px; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--fg); margin-bottom: 26px;
+  }
+  .company .tk {
+    font-size: 26px; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--accent); background: var(--accent-soft);
+    border: 1px solid var(--accent-line); border-radius: 999px;
+    padding: 8px 20px; white-space: nowrap;
+  }
   strong { color: var(--fg); font-weight: 800; }
   em { color: var(--accent); font-style: normal; font-weight: 800; }
   /* 형광펜(==텍스트==) — 밈 톤의 핵심 장치. 한 카드에 하나만 쓴다, 둘부터는 아무것도 안 보인다 */
@@ -228,6 +244,10 @@ document.body.innerHTML = D.cards.map((c, i) => `
     </header>
     <div class="body">
       ${c.eyebrow ? `<div class="eyebrow">${esc(c.eyebrow)}</div>` : ''}
+      ${c.type === 'cover' && (D.company || D.ticker) ? `<div class="company">
+        <span>${esc(D.company || D.ticker)}</span>
+        <span class="tk">${esc(D.exchange ? `${D.exchange}: ${D.ticker}` : D.ticker)}</span>
+      </div>` : ''}
       ${c.title ? (c.type === 'cover' ? `<h1>${rich(c.title)}</h1>` : `<h2>${rich(c.title)}</h2>`) : ''}
       ${(c.blocks || []).map(b => blocks[b.t](b)).join('')}
     </div>
