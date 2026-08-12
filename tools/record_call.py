@@ -124,6 +124,14 @@ def build_call(args: argparse.Namespace) -> dict:
             target["high"] = args.target_high
         if args.horizon_months is not None:
             target["horizonMonths"] = args.horizon_months
+        # 분할 진입 래더(선택). low~high 두 숫자만으로는 "얼마부터 순차적으로 사는가"를
+        # 알 수 없어 대시보드 밴드 열이 실행 불가능한 정보가 된다 — 차수별 원문을 그대로 싣는다.
+        # 자유 문자열로 두는 이유: 차수 수·비중 표기(25% / 1/3)·AND 조건이 종목마다 달라
+        # 스키마를 고정하면 표현을 잃는다. 형식은 "N차 ≤$가격 (비중) — AND 조건".
+        if args.tranche:
+            target["tranches"] = args.tranche
+        if args.no_chase is not None:
+            target["noChaseAbove"] = args.no_chase
         row["target"] = target
 
     if args.load_bearing:
@@ -172,6 +180,11 @@ def main() -> None:
     ap.add_argument("--target-low", type=float, help="목표가 밴드 하단(USD)")
     ap.add_argument("--target-high", type=float, help="목표가 밴드 상단(USD)")
     ap.add_argument("--horizon-months", type=int, help="목표 도달 기간(개월)")
+    ap.add_argument("--tranche", nargs="*", action="extend", default=None,
+                    help='분할 진입 래더 — 차수별로 하나씩. '
+                         '예: --tranche "1차 ≤$185 (25%%) — 계약화 비율 60%%+ 공시" "2차 ≤$165 (35%%)"')
+    ap.add_argument("--no-chase", type=float, default=None,
+                    help="추격 금지선(USD). 이 가격을 넘으면 어떤 차수도 활성화되지 않는다")
     # action="extend" — 한 플래그에 값 여러 개(`--load-bearing "A" "B"`)도, 플래그 반복
     # (`--load-bearing "A" --load-bearing "B"`)도 모두 누적된다. nargs="*" 단독이면 플래그를
     # 반복했을 때 앞의 값이 **조용히 덮어써져 마지막 1개만 남는다**(실측: NVDA 콜 2건에서

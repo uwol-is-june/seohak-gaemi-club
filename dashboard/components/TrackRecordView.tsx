@@ -322,6 +322,11 @@ export function TrackRecordView() {
                     const cl = CALL_LABEL[c.call] ?? CALL_LABEL.hold;
                     const st = STATUS_STYLE[c.status] ?? STATUS_STYLE.unknown;
                     const band = bandOf(c);
+                    const tranches = c.target?.tranches ?? [];
+                    const noChase = c.target?.noChaseAbove ?? null;
+                    // 추격금지선을 이미 넘었으면 래더가 전부 잠긴 상태라 눈에 띄게 표시한다.
+                    const chaseBreached =
+                      noChase != null && c.priceNow != null && c.priceNow > noChase;
                     const avgPrice = avgPriceByTicker[c.ticker.toUpperCase()] ?? null;
                     const history = historyByTicker.get(c.ticker) ?? [];
                     const isOpen = expanded.has(c.id);
@@ -381,19 +386,45 @@ export function TrackRecordView() {
                         <td className="px-3 py-2.5 font-mono text-body">
                           {typeof c.priceNow === "number" ? `$${c.priceNow.toFixed(2)}` : "—"}
                         </td>
+                        {/* 밴드 열 — 래더가 있으면 차수를 그대로 세로로 편다.
+                            "$148~185" 두 숫자는 '얼마부터 순차적으로 사는가'에 답하지 못해
+                            그대로는 주문에 옮길 수 없다. 래더가 없는 콜만 밴드로 폴백한다. */}
                         <td className="px-3 py-2.5 text-[11px]">
                           {band ? (
-                            <span
-                              className="flex items-baseline gap-1.5"
-                              title={`${band.long} — ${band.why}`}
-                            >
-                              <span className="eyebrow text-[9px] text-mute shrink-0">
-                                {band.label}
+                            <div className="flex flex-col gap-1">
+                              <span
+                                className="flex items-baseline gap-1.5"
+                                title={`${band.long} — ${band.why}`}
+                              >
+                                <span className="eyebrow text-[9px] text-mute shrink-0">
+                                  {band.label}
+                                </span>
+                                <span className="font-mono text-body whitespace-nowrap">
+                                  {band.value}
+                                </span>
                               </span>
-                              <span className="font-mono text-body whitespace-nowrap">
-                                {band.value}
-                              </span>
-                            </span>
+                              {tranches.length > 0 && (
+                                <ul className="flex flex-col gap-0.5 max-w-[260px]">
+                                  {tranches.map((t, i) => (
+                                    <li
+                                      key={i}
+                                      className="font-mono text-[10px] text-body leading-snug"
+                                    >
+                                      {t}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                              {noChase != null && (
+                                <span
+                                  className={`text-[10px] ${chaseBreached ? "text-red-300" : "text-mute"}`}
+                                  title="이 가격을 넘으면 어떤 차수도 활성화되지 않는다"
+                                >
+                                  추격금지 &gt;${noChase}
+                                  {chaseBreached && " · 초과"}
+                                </span>
+                              )}
+                            </div>
                           ) : (
                             <span className="font-mono text-mute">—</span>
                           )}
@@ -606,6 +637,13 @@ export function TrackRecordView() {
           {/* 밴드 열 범례 — 같은 숫자가 콜 종류에 따라 정반대를 뜻하므로,
               라벨만 보고도 읽히도록 두 의미를 명시한다. */}
           <p className="mt-3 text-[11px] text-mute leading-relaxed">
+            ※ <span className="text-body">밴드</span> 열의 <span className="text-body">차수(1차·2차·3차)</span>는{" "}
+            <span className="text-body">분할 진입 래더</span>입니다 — 어느 가격에서 얼마씩 살지를 그대로 옮긴 것으로,{" "}
+            <span className="text-body">AND 조건이 붙은 차수는 가격만 닿아도 집행하지 않습니다</span>(조건 미충족 시
+            조건 없는 최하단 차수까지 대기). <span className="text-body">추격금지</span>선을 넘은 종목은 어떤 차수도
+            활성화되지 않습니다.
+          </p>
+          <p className="mt-1.5 text-[11px] text-mute leading-relaxed">
             ※ <span className="text-body">밴드</span> 열은 콜 종류에 따라 의미가 다릅니다 —{" "}
             <span className="eyebrow text-[9px]">진입</span>(관망)은{" "}
             <span className="text-body">내려오길 기다리는 매수 구간</span>으로 밴드 안으로의 회귀가

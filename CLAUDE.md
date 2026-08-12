@@ -240,6 +240,22 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
   대시보드 렌더러가 `rehype-raw`+`rehype-sanitize`로 이를 지원한다(2026-08-12 적용).
   마크다운에는 표 셀 줄바꿈 문법이 없어 `<br>`가 유일한 방법이다.
 
+> 🔴 **래더는 `track-record.md`뿐 아니라 반드시 `data/calls.jsonl`에도 넣는다.**
+> **대시보드 '트랙레코드' 탭은 `track-record.md`를 읽지 않는다** — 원장만 읽는다.
+> 마크다운에만 적으면 **화면에는 `$148~185` 두 숫자만 뜬다**(2026-08-12 실제 발생).
+> `record_call.py` 호출 시 아래 두 플래그를 **항상 함께** 넘긴다:
+>
+> ```bash
+> python3 tools/record_call.py --ticker CEG --skill thesis-tracker --call hold \
+>   --target-low 148 --target-high 185 --horizon-months 24 \
+>   --tranche "1차 ≤\$185 (25%) — AND 계약화 60%+ 공시" \
+>            "2차 ≤\$165 (35%) — AND GRC 관대~중간 확정" \
+>            "3차 ≤\$148 (40%) — 조건 없음" \
+>   --no-chase 237
+> ```
+>
+> 차수를 아직 안 나눴으면 `--tranche`를 생략한다(빈 값·추정 금지). 화면에는 밴드만 뜬다.
+
 ### ⚠️ 스킬 설치본 동기화
 
 콜 기록 단계는 `skills/`에만 있고 `~/.claude/commands/`가 구버전이면 **실행되지 않는다**

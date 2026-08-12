@@ -28,7 +28,15 @@ export interface RawCall {
   priceAtCall: number; // 콜 시점 주가 USD (불변)
   conviction?: string;
   report?: string;
-  target?: { low?: number; high?: number; horizonMonths?: number };
+  target?: {
+    low?: number;
+    high?: number;
+    horizonMonths?: number;
+    /** 분할 진입 래더 원문(차수별 1줄). 예: "1차 ≤$185 (25%) — 계약화 60%+ 공시" */
+    tranches?: string[];
+    /** 추격 금지선(USD). 현재가가 이 위면 어떤 차수도 활성화되지 않는다. */
+    noChaseAbove?: number;
+  };
   loadBearing?: string[];
   invalidation?: string[];
   reason?: string; // 이 콜을 낸 사유 (관망/대기 이유 등). 채점에 영향 없는 설명 메타데이터.
@@ -56,7 +64,15 @@ export interface ScoredCall {
   targetReached: boolean | null;
   targetErrorPct: number | null;
   status: CallStatus;
-  target?: { low?: number; high?: number; horizonMonths?: number };
+  target?: {
+    low?: number;
+    high?: number;
+    horizonMonths?: number;
+    /** 분할 진입 래더 원문(차수별 1줄). 예: "1차 ≤$185 (25%) — 계약화 60%+ 공시" */
+    tranches?: string[];
+    /** 추격 금지선(USD). 현재가가 이 위면 어떤 차수도 활성화되지 않는다. */
+    noChaseAbove?: number;
+  };
   loadBearing: string[]; // 논제 핵심 가정(참이어야 콜이 유효). 채점엔 미반영, 진행중 콜 상세용.
   invalidation: string[];
   reason?: string;
