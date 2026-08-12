@@ -6,6 +6,7 @@
 // (sector-domains.ts·flows.ts 는 import 가 없어 @/ 별칭 해석 없이 바로 돌아간다.)
 import { DISCOVERY_SECTOR_GROUPS } from "./flows.ts";
 import {
+  canonicalSector,
   deriveDomainGroups,
   domainOfSector,
   mergeAutoSectorGroups,
@@ -104,16 +105,32 @@ eq(
 );
 eq(
   "sectorsInDomain: 미분류만 골라냄",
-  sectorsInDomain(groups, ["Quantum-Foo", "Cybersecurity", "양자컴퓨터"], UNCLASSIFIED_DOMAIN),
-  ["Quantum-Foo"] // '양자컴퓨터'는 별칭으로 테크/AI에 붙는다(TASK-85)
+  sectorsInDomain(groups, ["Quantum-Foo", "Cybersecurity", "Quantum-Computing"], UNCLASSIFIED_DOMAIN),
+  ["Quantum-Foo"] // 'Quantum-Computing'은 별칭으로 테크/AI에 붙는다(TASK-91)
 );
 eq("sectorsInDomain: 없는 분야는 빈 배열", sectorsInDomain(groups, ["Cybersecurity"], "에너지"), []);
+
+// ── 종목 그룹명 → 리서치 섹터명 정본화 (TASK-91) ─────────────────────────────
+// 분야 탭에서 '섹터 리서치 보고서'와 '그 퍼널이 뽑은 종목'을 한 줄에 세우려면 두 축의
+// 섹터명이 같은 문자열로 접혀야 한다. 정본은 리서치 섹터명(파일명 토큰) 쪽이다.
+const research = ["AI-Infrastructure", "AI-Semiconductors", "GLP-1-Obesity", "Copper"];
+eq("정본화: 완전 일치", canonicalSector(research, "AI-Semiconductors"), "AI-Semiconductors");
+eq("정본화: 표기 차이 흡수(공백↔하이픈)", canonicalSector(research, "AI Infrastructure"), "AI-Infrastructure");
+eq("정본화: 그룹명이 축약형", canonicalSector(research, "AI Infra"), "AI-Infrastructure");
+eq("정본화: 리서치명이 축약형(역방향)", canonicalSector(research, "Copper / Mining"), "Copper");
+// 대응하는 리서치 섹터가 없으면 그 이름 자체가 섹터가 된다(종목만 있는 섹터).
+eq("정본화: 매칭 없으면 그대로", canonicalSector(research, "Quantum-Computing"), "Quantum-Computing");
+// 짧은 키는 접두 일치로 아무 데나 붙지 않는다 — 'AI' 가 AI-Infrastructure 를 삼키면 안 된다.
+eq("정본화: 짧은 키는 접두 일치 제외", canonicalSector(research, "AI"), "AI");
+eq("정본화: 빈 문자열은 그대로", canonicalSector(research, "  "), "  ");
 
 // ── 종목 축 위계: 종목 → 섹터(사용자 종목 그룹) → 분야 (TASK-84) ──────────────
 // 종목별 보고서 탭은 sectorOfWith(종목→섹터)의 결과를 그대로 domainOfSector 에 먹인다.
 // report-helpers 는 @/ 별칭 때문에 여기서 import 할 수 없으므로 동일 규칙을 인라인으로 둔다.
 const tickerGroups = [
-  { id: "t0", name: "반도체·AI", tickers: ["NVDA", "TSM", "INTC"] },
+  // 종목 그룹명은 리서치 섹터명 표기로 통일한다(TASK-91) — 같은 섹터가 두 표기로 갈리면
+  // 분야 탭에서 섹터 칩이 둘로 쪼개진다.
+  { id: "t0", name: "AI-Semiconductors", tickers: ["NVDA", "TSM", "INTC"] },
   { id: "t1", name: "Cloud Computing", tickers: ["GOOGL"] },
   { id: "t2", name: "Fintech", tickers: ["AXP"] },
   { id: "t3", name: "E-commerce", tickers: ["AMZN"] },
@@ -126,19 +143,21 @@ const domainOfTicker = (t: string) => domainOfSector(groups, sectorOfTicker(t));
 eq("종목: GOOGL → 테크/AI", domainOfTicker("GOOGL"), "테크/AI");
 eq("종목: AXP → 금융 (Fintech ⊂ Fintech Payments)", domainOfTicker("AXP"), "금융");
 eq("종목: AMZN → 소비", domainOfTicker("AMZN"), "소비");
-// 한글·약어 섹터 그룹명도 별칭 표(DOMAIN_MEMBER_ALIASES)로 기존 분야에 붙는다(TASK-85).
-eq("종목: NVDA → 테크/AI (반도체·AI 별칭)", domainOfTicker("NVDA"), "테크/AI");
+eq("종목: NVDA → 테크/AI", domainOfTicker("NVDA"), "테크/AI");
 // 어느 종목 그룹에도 없는 티커는 여전히 미분류 — '정말로 없는 것'만 남긴다.
 eq("종목: 미배정 티커 → 미분류", domainOfTicker("ZZZZ"), UNCLASSIFIED_DOMAIN);
 
-// ── 별칭 표 전수 확인: 사용자 종목 그룹명 → 기존 분야 (TASK-85) ────────────────
-eq("별칭: 헬스케어 → 헬스케어", domainOfSector(groups, "헬스케어"), "헬스케어");
-eq("별칭: 반도체·AI → 테크/AI", domainOfSector(groups, "반도체·AI"), "테크/AI");
-eq("별칭: 양자컴퓨터 → 테크/AI", domainOfSector(groups, "양자컴퓨터"), "테크/AI");
-eq("별칭: 우주·항공 → 산업재", domainOfSector(groups, "우주·항공"), "산업재");
-eq("별칭: Enterprise SW → 테크/AI", domainOfSector(groups, "Enterprise SW"), "테크/AI");
-// 구분기호가 달라도 같은 키 → 붙는다.
-eq("별칭: '우주 항공'(중점 없음)도 산업재", domainOfSector(groups, "우주 항공"), "산업재");
+// ── 별칭 표 전수 확인: 피커 표에 없는 섹터명 → 기존 분야 (TASK-85/91) ──────────
+// 종목 그룹명을 리서치 섹터명으로 통일한 뒤(TASK-91) 대부분은 피커 표와 바로 붙는다.
+// 별칭이 남아야 하는 건 '아직 퍼널을 돌린 적 없어 피커 표에 없는 섹터'뿐이다.
+eq("별칭: Quantum-Computing → 테크/AI", domainOfSector(groups, "Quantum-Computing"), "테크/AI");
+// 통일 후의 그룹명들은 별칭 없이 피커 표와 붙어야 한다(별칭을 지운 근거).
+eq("통일: GLP-1-Obesity → 헬스케어", domainOfSector(groups, "GLP-1-Obesity"), "헬스케어");
+eq("통일: Enterprise-Software → 테크/AI", domainOfSector(groups, "Enterprise-Software"), "테크/AI");
+eq("통일: Aerospace → 산업재", domainOfSector(groups, "Aerospace"), "산업재");
+// 지운 한글 별칭은 이제 붙지 않는다 — 실재하지 않는 이름이라 붙으면 오히려 착시다.
+eq("지운 별칭: 반도체·AI → 미분류", domainOfSector(groups, "반도체·AI"), UNCLASSIFIED_DOMAIN);
+eq("지운 별칭: 우주·항공 → 미분류", domainOfSector(groups, "우주·항공"), UNCLASSIFIED_DOMAIN);
 
 // 자동으로 붙는 이름은 별칭 표에 없어도 매칭된다(별칭을 최소로 유지하는 근거).
 eq("자동: AI Infra → 테크/AI", domainOfSector(groups, "AI Infra"), "테크/AI");
@@ -148,13 +167,13 @@ eq("금융 멤버는 피커 4개 그대로", groups.find((g) => g.name === "금�
 eq(
   "별칭 dedup: 접두로 이미 붙으면 추가 안 함",
   deriveDomainGroups([{ label: "테크/AI", sectors: ["AI Infrastructure"] }])[0].tickers,
-  ["AI Infrastructure", "반도체·AI", "양자컴퓨터", "Enterprise SW"]
+  ["AI Infrastructure", "Quantum-Computing"]
 );
 
 // 사용자가 저장한 그룹은 여전히 시드를 완전히 대체한다(별칭도 함께 사라짐).
-const custom2: DomainGroup[] = [{ id: "x", name: "내분야", tickers: ["반도체·AI"] }];
-eq("사용자 그룹이 별칭 시드를 대체", domainOfSector(custom2, "반도체·AI"), "내분야");
-eq("사용자 그룹에 없으면 미분류", domainOfSector(custom2, "헬스케어"), UNCLASSIFIED_DOMAIN);
+const custom2: DomainGroup[] = [{ id: "x", name: "내분야", tickers: ["Quantum-Computing"] }];
+eq("사용자 그룹이 별칭 시드를 대체", domainOfSector(custom2, "Quantum-Computing"), "내분야");
+eq("사용자 그룹에 없으면 미분류", domainOfSector(custom2, "GLP-1-Obesity"), UNCLASSIFIED_DOMAIN);
 
 // ── 티커 → 섹터 자동 배정 병합 (TASK-90) ──────────────────────────────────────
 // 정책: 수동 그룹이 항상 이기고, 어느 그룹에도 없는 티커만 자동 맵으로 채운다.

@@ -68,6 +68,28 @@ export function orderedDomains(groups: DomainGroup[], sectors: string[]): string
   return present;
 }
 
+// 종목 그룹명을 **섹터 리서치 섹터명으로 접는다**(TASK-91).
+// 같은 섹터가 두 표기로 갈려 있다: 리서치 산출물은 파일명 토큰('AI-Infrastructure'),
+// 종목 그룹은 사용자가 지은 이름('AI Infra'). 분야 탭에서 둘을 한 줄에 놓으려면
+// 하나를 정본으로 골라야 하고, 정본은 **리서치 섹터명**이다(퍼널이 종목을 뽑은 단위라
+// 그쪽이 원본에 가깝다).
+// 매칭 규칙은 domainOfSector 와 동일 — 완전 일치 우선, 그다음 접두 일치.
+// 매칭되는 리서치 섹터가 없으면 입력값을 그대로 돌려준다(그 이름이 곧 섹터가 된다).
+export function canonicalSector(researchSectors: string[], name: string): string {
+  const key = normalizeSectorKey(name);
+  if (!key) return name;
+  for (const s of researchSectors) {
+    if (normalizeSectorKey(s) === key) return s;
+  }
+  if (key.length >= PREFIX_MIN) {
+    for (const s of researchSectors) {
+      const sk = normalizeSectorKey(s);
+      if (sk.length >= PREFIX_MIN && (sk.startsWith(key) || key.startsWith(sk))) return s;
+    }
+  }
+  return name;
+}
+
 // 선택된 분야에 속한 섹터만 추린다(입력 순서 유지). '섹터 리서치' 탭의 2차 탭과
 // '종목별 보고서' 탭의 2차 탭이 공유한다 — 두 탭이 같은 분야 판정을 쓰도록(TASK-84).
 export function sectorsInDomain(
@@ -89,10 +111,12 @@ export function sectorsInDomain(
 // 실제 종목 그룹명 중 피커 표와 자동으로 붙지 않는 것만 넣는다. 자동으로 붙는 이름
 // ('AI Infra' ⊂ 'AI Infrastructure', 'Fintech' ⊂ 'Fintech Payments', 'E-commerce',
 // 'Cloud Computing')은 여기 없어도 매칭되므로 넣지 않는다 — 가상의 이름을 미리 채우지 않는다.
+// 2026-08-12: 종목 그룹명을 전부 리서치 섹터명 표기로 통일하면서(TASK-91) 한글 별칭
+// (반도체·AI, 헬스케어, 우주·항공, 양자컴퓨터)은 실재하지 않는 이름이 됐다 → 제거.
+// 남은 것은 피커 표에 없는 섹터뿐이다: 'Quantum-Computing'(QUBT)은 아직 퍼널을 돌린 적이
+// 없어 피커 표에 없고, 여기 없으면 '미분류' 분야로 떨어진다.
 export const DOMAIN_MEMBER_ALIASES: Record<string, string[]> = {
-  "테크/AI": ["반도체·AI", "양자컴퓨터", "Enterprise SW"],
-  헬스케어: ["헬스케어"],
-  산업재: ["우주·항공"],
+  "테크/AI": ["Quantum-Computing"],
 };
 
 // ─── 티커 → 섹터 자동 배정(TASK-90) ────────────────────────────────────────

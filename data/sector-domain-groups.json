@@ -1,0 +1,77 @@
+[
+  {
+    "id": "domain-0",
+    "name": "테크/AI",
+    "tickers": [
+      "AI Semiconductors",
+      "AI Infrastructure",
+      "Cloud Computing",
+      "Cybersecurity",
+      "Enterprise Software",
+      "Quantum-Computing",
+      "AI-Infrastructure",
+      "AI-Semiconductors",
+      "Cloud-Computing",
+      "Enterprise-Software"
+    ]
+  },
+  {
+    "id": "domain-1",
+    "name": "금융",
+    "tickers": [
+      "Fintech Payments",
+      "Digital Asset",
+      "Insurance",
+      "Investment Banking",
+      "Fintech-Payments"
+    ]
+  },
+  {
+    "id": "domain-2",
+    "name": "헬스케어",
+    "tickers": [
+      "GLP-1 / Obesity Drugs",
+      "Medical Devices",
+      "Biotech",
+      "Health Insurance",
+      "GLP-1-Obesity"
+    ]
+  },
+  {
+    "id": "domain-3",
+    "name": "소비",
+    "tickers": [
+      "Luxury / Brand",
+      "E-commerce",
+      "Warehouse Retail"
+    ]
+  },
+  {
+    "id": "domain-4",
+    "name": "에너지",
+    "tickers": [
+      "Nuclear Power",
+      "Renewable Energy",
+      "Oil & Gas"
+    ]
+  },
+  {
+    "id": "domain-5",
+    "name": "산업재",
+    "tickers": [
+      "Defense",
+      "Electrical Equipment",
+      "Aerospace"
+    ]
+  },
+  {
+    "id": "domain-6",
+    "name": "소재",
+    "tickers": [
+      "Copper / Mining",
+      "Logistics",
+      "Real Estate",
+      "Copper"
+    ]
+  }
+]
