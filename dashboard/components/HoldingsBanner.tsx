@@ -21,20 +21,15 @@ const CALL_STATUS_DOT: Record<string, string> = {
   unknown: "bg-canvas-mid",
 };
 
-// 단일 종목 과대비중 경고 문턱(%). 넘으면 집중 리스크 신호(TASK-76).
-const CONCENTRATION_WARN = 30;
 
 // screenByCompany: 종목별 최신 열등주 스크리닝 판정(HomeView가 /api/reports에서 파생).
 //   → 각 보유 카드에 "최신 콜 + 스크리닝 판정 + 목표밴드" 판단 레이어(TASK-75).
-// sectorOf: 티커 → 섹터명(HomeView의 사용자 섹터 그룹 기반). 섹터 편중 위젯(TASK-76)에 쓴다.
 export function HoldingsBanner({
   screenByCompany,
-  sectorOf,
   reportedTickers,
   onDrill,
 }: {
   screenByCompany?: Record<string, string | null>;
-  sectorOf?: (ticker: string) => string;
   // 보고서가 있는 티커 집합(대문자) — 있으면 카드가 클릭 가능(TASK-77).
   reportedTickers?: Set<string>;
   // 카드 클릭 시 그 티커의 '보유 종목 보고서'로 이동(티커 축 통합).
@@ -156,21 +151,8 @@ export function HoldingsBanner({
   // 비중(평가금액) 큰 순으로 정렬해 한눈에 비교되도록.
   const sorted = [...list].sort((a, b) => b.marketValue - a.marketValue);
 
-  // ── 집중도·섹터 편중(TASK-76) ──
-  const weightPct = (h: Holding) => (total > 0 ? (h.marketValue / total) * 100 : 0);
-  const topWeight = sorted.length ? weightPct(sorted[0]) : 0;
-  const top3Weight = sorted.slice(0, 3).reduce((s, h) => s + weightPct(h), 0);
-  const overweight = sorted.filter((h) => weightPct(h) >= CONCENTRATION_WARN);
-  // 섹터별 비중 합(내림차순). sectorOf 미제공 시 빈 배열 → 섹터 바 생략.
-  const sectorDist: [string, number][] = sectorOf
-    ? Array.from(
-        list.reduce((m, h) => {
-          const s = sectorOf(h.ticker);
-          m.set(s, (m.get(s) ?? 0) + weightPct(h));
-          return m;
-        }, new Map<string, number>())
-      ).sort((a, b) => b[1] - a[1])
-    : [];
+  // 집중도·섹터 편중 계산은 스트립과 함께 제거됨(2026-08-12).
+  // 카드별 비중 표시에는 쓰이지 않으며, 집중도 분석은 /portfolio-review 의 몫이다.
 
   return (
     <section className="mb-10 rounded-lg border border-hairline bg-canvas-card p-6">
@@ -275,39 +257,8 @@ export function HoldingsBanner({
             </div>
           </div>
 
-          {/* 집중도·섹터 편중(TASK-76, 슬림): 한 줄 스트립으로 "얼마나 쏠려 있나"만
-              빠르게 읽게 한다. 상세 섹터 바 대신 상위 섹터를 텍스트로 인라인 표시. */}
-          <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-lg border border-hairline bg-canvas px-4 py-2.5 text-[11px]">
-            <span className="eyebrow text-[10px] shrink-0">집중도</span>
-            <span className="text-mute">
-              최대{" "}
-              <span className="font-mono text-ink">
-                {sorted.length ? `${sorted[0].ticker} ${topWeight.toFixed(0)}%` : "—"}
-              </span>
-            </span>
-            <span className="text-mute">
-              상위3 <span className="font-mono text-ink">{top3Weight.toFixed(0)}%</span>
-            </span>
-            <span className="text-mute">
-              종목 <span className="font-mono text-ink">{list.length}</span>
-            </span>
-            {sectorDist.length > 0 && (
-              <span className="text-mute truncate">
-                섹터{" "}
-                <span className="text-body">
-                  {sectorDist
-                    .slice(0, 3)
-                    .map(([s, w]) => `${s} ${w.toFixed(0)}%`)
-                    .join(" · ")}
-                </span>
-              </span>
-            )}
-            {overweight.length > 0 && (
-              <span className="ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-sunset-soft bg-sunset/10">
-                집중 리스크 {overweight.map((h) => h.ticker).join(", ")}
-              </span>
-            )}
-          </div>
+          {/* 집중도·섹터 편중 스트립은 제거됨(2026-08-12 요청).
+              집중도 분석은 '분기 포트폴리오 점검' 탭의 /portfolio-review 가 담당한다. */}
 
           {/* 보유 종목 — 비중 큰 순. 현재가 vs 평단을 게이지로 시각화 */}
           <div className="grid gap-2 [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]">

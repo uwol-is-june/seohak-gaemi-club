@@ -20,6 +20,7 @@ import { ResearchLaunchModal } from "./ResearchLaunchModal";
 import { CollapsibleReportCard } from "./CollapsibleReportCard";
 import { isBottleneckCompany } from "@/lib/bottleneck";
 import { isArticlePath } from "@/lib/articles";
+import { quarterDue, quarterBadge, fmtDue } from "@/lib/quarter-due";
 
 // 루트에 있지만 '섹터 리서치'가 아닌 문서(각자 전용 탭이 따로 있음).
 const ROOT_NON_SECTOR = new Set(["portfolio-latest.md", "track-record.md"]);
@@ -412,12 +413,12 @@ export function HomeView({
       label: "운용",
       items: [
         { id: "portfolio-overview", label: "포트폴리오" },
-        // 실적 발표 대응(/earnings-team). 보유 종목을 분기마다 점검하는 일이라
-        // 리서치 '프로세스'가 아니라 운용에 속한다 — 그룹이 이것 하나뿐이기도 했다.
-        // discovery(분야 탭의 도구 아이콘)·portfolio(포트폴리오 탭 안 버튼)는 이미
-        // 각자 자리로 흡수됐으므로 제외한다. 새 flow 가 생기면 여기로 들어온다.
+        // 실적 발표 대응(/earnings-team)과 분기 포트폴리오 점검(/portfolio-review).
+        // 둘 다 보유를 주기적으로 점검하는 일이라 리서치 '프로세스'가 아니라 운용이다.
+        // flows 배열 순서가 곧 탭 순서다 — earnings 다음이 portfolio.
+        // discovery 만 제외한다(분야 탭의 도구 아이콘으로 이미 흡수됨).
         ...flows
-          .filter((f) => f.id !== "discovery" && f.id !== "portfolio")
+          .filter((f) => f.id !== "discovery")
           .map((f) => ({ id: f.id, label: f.title })),
         { id: "track-record", label: "트랙레코드" },
         // 매일 09:00 자동 스캔이 남기는 공급망 병목 신호(S3). 사람이 실행하는 다른
@@ -573,7 +574,6 @@ export function HomeView({
               <div>
                 <HoldingsBanner
                   screenByCompany={screenByCompany}
-                  sectorOf={sectorOf}
                   reportedTickers={reportedTickers}
                   onDrill={drillToTicker}
                 />
@@ -581,35 +581,8 @@ export function HomeView({
                 <DailyCheckView />
               </div>
 
-              {/* ── 분기 포트폴리오 점검 (축소): 분기 1회만 쓰는 기능이라 카드 4개 대신
-                  실행 버튼 1개 + 최신 보고서 링크로 슬림화. 분기 타이밍 안내는 모달로. ── */}
-              {(() => {
-                const pf = flows.find((f) => f.id === "portfolio");
-                if (!pf) return null;
-                return (
-                  <div className="flex flex-wrap items-center gap-2 border-t border-hairline pt-6">
-                    <button
-                      onClick={() => onOpenFlowModal(pf)}
-                      className="rounded-full border border-hairline px-4 py-2 text-sm text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
-                    >
-                      분기 포트폴리오 점검 →
-                    </button>
-                    {portfolioReport ? (
-                      <button
-                        onClick={() => setModalPath(portfolioReport.path)}
-                        className="inline-flex items-center gap-2 rounded-full border border-hairline px-3 py-2 text-xs text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
-                      >
-                        <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-rose-300 bg-rose-500/10">
-                          최신 점검
-                        </span>
-                        <span className="font-mono text-body truncate max-w-[220px]">{portfolioReport.name}</span>
-                      </button>
-                    ) : (
-                      <span className="text-xs text-mute">아직 점검 보고서 없음</span>
-                    )}
-                  </div>
-                );
-              })()}
+              {/* 분기 포트폴리오 점검은 자체 탭('포트폴리오 점검')으로 분리됐다(2026-08-12).
+                  여기 있던 실행 버튼 + 최신 보고서 링크는 그 탭이 그대로 담당한다. */}
             </div>
           ) : flowTab === "track-record" ? (
             /* 트랙레코드 = 콜(예측) 자동 채점만. 수기 매매기록(실보유)은 포트폴리오 탭으로 이동(TASK-74). */
@@ -841,11 +814,47 @@ export function HomeView({
 
               // 포폴 점검: 분기별 카드
               if (flow.quarters) {
+                const today = new Date();
+                // 최신 점검 보고서의 갱신 시각 — '이번 분기는 이미 했나'를 판정하는 근거.
+                const reviewedAt = portfolioReport?.committedAt
+                  ? new Date(portfolioReport.committedAt)
+                  : null;
+                const dues = flow.quarters.map((q) => ({
+                  q,
+                  due: quarterDue(q.dueMonth, q.dueDay, today, reviewedAt),
+                }));
+                // 지금 할 차례가 있으면 그것, 없으면 가장 가까운 다음 분기.
+                const current =
+                  dues.find((x) => x.due.state === "due" || x.due.state === "done") ??
+                  dues.reduce((a, b) => (a.due.daysUntil <= b.due.daysUntil ? a : b));
                 return (
                   <div>
                     {flow.subtitle && (
               <p className="text-sm text-mute mb-4 leading-relaxed">{flow.subtitle}</p>
             )}
+                    {/* 지금 언제인지 — 카드의 "5월 중순" 문자열만으론 오늘이 그때인지 알 수 없다. */}
+                    <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-hairline bg-canvas-card px-4 py-3 text-xs">
+                      <span className="eyebrow text-[10px] shrink-0">다음 점검</span>
+                      <span className="text-ink">{current.q.label}</span>
+                      <span className="font-mono text-body">{fmtDue(current.due.date)}</span>
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                          current.due.state === "done"
+                            ? "text-emerald-300 bg-emerald-500/15"
+                            : current.due.state === "due"
+                              ? "text-sunset-soft bg-sunset/10"
+                              : "border border-hairline text-mute"
+                        }`}
+                      >
+                        {quarterBadge(current.due)}
+                      </span>
+                      <span className="text-mute">{current.q.note}</span>
+                      {current.due.state === "due" && (
+                        <span className="text-mute/70">
+                          — 상단 도구 버튼에서 실행하세요
+                        </span>
+                      )}
+                    </div>
                     {/* 최신 포트폴리오 점검 보고서 (portfolio-latest.md) */}
                     {portfolioReport ? (
                       <button
@@ -862,17 +871,32 @@ export function HomeView({
                       <p className="text-xs text-mute mb-6">아직 포트폴리오 점검 보고서가 없습니다.</p>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {flow.quarters.map((q) => (
+                      {dues.map(({ q, due }) => (
                         <button
                           key={q.label}
                           onClick={() => onOpenFlowModal(flow)}
-                          className="text-left rounded-lg border border-hairline bg-canvas-card p-5 hover:border-white/30 hover:bg-canvas-soft transition-all group active:scale-[0.99]"
+                          // 지금 할 차례인 분기는 테두리로 눈에 띄게 한다.
+                          className={`text-left rounded-lg border bg-canvas-card p-5 hover:border-white/30 hover:bg-canvas-soft transition-all group active:scale-[0.99] ${
+                            due.state === "due" ? "border-white/30" : "border-hairline"
+                          }`}
                         >
                           <div className="flex items-center justify-between gap-2 mb-2">
                             <h3 className="text-base text-ink tracking-[-0.01em]">{q.label}</h3>
-                            <span className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium border border-hairline text-body">
-                              {q.timing}
+                            <span
+                              className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                due.state === "done"
+                                  ? "text-emerald-300 bg-emerald-500/15"
+                                  : due.state === "due"
+                                    ? "text-sunset-soft bg-sunset/10"
+                                    : "border border-hairline text-body"
+                              }`}
+                            >
+                              {quarterBadge(due)}
                             </span>
+                          </div>
+                          <div className="mb-1.5 flex items-center gap-2 text-[11px]">
+                            <span className="text-mute">{q.timing}</span>
+                            <span className="font-mono text-mute/70">{fmtDue(due.date)}</span>
                           </div>
                           <p className="text-xs text-body leading-relaxed">{q.note}</p>
                           <div className="mt-3 text-xs text-ink opacity-0 group-hover:opacity-100 transition-opacity">

@@ -30,6 +30,10 @@ export interface FlowQuarter {
   label: string; // "1분기 점검"
   timing: string; // 권장 시기 "5월 중순"
   note: string; // 어떤 실적을 반영하는지
+  /** 권장 시점(월, 1~12) — timing 문자열을 파싱하지 않고 날짜 계산에 직접 쓴다. */
+  dueMonth: number;
+  /** 권장 시점(일). 그 달의 며칠을 기준일로 볼 것인가. */
+  dueDay: number;
 }
 
 export interface Flow {
@@ -172,10 +176,10 @@ export const flows: Flow[] = [
     subtitle: "분기 1회, 실적 시즌 끝난 뒤(분기말 + 약 6주) 전체 보유를 점검합니다.",
     color: "brand",
     quarters: [
-      { label: "1분기 점검", timing: "5월 중순", note: "Q1(1~3월) 실적 반영 후" },
-      { label: "2분기 점검", timing: "8월 중순", note: "Q2(4~6월) 실적 반영 후" },
-      { label: "3분기 점검", timing: "11월 중순", note: "Q3(7~9월) 실적 반영 후" },
-      { label: "4분기·연간 점검", timing: "2월 말~3월 초", note: "Q4·연간(10~12월) 실적 반영 후" },
+      { label: "1분기 점검", timing: "5월 중순", note: "Q1(1~3월) 실적 반영 후", dueMonth: 5, dueDay: 15 },
+      { label: "2분기 점검", timing: "8월 중순", note: "Q2(4~6월) 실적 반영 후", dueMonth: 8, dueDay: 15 },
+      { label: "3분기 점검", timing: "11월 중순", note: "Q3(7~9월) 실적 반영 후", dueMonth: 11, dueDay: 15 },
+      { label: "4분기·연간 점검", timing: "2월 말~3월 초", note: "Q4·연간(10~12월) 실적 반영 후", dueMonth: 3, dueDay: 1 },
     ],
     steps: [
       {
