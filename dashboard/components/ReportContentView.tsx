@@ -3,6 +3,8 @@ import { readJsonSafe } from "@/lib/fetch-json";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import remarkSentenceBreaks from "@/lib/remark-sentence-breaks";
 import { reportAsOf, resolveReportPath } from "@/lib/report-helpers";
 
@@ -69,6 +71,13 @@ export function ReportContentView({
       <article className="report-prose">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkSentenceBreaks]}
+          // 보고서 표 셀의 줄바꿈(<br>)을 살리기 위해 raw HTML을 파싱한다.
+          // 마크다운에는 **표 셀 안 줄바꿈 문법이 없어** 대안이 없다(실측: 보고서 72곳이
+          // 전부 표 안). rehypeRaw 없이는 "<br>"가 literal 텍스트로 그대로 보였다.
+          // 🔴 순서 고정: raw(파싱) → sanitize(정화). 뒤집으면 정화 전 HTML이 남는다.
+          // sanitize 는 기본 GitHub 스키마로 <br> 는 통과시키고 <script>·onerror 등
+          // 실행 가능한 것은 제거한다(로컬 파일만 읽지만 방어는 걸어둔다).
+          rehypePlugins={[rehypeRaw, rehypeSanitize]}
           components={{
             a({ href, children }) {
               // 다른 보고서(.md) 상대 링크 → 앱 안에서 모달로 연다(404 방지).
