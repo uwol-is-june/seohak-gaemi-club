@@ -18,6 +18,15 @@ memory/
 __pycache__/
 *.pyc
 
+# Node 의존성 (카드 렌더러·대시보드)
+node_modules/
+tools/cards/package-lock.json
+
+# 카드뉴스 산출물 — tools/cards/{slug}.json 에서 바이트 단위로 재생성된다.
+# 원본은 JSON이므로 이미지를 커밋하면 발행할 때마다 저장소만 커진다.
+#   재생성: node tools/cards/render.mjs tools/cards/{slug}.json
+assets/cards/
+
 # 환경변수 (키/시크릿 포함 — 절대 커밋 금지)
 .env.local
 .env*.local

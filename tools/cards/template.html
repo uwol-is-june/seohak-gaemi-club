@@ -1,0 +1,279 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>card template</title>
+<!-- doctype 필수: 없으면 쿼크 모드에서 <table>이 색·폰트를 상속하지 않아 본문이 검게 렌더된다 -->
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-soft: #161b22;
+    --line: #262d36;
+    --fg: #e8edf3;
+    --fg-dim: #8b949e;
+    --accent: #4da3ff;
+    --up: #ff5f56;      /* 한국 관행: 상승 = 빨강 */
+    --down: #3b9dff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    font-family: "Pretendard", "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo",
+                 "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .card {
+    width: 1080px;
+    height: 1350px;
+    background: var(--bg);
+    color: var(--fg);
+    padding: 92px 84px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  /* 상단 러닝헤더 */
+  .card header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 26px;
+    color: var(--fg-dim);
+    letter-spacing: -0.01em;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .card header .ticker { color: var(--fg); font-weight: 700; }
+
+  /* 본문 영역 */
+  .body { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .card.cover .body { justify-content: flex-end; padding-bottom: 40px; }
+
+  /* 하단 페이지 번호 */
+  .card footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 24px;
+    color: var(--fg-dim);
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .card footer .page { font-variant-numeric: tabular-nums; }
+
+  /* --- 타이포 --- */
+  .eyebrow {
+    font-size: 30px; font-weight: 700; color: var(--accent);
+    letter-spacing: 0.02em; margin-bottom: 28px;
+  }
+  h1 {
+    font-size: 86px; font-weight: 800; line-height: 1.22;
+    letter-spacing: -0.035em; word-break: keep-all;
+  }
+  h2 {
+    font-size: 62px; font-weight: 800; line-height: 1.3;
+    letter-spacing: -0.03em; word-break: keep-all; margin-bottom: 44px;
+  }
+  .lead {
+    font-size: 36px; line-height: 1.62; color: var(--fg-dim);
+    word-break: keep-all; letter-spacing: -0.02em;
+  }
+  /* 블록끼리 붙지 않게 — 숫자 블록 바로 뒤에 문단이 오는 경우가 잦다 */
+  .body > * + .lead,
+  .body > * + .versus,
+  .body > * + .stat,
+  .body > * + .points,
+  .body > * + .tl,
+  .body > * + table { margin-top: 60px; }
+  .cover .lead { margin-top: 40px; font-size: 34px; }
+  strong { color: var(--fg); font-weight: 800; }
+  em { color: var(--accent); font-style: normal; font-weight: 800; }
+  /* 형광펜(==텍스트==) — 밈 톤의 핵심 장치. 한 카드에 하나만 쓴다, 둘부터는 아무것도 안 보인다 */
+  mark {
+    background: var(--accent); color: #06121f; font-weight: 800;
+    padding: 0 0.14em; border-radius: 4px; box-decoration-break: clone;
+  }
+  .up-mark { background: var(--up); color: #2a0705; }
+  .down-mark { background: var(--down); color: #04121f; }
+  /* 절(clause) 단위 줄바꿈 — 한국어는 어절 중간에서 끊기면 읽기 힘들다.
+     본문을 마침표·쉼표·가운뎃점·대시에서 잘라 각 절을 nowrap 으로 묶고,
+     줄 폭을 넘는 절만 렌더 직후 nowrap 을 풀어 준다(아래 relaxLongClauses). */
+  .cl { white-space: nowrap; }
+  h1, h2, .lead, .q, .note, .tl-text, li, td { text-wrap: pretty; }
+
+  .tag {
+    font-size: 0.72em; color: var(--fg-dim); background: var(--bg-soft);
+    border: 1px solid var(--line); border-radius: 6px; padding: 4px 12px;
+    white-space: nowrap; font-weight: 600;
+  }
+
+  /* --- stat: 큰 숫자 --- */
+  .stat { text-align: center; }
+  .stat .num {
+    font-size: 210px; font-weight: 800; line-height: 1;
+    letter-spacing: -0.05em; font-variant-numeric: tabular-nums;
+  }
+  .stat .num.up { color: var(--up); }
+  .stat .num.down { color: var(--down); }
+  .stat .cap { font-size: 34px; color: var(--fg-dim); margin-top: 36px; line-height: 1.5; }
+
+  /* --- 비교 2단 --- */
+  .versus { display: flex; gap: 0; align-items: stretch; }
+  .versus > div { flex: 1; text-align: center; padding: 0 24px; }
+  .versus > div + div { border-left: 1px solid var(--line); }
+  .versus .v-num { font-size: 116px; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+  .versus .v-lab { font-size: 28px; color: var(--fg-dim); margin-top: 24px; line-height: 1.45; }
+
+  /* --- 리스트 --- */
+  ul.points { list-style: none; display: flex; flex-direction: column; gap: 34px; }
+  ul.points li {
+    font-size: 38px; line-height: 1.55; word-break: keep-all;
+    padding-left: 44px; position: relative; letter-spacing: -0.02em;
+  }
+  ul.points li::before {
+    content: ""; position: absolute; left: 0; top: 24px;
+    width: 20px; height: 3px; background: var(--accent);
+  }
+
+  /* --- 타임라인 --- */
+  .tl { display: flex; flex-direction: column; gap: 0; }
+  .tl-row { display: flex; gap: 32px; padding: 30px 0; border-bottom: 1px solid var(--line); }
+  .tl-row:last-child { border-bottom: 0; }
+  .tl-date {
+    width: 168px; flex-shrink: 0; font-size: 30px; font-weight: 700;
+    color: var(--fg-dim); font-variant-numeric: tabular-nums; padding-top: 4px;
+  }
+  .tl-text { font-size: 34px; line-height: 1.5; word-break: keep-all; letter-spacing: -0.02em; }
+  .tl-row.hi .tl-date { color: var(--accent); }
+  .tl-move { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .tl-move.up { color: var(--up); }
+  .tl-move.down { color: var(--down); }
+
+  /* --- 표 --- */
+  table { width: 100%; border-collapse: collapse; }
+  table th, table td {
+    text-align: left; padding: 26px 12px; font-size: 31px; color: var(--fg);
+    border-bottom: 1px solid var(--line); word-break: keep-all; line-height: 1.42;
+  }
+  table th { color: var(--fg-dim); font-size: 26px; font-weight: 600; padding-bottom: 18px; }
+  table td:first-child { font-weight: 700; white-space: nowrap; color: var(--accent); }
+
+  /* --- 인용 --- */
+  .quote { }
+  .quote .mark { font-size: 130px; font-weight: 800; color: var(--line); line-height: 0.8; }
+  .quote .q {
+    font-size: 42px; line-height: 1.6; word-break: keep-all;
+    letter-spacing: -0.025em; margin-top: 24px;
+  }
+  .quote .by { font-size: 30px; color: var(--accent); font-weight: 700; margin-top: 40px; }
+
+  /* --- 경고/고지 박스 --- */
+  .note {
+    background: var(--bg-soft); border-left: 4px solid var(--fg-dim);
+    padding: 32px 36px; font-size: 27px; line-height: 1.6;
+    color: var(--fg-dim); word-break: keep-all; margin-top: 44px;
+  }
+
+  /* 커버 배경 장식 */
+  .cover::after {
+    content: ""; position: absolute; top: -280px; right: -280px;
+    width: 760px; height: 760px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(77,163,255,0.20) 0%, transparent 68%);
+  }
+</style>
+<body></body>
+<script>
+const esc = (s) => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+// 본문 인라인 마크업:
+//   **굵게** / __강조색__ / ==형광펜== / ==텍스트|up== 등락 형광펜
+//   {{+15.8%|up}} 등락 글자색 / `태그` / 줄바꿈
+const rich = (s) => esc(s)
+  .replace(/\n/g, '<br>')
+  .replace(/&lt;br&gt;/g, '<br>')
+  .replace(/==([^=|]+)\|(up|down)==/g, (_, t, d) => `<mark class="${d}-mark">${t}</mark>`)
+  .replace(/==([^=]+)==/g, '<mark>$1</mark>')
+  .replace(/\{\{([^|]+)\|(up|down)\}\}/g, (_, t, d) => `<span class="tl-move ${d}">${t}</span>`)
+  .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  .replace(/__(.+?)__/g, '<em>$1</em>')
+  .replace(/`([^`]+)`/g, '<span class="tag">$1</span>');
+
+const blocks = {
+  lead:   b => `<p class="lead">${rich(b.text)}</p>`,
+  points: b => `<ul class="points">${b.items.map(i => `<li>${rich(i)}</li>`).join('')}</ul>`,
+  stat:   b => `<div class="stat"><div class="num ${b.dir || ''}">${esc(b.num)}</div>
+                <div class="cap">${rich(b.caption)}</div></div>`,
+  versus: b => `<div class="versus">${b.items.map(i =>
+                `<div><div class="v-num ${i.dir || ''}">${esc(i.num)}</div>
+                 <div class="v-lab">${rich(i.label)}</div></div>`).join('')}</div>`,
+  timeline: b => `<div class="tl">${b.rows.map(r =>
+                `<div class="tl-row${r.hi ? ' hi' : ''}"><div class="tl-date">${esc(r.date)}</div>
+                 <div class="tl-text">${rich(r.text)}</div></div>`).join('')}</div>`,
+  table:  b => `<table><tr>${b.head.map(h => `<th>${esc(h)}</th>`).join('')}</tr>
+                ${b.rows.map(r => `<tr>${r.map(c => `<td>${rich(c)}</td>`).join('')}</tr>`).join('')}</table>`,
+  quote:  b => `<div class="quote"><div class="mark">&ldquo;</div>
+                <div class="q">${rich(b.text)}</div><div class="by">— ${rich(b.by)}</div></div>`,
+  note:   b => `<div class="note">${rich(b.text)}</div>`,
+};
+
+const D = window.CARD_DATA;
+document.body.innerHTML = D.cards.map((c, i) => `
+  <section class="card ${c.type === 'cover' ? 'cover' : ''}">
+    <header>
+      <span><span class="ticker">${esc(D.ticker)}</span> · ${esc(D.meta)}</span>
+      <span>${esc(D.brand)}</span>
+    </header>
+    <div class="body">
+      ${c.eyebrow ? `<div class="eyebrow">${esc(c.eyebrow)}</div>` : ''}
+      ${c.title ? (c.type === 'cover' ? `<h1>${rich(c.title)}</h1>` : `<h2>${rich(c.title)}</h2>`) : ''}
+      ${(c.blocks || []).map(b => blocks[b.t](b)).join('')}
+    </div>
+    <footer>
+      <span>${esc(c.foot || D.footDefault)}</span>
+      <span class="page">${String(i + 1).padStart(2, '0')} / ${String(D.cards.length).padStart(2, '0')}</span>
+    </footer>
+  </section>`).join('');
+
+// ── 절 단위 줄바꿈 ─────────────────────────────────────────────────────────
+// 텍스트 노드를 문장부호 뒤에서 잘라 <span class="cl">로 감싼다. DOM을 만든 뒤에
+// 하므로 <strong> 같은 마크업을 가로질러도 태그가 깨지지 않는다.
+// 부호 뒤에 공백이 있을 때만 자른다 — $18.37B · 242.1M · 8/7 은 그대로 둔다.
+const SPLIT = /(?<=[,.?!·;:—])\s+/;
+
+function splitIntoClauses(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const texts = [];
+  while (walker.nextNode()) texts.push(walker.currentNode);
+
+  for (const node of texts) {
+    if (node.parentElement.closest('.tag')) continue;   // `[추정]` 같은 배지는 통으로
+    const parts = node.nodeValue.split(SPLIT);
+    if (parts.length < 2) continue;
+    const frag = document.createDocumentFragment();
+    parts.forEach((part, i) => {
+      const span = document.createElement('span');
+      span.className = 'cl';
+      span.textContent = part;
+      frag.appendChild(span);
+      if (i < parts.length - 1) frag.appendChild(document.createTextNode(' '));
+    });
+    node.replaceWith(frag);
+  }
+}
+
+// 한 줄에 안 들어가는 절은 nowrap 을 풀어 준다 — 안 그러면 카드 밖으로 삐져나간다.
+function relaxLongClauses(root) {
+  for (const span of root.querySelectorAll('.cl')) {
+    const box = span.parentElement.closest('td, li, .lead, .q, .note, .tl-text, .v-lab, .cap, h1, h2') || root;
+    if (span.getBoundingClientRect().width > box.clientWidth) span.style.whiteSpace = 'normal';
+  }
+}
+
+for (const body of document.querySelectorAll('.card .body')) {
+  splitIntoClauses(body);
+  relaxLongClauses(body);
+}
+</script>

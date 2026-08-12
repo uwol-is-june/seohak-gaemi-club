@@ -1,0 +1,13 @@
+{
+  "name": "seohak-cards",
+  "private": true,
+  "version": "0.1.0",
+  "description": "아티클 -> 카드뉴스 PNG 렌더러 (Playwright)",
+  "type": "module",
+  "scripts": {
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "^1.49.0"
+  }
+}

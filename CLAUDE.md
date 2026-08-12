@@ -55,6 +55,7 @@ reports/
 | /earnings-team | `{티커}/{티커}-earnings-{기간}.md` + 서브보고서 6종(`-연구초안`·`-단용평`·`-버핏`·`-멍거`·`-이루`·`-독자검토`) | `reports/AMZN/AMZN-earnings-2026Q2.md` |
 | /thesis-tracker | `{티커}/{티커}-thesis.md` (장기 유지) | `reports/AAPL/AAPL-thesis.md` |
 | /portfolio-review | `portfolio-latest.md` (루트, 지속 업데이트) | `reports/portfolio-latest.md` |
+| /article-cards | **보고서가 아니다** — 카드 데이터는 `tools/cards/{slug}.json`, 산출물은 `assets/cards/{slug}/` (PNG + `caption.md`) | `assets/cards/spcx-20260810/` |
 
 ## /investment-team 파일 구조
 
@@ -96,6 +97,7 @@ reports/{티커}/
 | `/earnings-team` (종목 1개·1분기) | **1~3M** (2026-08-07 AMZN 실측: 서브에이전트 6개 합계 **609K** + 본체) |
 | `/investment-checklist` (종목 1개) | 2~5M |
 | `/quality-screen` · `/thesis-tracker` · `/news-pulse` (종목 1개) | 1~3M |
+| `/article-cards` (아티클 1건 → 카드뉴스) | **300K 이하** (변환기 — 웹 조사 없음) |
 
 범위를 크게 넘고 있으면 재시도 루프나 손자 에이전트가 도는 것이다 — 멈추고 원인을 본다.
 (근거: 2026-07-31 실측. `/investment-team CEG` 1회에 50.4M, 그중 58%가 재시도 폐기분.
@@ -268,7 +270,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 
 > 🔴 **두 번째 줄을 빼지 말 것.** `skills/` 의 이 3개는 실행 스킬이 아니라 **공용 표준 문서**다
 > (다른 스킬이 `skills/xxx.md` 경로로 참조한다). 슬래시 커맨드로 설치하면 호출해도 하는 일이
-> 없으면서 오발동 대상만 늘린다. 설치 대상은 **실행 스킬 12개**다.
+> 없으면서 오발동 대상만 늘린다. 설치 대상은 **실행 스킬 13개**다.
 
 ## GitHub 운영 (코드 전용)
 
@@ -302,7 +304,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 > 아래 명령은 전부 **저장소 루트에서** 실행한다.
 
 ```bash
-# Skills 설치 / 재설치 (실행 스킬 12개만 — 공용 표준 문서 3종 제외)
+# Skills 설치 / 재설치 (실행 스킬 13개만 — 공용 표준 문서 3종 제외)
 mkdir -p ~/.claude/commands
 cp skills/*.md ~/.claude/commands/
 rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
