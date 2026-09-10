@@ -260,3 +260,42 @@ h1, h2, h3, h4 {
     animation: none;
   }
 }
+
+/* 사이드바 드릴다운 전환 (TASK-96) — 하위 목록으로 들어갈 때는 오른쪽에서,
+   '뒤로'로 나올 때는 왼쪽에서 들어온다. 방향이 위계를 말해주므로 페이드만 주지 않는다. */
+@keyframes nav-slide-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes nav-slide-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.nav-view-forward {
+  animation: nav-slide-from-right 0.18s ease-out;
+}
+
+.nav-view-back {
+  animation: nav-slide-from-left 0.18s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-view-forward,
+  .nav-view-back {
+    animation: none;
+  }
+}

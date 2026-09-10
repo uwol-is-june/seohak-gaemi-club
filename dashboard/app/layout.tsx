@@ -27,9 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    // 한컴(data-hwp-extension) 등 브라우저 확장이 <html>에 속성을 주입해 하이드레이션
+    // 불일치가 뜬다. suppressHydrationWarning은 이 엘리먼트에만 적용된다.
     <html
       lang="ko"
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-canvas text-body">{children}</body>
     </html>

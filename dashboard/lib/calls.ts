@@ -76,6 +76,12 @@ export interface ScoredCall {
   loadBearing: string[]; // 논제 핵심 가정(참이어야 콜이 유효). 채점엔 미반영, 진행중 콜 상세용.
   invalidation: string[];
   reason?: string;
+  // 전일 대비(표시 전용, TASK-97). **채점에 쓰지 않는다** — 그래서 scoreCall 이 아니라
+  // /api/calls 가 시세를 받을 때 채운다(현재가와 같은 Yahoo 응답에 들어 있어 추가 호출 없음).
+  // 옵셔널로 둬야 tools/score_calls.py 와의 채점 파리티가 이 필드에 영향받지 않는다.
+  prevClose?: number | null;
+  dayChange?: number | null;
+  dayChangePct?: number | null;
 }
 
 export interface CallAggregate {

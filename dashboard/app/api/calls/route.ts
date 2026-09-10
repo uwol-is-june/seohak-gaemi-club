@@ -48,18 +48,28 @@ function toYahooSymbol(ticker: string): string {
   return ticker.trim().toUpperCase().replace(/[.\s]/g, "-");
 }
 
-async function fetchPrice(ticker: string): Promise<number | null> {
+// 현재가 + 전일 종가. 둘 다 같은 chart 메타에 들어 있어 전일 대비 표시(TASK-97)에
+// 추가 요청이 필요 없다. 전일 종가는 표시 전용이고 채점(scoreCall)에는 쓰지 않는다.
+// (같은 계산이 /api/quotes 에도 있다 — 그쪽은 daily check 용 별도 캐시 정책을 쓴다.)
+async function fetchQuote(ticker: string): Promise<{ price: number | null; prevClose: number | null }> {
   try {
     const res = await fetch(
       `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(toYahooSymbol(ticker))}?range=1d&interval=1d`,
       { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }
     );
-    if (!res.ok) return null;
+    if (!res.ok) return { price: null, prevClose: null };
     const data = await res.json();
-    const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-    return typeof price === "number" ? price : null;
+    const meta = data?.chart?.result?.[0]?.meta;
+    const price = typeof meta?.regularMarketPrice === "number" ? meta.regularMarketPrice : null;
+    const prevClose =
+      typeof meta?.chartPreviousClose === "number"
+        ? meta.chartPreviousClose
+        : typeof meta?.previousClose === "number"
+          ? meta.previousClose
+          : null;
+    return { price, prevClose };
   } catch {
-    return null;
+    return { price: null, prevClose: null };
   }
 }
 
@@ -79,11 +89,28 @@ export async function GET() {
   // 티커별로 한 번씩만 시세 조회(중복 콜 절약).
   const tickers = Array.from(new Set(calls.map((c) => c.ticker)));
   // 아웃바운드 동시성 제한(TASK-70).
-  const priceEntries = await mapLimit(tickers, 6, async (t) => [t, await fetchPrice(t)] as const);
-  const priceMap = new Map(priceEntries);
+  const quoteEntries = await mapLimit(tickers, 6, async (t) => [t, await fetchQuote(t)] as const);
+  const quoteMap = new Map(quoteEntries);
 
   const scored = calls
-    .map((c) => scoreCall(c, priceMap.get(c.ticker) ?? null, today))
+    .map((c) => {
+      const q = quoteMap.get(c.ticker);
+      const scoredCall = scoreCall(c, q?.price ?? null, today);
+      // 전일 대비는 채점 뒤에 얹는다 — scoreCall 의 입출력을 건드리지 않아야
+      // tools/score_calls.py 와의 파리티 테스트가 그대로 유효하다.
+      const price = q?.price ?? null;
+      const prevClose = q?.prevClose ?? null;
+      const dayChange = price != null && prevClose != null ? price - prevClose : null;
+      return {
+        ...scoredCall,
+        prevClose,
+        dayChange,
+        dayChangePct:
+          dayChange != null && prevClose != null && prevClose !== 0
+            ? (dayChange / prevClose) * 100
+            : null,
+      };
+    })
     // 최신 콜이 위로. 같은 날짜면 recordedAt(기록 시각) 최신순으로 확정 —
     // 종목당 최신 콜을 접을 때 같은 날 콜의 순서가 안정적이어야 한다.
     .sort((a, b) => {

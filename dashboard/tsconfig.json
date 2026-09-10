@@ -11,6 +11,10 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // lib/*.test.ts 는 `node dashboard/lib/x.test.ts` 로 직접 돌린다(Node 타입 스트리핑).
+    // Node 의 ESM 해석은 확장자를 요구하므로, 테스트가 traverse 하는 lib 모듈끼리의
+    // 값 import 는 "./x.ts" 로 쓴다 — 그걸 허용하는 스위치(noEmit 이라 안전).
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [

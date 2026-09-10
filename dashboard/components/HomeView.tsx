@@ -40,6 +40,74 @@ type DomainPick = { kind: "sector"; path: string } | { kind: "company"; ticker: 
 const DOMAIN_TAB_PREFIX = "domain:";
 const DOMAIN_TABS = [...DISCOVERY_SECTOR_GROUPS.map((g) => g.label), UNCLASSIFIED_DOMAIN];
 
+// 좌측 nav 드릴다운(TASK-96). 항목을 최상위에 다 펼치면 사이드바가 화면을 넘겨서,
+// 성격이 같은 덩어리(점검·보고서)는 탭 하나로 접고 누르면 사이드바가 통째로 하위 목록
+// 화면으로 바뀐다. navView 는 **사이드바가 무엇을 그리는지**만 담는다 — 어느 탭이
+// 열려 있는가는 여전히 flowTab 이 유일한 출처다(둘을 합치면 '뒤로'가 탭까지 닫아버린다).
+type NavView = "root" | "inspect" | "reports";
+type NavItem = { id: string; label: string };
+// 최상위 nav 한 칸 — 바로 탭을 여는 항목이거나, 하위 목록으로 들어가는 입구다.
+type NavEntry = { kind: "item"; item: NavItem } | { kind: "drill"; view: Exclude<NavView, "root"> };
+
+// '점검' 서브메뉴에 들어갈 flows 항목. flows.filter(id !== "discovery") 로 받아오면
+// flows 에 새 플로우가 늘 때 최상위로 새 나가므로 id 를 명시한다.
+const INSPECT_FLOW_IDS = ["earnings", "portfolio"];
+// 사람이 실행하는 위 둘과 달리 '들여다보는' 성격이지만, 보유를 주기적으로 점검한다는
+// 축은 같아서 점검에 함께 둔다.
+const INSPECT_EXTRA_IDS = ["bottleneck-signals"];
+
+// flowTab → 그 탭이 속한 서브메뉴. 외부에서 탭으로 점프할 때(포트폴리오 카드 → 분야 탭)
+// 사이드바도 같이 열어두려면 이 판정이 한 곳에 있어야 한다.
+function navViewOfTab(tab: string): NavView {
+  if (tab.startsWith(DOMAIN_TAB_PREFIX)) return "reports";
+  if (INSPECT_FLOW_IDS.includes(tab) || INSPECT_EXTRA_IDS.includes(tab)) return "inspect";
+  return "root";
+}
+
+// 사이드바·서브메뉴 공용 버튼. 최상위 항목·드릴다운 입구·하위 항목이 같은 모양을 쓴다
+// (드릴다운으로 들어가도 '다른 화면'이 아니라 같은 목록의 다음 단계로 읽히게).
+function NavButton({
+  label,
+  active,
+  onClick,
+  chevron,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  chevron?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
+        active ? "bg-white text-canvas" : "text-body hover:text-ink hover:bg-canvas-soft"
+      }`}
+    >
+      <span className="flex-1 text-left truncate">{label}</span>
+      {chevron && (
+        <span className={`shrink-0 text-xs ${active ? "text-canvas/50" : "text-mute"}`} aria-hidden="true">
+          &rsaquo;
+        </span>
+      )}
+    </button>
+  );
+}
+
+// 모바일 탭 로우용 칩. 데스크톱 NavButton 과 같은 드릴다운을 좁은 폭에서 표현한다.
+function NavChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 ${
+        active ? "bg-white text-canvas" : "text-mute hover:text-ink"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 // 탭별 상단바 라벨(eyebrow = GeistMono 대문자, title = 한글). 리서치 프로세스(flows)
 // 탭은 여기 없고 activeFlow.title 로 폴백한다. 분야 탭도 여기 없고 분야명으로 폴백한다.
 const TAB_HEADERS: Record<string, { eyebrow: string; title: string }> = {
@@ -111,6 +179,27 @@ export function HomeView({
   // 열었는지 함께 들고 있는다 — 분야 탭이면 종목 발굴, 실적 점검 탭이면 실적 점검.
   const [launchTarget, setLaunchTarget] = useState<{ flowId: string; context: string } | null>(null);
   const [flowTab, setFlowTab] = useState<string>("portfolio-overview");
+  // 사이드바가 지금 그리는 화면(TASK-96). 열려 있는 탭(flowTab)과 별개의 UI 상태다 —
+  // 서브메뉴 안에서 '뒤로'를 눌러도 보고 있던 탭은 그대로 남아야 하기 때문이다.
+  const [navView, setNavView] = useState<NavView>("root");
+  // 전환 방향(들어감 = 오른쪽에서, 뒤로 = 왼쪽에서). 방향이 위계를 말해준다.
+  const [navBack, setNavBack] = useState(false);
+  const openDrill = useCallback((v: Exclude<NavView, "root">) => {
+    setNavBack(false);
+    setNavView(v);
+  }, []);
+  const closeDrill = useCallback(() => {
+    setNavBack(true);
+    setNavView("root");
+  }, []);
+  // 탭 전환의 단일 입구. 외부에서 점프해도(포트폴리오 카드 → 분야 탭) 사이드바가 해당
+  // 서브메뉴를 연 채로 보이도록 navView 를 함께 맞춘다. 최상위 탭이면 root 로 되돌린다.
+  const goToTab = useCallback((id: string) => {
+    setFlowTab(id);
+    const v = navViewOfTab(id);
+    setNavBack(false);
+    setNavView(v);
+  }, []);
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   // 보고서 삭제(개발 정리용): 확인 대기 경로 + 진행/에러 상태.
@@ -211,9 +300,10 @@ export function HomeView({
   const drillToTicker = useCallback(
     (ticker: string) => {
       setReportFocus((prev) => ({ ticker, nonce: (prev?.nonce ?? 0) + 1 }));
-      setFlowTab(`${DOMAIN_TAB_PREFIX}${domainOf(sectorOf(ticker))}`);
+      // goToTab 을 거쳐야 사이드바가 '보고서' 서브메뉴를 연 상태로 따라온다(TASK-96).
+      goToTab(`${DOMAIN_TAB_PREFIX}${domainOf(sectorOf(ticker))}`);
     },
-    [domainOf, sectorOf]
+    [domainOf, sectorOf, goToTab]
   );
 
   // 종목별 '최신 열등주 스크리닝 결과' 맵. 종목 탭을 통과/탈락 등으로 구획 분리하는 데 쓴다.
@@ -404,44 +494,49 @@ export function HomeView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportFocus, domainCompanies, companySector]);
 
-  // 사이드바/모바일 공용 네비. 축이 다른 것끼리 그룹으로 묶는다:
-  //  운용(들고 있는 것을 굴리고 점검) · 분야(보고서의 주 축) · 발행(대외용 글)
-  const navGroups = [
-    {
-      // 시간 축 — '지금 내 포지션이 어떤가'에 답하는 탭들. 분야(종목 축)·발행(대외 축)과
-      // 달리 여기 있는 것들은 보유하고 있는 동안 반복해서 보게 된다.
-      label: "운용",
+  // 사이드바/모바일 공용 네비(TASK-96). 최상위에 보이는 것은 5칸뿐이고, 성격이 같은
+  // 덩어리 둘(점검·보고서)은 드릴다운으로 접는다 — 누르면 사이드바가 하위 목록으로 바뀐다.
+  const flowTitle = (id: string) => flows.find((f) => f.id === id)?.title ?? id;
+  const DRILLS: Record<Exclude<NavView, "root">, { label: string; items: NavItem[] }> = {
+    // 보유를 주기적으로 점검하는 일 셋. 실적 대응(/earnings-team)·분기 점검
+    // (/portfolio-review)·자동 병목 스캔은 실행 주기가 다를 뿐 축이 같다.
+    inspect: {
+      label: "점검",
       items: [
-        { id: "portfolio-overview", label: "포트폴리오" },
-        // 실적 발표 대응(/earnings-team)과 분기 포트폴리오 점검(/portfolio-review).
-        // 둘 다 보유를 주기적으로 점검하는 일이라 리서치 '프로세스'가 아니라 운용이다.
-        // flows 배열 순서가 곧 탭 순서다 — earnings 다음이 portfolio.
-        // discovery 만 제외한다(분야 탭의 도구 아이콘으로 이미 흡수됨).
-        ...flows
-          .filter((f) => f.id !== "discovery")
-          .map((f) => ({ id: f.id, label: f.title })),
-        { id: "track-record", label: "트랙레코드" },
-        // 매일 09:00 자동 스캔이 남기는 공급망 병목 신호(S3). 사람이 실행하는 다른
-        // 탭과 달리 '들여다보는' 성격이다.
+        ...INSPECT_FLOW_IDS.map((id) => ({ id, label: flowTitle(id) })),
         { id: "bottleneck-signals", label: "병목 신호" },
       ],
     },
-    {
-      // 보고서를 보는 **주 축**(TASK-91). 한 분야를 고르면 그 분야의 섹터 리서치와
-      // 종목 보고서가 한 화면에 함께 온다. 미분류 탭까지 있어 모든 보고서가 이 8개
-      // 탭 중 정확히 하나에 들어간다 — 그래서 '섹터 리서치'·'전체 보고서' 탭을 없앴다.
-      label: "분야",
+    // 보고서를 보는 **주 축**(TASK-91). 한 분야를 고르면 그 분야의 섹터 리서치와 종목
+    // 보고서가 한 화면에 함께 온다. 미분류까지 있어 모든 보고서가 분야 중 정확히 하나에
+    // 들어간다. 항목이 비어도 노출한다 — 목록이 보고서 유무에 따라 늘었다 줄지 않게.
+    reports: {
+      label: "보고서",
       items: DOMAIN_TABS.map((d) => ({ id: `${DOMAIN_TAB_PREFIX}${d}`, label: d })),
     },
+  };
+
+  const navGroups: { label: string | null; entries: NavEntry[] }[] = [
+    {
+      // 시간 축 — '지금 내 포지션이 어떤가'에 답하는 둘. 상시로 보므로 접지 않는다.
+      label: "운용",
+      entries: [
+        { kind: "item", item: { id: "portfolio-overview", label: "포트폴리오" } },
+        { kind: "item", item: { id: "track-record", label: "트랙레코드" } },
+      ],
+    },
+    // 드릴다운 둘은 그룹 라벨 없이 나란히 선다 — 각자가 이미 묶음의 이름이다.
+    { label: null, entries: [{ kind: "drill", view: "inspect" }, { kind: "drill", view: "reports" }] },
     {
       // 발행용 글(/investment-article). 다른 보고서가 '내 판단용'이라면 이건 '남에게
       // 보여줄 것'이라 축이 종목·분야가 아니라 발행 상태다.
       label: "발행",
-      items: [{ id: "articles", label: "아티클" }],
+      entries: [{ kind: "item", item: { id: "articles", label: "아티클" } }],
     },
   ];
-  // 모바일 가로 탭 로우와 각종 조회는 평탄화한 목록을 쓴다.
-  const contentTabs = navGroups.flatMap((g) => g.items);
+  // 최상위에 실제로 보이는 칸들(모바일 탭 로우가 쓴다). 드릴다운 안쪽 항목은 여기 없다 —
+  // 평탄화하면 접어둔 것이 그대로 다시 나와 드릴다운이 무의미해진다.
+  const rootEntries = navGroups.flatMap((g) => g.entries);
   const activeFlow = flows.find((f) => f.id === flowTab);
   const headerEyebrow = activeDomain ? "DOMAIN" : (TAB_HEADERS[flowTab]?.eyebrow ?? flowTab.toUpperCase());
   const headerTitle = activeDomain ?? TAB_HEADERS[flowTab]?.title ?? activeFlow?.title ?? "";
@@ -493,28 +588,63 @@ export function HomeView({
           <div className="eyebrow text-[10px]">SEOHAK GAEMI CLUB</div>
           <div className="mt-1.5 text-lg tracking-[-0.02em] text-ink">서학개미클럽</div>
         </div>
-        <nav className="flex-1 p-3 flex flex-col gap-4 overflow-y-auto">
-          {navGroups.map((group) => (
-            <div key={group.label} className="flex flex-col gap-0.5">
-              <div className="eyebrow text-[10px] px-3 pb-1 text-mute">{group.label}</div>
-              {group.items.map((t) => {
-                const active = flowTab === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => setFlowTab(t.id)}
-                    className={`text-left rounded-lg px-3 py-2 text-sm transition-colors ${
-                      active
-                        ? "bg-white text-canvas"
-                        : "text-body hover:text-ink hover:bg-canvas-soft"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                );
-              })}
+        {/* 드릴다운 네비(TASK-96) — 최상위 목록과 서브메뉴가 같은 자리를 번갈아 쓴다.
+            key 를 navView 로 두면 전환 때 리마운트돼 방향 애니메이션이 매번 재생된다. */}
+        <nav className="flex-1 p-3 overflow-y-auto">
+          {navView === "root" ? (
+            <div
+              key="root"
+              className={`flex flex-col gap-4 ${navBack ? "nav-view-back" : "nav-view-forward"}`}
+            >
+              {navGroups.map((group, gi) => (
+                <div key={group.label ?? `g${gi}`} className="flex flex-col gap-0.5">
+                  {group.label && (
+                    <div className="eyebrow text-[10px] px-3 pb-1 text-mute">{group.label}</div>
+                  )}
+                  {group.entries.map((e) =>
+                    e.kind === "item" ? (
+                      <NavButton
+                        key={e.item.id}
+                        label={e.item.label}
+                        active={flowTab === e.item.id}
+                        onClick={() => goToTab(e.item.id)}
+                      />
+                    ) : (
+                      <NavButton
+                        key={e.view}
+                        label={DRILLS[e.view].label}
+                        // 접힌 상태에서도 지금 보고 있는 탭이 어느 묶음 안인지 보이게 한다.
+                        active={navViewOfTab(flowTab) === e.view}
+                        chevron
+                        onClick={() => openDrill(e.view)}
+                      />
+                    )
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <div key={navView} className="flex flex-col gap-0.5 nav-view-forward">
+              <button
+                onClick={closeDrill}
+                className="w-full flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-mute hover:text-ink hover:bg-canvas-soft transition-colors"
+              >
+                <span aria-hidden="true">&larr;</span>
+                뒤로
+              </button>
+              <div className="eyebrow text-[10px] px-3 pt-1 pb-1 text-mute">
+                {DRILLS[navView].label}
+              </div>
+              {DRILLS[navView].items.map((t) => (
+                <NavButton
+                  key={t.id}
+                  label={t.label}
+                  active={flowTab === t.id}
+                  onClick={() => goToTab(t.id)}
+                />
+              ))}
+            </div>
+          )}
         </nav>
         <div className="p-3 border-t border-hairline">
           <button
@@ -537,22 +667,45 @@ export function HomeView({
             <button onClick={logout} className="rounded-full border border-hairline px-3 py-1 text-xs text-body active:scale-95">로그아웃</button>
           </div>
         </div>
-        {/* 모바일 탭 로우 */}
-        <div className="md:hidden px-5 py-3 border-b border-hairline flex gap-1 overflow-x-auto">
-          {contentTabs.map((t) => {
-            const active = flowTab === t.id;
-            return (
-              <button
-                key={t.id}
-                onClick={() => setFlowTab(t.id)}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 ${
-                  active ? "bg-white text-canvas" : "text-mute hover:text-ink"
-                }`}
-              >
-                {t.label}
-              </button>
-            );
-          })}
+        {/* 모바일 탭 로우 — 사이드바와 같은 드릴다운을 칩으로 옮긴 것(TASK-96).
+            평탄화해서 전부 늘어놓으면 접어둔 항목이 그대로 다시 나온다. */}
+        <div
+          key={navView}
+          className={`md:hidden px-5 py-3 border-b border-hairline flex gap-1 overflow-x-auto ${
+            navView === "root" && navBack ? "nav-view-back" : "nav-view-forward"
+          }`}
+        >
+          {navView === "root" ? (
+            rootEntries.map((e) =>
+              e.kind === "item" ? (
+                <NavChip
+                  key={e.item.id}
+                  label={e.item.label}
+                  active={flowTab === e.item.id}
+                  onClick={() => goToTab(e.item.id)}
+                />
+              ) : (
+                <NavChip
+                  key={e.view}
+                  label={`${DRILLS[e.view].label} ›`}
+                  active={navViewOfTab(flowTab) === e.view}
+                  onClick={() => openDrill(e.view)}
+                />
+              )
+            )
+          ) : (
+            <>
+              <NavChip label="← 뒤로" active={false} onClick={closeDrill} />
+              {DRILLS[navView].items.map((t) => (
+                <NavChip
+                  key={t.id}
+                  label={t.label}
+                  active={flowTab === t.id}
+                  onClick={() => goToTab(t.id)}
+                />
+              ))}
+            </>
+          )}
         </div>
 
         {/* 데스크톱 상단바 — mono eyebrow + 페이지 타이틀 + primary 액션 */}

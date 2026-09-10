@@ -1,12 +1,24 @@
 "use client";
 import { readJsonSafe } from "@/lib/fetch-json";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScoredCall, CallStatus, CallType } from "@/lib/calls";
 import { CALL_LABEL } from "@/lib/report-helpers";
+import { groupTheses, type ThesisGroup } from "@/lib/thesis-groups";
+import { parseTranches } from "@/lib/tranche";
 import type { Holding } from "@/lib/toss";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
+import { LadderChart } from "./LadderChart";
 import { ReportModal } from "./ReportModal";
 
+// 트랙레코드 = **추적 대시보드**(TASK-97).
+//
+// 예전 이 화면은 '판단의 기록부'였다 — 콜 원장을 표로 펴고 채점(적중/빗나감)을 붙였다.
+// 지금 주인공은 과거 판단이 아니라 **"어느 가격에 · 얼마씩 · 지금 어디까지 왔나"** 다:
+//   · 콜 종류·콜 시점·시점가 열은 화면에서 뺐다(원장에는 그대로 기록된다 —
+//     priceAtCall 은 채점의 유일한 기준이고 tools/score_calls.py 와 규칙을 공유한다).
+//   · 분할 진입 래더를 텍스트가 아니라 가격 축 그림으로 그린다(LadderChart).
+//   · 종목당 최신 콜 1건으로 접지 않고, **살아있는 논제를 전부 나란히** 세운다.
+//     서로 어긋나면 무엇이 갈리는지 배너로 드러낸다(lib/thesis-groups).
 
 const STATUS_STYLE: Record<CallStatus, { label: string; color: string; dot: string }> = {
   적중: { label: "적중", color: "text-emerald-300 bg-emerald-500/15", dot: "bg-emerald-400" },
@@ -15,10 +27,9 @@ const STATUS_STYLE: Record<CallStatus, { label: string; color: string; dot: stri
   unknown: { label: "미채점", color: "text-mute bg-canvas-soft", dot: "bg-canvas-mid" },
 };
 
-// 목표 밴드는 콜 종류에 따라 의미가 정반대다 — hold 밴드는 시점가 '아래'(내려오길 기다리는
-// 진입가)이고 buy/keep 밴드는 시점가 '위'(도달해야 할 목표가)다. 라벨 없이 숫자만 두면
-// 시점가와 눈으로 비교해야만 구분되므로, 채점상 의미를 앞에 붙여 드러낸다.
-// (판정 규칙 자체는 lib/calls.ts scoreCall — 여기선 그 규칙을 말로 옮길 뿐이다.)
+// 밴드는 콜 종류에 따라 의미가 정반대다 — hold 밴드는 '내려오길 기다리는 진입가'이고
+// buy/keep 밴드는 '도달해야 할 목표가'다. 콜 종류를 화면에서 뺐으므로 이 라벨이
+// 그 의미를 대신 진다(판정 규칙 자체는 lib/calls.ts scoreCall).
 const BAND_META: Record<CallType, { short: string; long: string; why: string }> = {
   hold: { short: "진입", long: "진입 대기 밴드", why: "이 구간으로 내려오면 적중 — 밴드가 곧 채점 기준" },
   buy: { short: "목표", long: "도달 목표가", why: "채점은 방향(상승)으로 하고, 밴드 도달은 보조 지표" },
@@ -26,34 +37,23 @@ const BAND_META: Record<CallType, { short: string; long: string; why: string }> 
   avoid: { short: "참고", long: "참고 밴드", why: "채점(하락 방향)에 쓰이지 않는 적정가 추정" },
 };
 
-function bandOf(
-  c: ScoredCall
-): { label: string; long: string; why: string; value: string } | null {
-  const t = c.target;
-  if (!t || (t.low == null && t.high == null)) return null;
-  const meta = BAND_META[c.call] ?? BAND_META.buy;
-  return {
-    label: meta.short,
-    long: meta.long,
-    why: meta.why,
-    value: `$${t.low ?? "?"}~${t.high ?? "?"}${t.horizonMonths ? ` · ${t.horizonMonths}M` : ""}`,
-  };
-}
-
 // 수익률·손익 색은 앱 전역 규칙(한국식: 상승=빨강, 하락=파랑)을 따른다.
 function moveColor(v: number | null | undefined): string {
   if (v == null) return "text-mute";
   return v >= 0 ? "text-red-400" : "text-breeze";
 }
 
+function fmtPrice(v: number): string {
+  return `$${v.toFixed(v < 100 ? 2 : 2)}`;
+}
+
 // 표시 축 — '실제 들고 있는 것'과 '아직 안 산 것'은 읽는 목적이 다르다.
-// 보유는 "지금 어떻게 되고 있나"(손익·논제 훼손 여부), 관찰은 "언제 살 수 있나"(진입 밴드까지 거리).
-// 실적 캘린더(EarningsCalendar)의 대상 축 탭과 같은 어휘를 쓴다.
+// 보유는 "지금 어떻게 되고 있나", 관찰은 "언제 살 수 있나"(진입 래더까지 거리).
 type Axis = "all" | "held" | "watch";
 const AXIS_DESC: Record<Axis, string> = {
-  all: "기록된 모든 콜. 보유 여부와 무관하게 판단 이력 전체를 봅니다.",
-  held: "포트폴리오(토스)에 실제로 있는 종목. 매수가 열이 채워지고, 관심사는 '논제가 아직 유효한가'입니다.",
-  watch: "논제만 세우고 사지 않은 종목(관망·회피). 관심사는 '진입 밴드까지 얼마나 남았나'입니다.",
+  all: "논제가 기록된 모든 종목. 보유 여부와 무관하게 추적 대상 전체를 봅니다.",
+  held: "포트폴리오(토스)에 실제로 있는 종목. 매수가가 래더 위에 함께 그려집니다.",
+  watch: "논제만 세우고 사지 않은 종목. 관심사는 '어느 차수까지 내려왔나'입니다.",
 };
 
 export function TrackRecordView() {
@@ -61,21 +61,10 @@ export function TrackRecordView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalPath, setModalPath] = useState<string | null>(null);
-  // 매수가 열 전용 보유 정보. 콜(예측)과 실제 진입가는 별개 축이라 원장에는 없다 —
-  // 포트폴리오(토스)에서 평단가를 가져와 붙인다. 이 열이 비어도 표는 그대로 유효하므로
-  // 실패는 조용히 무시하고 '—'로 둔다(트랙레코드가 보유 조회에 발목 잡히지 않게).
+  // 매수가는 콜(예측)이 아니라 실제 진입가라 원장에 없다 — 포트폴리오(토스)에서 붙인다.
+  // 실패해도 화면 본체는 그대로 유효하므로 조용히 무시하고 매수가만 비운다.
   const [holdings, setHoldings] = useState<Holding[] | null>(holdingsCache);
-  // 표시 축(보유 / 관찰 / 전체). 기본은 전체 — 축을 나누기 전 동작을 그대로 유지한다.
   const [axis, setAxis] = useState<Axis>("all");
-  // 진행중 콜 상세(핵심 가정·무효화 조건) 펼침 상태(TASK-79). 여러 행 동시 펼침 허용.
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
-  const toggleExpand = (id: string) =>
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
 
   const load = useCallback(() => {
     setLoading(true);
@@ -84,9 +73,7 @@ export function TrackRecordView() {
       .then(readJsonSafe)
       .then((d) => {
         if (d.error) setError(d.error);
-        else {
-          setCalls(Array.isArray(d.calls) ? d.calls : []);
-        }
+        else setCalls(Array.isArray(d.calls) ? d.calls : []);
       })
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false));
@@ -96,20 +83,18 @@ export function TrackRecordView() {
     load();
   }, [load]);
 
-  // 보유 정보(매수가 열). localStorage 캐시 복원은 마운트 후에만 — 렌더 중 복원하면
-  // 서버 HTML과 어긋나 하이드레이션이 깨진다(HoldingsBanner와 같은 규칙).
-  // fetchHoldingsShared 로 진행 중 요청을 공유해 토스 API 중복 호출(429)을 피한다.
+  // localStorage 캐시 복원은 마운트 후에만 — 렌더 중 복원하면 서버 HTML과 어긋나
+  // 하이드레이션이 깨진다(HoldingsBanner와 같은 규칙).
   useEffect(() => {
     hydratePortfolioCache();
     if (holdingsCache && holdingsCache.length > 0) setHoldings(holdingsCache);
     fetchHoldingsShared()
       .then((d) => commitHoldings(Array.isArray(d.holdings) ? d.holdings : [], setHoldings))
       .catch(() => {
-        // 보유 조회 실패는 매수가 열만 '—'로 만들 뿐 트랙레코드 본체와 무관하다.
+        // 보유 조회 실패는 매수가만 비울 뿐 추적 화면 본체와 무관하다.
       });
   }, []);
 
-  // 티커 → 평단가(USD). 표의 다른 가격 열과 통화를 맞춘다.
   const avgPriceByTicker = useMemo(() => {
     const m: Record<string, number> = {};
     for (const h of holdings ?? []) {
@@ -126,53 +111,31 @@ export function TrackRecordView() {
     [holdings]
   );
 
-  // 종목당 최신 콜 1건으로 접는다 — "누가 기록했나"가 아니라 "이 종목의 현재 판단"이
-  // 표의 주인공이 되게. 같은 종목의 이전 콜(스킬 이력)은 행을 펼치면 나온다.
-  // calls는 API에서 날짜·recordedAt 최신순 정렬돼 오므로 티커별 첫 항목이 최신.
-  const { latest, historyByTicker } = useMemo(() => {
-    const seen = new Map<string, ScoredCall>();
-    const hist = new Map<string, ScoredCall[]>();
-    for (const c of calls ?? []) {
-      if (!seen.has(c.ticker)) seen.set(c.ticker, c);
-      else {
-        const arr = hist.get(c.ticker) ?? [];
-        arr.push(c);
-        hist.set(c.ticker, arr);
-      }
-    }
-    return { latest: Array.from(seen.values()), historyByTicker: hist };
-  }, [calls]);
+  // 종목별 논제 묶음 — 스킬별 최신 1건 중 살아있는 것들이 함께 온다.
+  const groups = useMemo(() => groupTheses(calls ?? []), [calls]);
 
-  // 축별 행 목록. 보유 조회가 실패/미로딩이면 held/watch를 가를 근거가 없으므로
-  // 분리를 시도하지 않고 전체를 그대로 보여준다(빈 표로 오해하지 않게 안내는 따로 띄운다).
   const holdingsReady = holdings != null && holdings.length > 0;
   const rows = useMemo(() => {
-    if (axis === "all" || !holdingsReady) return latest;
-    const held = (c: ScoredCall) => heldTickers.has(c.ticker.trim().toUpperCase());
-    return latest.filter((c) => (axis === "held" ? held(c) : !held(c)));
-  }, [axis, latest, heldTickers, holdingsReady]);
+    if (axis === "all" || !holdingsReady) return groups;
+    return groups.filter((g) => (axis === "held" ? heldTickers.has(g.ticker) : !heldTickers.has(g.ticker)));
+  }, [axis, groups, heldTickers, holdingsReady]);
 
   const AXES: { id: Axis; label: string; count: number | null }[] = [
-    { id: "all", label: "전체", count: latest.length },
+    { id: "all", label: "전체", count: groups.length },
     {
       id: "held",
       label: "보유 종목",
-      count: holdingsReady
-        ? latest.filter((c) => heldTickers.has(c.ticker.trim().toUpperCase())).length
-        : null,
+      count: holdingsReady ? groups.filter((g) => heldTickers.has(g.ticker)).length : null,
     },
     {
       id: "watch",
       label: "관찰 논제",
-      count: holdingsReady
-        ? latest.filter((c) => !heldTickers.has(c.ticker.trim().toUpperCase())).length
-        : null,
+      count: holdingsReady ? groups.filter((g) => !heldTickers.has(g.ticker)).length : null,
     },
   ];
 
   return (
     <div>
-      {/* 상단 설명 문단은 제거됨(2026-08-12 요청). 채점 규칙은 표 아래 범례가 담는다. */}
       {loading && !calls && <p className="text-xs text-mute">불러오는 중...</p>}
 
       {error && (
@@ -189,27 +152,22 @@ export function TrackRecordView() {
 
       {calls && calls.length === 0 && !error && (
         <div className="rounded-lg border border-dashed border-hairline bg-canvas-card px-5 py-8 text-center">
-          <p className="text-sm text-body">아직 기록된 콜이 없습니다.</p>
+          <p className="text-sm text-body">아직 기록된 논제가 없습니다.</p>
           <p className="mt-1.5 text-xs text-mute leading-relaxed">
             <code className="font-mono text-breeze">/investment-checklist</code>,{" "}
             <code className="font-mono text-breeze">/investment-team</code>,{" "}
-            <code className="font-mono text-breeze">/thesis-tracker</code>가 buy/hold/avoid 판정을
-            낼 때 콜이 원장(<code className="font-mono">data/calls.jsonl</code>)에 기록되어 여기 나타납니다.
+            <code className="font-mono text-breeze">/thesis-tracker</code>가 판정을 낼 때 콜이
+            원장(<code className="font-mono">data/calls.jsonl</code>)에 기록되어 여기 나타납니다.
           </p>
         </div>
       )}
 
-      {/* 집계(agg) 게이트를 뺐다 — '확정 콜 0건' 안내가 사라져 agg를 쓸 데가 없고,
-          그대로 두면 집계가 없을 때 표까지 안 뜬다. */}
       {calls && calls.length > 0 && (
         <>
-          {/* 콜 목록 표 — 넓은 화면에서 표, 좁으면 자체 가로 스크롤.
-              상단 집계 카드(KPI 4 + 성적표 2)는 제거됨 — 표 자체가 판단 근거다. */}
-          {/* 대상 축 탭 — 실제 보유 vs 아직 안 산 것. 실적 캘린더의 축 탭과 같은 어휘·모양.
-              보유 판정은 포트폴리오(토스) 목록으로만 하고 콜 종류로 추론하지 않는다. */}
+          {/* 대상 축 탭 — 실제 보유 vs 아직 안 산 것. 실적 캘린더의 축 탭과 같은 어휘·모양. */}
           <div
             role="group"
-            aria-label="트랙레코드 대상"
+            aria-label="추적 대상"
             className="mb-3 inline-flex rounded-full border border-hairline bg-canvas-soft p-0.5"
           >
             {AXES.map((a) => {
@@ -235,9 +193,10 @@ export function TrackRecordView() {
             })}
           </div>
 
-          <p className="text-[11px] text-mute mb-2 leading-relaxed">
-            {AXIS_DESC[axis]} 종목당 <span className="text-body">최신 콜 1건</span>만 표시하며,
-            같은 종목의 이전 콜(스킬 이력)은 행을 눌러 펼치면 나옵니다.
+          <p className="text-[11px] text-mute mb-3 leading-relaxed">
+            {AXIS_DESC[axis]} 종목마다 <span className="text-body">살아있는 논제</span>를 출처별로
+            보여주며, 서로 어긋나면 나란히 세워 <span className="text-body">무엇이 갈리는지</span>{" "}
+            표시합니다.
             {!holdingsReady && (
               <span className="text-amber-300">
                 {" "}보유 정보를 불러오지 못해 <span className="text-body">보유·관찰 분리가 비활성</span>입니다 —
@@ -245,373 +204,42 @@ export function TrackRecordView() {
               </span>
             )}
           </p>
-          <div className="rounded-lg border border-hairline bg-canvas-card overflow-hidden">
-            <div className="overflow-x-auto scroll-slim">
-              <table className="w-full text-sm border-collapse min-w-[820px]">
-                <thead>
-                  <tr className="border-b border-hairline text-left">
-                    {["종목", "콜", "콜 시점", "시점가", "매수가", "현재가", "밴드", "보고서"].map(
-                      (h) => (
-                        <th key={h} className="eyebrow text-[10px] text-mute font-normal px-3 py-2.5">
-                          {h}
-                        </th>
-                      )
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.length === 0 && (
-                    <tr>
-                      <td colSpan={8} className="px-3 py-8 text-center text-xs text-mute">
-                        {axis === "held"
-                          ? "보유 종목 중 콜이 기록된 것이 없습니다."
-                          : "관찰 논제가 없습니다 — 기록된 콜이 전부 보유 종목입니다."}
-                      </td>
-                    </tr>
-                  )}
-                  {rows.map((c) => {
-                    const cl = CALL_LABEL[c.call] ?? CALL_LABEL.hold;
-                    const st = STATUS_STYLE[c.status] ?? STATUS_STYLE.unknown;
-                    const band = bandOf(c);
-                    const tranches = c.target?.tranches ?? [];
-                    const noChase = c.target?.noChaseAbove ?? null;
-                    // 추격금지선을 이미 넘었으면 래더가 전부 잠긴 상태라 눈에 띄게 표시한다.
-                    const chaseBreached =
-                      noChase != null && c.priceNow != null && c.priceNow > noChase;
-                    const avgPrice = avgPriceByTicker[c.ticker.toUpperCase()] ?? null;
-                    const history = historyByTicker.get(c.ticker) ?? [];
-                    const isOpen = expanded.has(c.id);
-                    const hasDetail =
-                      c.loadBearing.length > 0 || c.invalidation.length > 0 || history.length > 0;
-                    return (
-                      <Fragment key={c.id}>
-                      <tr
-                        onClick={() => toggleExpand(c.id)}
-                        aria-expanded={isOpen}
-                        className="border-b border-hairline last:border-0 hover:bg-canvas-soft/50 transition-colors cursor-pointer"
-                      >
-                        <td className="px-3 py-2.5">
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={`inline-block text-mute text-[9px] transition-transform ${isOpen ? "rotate-90" : ""}`}
-                            >
-                              ▶
-                            </span>
-                            <span className="font-mono text-ink">{c.ticker}</span>
-                            {/* '전체' 축에서는 어느 게 실제 보유인지 행 단위로 보이게 한다
-                                (보유 축에서는 전부 보유라 중복 표기가 된다). */}
-                            {axis === "all" && heldTickers.has(c.ticker.trim().toUpperCase()) && (
-                              <span className="shrink-0 rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute">
-                                보유
-                              </span>
-                            )}
-                            {history.length > 0 && (
-                              <span className="shrink-0 rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute">
-                                이력 {history.length}
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-[10px] text-mute truncate max-w-[140px] pl-3">{c.skill}</div>
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${cl.color}`}>
-                            {cl.label}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2.5 font-mono text-[11px] text-mute">{c.date}</td>
-                        <td className="px-3 py-2.5 font-mono text-body">
-                          {typeof c.priceAtCall === "number" ? `$${c.priceAtCall.toFixed(2)}` : "—"}
-                        </td>
-                        {/* 매수가 = 포트폴리오 평단가. 미보유 종목은 '—' (관망·회피 콜이 대부분). */}
-                        <td className="px-3 py-2.5 font-mono">
-                          {avgPrice != null ? (
-                            <span className="text-body" title="포트폴리오 평단가 (보유 중)">
-                              ${avgPrice.toFixed(2)}
-                            </span>
-                          ) : (
-                            <span className="text-mute" title="미보유 — 포트폴리오에 없는 종목">
-                              —
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-3 py-2.5 font-mono text-body">
-                          {typeof c.priceNow === "number" ? `$${c.priceNow.toFixed(2)}` : "—"}
-                        </td>
-                        {/* 밴드 열 — 래더가 있으면 차수를 그대로 세로로 편다.
-                            "$148~185" 두 숫자는 '얼마부터 순차적으로 사는가'에 답하지 못해
-                            그대로는 주문에 옮길 수 없다. 래더가 없는 콜만 밴드로 폴백한다. */}
-                        <td className="px-3 py-2.5 text-[11px]">
-                          {band ? (
-                            <div className="flex flex-col gap-1">
-                              <span
-                                className="flex items-baseline gap-1.5"
-                                title={`${band.long} — ${band.why}`}
-                              >
-                                <span className="eyebrow text-[9px] text-mute shrink-0">
-                                  {band.label}
-                                </span>
-                                <span className="font-mono text-body whitespace-nowrap">
-                                  {band.value}
-                                </span>
-                              </span>
-                              {tranches.length > 0 && (
-                                <ul className="flex flex-col gap-0.5 max-w-[260px]">
-                                  {tranches.map((t, i) => (
-                                    <li
-                                      key={i}
-                                      className="font-mono text-[10px] text-body leading-snug"
-                                    >
-                                      {t}
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                              {noChase != null && (
-                                <span
-                                  className={`text-[10px] ${chaseBreached ? "text-red-300" : "text-mute"}`}
-                                  title="이 가격을 넘으면 어떤 차수도 활성화되지 않는다"
-                                >
-                                  추격금지 &gt;${noChase}
-                                  {chaseBreached && " · 초과"}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="font-mono text-mute">—</span>
-                          )}
-                        </td>
-                        {/* 채점 상태(적중/빗나감/진행중)와 경과일은 표에서 뺐다 —
-                            행을 펼치면 상세 요약 줄에 나온다. */}
-                        <td className="px-3 py-2.5">
-                          {c.report ? (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setModalPath(c.report!);
-                              }}
-                              className="text-[11px] text-mute hover:text-ink underline underline-offset-2 transition-colors"
-                            >
-                              보고서
-                            </button>
-                          ) : (
-                            <span className="text-[11px] text-mute">—</span>
-                          )}
-                        </td>
-                      </tr>
 
-                      {/* 콜 상세(TASK-79): 핵심 가정(참이어야 유효) + 무효화(레드라인) 조건.
-                          진행중 콜이 "무슨 근거로 살아있는지 / 언제 폐기되는지"를 드러낸다.
-                          원장(loadBearing·invalidation)에 있으나 표에는 없던 정보. */}
-                      {isOpen && (
-                        <tr className="border-b border-hairline last:border-0 bg-canvas-soft/30">
-                          <td colSpan={8} className="px-3 py-4">
-                            <div className="flex flex-col gap-3.5 max-w-3xl pl-3">
-                              {/* 진행 요약 — 표에서 뺀 채점 상태·경과일이 여기 남는다.
-                                  특히 관망(hold)은 밴드로 내려오는 게 적중이라 수익률
-                                  부호와 채점 결과가 어긋난다 → 상태를 반드시 함께 둔다. */}
-                              <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[11px] text-mute">
-                                <span className="inline-flex items-center gap-1.5">
-                                  채점
-                                  <span
-                                    className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium ${st.color}`}
-                                  >
-                                    <span className={`inline-block w-1.5 h-1.5 rounded-full ${st.dot}`} />
-                                    {st.label}
-                                  </span>
-                                </span>
-                                <span>
-                                  경과 <span className="font-mono text-body">{c.elapsedDays}d</span>
-                                  {c.horizonProgress != null && (
-                                    <span className="text-mute/70">
-                                      {" "}· horizon {Math.round(c.horizonProgress * 100)}%
-                                    </span>
-                                  )}
-                                </span>
-                                <span>
-                                  콜 시점가{" "}
-                                  <span className="font-mono text-body">
-                                    ${c.priceAtCall.toFixed(2)}
-                                  </span>
-                                </span>
-                                {avgPrice != null && (
-                                  <span>
-                                    매수가{" "}
-                                    <span className="font-mono text-body">
-                                      ${avgPrice.toFixed(2)}
-                                    </span>
-                                  </span>
-                                )}
-                                {c.priceNow != null && (
-                                  <span>
-                                    현재가{" "}
-                                    <span className="font-mono text-body">
-                                      ${c.priceNow.toFixed(2)}
-                                    </span>
-                                  </span>
-                                )}
-                                {c.returnPct != null && (
-                                  <span>
-                                    수익률{" "}
-                                    <span className={`font-mono ${moveColor(c.returnPct)}`}>
-                                      {c.returnPct >= 0 ? "+" : ""}
-                                      {c.returnPct.toFixed(1)}%
-                                    </span>
-                                  </span>
-                                )}
-                                {band && (
-                                  <span>
-                                    {band.long}{" "}
-                                    <span className="font-mono text-body">{band.value}</span>
-                                  </span>
-                                )}
-                                {c.horizonMonths != null && (
-                                  <span>
-                                    horizon <span className="text-body">{c.horizonMonths}M</span>
-                                    {c.horizonProgress != null &&
-                                      ` · ${Math.round(c.horizonProgress * 100)}% 경과`}
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* 이 콜에서 밴드가 무엇을 뜻하는지 — hold(진입 대기)와
-                                  buy/keep(도달 목표)이 정반대라 표의 라벨만으론 부족하다. */}
-                              {band && (
-                                <p className="-mt-2 text-[11px] text-mute leading-snug">
-                                  {band.long} — {band.why}
-                                </p>
-                              )}
-
-                              {c.loadBearing.length > 0 && (
-                                <div>
-                                  <div className="eyebrow text-[10px] text-mute mb-1.5">
-                                    핵심 가정 · 참이어야 유효
-                                  </div>
-                                  <ul className="flex flex-col gap-1">
-                                    {c.loadBearing.map((x, i) => (
-                                      <li
-                                        key={i}
-                                        className="flex gap-2 text-[11px] text-body leading-snug"
-                                      >
-                                        <span className="mt-1.5 inline-block w-1 h-1 rounded-full bg-twilight shrink-0" />
-                                        <span>{x}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-
-                              {c.invalidation.length > 0 && (
-                                <div>
-                                  <div className="eyebrow text-[10px] text-mute mb-1.5">
-                                    무효화 · 레드라인 (하나라도 참이면 논제 폐기)
-                                  </div>
-                                  <ul className="flex flex-col gap-1">
-                                    {c.invalidation.map((x, i) => (
-                                      <li
-                                        key={i}
-                                        className="flex gap-2 text-[11px] text-body leading-snug"
-                                      >
-                                        <span className="mt-1.5 inline-block w-1 h-1 rounded-full bg-red-400 shrink-0" />
-                                        <span>{x}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-
-                              {/* 이전 콜(스킬 이력): 같은 종목의 과거 콜. "어느 스킬이 언제
-                                  무슨 판정을 냈나"를 시간순으로 보여준다(종목 축 통합). */}
-                              {history.length > 0 && (
-                                <div>
-                                  <div className="eyebrow text-[10px] text-mute mb-1.5">
-                                    이전 콜 · 스킬 이력
-                                  </div>
-                                  <ul className="flex flex-col gap-1.5">
-                                    {history.map((h) => {
-                                      const hcl = CALL_LABEL[h.call] ?? CALL_LABEL.hold;
-                                      const hst = STATUS_STYLE[h.status] ?? STATUS_STYLE.unknown;
-                                      return (
-                                        <li
-                                          key={h.id}
-                                          className="flex flex-wrap items-center gap-2 text-[11px]"
-                                        >
-                                          <span className="font-mono text-mute">{h.date}</span>
-                                          <span className="font-mono text-body truncate max-w-[160px]">
-                                            {h.skill}
-                                          </span>
-                                          <span
-                                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${hcl.color}`}
-                                          >
-                                            {hcl.label}
-                                          </span>
-                                          <span
-                                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${hst.color}`}
-                                          >
-                                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${hst.dot}`} />
-                                            {hst.label}
-                                          </span>
-                                          {h.report && (
-                                            <button
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                setModalPath(h.report!);
-                                              }}
-                                              className="text-[10px] text-mute hover:text-ink underline underline-offset-2 transition-colors"
-                                            >
-                                              보고서
-                                            </button>
-                                          )}
-                                        </li>
-                                      );
-                                    })}
-                                  </ul>
-                                </div>
-                              )}
-
-                              {!hasDetail && (
-                                <p className="text-[11px] text-mute">
-                                  기록된 핵심 가정·무효화 조건이 없습니다.
-                                </p>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                      </Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
+          {rows.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-hairline bg-canvas-card px-5 py-8 text-center text-xs text-mute">
+              {axis === "held"
+                ? "보유 종목 중 논제가 기록된 것이 없습니다."
+                : "관찰 논제가 없습니다 — 기록된 논제가 전부 보유 종목입니다."}
             </div>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
+              {rows.map((g) => (
+                <TickerCard
+                  key={g.ticker}
+                  group={g}
+                  held={heldTickers.has(g.ticker)}
+                  avgPrice={avgPriceByTicker[g.ticker] ?? null}
+                  onOpenReport={setModalPath}
+                />
+              ))}
+            </div>
+          )}
 
-          {/* 밴드 열 범례 — 같은 숫자가 콜 종류에 따라 정반대를 뜻하므로,
-              라벨만 보고도 읽히도록 두 의미를 명시한다. */}
-          <p className="mt-3 text-[11px] text-mute leading-relaxed">
-            ※ <span className="text-body">밴드</span> 열의 <span className="text-body">차수(1차·2차·3차)</span>는{" "}
-            <span className="text-body">분할 진입 래더</span>입니다 — 어느 가격에서 얼마씩 살지를 그대로 옮긴 것으로,{" "}
-            <span className="text-body">AND 조건이 붙은 차수는 가격만 닿아도 집행하지 않습니다</span>(조건 미충족 시
-            조건 없는 최하단 차수까지 대기). <span className="text-body">추격금지</span>선을 넘은 종목은 어떤 차수도
+          <p className="mt-4 text-[11px] text-mute leading-relaxed">
+            ※ <span className="text-body">래더</span>의 차수는 &apos;어느 가격에서 얼마씩 살지&apos;를 그대로 옮긴
+            것입니다 — <span className="text-body">조건이 붙은 차수는 가격만 닿아도 집행하지 않습니다</span>
+            (조건 미충족 시 조건 없는 최하단 차수까지 대기). 추격금지선을 넘은 종목은 어떤 차수도
             활성화되지 않습니다.
           </p>
           <p className="mt-1.5 text-[11px] text-mute leading-relaxed">
-            ※ <span className="text-body">밴드</span> 열은 콜 종류에 따라 의미가 다릅니다 —{" "}
-            <span className="eyebrow text-[9px]">진입</span>(관망)은{" "}
-            <span className="text-body">내려오길 기다리는 매수 구간</span>으로 밴드 안으로의 회귀가
-            곧 적중이고, <span className="eyebrow text-[9px]">목표</span>(매수·보유 유지)는{" "}
-            <span className="text-body">도달해야 할 목표가</span>로 채점은 방향으로 하고 밴드 도달은
-            보조 지표입니다. <span className="eyebrow text-[9px]">참고</span>(회피)는 채점에 쓰이지
-            않습니다.
+            ※ <span className="text-body">매수가</span>는 포트폴리오(토스) 평단가입니다 — 논제는 예측이고
+            매수가는 실제 진입가라 별개 축이며, 미보유 종목에는 그려지지 않습니다.{" "}
+            <span className="text-body">채점</span>(적중·빗나감·진행중)과 핵심 가정·무효화 조건은 논제의{" "}
+            <span className="text-body">상세</span>를 펼치면 나옵니다.
           </p>
           <p className="mt-1.5 text-[11px] text-mute leading-relaxed">
-            ※ <span className="text-body">매수가</span>는 포트폴리오(토스) 평단가입니다 — 콜은 예측이고
-            매수가는 실제 진입가라 별개 축이며, 미보유 종목은 <span className="font-mono">—</span>로
-            표시됩니다. <span className="text-body">채점 상태</span>(적중·빗나감·진행중)·수익률·경과일은
-            행을 펼치면 나옵니다.
-          </p>
-          <p className="mt-1.5 text-[11px] text-mute leading-relaxed">
-            ※ 콜 이후 액면분할 등으로 시점가와 현재가의 기준이 달라질 수 있습니다(현재가는 분할 조정됨).
-            무효화(레드라인) 조건은 재무 데이터가 필요해 자동 채점하지 않고 기록만 합니다.
+            ※ 무효화(레드라인) 조건은 재무 데이터가 필요해 자동 채점하지 않고 기록만 합니다. 콜 이후
+            액면분할 등으로 기준이 달라질 수 있습니다(현재가는 분할 조정됨).
           </p>
         </>
       )}
@@ -621,3 +249,314 @@ export function TrackRecordView() {
   );
 }
 
+// ── 종목 카드 ─────────────────────────────────────────────────────────────
+// 카드 하나 = 종목 하나. 위에 가격(현재가·전일 대비·매수가), 아래에 살아있는 논제들.
+// 논제가 어긋나는 카드는 두 열을 나란히 놓아야 해서 그리드 두 칸을 쓴다.
+function TickerCard({
+  group,
+  held,
+  avgPrice,
+  onOpenReport,
+}: {
+  group: ThesisGroup;
+  held: boolean;
+  avgPrice: number | null;
+  onOpenReport: (path: string) => void;
+}) {
+  // 합의(충돌 없음) 논제가 여럿일 때 나머지를 펼칠지.
+  const [showAll, setShowAll] = useState(false);
+  const conflict = group.conflict;
+  // 충돌이면 전부 나란히(가로 폭 한계로 최대 3열), 합의면 최신 하나만 펴고 접는다.
+  const visible = conflict || showAll ? group.active.slice(0, 3) : group.active.slice(0, 1);
+  const hiddenCount = group.active.length - visible.length;
+
+  // 가격 정보는 종목 축이라 논제와 무관하게 하나다 — 아무 논제에서나 가져온다.
+  const anyCall = group.active[0];
+  const priceNow = anyCall?.priceNow ?? null;
+  const dayChange = anyCall?.dayChange ?? null;
+  const dayChangePct = anyCall?.dayChangePct ?? null;
+  // 실제 손익 = 현재가 vs 평단가. 콜의 수익률(시점가 기준)과는 다른 축이다.
+  const plPct = avgPrice != null && priceNow != null ? ((priceNow - avgPrice) / avgPrice) * 100 : null;
+
+  return (
+    <div
+      className={`rounded-lg border border-hairline bg-canvas-card p-4 ${
+        conflict ? "xl:col-span-2" : ""
+      }`}
+    >
+      {/* 헤더 — 종목 · 현재가 · 전일 대비 */}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-ink text-base tracking-[-0.02em]">{group.ticker}</span>
+          {held && (
+            <span className="rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute">보유</span>
+          )}
+          {group.resolvedOnly && (
+            <span
+              className="rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute"
+              title="살아있는 논제가 없습니다 — 채점이 끝난 마지막 판단만 남겨둡니다."
+            >
+              종료
+            </span>
+          )}
+          {group.active.length > 1 && !conflict && (
+            <span className="rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute">
+              동의 {group.active.length}건
+            </span>
+          )}
+        </div>
+        <div className="text-right">
+          <div className="font-mono text-ink text-base tracking-[-0.02em]">
+            {priceNow != null ? fmtPrice(priceNow) : "—"}
+          </div>
+          {/* 전일 대비 — 금액과 %를 함께. 색은 한국식(상승 빨강 / 하락 파랑). */}
+          <div className={`font-mono text-[11px] ${moveColor(dayChangePct)}`}>
+            {dayChange != null && dayChangePct != null ? (
+              <>
+                {dayChangePct >= 0 ? "▲" : "▼"} ${Math.abs(dayChange).toFixed(2)} (
+                {dayChangePct >= 0 ? "+" : ""}
+                {dayChangePct.toFixed(2)}%)
+              </>
+            ) : (
+              <span className="text-mute">전일 대비 —</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 매수가 — 보유 중일 때만. 평가손익을 함께 둔다(현재가 대비). */}
+      {avgPrice != null && (
+        <div className="mt-1.5 flex items-center gap-2 text-[11px]">
+          <span className="eyebrow text-[9px] text-mute">매수가</span>
+          <span className="font-mono text-body">{fmtPrice(avgPrice)}</span>
+          {plPct != null && (
+            <span className={`font-mono ${moveColor(plPct)}`}>
+              {plPct >= 0 ? "+" : ""}
+              {plPct.toFixed(1)}%
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* 충돌 배너 — 무엇이 갈리는지 먼저 말한다. */}
+      {conflict && (
+        <div className="mt-3 rounded-lg border border-amber-400/30 bg-amber-500/[0.07] px-3 py-2">
+          <div className="eyebrow text-[9px] text-amber-300 mb-1">논제 충돌 {group.active.length}건</div>
+          <ul className="flex flex-col gap-0.5">
+            {conflict.reasons.map((r, i) => (
+              <li key={i} className="text-[11px] text-body leading-snug">
+                {r}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* 논제 열 — 충돌이면 나란히, 합의면 하나(+펼치기) */}
+      <div
+        className={`mt-3 grid gap-4 ${
+          visible.length > 1 ? "sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1"
+        }`}
+      >
+        {visible.map((c) => (
+          <ThesisColumn key={c.id} call={c} avgPrice={avgPrice} onOpenReport={onOpenReport} />
+        ))}
+      </div>
+
+      {hiddenCount > 0 && (
+        <button
+          onClick={() => setShowAll(true)}
+          className="mt-2 rounded-full border border-hairline px-3 py-1 text-[10px] text-mute hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+        >
+          다른 논제 {hiddenCount}건 보기
+        </button>
+      )}
+
+      {group.history.length > 0 && <HistoryStrip history={group.history} onOpenReport={onOpenReport} />}
+    </div>
+  );
+}
+
+// ── 논제 한 건(= 보고서 한 건의 결론) ────────────────────────────────────
+function ThesisColumn({
+  call: c,
+  avgPrice,
+  onOpenReport,
+}: {
+  call: ScoredCall;
+  avgPrice: number | null;
+  onOpenReport: (path: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const meta = BAND_META[c.call] ?? BAND_META.buy;
+  const tranches = useMemo(() => parseTranches(c.target?.tranches), [c.target?.tranches]);
+  const st = STATUS_STYLE[c.status] ?? STATUS_STYLE.unknown;
+  const hasDetail = c.loadBearing.length > 0 || c.invalidation.length > 0 || !!c.reason;
+
+  return (
+    <div className="min-w-0">
+      {/* 출처 — 어느 보고서가 낸 결론인지. 논제가 여럿일 때 이게 없으면 비교가 안 된다. */}
+      <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+        {c.report ? (
+          <button
+            onClick={() => onOpenReport(c.report as string)}
+            className="font-mono text-[10px] text-mute hover:text-ink underline underline-offset-2 transition-colors truncate max-w-[180px]"
+            title={c.report}
+          >
+            {c.skill}
+          </button>
+        ) : (
+          <span className="font-mono text-[10px] text-mute truncate max-w-[180px]">{c.skill}</span>
+        )}
+        <span className="font-mono text-[10px] text-mute/70">{c.date}</span>
+        {c.horizonMonths != null && (
+          <span className="rounded-full border border-hairline px-1.5 py-px text-[9px] text-mute">
+            {c.horizonMonths}M
+          </span>
+        )}
+      </div>
+
+      <LadderChart
+        tranches={tranches}
+        band={c.target ?? null}
+        bandLabel={meta.long}
+        priceNow={c.priceNow}
+        avgPrice={avgPrice}
+        noChaseAbove={c.target?.noChaseAbove ?? null}
+      />
+
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="mt-2 flex items-center gap-1.5 text-[10px] text-mute hover:text-ink transition-colors"
+      >
+        <span className={`inline-block text-[9px] transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
+        상세
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-1.5 py-px text-[9px] font-medium ${st.color}`}
+        >
+          <span className={`inline-block w-1 h-1 rounded-full ${st.dot}`} />
+          {st.label}
+        </span>
+      </button>
+
+      {open && (
+        <div className="mt-2 flex flex-col gap-3 border-t border-hairline pt-2.5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-mute">
+            <span>
+              판정{" "}
+              <span className="text-body">{(CALL_LABEL[c.call] ?? CALL_LABEL.hold).label}</span>
+            </span>
+            <span>
+              경과 <span className="font-mono text-body">{c.elapsedDays}d</span>
+              {c.horizonProgress != null && (
+                <span className="text-mute/70"> · {Math.round(c.horizonProgress * 100)}%</span>
+              )}
+            </span>
+            <span>
+              시점가 <span className="font-mono text-body">{fmtPrice(c.priceAtCall)}</span>
+            </span>
+            {c.returnPct != null && (
+              <span>
+                시점 대비{" "}
+                <span className={`font-mono ${moveColor(c.returnPct)}`}>
+                  {c.returnPct >= 0 ? "+" : ""}
+                  {c.returnPct.toFixed(1)}%
+                </span>
+              </span>
+            )}
+          </div>
+
+          <p className="text-[10px] text-mute leading-snug">
+            {meta.long} — {meta.why}
+          </p>
+
+          {c.reason && <p className="text-[11px] text-body leading-relaxed">{c.reason}</p>}
+
+          {c.loadBearing.length > 0 && (
+            <div>
+              <div className="eyebrow text-[10px] text-mute mb-1.5">핵심 가정 · 참이어야 유효</div>
+              <ul className="flex flex-col gap-1">
+                {c.loadBearing.map((x, i) => (
+                  <li key={i} className="flex gap-2 text-[11px] text-body leading-snug">
+                    <span className="mt-1.5 inline-block w-1 h-1 rounded-full bg-twilight shrink-0" />
+                    <span>{x}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {c.invalidation.length > 0 && (
+            <div>
+              <div className="eyebrow text-[10px] text-mute mb-1.5">
+                무효화 · 레드라인 (하나라도 참이면 논제 폐기)
+              </div>
+              <ul className="flex flex-col gap-1">
+                {c.invalidation.map((x, i) => (
+                  <li key={i} className="flex gap-2 text-[11px] text-body leading-snug">
+                    <span className="mt-1.5 inline-block w-1 h-1 rounded-full bg-red-400 shrink-0" />
+                    <span>{x}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {!hasDetail && <p className="text-[11px] text-mute">기록된 핵심 가정·무효화 조건이 없습니다.</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── 갱신·종료된 이전 논제 ────────────────────────────────────────────────
+// 살아있지 않은 콜은 추적 대상이 아니라 이력이다 — 한 줄로 접어 카드 바닥에 둔다.
+function HistoryStrip({
+  history,
+  onOpenReport,
+}: {
+  history: ScoredCall[];
+  onOpenReport: (path: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-3 border-t border-hairline pt-2">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex items-center gap-1.5 text-[10px] text-mute hover:text-ink transition-colors"
+      >
+        <span className={`inline-block text-[9px] transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
+        이전 논제 {history.length}건
+      </button>
+      {open && (
+        <ul className="mt-2 flex flex-col gap-1.5">
+          {history.map((h) => {
+            const hcl = CALL_LABEL[h.call] ?? CALL_LABEL.hold;
+            const hst = STATUS_STYLE[h.status] ?? STATUS_STYLE.unknown;
+            return (
+              <li key={h.id} className="flex flex-wrap items-center gap-2 text-[10px]">
+                <span className="font-mono text-mute">{h.date}</span>
+                <span className="font-mono text-body truncate max-w-[160px]">{h.skill}</span>
+                <span className={`rounded-full px-1.5 py-px font-medium ${hcl.color}`}>{hcl.label}</span>
+                <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-px font-medium ${hst.color}`}>
+                  <span className={`inline-block w-1 h-1 rounded-full ${hst.dot}`} />
+                  {hst.label}
+                </span>
+                {h.report && (
+                  <button
+                    onClick={() => onOpenReport(h.report as string)}
+                    className="text-mute hover:text-ink underline underline-offset-2 transition-colors"
+                  >
+                    보고서
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
