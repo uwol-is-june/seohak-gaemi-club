@@ -46,6 +46,10 @@ DRIFT_TOLERANCE_PCT = 10
 # 트랙레코드가 오염되는 것을 막는다. dashboard/lib/calls.ts 의 MIN_RESOLVE_DAYS 와 같아야 한다.
 MIN_RESOLVE_DAYS = 30
 
+# 기회비용 채점의 기준선(TASK-100). "안 샀으면 그 돈이 있었을 곳"은 현금이 아니라 시장이다.
+# dashboard/lib/calls.ts 의 BENCHMARK_TICKER 와 같아야 한다.
+BENCHMARK_TICKER = "SPY"
+
 
 def to_yahoo_symbol(ticker: str) -> str:
     return ticker.strip().upper().replace(".", "-").replace(" ", "-")
@@ -87,6 +91,30 @@ def load_calls() -> list[dict]:
         except json.JSONDecodeError:
             print(f"경고: 파싱 불가한 원장 줄을 건너뜁니다: {line[:60]}...", file=sys.stderr)
     return calls
+
+
+def dedupe_calls(calls: list[dict]) -> list[dict]:
+    """같은 콜이 두 줄 이상이면 최신 1건만 남긴다 (TASK-104).
+
+    원장은 append-only 라서 같은 스킬을 같은 날 다시 돌리면 같은 id 로 한 줄이 더 쌓인다
+    (record_call.py 는 경고만 하고 이력 보존을 위해 추가한다). 그대로 채점하면 그 판단이
+    두 번 세어져 적중률·기회비용 분모가 왜곡된다.
+
+    🔴 키는 id(= 티커-날짜-스킬)다. **같은 날 다른 스킬이 낸 콜은 중복이 아니다** —
+    서로 다른 판단이고, 그 불일치를 드러내는 것이 논제 충돌 판정의 목적이다.
+
+    dashboard/lib/calls.ts 의 dedupeCalls 와 같은 규칙이어야 한다.
+    """
+    latest: dict[str, dict] = {}
+    for c in calls:
+        cid = c.get("id")
+        if not cid:
+            continue
+        prev = latest.get(cid)
+        # recordedAt 최신이 정정본. 동률(둘 다 없음 포함)이면 나중 줄을 남긴다.
+        if prev is None or (c.get("recordedAt") or "") >= (prev.get("recordedAt") or ""):
+            latest[cid] = c
+    return list(latest.values())
 
 
 def score_call(call: dict, now_price: float | None, today: date) -> dict:
@@ -186,6 +214,93 @@ def score_call(call: dict, now_price: float | None, today: date) -> dict:
     return result
 
 
+def fetch_benchmark_series(years: int = 5) -> list[tuple[int, float]] | None:
+    """벤치마크 일별 조정종가 [(unix_ts, close)]. 실패하면 None(0으로 뭉개지 않는다)."""
+    url = (
+        f"https://query1.finance.yahoo.com/v8/finance/chart/{BENCHMARK_TICKER}"
+        f"?range={years}y&interval=1d&includeAdjustedClose=true"
+    )
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        result = data["chart"]["result"][0]
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError,
+            ValueError, KeyError, IndexError, TypeError):
+        return None
+
+    ts = result.get("timestamp") or []
+    adj = (result.get("indicators", {}).get("adjclose") or [{}])[0].get("adjclose")
+    raw = (result.get("indicators", {}).get("quote") or [{}])[0].get("close")
+    series = adj if isinstance(adj, list) else raw
+    if not isinstance(ts, list) or not isinstance(series, list) or len(ts) != len(series):
+        return None
+
+    # 결측 종가(휴장·공백)는 버린다 — 그대로 두면 인덱스가 어긋난다.
+    out = [
+        (int(t), float(c))
+        for t, c in zip(ts, series)
+        if isinstance(t, (int, float)) and isinstance(c, (int, float))
+    ]
+    return out if len(out) >= 2 else None
+
+
+def benchmark_return_since(series: list[tuple[int, float]] | None, call_date: str) -> float | None:
+    """콜 시점부터 지금까지의 벤치마크 수익률(%).
+
+    콜 당일이 휴장이면 직전 거래일 종가를 쓴다(그날 살 수 있었던 마지막 가격).
+    시계열 시작보다 오래된 콜은 기준선이 없으므로 None — 0으로 뭉개지 않는다.
+    """
+    if not series:
+        return None
+    try:
+        d = datetime.strptime(call_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return None
+    cutoff = int(d.timestamp()) + 86_399  # 그날 장 마감까지 포함
+
+    at = None
+    for t, c in reversed(series):
+        if t <= cutoff:
+            at = c
+            break
+    if at is None or at <= 0:
+        return None
+    now = series[-1][1]
+    return (now - at) / at * 100.0
+
+
+def score_benchmark(call_type: str, return_pct: float | None,
+                    benchmark_return_pct: float | None) -> dict:
+    """벤치마크 대비 채점 (TASK-100) — dashboard/lib/calls.ts scoreBenchmark 와 동일 규칙.
+
+    기존 채점은 밴드 터치만 봤다. `hold` 걸어두고 주가가 +30% 도망가도 손실로 잡히지
+    않아 **"안 사서 잃은 것"이 트랙레코드에서 보이지 않았다**(2026-09-10 진단).
+
+    콜별 반사실과 적중 조건:
+      buy/keep   샀다/계속 보유 ↔ SPY  → 종목이 SPY 를 초과해야 적중
+      hold/avoid 관망/회피      ↔ SPY  → 종목이 SPY 에 미달해야 적중(안 산 게 이득)
+    초과수익 정확히 0은 우위가 실증되지 않은 것이라 적중으로 치지 않는다.
+    """
+    if benchmark_return_pct is None or return_pct is None:
+        return {
+            "benchmarkReturnPct": benchmark_return_pct,
+            "excessReturnPct": None,
+            "benchmarkHit": None,
+            "opportunityCostPct": None,
+        }
+    excess = return_pct - benchmark_return_pct
+    wants_upside = call_type in ("buy", "keep")
+    hit = excess > 0 if wants_upside else excess < 0
+    return {
+        "benchmarkReturnPct": benchmark_return_pct,
+        "excessReturnPct": excess,
+        "benchmarkHit": hit,
+        # "이 판단 때문에 포기한 상대수익(pp)". 적중이면 0 — 포기한 게 없다.
+        "opportunityCostPct": 0.0 if hit else abs(excess),
+    }
+
+
 def wilson_interval(hits: int, n: int, z: float = 1.96) -> tuple[float, float]:
     """이항 적중률의 Wilson 신뢰구간(95%). 작은 표본에서 과대해석 방지용."""
     if n == 0:
@@ -204,6 +319,22 @@ def aggregate(scored: list[dict]) -> dict:
     n = len(resolved)
     lo, hi = wilson_interval(hits, n)
     errs = [s["targetErrorPct"] for s in resolved if s["targetErrorPct"] is not None]
+    # 벤치마크 집계는 확정 콜 중 **초과수익이 계산된 것**만 분모로 쓴다.
+    # (시세·시계열 결측을 0으로 뭉개면 적중률이 왜곡된다.)
+    with_bm = [s for s in resolved if isinstance(s.get("excessReturnPct"), (int, float))]
+    bm_hits = sum(1 for s in with_bm if s.get("benchmarkHit") is True)
+    bm_lo, bm_hi = wilson_interval(bm_hits, len(with_bm))
+    excesses = [s["excessReturnPct"] for s in with_bm]
+    # 관망(hold)이 포기한 상대수익 — 보수성 편향의 직접 지표.
+    hold_resolved = [s for s in with_bm if s.get("call") == "hold"]
+    hold_costs = [s["opportunityCostPct"] for s in hold_resolved
+                  if isinstance(s.get("opportunityCostPct"), (int, float))]
+    # 진행중 관망의 **잠정** 기회비용 — 호라이즌 12~24M 을 다 기다리면 편향을 못 본다.
+    running_hold = [s for s in scored
+                    if s.get("call") == "hold" and s.get("status") == "진행중"
+                    and isinstance(s.get("opportunityCostPct"), (int, float))]
+    running_costs = [s["opportunityCostPct"] for s in running_hold]
+
     return {
         "resolvedCount": n,
         "directionHits": hits,
@@ -213,6 +344,15 @@ def aggregate(scored: list[dict]) -> dict:
         "inProgress": sum(1 for s in scored if s["status"] == "진행중"),
         "unknown": sum(1 for s in scored if s["status"] == "unknown"),
         "smallSample": n < 10,
+        "benchmarkResolvedCount": len(with_bm),
+        "benchmarkHits": bm_hits,
+        "benchmarkHitRate": (bm_hits / len(with_bm)) if with_bm else None,
+        "benchmarkCi95": [bm_lo, bm_hi],
+        "avgExcessReturnPct": (sum(excesses) / len(excesses)) if excesses else None,
+        "holdOpportunityCostAvgPct": (sum(hold_costs) / len(hold_costs)) if hold_costs else None,
+        "holdResolvedCount": len(hold_resolved),
+        "inProgressHoldOpportunityCostAvgPct": (sum(running_costs) / len(running_costs)) if running_costs else None,
+        "inProgressHoldCount": len(running_hold),
     }
 
 
@@ -246,6 +386,20 @@ def print_table(scored: list[dict], agg: dict) -> None:
         print(f"방향 적중률: 확정 콜 없음 (진행중 {agg['inProgress']}, 미채점 {agg['unknown']})")
     if agg["avgTargetErrorPct"] is not None:
         print(f"평균 목표 오차: {agg['avgTargetErrorPct']:+.1f}%")
+    bm_rate = agg.get("benchmarkHitRate")
+    if bm_rate is not None:
+        blo, bhi = agg["benchmarkCi95"]
+        print(f"{BENCHMARK_TICKER} 대비 적중률(확정 {agg['benchmarkResolvedCount']}콜): {bm_rate*100:.0f}% "
+              f"[{agg['benchmarkHits']}/{agg['benchmarkResolvedCount']}] · 95% CI {blo*100:.0f}~{bhi*100:.0f}%")
+        print(f"  (buy/keep 은 {BENCHMARK_TICKER} 초과가 적중, hold/avoid 는 미달이 적중 — 안 산 게 이득이었나)")
+    if agg.get("avgExcessReturnPct") is not None:
+        print(f"평균 초과수익: {agg['avgExcessReturnPct']:+.1f}pp")
+    if agg.get("holdOpportunityCostAvgPct") is not None:
+        print(f"관망(hold) 평균 기회비용: {agg['holdOpportunityCostAvgPct']:.1f}pp "
+              f"(확정 {agg['holdResolvedCount']}건) — 기다리느라 포기한 상대수익")
+    if agg.get("inProgressHoldOpportunityCostAvgPct") is not None:
+        print(f"관망(hold) 잠정 기회비용: {agg['inProgressHoldOpportunityCostAvgPct']:.1f}pp "
+              f"(진행중 {agg['inProgressHoldCount']}건) — 확정 전 참고치")
     if agg["smallSample"]:
         print("⚠️ 표본이 작습니다(<10). 적중률은 성과가 아니라 규율 신호로만 해석하세요.")
 
@@ -255,12 +409,26 @@ def main() -> None:
     ap.add_argument("--json", action="store_true", help="JSON으로 출력")
     args = ap.parse_args()
 
-    calls = load_calls()
+    calls = dedupe_calls(load_calls())
     today = datetime.now(timezone.utc).date()
     # 티커별 시세는 한 번씩만 fetch(중복 콜 절약).
     tickers = {c.get("ticker") for c in calls if c.get("ticker")}
     prices = {t: fetch_price(t) for t in tickers}
-    scored = [score_call(c, prices.get(c.get("ticker")), today) for c in calls]
+    # 벤치마크 시계열은 콜 수와 무관하게 1건. 같은 날짜 콜이 많아 날짜별로 캐시한다.
+    benchmark = fetch_benchmark_series()
+    bm_by_date: dict[str, float | None] = {}
+
+    scored = []
+    for c in calls:
+        sc = score_call(c, prices.get(c.get("ticker")), today)
+        d = sc.get("date") or ""
+        if d not in bm_by_date:
+            bm_by_date[d] = benchmark_return_since(benchmark, d)
+        # 벤치마크 채점은 score_call 밖에서 얹는다 — 그래야 채점 파리티 픽스처
+        # (data/test/call-scoring-fixtures.json)가 이 필드에 영향받지 않는다.
+        sc.update(score_benchmark(sc.get("call"), sc.get("returnPct"), bm_by_date[d]))
+        scored.append(sc)
+
     agg = aggregate(scored)
 
     if args.json:

@@ -235,6 +235,15 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 
 - **AND 조건이 붙은 차수는 가격만 닿아도 집행하지 않는다** — 조건 미충족이면 조건 없는
   최하단 차수까지 기다린다. 이 규칙을 표에 명시해야 나중에 가격만 보고 오집행하지 않는다.
+- 🔴 **1차 차수는 퀄리티 티어가 정한다**(`skills/quality-tier.md`):
+  **T1 컴파운더는 1차를 "스타터"로 둔다** — 현재가 ~ 매수 상한 사이, 비중 10~20%,
+  **조건 없음(즉시 집행 가능)**. T2는 매수 상한 이하에서 25~35%, T3는 밴드 하단 위주에
+  사이클 확인 조건 필수. 최상급 컴파운더는 가격이 아니라 사업 품질이 방어선이라,
+  완벽한 가격을 기다리다 영영 못 사는 쪽의 비용이 더 크다(2026-07-24 ADBE 1주 토우인이
+  유일하게 옳았던 패턴).
+  단서: **절대 고평가 게이트 통과가 전제**이고(현재가 > 낙관목표 / 25x PER 연환산 <10% /
+  하방>상방 중 하나라도 걸리면 스타터 없음), **남은 80~90%는 반드시 아래로 래더를 깐다**
+  (1차에 절반 이상을 실으면 스타터가 아니라 그냥 매수다).
 - 아직 차수를 나누지 않았거나 추격금지선을 안 정했으면 **⬛로 남기고 "다음 검토 때 산출"이라고
   적는다** — 임의로 지어내지 않는다.
 - 논제 파일(A4.5 진입 래더)과 `track-record.md`가 **어긋나면 논제 파일이 진실**이다.
@@ -249,7 +258,9 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 >
 > ```bash
 > python3 tools/record_call.py --ticker CEG --skill thesis-tracker --call hold \
+>   --tier T2 --required-mos 25 \
 >   --target-low 148 --target-high 185 --horizon-months 24 \
+>   --fill-probability 0 --low-fill-plan catalyst-wait \
 >   --tranche "1차 ≤\$185 (25%) — AND 계약화 60%+ 공시" \
 >            "2차 ≤\$165 (35%) — AND GRC 관대~중간 확정" \
 >            "3차 ≤\$148 (40%) — 조건 없음" \
@@ -258,6 +269,28 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 >
 > 차수를 아직 안 나눴으면 `--tranche`를 생략한다(빈 값·추정 금지). 화면에는 밴드만 뜬다.
 
+### 🔴 `hold` 밴드에는 체결확률이 필수다 (2026-09-10)
+
+밴드만 적고 **"호라이즌 안에 닿을 확률"을 안 적으면 닿을 리 없는 밴드도 계획처럼 보인다.**
+실측 진단: `hold` 14건 중 12건이 밴드 상단조차 시점가보다 10~34% 아래였고, CEG $185 밴드의
+과거 베이스레이트 체결확률은 **0%**, AXP $250은 **12%**였다 — 종목 판단이 아니라 마켓타이밍
+베팅이었다.
+
+```bash
+# ① 베이스레이트로 체결확률 산출 (감으로 쓰지 않는다)
+python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24
+# ② 그 값을 콜에 실어 기록 — record_call.py 가 누락을 에러로 막는다
+```
+
+- **25% 미만이면 밴드가 실행 계획이 아니라 장식이다.** `--low-fill-plan` 으로 대응을 강제한다:
+  `starter`(1차를 현재가 근처 소액으로 · T1 컴파운더만) · `catalyst-wait`(포지션 없음·촉매 대기) ·
+  `widen-horizon`(호라이즌 연장).
+- **요구 안전마진은 종목 종류마다 다르다** — `skills/quality-tier.md` 참조.
+  T1 컴파운더 0~15% · T2 우량 안정 15~30% · T3 시클리컬·턴어라운드·저품질 30~40%.
+  콜에 `--tier`/`--required-mos` 를 함께 박제한다.
+- 🔴 **체결확률이 낮다고 밴드를 주가에 맞춰 올리지 않는다.** 내재가치는 그대로 두고 진입
+  방식을 바꾼다. 밴드를 올리는 건 논제가 아니라 추격이다.
+
 ### ⚠️ 스킬 설치본 동기화
 
 콜 기록 단계는 `skills/`에만 있고 `~/.claude/commands/`가 구버전이면 **실행되지 않는다**
@@ -265,10 +298,10 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 
 ```bash
 cp skills/*.md ~/.claude/commands/
-rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
+rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-tier}.md
 ```
 
-> 🔴 **두 번째 줄을 빼지 말 것.** `skills/` 의 이 3개는 실행 스킬이 아니라 **공용 표준 문서**다
+> 🔴 **두 번째 줄을 빼지 말 것.** `skills/` 의 이 4개는 실행 스킬이 아니라 **공용 표준 문서**다
 > (다른 스킬이 `skills/xxx.md` 경로로 참조한다). 슬래시 커맨드로 설치하면 호출해도 하는 일이
 > 없으면서 오발동 대상만 늘린다. 설치 대상은 **실행 스킬 13개**다.
 
@@ -304,10 +337,13 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 > 아래 명령은 전부 **저장소 루트에서** 실행한다.
 
 ```bash
-# Skills 설치 / 재설치 (실행 스킬 13개만 — 공용 표준 문서 3종 제외)
+# Skills 설치 / 재설치 (실행 스킬 13개만 — 공용 표준 문서 4종 제외)
 mkdir -p ~/.claude/commands
 cp skills/*.md ~/.claude/commands/
-rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
+rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-tier}.md
+
+# 진입 밴드 체결확률(과거 낙폭 베이스레이트) 산출 — hold 콜 기록 전 필수
+python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24
 
 # 변경된 보고서 로컬 커밋 (Stop 훅과 동일 동작)
 python3 tools/commit_reports.py

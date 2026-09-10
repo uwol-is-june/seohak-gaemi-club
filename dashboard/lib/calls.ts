@@ -28,6 +28,13 @@ export interface RawCall {
   priceAtCall: number; // 콜 시점 주가 USD (불변)
   conviction?: string;
   report?: string;
+  /**
+   * 퀄리티 티어(skills/quality-tier.md). 요구 안전마진이 티어별로 다르므로
+   * "T1에 관대한 MOS를 준 판단이 옳았는가"를 사후 채점하려면 원장에 남아야 한다.
+   */
+  tier?: "T1" | "T2" | "T3";
+  /** 이 콜이 요구한 안전마진(%). T1 0~15 · T2 15~30 · T3 30~40. */
+  requiredMosPct?: number;
   target?: {
     low?: number;
     high?: number;
@@ -36,10 +43,48 @@ export interface RawCall {
     tranches?: string[];
     /** 추격 금지선(USD). 현재가가 이 위면 어떤 차수도 활성화되지 않는다. */
     noChaseAbove?: number;
+    /**
+     * 이 밴드가 호라이즌 안에 체결될 확률(%) — 과거 낙폭 베이스레이트(tools/fill_probability.py).
+     * "unknown" 은 상장 이력이 짧아 산출 불가라는 뜻이며, 0% 와 구분해야 한다.
+     * 25% 미만이면 밴드가 실행 계획이 아니라 장식이다(TASK-99).
+     */
+    fillProbability?: number | "unknown";
+    /** 체결확률 25% 미만일 때 택한 대응. record_call.py 가 셋 중 하나를 강제한다. */
+    lowFillPlan?: "starter" | "catalyst-wait" | "widen-horizon";
   };
   loadBearing?: string[];
   invalidation?: string[];
   reason?: string; // 이 콜을 낸 사유 (관망/대기 이유 등). 채점에 영향 없는 설명 메타데이터.
+}
+
+/**
+ * 같은 콜이 두 줄 이상 들어온 경우 최신 1건만 남긴다 (TASK-104).
+ *
+ * 원장은 append-only 라서 **같은 스킬을 같은 날 다시 돌리면 같은 id 로 한 줄이 더 쌓인다**
+ * (record_call.py 는 경고만 하고 이력 보존을 위해 추가한다). 그대로 채점하면 그 판단이
+ * 두 번 세어져 적중률·기회비용 분모가 왜곡된다.
+ *
+ * 🔴 키는 `id`(= 티커-날짜-스킬)다. **같은 날 다른 스킬이 낸 콜은 중복이 아니다** —
+ * 예: NVDA 2026-08-06 의 investment-team($172)과 thesis-tracker($205)는 서로 다른 판단이고,
+ * 그 불일치를 드러내는 것이 논제 충돌 판정(thesis-groups.ts)의 목적이다. 합치면 안 된다.
+ *
+ * 남기는 기준은 `recordedAt` 최신 — 늦게 기록된 쪽이 정정본이다. recordedAt 이 없으면
+ * 파일에 나중에 나온 줄을 남긴다(원장은 시간순 append 이므로).
+ */
+export function dedupeCalls(calls: RawCall[]): RawCall[] {
+  const latest = new Map<string, RawCall>();
+  for (const c of calls) {
+    const prev = latest.get(c.id);
+    if (!prev) {
+      latest.set(c.id, c);
+      continue;
+    }
+    const a = prev.recordedAt ?? "";
+    const b = c.recordedAt ?? "";
+    // b >= a 이면 뒤에 온 줄로 교체 — 동률(둘 다 없음 포함)이면 나중 줄이 정정본이다.
+    if (b >= a) latest.set(c.id, c);
+  }
+  return Array.from(latest.values());
 }
 
 export type CallStatus = "진행중" | "적중" | "빗나감" | "unknown";
@@ -53,6 +98,8 @@ export interface ScoredCall {
   skill: string;
   conviction?: string;
   report?: string;
+  tier?: "T1" | "T2" | "T3";
+  requiredMosPct?: number;
   priceAtCall: number;
   priceNow: number | null;
   elapsedDays: number;
@@ -72,6 +119,14 @@ export interface ScoredCall {
     tranches?: string[];
     /** 추격 금지선(USD). 현재가가 이 위면 어떤 차수도 활성화되지 않는다. */
     noChaseAbove?: number;
+    /**
+     * 이 밴드가 호라이즌 안에 체결될 확률(%) — 과거 낙폭 베이스레이트(tools/fill_probability.py).
+     * "unknown" 은 상장 이력이 짧아 산출 불가라는 뜻이며, 0% 와 구분해야 한다.
+     * 25% 미만이면 밴드가 실행 계획이 아니라 장식이다(TASK-99).
+     */
+    fillProbability?: number | "unknown";
+    /** 체결확률 25% 미만일 때 택한 대응. record_call.py 가 셋 중 하나를 강제한다. */
+    lowFillPlan?: "starter" | "catalyst-wait" | "widen-horizon";
   };
   loadBearing: string[]; // 논제 핵심 가정(참이어야 콜이 유효). 채점엔 미반영, 진행중 콜 상세용.
   invalidation: string[];
@@ -82,6 +137,58 @@ export interface ScoredCall {
   prevClose?: number | null;
   dayChange?: number | null;
   dayChangePct?: number | null;
+  // 벤치마크(SPY) 대비 채점 — 기회비용(TASK-100). scoreCall 밖에서 얹는다(위 prevClose 와 같은 이유).
+  benchmarkReturnPct?: number | null;
+  excessReturnPct?: number | null;
+  benchmarkHit?: boolean | null;
+  opportunityCostPct?: number | null;
+}
+
+/** 기회비용 채점의 벤치마크. 현금이 아니라 '안 샀으면 넣었을 곳'이 올바른 대안이다. */
+export const BENCHMARK_TICKER = "SPY";
+
+/**
+ * 벤치마크 대비 채점 (TASK-100).
+ *
+ * 왜 필요한가 — 기존 채점은 밴드 터치 여부만 봤다. `hold` 걸어두고 주가가 +30% 도망가도
+ * 손실로 잡히지 않아, **"안 사서 잃은 것"이 트랙레코드에서 보이지 않았다**(2026-09-10 진단).
+ * 기다림에도 비용이 있고, 그 비용의 기준선은 "안 샀으면 SPY에 있었을 돈"이다.
+ *
+ * 콜별 반사실(counterfactual)과 적중 조건:
+ *   buy   샀다      ↔ 안 사고 SPY  → 종목이 SPY 를 **초과**해야 적중
+ *   keep  계속 보유  ↔ 팔고 SPY    → 종목이 SPY 를 **초과**해야 적중
+ *   hold  관망      ↔ 안 사고 SPY  → 종목이 SPY 에 **미달**해야 적중 (안 산 게 이득)
+ *   avoid 회피      ↔ 안 사고 SPY  → 종목이 SPY 에 **미달**해야 적중
+ *
+ * 초과수익 정확히 0은 우위가 실증되지 않은 것이므로 적중으로 치지 않는다.
+ */
+export function scoreBenchmark(
+  call: Pick<ScoredCall, "call" | "returnPct">,
+  benchmarkReturnPct: number | null
+): {
+  benchmarkReturnPct: number | null;
+  excessReturnPct: number | null;
+  benchmarkHit: boolean | null;
+  opportunityCostPct: number | null;
+} {
+  if (benchmarkReturnPct == null || call.returnPct == null) {
+    return {
+      benchmarkReturnPct,
+      excessReturnPct: null,
+      benchmarkHit: null,
+      opportunityCostPct: null,
+    };
+  }
+  const excess = call.returnPct - benchmarkReturnPct;
+  const wantsUpside = call.call === "buy" || call.call === "keep";
+  const hit = wantsUpside ? excess > 0 : excess < 0;
+  return {
+    benchmarkReturnPct,
+    excessReturnPct: excess,
+    benchmarkHit: hit,
+    // "이 판단 때문에 포기한 상대수익(pp)". 적중이면 0 — 포기한 게 없다.
+    opportunityCostPct: hit ? 0 : Math.abs(excess),
+  };
 }
 
 export interface CallAggregate {
@@ -93,6 +200,25 @@ export interface CallAggregate {
   inProgress: number;
   unknown: number;
   smallSample: boolean;
+  // ── 벤치마크(SPY) 대비 집계 (TASK-100) ──────────────────────────────
+  /** 벤치마크 수익률까지 계산된 확정 콜 수. 시세 실패 시 resolvedCount 보다 작을 수 있다. */
+  benchmarkResolvedCount: number;
+  benchmarkHits: number;
+  /** SPY 대안 대비 적중률. 방향 적중률이 높아도 이게 낮으면 "맞았지만 무의미했다". */
+  benchmarkHitRate: number | null;
+  benchmarkCi95: [number, number];
+  /** 확정 콜의 평균 초과수익(pp). 콜 방향과 무관한 raw 값. */
+  avgExcessReturnPct: number | null;
+  /** 확정된 관망(hold) 콜이 평균 몇 pp 를 포기했는가 — 보수성 편향의 직접 지표. */
+  holdOpportunityCostAvgPct: number | null;
+  holdResolvedCount: number;
+  /**
+   * **진행중** 관망 콜의 잠정 기회비용(pp). 호라이즌이 12~24M 이라 확정 집계는 1년 뒤에나
+   * 채워지는데, "지금 얼마나 놓치고 있나"는 그때 보면 늦다 — 그래서 잠정치를 따로 낸다.
+   * 확정치가 아니므로 적중률 분모에는 절대 넣지 않는다.
+   */
+  inProgressHoldOpportunityCostAvgPct: number | null;
+  inProgressHoldCount: number;
 }
 
 const DAYS_PER_MONTH = 30.44;
@@ -156,6 +282,8 @@ export function scoreCall(call: RawCall, priceNow: number | null, today: Date): 
     skill: call.skill,
     conviction: call.conviction,
     report: call.report,
+    tier: call.tier,
+    requiredMosPct: call.requiredMosPct,
     priceAtCall: call.priceAtCall,
     priceNow,
     elapsedDays,
@@ -232,6 +360,22 @@ export function aggregate(scored: ScoredCall[]): CallAggregate {
   const errs = resolved
     .map((s) => s.targetErrorPct)
     .filter((v): v is number => typeof v === "number");
+  // 벤치마크 집계는 확정 콜 중 **초과수익이 계산된 것**만 분모로 쓴다.
+  // (시세 실패·벤치마크 시계열 결측이면 null 이고, 그걸 0 으로 뭉개면 적중률이 왜곡된다.)
+  const withBm = resolved.filter((s) => typeof s.excessReturnPct === "number");
+  const bmHits = withBm.filter((s) => s.benchmarkHit === true).length;
+  const excesses = withBm.map((s) => s.excessReturnPct as number);
+  // 관망(hold)이 포기한 상대수익 — 2026-09-10 진단(밴드가 닿지 않는 사이 주가가 도망감)의 직접 지표.
+  const holdResolved = withBm.filter((s) => s.call === "hold");
+  const holdCosts = holdResolved
+    .map((s) => s.opportunityCostPct)
+    .filter((v): v is number => typeof v === "number");
+  // 진행중 관망의 **잠정** 기회비용 — 호라이즌 12~24M 을 다 기다리면 편향을 못 본다.
+  const runningHold = scored.filter(
+    (s) => s.call === "hold" && s.status === "진행중" && typeof s.opportunityCostPct === "number"
+  );
+  const runningHoldCosts = runningHold.map((s) => s.opportunityCostPct as number);
+
   return {
     resolvedCount: n,
     directionHits: hits,
@@ -241,5 +385,20 @@ export function aggregate(scored: ScoredCall[]): CallAggregate {
     inProgress: scored.filter((s) => s.status === "진행중").length,
     unknown: scored.filter((s) => s.status === "unknown").length,
     smallSample: n < 10,
+    benchmarkResolvedCount: withBm.length,
+    benchmarkHits: bmHits,
+    benchmarkHitRate: withBm.length ? bmHits / withBm.length : null,
+    benchmarkCi95: wilsonInterval(bmHits, withBm.length),
+    avgExcessReturnPct: excesses.length
+      ? excesses.reduce((a, b) => a + b, 0) / excesses.length
+      : null,
+    holdOpportunityCostAvgPct: holdCosts.length
+      ? holdCosts.reduce((a, b) => a + b, 0) / holdCosts.length
+      : null,
+    holdResolvedCount: holdResolved.length,
+    inProgressHoldOpportunityCostAvgPct: runningHoldCosts.length
+      ? runningHoldCosts.reduce((a, b) => a + b, 0) / runningHoldCosts.length
+      : null,
+    inProgressHoldCount: runningHold.length,
   };
 }
