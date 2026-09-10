@@ -726,7 +726,6 @@ export function HomeView({
             <div className="flex flex-col gap-8">
               <div>
                 <HoldingsBanner
-                  screenByCompany={screenByCompany}
                   reportedTickers={reportedTickers}
                   onDrill={drillToTicker}
                 />

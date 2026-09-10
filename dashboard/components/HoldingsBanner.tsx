@@ -1,35 +1,18 @@
 "use client";
 import { readJsonSafe } from "@/lib/fetch-json";
-import { useCallback, useEffect, useMemo, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useCallback, useEffect, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Holding } from "@/lib/toss";
-import { fmtUsd, fmtKrw, SCREEN_GROUPS } from "@/lib/report-helpers";
-import { ScoredCall } from "@/lib/calls";
+import { fmtUsd, fmtKrw } from "@/lib/report-helpers";
 import { type Ccy, CCY_STORAGE_KEY, MAX_AUTO_RELOADS, retryDelayMs, holdingsErrorText, holdingsCache, fxCache, setFxCache, persistFx, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
 
-// 콜 라벨/색 — 트랙레코드와 동일 어휘(예측: 매수=오른다, 관망=진입가 회귀 대기 등).
-const CALL_STYLE: Record<string, { label: string; color: string }> = {
-  buy: { label: "매수", color: "text-breeze bg-breeze/10" },
-  keep: { label: "보유 유지", color: "text-twilight bg-twilight/10" },
-  hold: { label: "관망", color: "text-amber-300 bg-amber-500/10" },
-  avoid: { label: "회피", color: "text-mute bg-canvas-soft" },
-};
-// 콜 채점 상태 점 — 트랙레코드와 동일.
-const CALL_STATUS_DOT: Record<string, string> = {
-  적중: "bg-emerald-400",
-  빗나감: "bg-red-400",
-  진행중: "bg-amber-400",
-  unknown: "bg-canvas-mid",
-};
-
-
-// screenByCompany: 종목별 최신 열등주 스크리닝 판정(HomeView가 /api/reports에서 파생).
-//   → 각 보유 카드에 "최신 콜 + 스크리닝 판정 + 목표밴드" 판단 레이어(TASK-75).
+// 보유 카드는 **숫자만** 보여준다 — 티커·손익률·현재가·평단·평가금액까지.
+// 판단(콜·스크리닝 판정·목표밴드)은 카드에서 뺐다(2026-09-10 요청): 같은 화면에
+// 판정 배지를 겹쳐 놓으면 "지금 얼마인가"를 읽으러 온 사람이 매번 판단을 다시 읽어야
+// 한다. 판단은 트랙레코드 탭이 종목당 논제 단위로 담당한다(TASK-97).
 export function HoldingsBanner({
-  screenByCompany,
   reportedTickers,
   onDrill,
 }: {
-  screenByCompany?: Record<string, string | null>;
   // 보고서가 있는 티커 집합(대문자) — 있으면 카드가 클릭 가능(TASK-77).
   reportedTickers?: Set<string>;
   // 카드 클릭 시 그 티커의 '보유 종목 보고서'로 이동(티커 축 통합).
@@ -44,8 +27,6 @@ export function HoldingsBanner({
   const [fx, setFx] = useState<number | null>(fxCache);
   const [autoTries, setAutoTries] = useState(0);
   const [rateLimited, setRateLimited] = useState(false);
-  // 판단 pill용 콜 원장(TASK-75). 실패해도 보유 카드 자체는 정상 표시한다.
-  const [calls, setCalls] = useState<ScoredCall[] | null>(null);
 
   const load = useCallback(() => {
     // 캐시가 없을 때만 스피너를 띄우고, 캐시가 있으면 조용히 백그라운드 갱신한다.
@@ -77,23 +58,6 @@ export function HoldingsBanner({
   useEffect(() => {
     load();
   }, [load]);
-
-  // 콜 원장 로드(판단 pill). /api/calls는 최신순 정렬이라 티커별 첫 항목이 최신 콜.
-  useEffect(() => {
-    fetch("/api/calls")
-      .then(readJsonSafe)
-      .then((d) => setCalls(Array.isArray(d.calls) ? d.calls : []))
-      .catch(() => setCalls([]));
-  }, []);
-
-  const callByTicker = useMemo(() => {
-    const m: Record<string, ScoredCall> = {};
-    for (const c of calls ?? []) {
-      const t = c.ticker.toUpperCase();
-      if (!m[t]) m[t] = c; // 최신순 → 처음 만난 게 최신
-    }
-    return m;
-  }, [calls]);
 
   // 자동 재로딩: 로딩이 끝났는데 아직 안 떴으면(에러 또는 빈 목록) 잠시 후 다시 시도.
   // 정상 표시 중이거나 상한 도달 시 종료. 백오프는 retryDelayMs 참조(429는 더 길게).
@@ -358,62 +322,6 @@ export function HoldingsBanner({
                     </div>
                   </div>
 
-                  {/* 판단 레이어(TASK-75): 최신 콜 + 스크리닝 판정 + 목표밴드.
-                      실보유 숫자에 "지금 이걸 계속 들고 있어도 되나"의 판단 근거를 붙인다. */}
-                  {(() => {
-                    const tk = h.ticker.toUpperCase();
-                    const call = callByTicker[tk] ?? null;
-                    const verdict = screenByCompany?.[tk] ?? null;
-                    const vGroup = verdict ? SCREEN_GROUPS.find((g) => g.match(verdict)) : null;
-                    const cs = call ? CALL_STYLE[call.call] ?? CALL_STYLE.hold : null;
-                    const tgt = call?.target;
-                    const hasBand = !!(tgt && (tgt.low != null || tgt.high != null));
-                    // 현재가의 목표밴드 대비 위치(판단 보조). 위=비쌈, 아래=쌈. USD 기준 비교.
-                    const bandPos =
-                      hasBand && tgt
-                        ? h.currentPrice > (tgt.high ?? Infinity)
-                          ? "위"
-                          : h.currentPrice < (tgt.low ?? -Infinity)
-                            ? "아래"
-                            : "밴드내"
-                        : null;
-                    if (!call && !vGroup) {
-                      return (
-                        <div className="border-t border-hairline pt-2.5">
-                          <span className="text-[10px] text-mute">분석 기록 없음</span>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="flex flex-wrap items-center gap-1.5 border-t border-hairline pt-2.5">
-                        {call && cs && (
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${cs.color}`}
-                          >
-                            <span
-                              className={`inline-block w-1.5 h-1.5 rounded-full ${CALL_STATUS_DOT[call.status] ?? CALL_STATUS_DOT.unknown}`}
-                            />
-                            {cs.label}
-                            {call.conviction ? (
-                              <span className="text-[9px] opacity-80">{call.conviction}</span>
-                            ) : null}
-                          </span>
-                        )}
-                        {vGroup && (
-                          <span className="inline-flex items-center gap-1 rounded-full border border-hairline px-2 py-0.5 text-[10px] font-medium">
-                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${vGroup.dot}`} />
-                            <span className={vGroup.tint}>{vGroup.label}</span>
-                          </span>
-                        )}
-                        {hasBand && tgt && (
-                          <span className="rounded-full border border-hairline px-2 py-0.5 text-[10px] font-mono text-mute">
-                            목표 ${tgt.low ?? "?"}~{tgt.high ?? "?"}
-                            {bandPos && <span className="ml-1 text-body">· {bandPos}</span>}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })()}
                 </div>
               );
             })}
