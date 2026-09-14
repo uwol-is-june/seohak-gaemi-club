@@ -287,7 +287,8 @@ python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24
   `widen-horizon`(호라이즌 연장).
 - **요구 안전마진은 종목 종류마다 다르다** — `skills/quality-tier.md` 참조.
   T1 컴파운더 0~15% · T2 우량 안정 15~30% · T3 시클리컬·턴어라운드·저품질 30~40%.
-  콜에 `--tier`/`--required-mos` 를 함께 박제한다.
+  티어는 **감으로 매기지 말고 `python3 tools/quality_tier.py {티커} --moat {★}` 로 판정**하고
+  (5개 축 중 4개를 기계가 확정한다), 콜에 `--tier`/`--required-mos` 를 함께 박제한다.
 - 🔴 **체결확률이 낮다고 밴드를 주가에 맞춰 올리지 않는다.** 내재가치는 그대로 두고 진입
   방식을 바꾼다. 밴드를 올리는 건 논제가 아니라 추격이다.
 
@@ -341,6 +342,9 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-ti
 mkdir -p ~/.claude/commands
 cp skills/*.md ~/.claude/commands/
 rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-tier}.md
+
+# 퀄리티 티어 판정 (SEC XBRL · 5개 축 중 4개를 기계 확정) — 밸류에이션보다 먼저 돌린다
+python3 tools/quality_tier.py GOOGL --moat 4
 
 # 진입 밴드 체결확률(과거 낙폭 베이스레이트) 산출 — hold 콜 기록 전 필수
 python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24
