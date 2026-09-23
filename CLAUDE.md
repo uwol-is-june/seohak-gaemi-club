@@ -398,6 +398,9 @@ git checkout -- reports/AAPL/AAPL-checklist-20260101.md
 cd dashboard && npm run dev
 ```
 
+> ⚠️ 토스 API는 **실행 PC의 공인 IP**를 허용목록에 등록해야 응답한다.
+> 네트워크나 자리가 바뀌면 IP를 다시 등록해야 잔고 조회가 살아난다.
+
 ## 주의사항
 
 - 시가총액 반드시 수동 검산: 주가 × 발행주식수, 보고서 수치와 비교
