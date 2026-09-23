@@ -9,6 +9,7 @@ import type { Holding } from "@/lib/toss";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
 import { Delta, TIER_META } from "./primitives";
 import { LadderChart } from "./LadderChart";
+import { PriceHistoryChart } from "./track-record/PriceHistoryChart";
 import { ReportModal } from "./ReportModal";
 
 // 트랙레코드 = **추적 대시보드**(TASK-97).
@@ -637,6 +638,15 @@ function ThesisBlock({
         bandLabel={meta.long}
         priceNow={c.priceNow}
         avgPrice={avgPrice}
+        noChaseAbove={c.target?.noChaseAbove ?? null}
+      />
+
+      {/* 래더가 '어느 가격에 얼마씩'이라면, 이 그림은 '그 가격에 올 법한가'를 답한다
+          (TASK-136). 체결확률 숫자의 근거가 같은 화면에 있어야 한다. */}
+      <PriceHistoryChart
+        ticker={c.ticker}
+        tranches={tranches}
+        priceNow={c.priceNow}
         noChaseAbove={c.target?.noChaseAbove ?? null}
       />
 
