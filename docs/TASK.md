@@ -21,45 +21,6 @@ _(없음)_
 
 _(완료 항목은 정리했다. 이력은 git 로그에서 본다 — `git log -p docs/TASK.md`)_
 
-> **2026-09-23 · 대시보드 UI/UX 리뉴얼 — 토스증권 레퍼런스 다크** (TASK-125~134)
-> 브랜치 `redesign/toss-dark` · 기준 문서 `docs/DESIGN-toss.md`(신설, x.ai 폐기)
->
-> | 남은 산출물 | 위치 |
-> |---|---|
-> | 색 토큰 3축(등락·판정·분류) · 실측 대비값 | `dashboard/app/globals.css` `@theme` |
-> | 재사용 부품 6종 | `dashboard/components/primitives/` |
-> | 토큰 오용 검사기 | `tools/check_design_tokens.py` |
-> | 에이전트용 요약 | `dashboard/AGENTS.md` |
->
-> 정정 기록: 초기 진단 중 **3건이 실재하지 않는 문제**였다 — `use client` 20/21(19개는
-> 훅을 실제로 씀) · 표 가로 스크롤(이미 래퍼 있음) · "트랙레코드가 11열 마크다운 표"
-> (그건 보고서 문서고 대시보드는 이미 카드형). 파일 개수만 세고 내용을 안 본 탓이다.
-> 반대로 검사기는 `lib/` 전체가 정리에서 빠진 25건을 잡아냈다.
->
-> 판단 기록: 서체는 **Noto Sans KR 유지**(Pretendard가 더 가깝지만 Google Fonts에 없어
-> woff2 동봉이 필요 — public 저장소 용량과 맞바꿀 만큼의 차이가 아니라고 봤다).
-> `tabular-nums` 는 **전역 유지**(로그인·홈·트랙레코드·보고서에서 한글 자간 이상 없음).
-
-> **2026-09-23 · 트랙레코드 접힌 줄 보강** (TASK-135)
-> 거리 게이지(40%를 '멀다' 기준) + 조건부 차수 칩 + 전일 대비를 `<Delta>` 로 통일.
-> `dashboard/components/TrackRecordView.tsx`
->
-> 하지 않기로 한 것:
-> · **홈 히어로** — 트랙레코드 탭이 이미 "지금 뭘 봐야 하나"를 답한다. 포트폴리오
->   홈은 "얼마인가"라는 다른 질문을 맡는다. 긴급도를 두 곳에 두면 어긋난다.
-> · **AND 조건 n/m 충족 카운터** — 데이터에 없다. `Tranche.condition` 은 조건 텍스트고
->   충족 여부는 어디에도 기록되지 않는다. '조건이 붙은 차수 수'까지만 표시했다.
-> · **신뢰구간 선그래프** — 주가 이력 API가 없다 → TASK-136.
-
-> **2026-09-23 · 주가 이력 API + 진입 구간 차트** (TASK-136)
-> `dashboard/app/api/history/route.ts` · `dashboard/components/track-record/PriceHistoryChart.tsx`
-> 🔴 **조정 종가(adjclose)** 를 쓴다 — 미조정으로 낙폭을 재면 액면분할이 −50% 폭락으로
-> 잡힌다. `tools/fill_probability.py` 와 같은 기준이어야 화면과 원장이 어긋나지 않는다.
-> 다운샘플(160점)은 차트용이고 최저/최고는 **원본 전체**에서 계산한다 — 저점을 건너뛰어도
-> "밴드에 닿았나" 판정이 틀리지 않도록.
-> 진입 구간은 **띠 하나**로 묶었다: 차수별로 그렸더니 2년 가격 범위에 비해 간격이 좁아
-> 선과 라벨이 겹쳐 아무것도 못 읽었다. 차수별 상세는 바로 위 LadderChart 의 일이다.
-
 > **2026-09-10~14 · 트랙레코드 보수성 편향 교정** (TASK-98~106)
 > 기준 `skills/quality-tier.md` · 도구 `tools/quality_tier.py`·`tools/fill_probability.py` ·
 > 적용 결과 `proj_report/band-audit-20260914.md`
@@ -75,6 +36,17 @@ _(완료 항목은 정리했다. 이력은 git 로그에서 본다 — `git log 
 > | 밴드 상단 ≠ 래더 1차 경고(게이트 4) | `tools/record_call.py` |
 > | 대시보드 밴드 이탈 자동 판정 + 신선도 가드 | `dashboard/lib/thesis-groups.ts` (`bandDrift`·`FRESH_BAND_DAYS`) |
 > | 관망 6종목 전수 재실행 결과 · 감사 오류 정정 이력 | `reports/track-record.md` + 각 `{티커}-thesis.md` |
+
+> **2026-09-23 · 대시보드 UI/UX 리뉴얼 (토스증권 다크) + 주가 이력** (TASK-125~136)
+> 기준 문서 `docs/DESIGN-toss.md` — `DESIGN-x.ai.md` 폐기
+>
+> | 남은 산출물 | 위치 |
+> |---|---|
+> | 색 토큰 3축(등락·판정·분류) · 실측 대비값 | `dashboard/app/globals.css` `@theme` |
+> | 재사용 부품 6종 | `dashboard/components/primitives/` |
+> | 토큰 오용 검사기 | `python3 tools/check_design_tokens.py` |
+> | 주가 이력 API · 진입 구간 차트 | `dashboard/app/api/history/` · `dashboard/components/track-record/PriceHistoryChart.tsx` |
+> | 에이전트용 요약 | `dashboard/AGENTS.md` |
 
 ---
 
