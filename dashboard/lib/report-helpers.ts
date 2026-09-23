@@ -7,17 +7,16 @@ import type { ReportFile } from "@/lib/reports-store";
 
 // ─── Color config ──────────────────────────────────────────────────────────
 
-// xAI 원칙: 인터랙티브 어휘는 '화이트 pill' 하나. 주요 액션은 화이트-필 pill,
-// 나머지는 화이트-아웃라인 pill. 컬러 액센트는 코드/일러스트에만 드물게.
+// 주요 액션은 토스 블루 fill 하나뿐이다(화면당 1개). 나머지는 서페이스 블록.
 export const colorConfig = {
   brand: {
     border: "border-hairline",
-    bg: "bg-white/10",
+    bg: "bg-ink/10",
     text: "text-ink",
-    button: "bg-white text-canvas hover:bg-white/90", // 화이트-필 primary pill
-    progress: "bg-white",
+    button: "bg-primary-press text-on-primary hover:brightness-110", // 토스 블루 primary
+    progress: "bg-primary",
     command: "text-breeze", // 코드 컨텍스트의 드문 액센트 (soft blue)
-    dot: "bg-white",
+    dot: "bg-ink",
   },
 } as const;
 
@@ -29,7 +28,7 @@ export type ColorKey = keyof typeof colorConfig;
 export const CALL_LABEL: Record<CallType, { label: string; color: string }> = {
   buy: { label: "매수", color: "text-breeze bg-breeze/10" },
   keep: { label: "보유 유지", color: "text-twilight bg-twilight/10" },
-  hold: { label: "관망", color: "text-amber-300 bg-amber-500/10" },
+  hold: { label: "관망", color: "text-warn bg-warn/10" },
   avoid: { label: "회피", color: "text-mute bg-canvas-soft" },
 };
 
@@ -39,39 +38,39 @@ export type FileBadge = { label: string; color: string };
 
 export function getFileBadge(filename: string): FileBadge {
   if (filename === "README.md") return { label: "개요", color: "text-body bg-canvas-soft" };
-  if (/^01-/i.test(filename)) return { label: "DYP 관점", color: "text-emerald-400 bg-emerald-500/10" };
-  if (/^02-/i.test(filename)) return { label: "버핏 관점", color: "text-breeze bg-breeze/10" };
-  if (/^03-/i.test(filename)) return { label: "멍거 관점", color: "text-twilight bg-dusk/20" };
-  if (/^04-/i.test(filename)) return { label: "리루 관점", color: "text-amber-400 bg-amber-500/10" };
-  if (filename === "FinalReport.md") return { label: "최종보고서", color: "text-emerald-300 bg-emerald-500/15" };
-  if (filename.includes("-quality-screen-")) return { label: "열등주스크리닝", color: "text-fuchsia-300 bg-fuchsia-500/10" };
-  if (filename.includes("-checklist-")) return { label: "체크리스트", color: "text-breeze bg-breeze/10" };
-  if (filename.endsWith("-thesis.md")) return { label: "투자논제", color: "text-twilight bg-dusk/20" };
-  if (filename.includes("-earnings-")) return { label: "실적분석", color: "text-sunset-soft bg-sunset/10" };
-  if (filename.includes("-news-")) return { label: "급변동", color: "text-sunset bg-sunset/10" };
-  if (filename.includes("-industry-")) return { label: "산업리서치", color: "text-cyan-300 bg-cyan-500/10" };
-  if (filename.includes("-funnel-")) return { label: "퍼널", color: "text-teal-300 bg-teal-500/10" };
+  if (/^01-/i.test(filename)) return { label: "DYP 관점", color: "text-cat-1 bg-cat-1/10" };
+  if (/^02-/i.test(filename)) return { label: "버핏 관점", color: "text-cat-2 bg-cat-2/10" };
+  if (/^03-/i.test(filename)) return { label: "멍거 관점", color: "text-cat-3 bg-cat-3/10" };
+  if (/^04-/i.test(filename)) return { label: "리루 관점", color: "text-cat-4 bg-cat-4/10" };
+  if (filename === "FinalReport.md") return { label: "최종보고서", color: "text-ink bg-canvas-mid" };
+  if (filename.includes("-quality-screen-")) return { label: "열등주스크리닝", color: "text-cat-4 bg-cat-4/10" };
+  if (filename.includes("-checklist-")) return { label: "체크리스트", color: "text-cat-1 bg-cat-1/10" };
+  if (filename.endsWith("-thesis.md")) return { label: "투자논제", color: "text-cat-2 bg-cat-2/10" };
+  if (filename.includes("-earnings-")) return { label: "실적분석", color: "text-cat-3 bg-cat-3/10" };
+  if (filename.includes("-news-")) return { label: "급변동", color: "text-cat-3 bg-cat-3/15" };
+  if (filename.includes("-industry-")) return { label: "산업리서치", color: "text-cat-1 bg-cat-1/15" };
+  if (filename.includes("-funnel-")) return { label: "퍼널", color: "text-cat-1 bg-cat-1/10" };
   // /investment-article 산출물 — 종목 폴더 안에도 생기므로 '전체 보고서' 탭에서도 구분돼야 한다.
-  if (filename.includes("-article-")) return { label: "아티클", color: "text-emerald-300 bg-emerald-500/15" };
-  if (filename === "portfolio-latest.md") return { label: "포트폴리오", color: "text-rose-300 bg-rose-500/10" };
+  if (filename.includes("-article-")) return { label: "아티클", color: "text-cat-2 bg-cat-2/15" };
+  if (filename === "portfolio-latest.md") return { label: "포트폴리오", color: "text-cat-4 bg-cat-4/15" };
   return { label: "MD", color: "text-mute bg-canvas-soft" };
 }
 
 // 보고서 결과 개요(합격/불합격) pill. summary가 없으면 표시하지 않는다.
 export function getResultPill(summary?: string | null): FileBadge | null {
   if (!summary) return null;
-  if (summary.includes("면제")) return { label: "면제 통과", color: "text-amber-300 bg-amber-500/15" };
-  if (summary.includes("탈락")) return { label: "탈락", color: "text-red-300 bg-red-500/15" };
-  if (summary.includes("통과")) return { label: "통과", color: "text-emerald-300 bg-emerald-500/15" };
+  if (summary.includes("면제")) return { label: "면제 통과", color: "text-warn bg-warn/15" };
+  if (summary.includes("탈락")) return { label: "탈락", color: "text-danger bg-danger/15" };
+  if (summary.includes("통과")) return { label: "통과", color: "text-success bg-success/15" };
   return { label: summary, color: "text-body bg-canvas-soft" };
 }
 
 // 데이터 신뢰도 pill (data-confidence 표준의 verdict). 값이 없으면 표시하지 않는다.
 // 주의: "데이터 신뢰도"이지 "투자 매력도"가 아니다.
 export function getConfidencePill(confidence?: string | null): FileBadge | null {
-  if (confidence === "높음") return { label: "신뢰 높음", color: "text-emerald-300 bg-emerald-500/15" };
-  if (confidence === "보통") return { label: "신뢰 보통", color: "text-amber-300 bg-amber-500/15" };
-  if (confidence === "낮음") return { label: "신뢰 낮음", color: "text-red-300 bg-red-500/15" };
+  if (confidence === "높음") return { label: "신뢰 높음", color: "text-success bg-success/15" };
+  if (confidence === "보통") return { label: "신뢰 보통", color: "text-warn bg-warn/15" };
+  if (confidence === "낮음") return { label: "신뢰 낮음", color: "text-danger bg-danger/15" };
   return null;
 }
 
@@ -156,9 +155,9 @@ export const SCREEN_GROUPS: {
   dot: string;
   tint: string;
 }[] = [
-  { id: "pass", label: "통과", match: (r) => r === "통과", dot: "bg-emerald-400", tint: "text-emerald-300" },
-  { id: "exempt", label: "면제 통과", match: (r) => r === "면제 통과", dot: "bg-amber-400", tint: "text-amber-300" },
-  { id: "fail", label: "탈락", match: (r) => r === "탈락", dot: "bg-red-400", tint: "text-red-300" },
+  { id: "pass", label: "통과", match: (r) => r === "통과", dot: "bg-success", tint: "text-success" },
+  { id: "exempt", label: "면제 통과", match: (r) => r === "면제 통과", dot: "bg-warn", tint: "text-warn" },
+  { id: "fail", label: "탈락", match: (r) => r === "탈락", dot: "bg-danger", tint: "text-danger" },
   { id: "insufficient", label: "데이터 부족", match: (r) => r === "데이터 부족", dot: "bg-canvas-mid", tint: "text-mute" },
   { id: "unscreened", label: "미검사", match: (r) => r === null, dot: "bg-canvas-mid", tint: "text-mute" },
 ];

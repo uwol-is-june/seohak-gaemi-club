@@ -37,8 +37,9 @@ export function NavItem({
     >
       {icon && <span className="shrink-0">{icon}</span>}
       <span className="flex-1 truncate text-left">{label}</span>
+      {/* 개수는 읽어야 하는 글자다 — faint(3.59:1)는 UI 전용이라 여기 쓰면 AA 미달 */}
       {count != null && (
-        <span className={`shrink-0 text-xs font-bold tabular-nums ${active ? "text-body" : "text-faint"}`}>
+        <span className={`shrink-0 text-xs font-bold tabular-nums ${active ? "text-body" : "text-mute"}`}>
           {count}
         </span>
       )}

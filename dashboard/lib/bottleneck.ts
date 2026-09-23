@@ -95,11 +95,11 @@ export function parseBottleneckPath(path: string): BottleneckSignal | null {
 
 // 배지(라벨 + 색). 시맨틱 색은 '데이터 의미'라 컬러 최소화 원칙의 예외(dashboard/AGENTS.md).
 export const BOTTLENECK_BADGE: Record<BottleneckKind, { label: string; color: string }> = {
-  candidate: { label: "후보 발견", color: "text-emerald-300 bg-emerald-500/15" },
+  candidate: { label: "후보 발견", color: "text-success bg-success/15" },
   signal: { label: "신호만", color: "text-mute bg-canvas-soft" },
-  scan: { label: "전체 스캔", color: "text-cyan-300 bg-cyan-500/10" },
-  map: { label: "병목 맵", color: "text-twilight bg-dusk/20" },
-  watchlist: { label: "관찰 목록", color: "text-amber-300 bg-amber-500/10" },
+  scan: { label: "전체 스캔", color: "text-cat-1 bg-cat-1/10" },
+  map: { label: "병목 맵", color: "text-cat-2 bg-cat-2/15" },
+  watchlist: { label: "관찰 목록", color: "text-cat-4 bg-cat-4/15" },
 };
 
 export interface BottleneckDateGroup {
