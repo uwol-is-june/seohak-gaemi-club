@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import urllib.error
 import urllib.request
@@ -240,6 +241,32 @@ def _check_band_gates(
         if drop_pct >= MARKET_TIMING_DROP_PCT and (horizon or 0) <= MARKET_TIMING_HORIZON_MONTHS:
             print(f"""⚠️ 경고: 밴드 상단까지 {drop_pct:.0f}% 하락이 필요한데 호라이즌이 {horizon or '?'}개월입니다.
    이건 종목 판단이 아니라 시장 전체 조정에 거는 마켓타이밍 베팅입니다. 논제에 그렇게 적혀 있는지 확인하세요.""")
+
+
+    # 게이트 4: --target-high 와 래더 1차 가격이 어긋나면 안 된다 (2026-09-23 신설).
+    #
+    # 대시보드는 `target.high` 로 채점·밴드이탈 판정을 하고, 사람은 `tranches[0]`(1차)을 읽는다.
+    # 두 숫자가 다르면 같은 종목이 화면과 문서에서 정반대로 보인다 — AXP 에서 실제 발생했다
+    # (원장 $250 → 🔴 재산출 강제 / 래더 1차 $280 → ✅ 밴드 유효).
+    tranches = target.get("tranches") or []
+    if high is not None and tranches:
+        first = _tranche_price(tranches[0])
+        if first is not None and abs(first - high) > 0.005 * max(first, high):
+            print(f"""⚠️ 경고: --target-high ${high:,.2f} 와 1차 차수 가격 ${first:,.2f} 이 다릅니다.
+   대시보드는 target.high 로 채점하고 사람은 1차를 읽습니다 — 두 값이 갈리면
+   같은 종목이 화면과 문서에서 정반대로 보입니다(skills/quality-tier.md 2.5단계).
+   1차 = 가장 먼저 닿는 가격이므로 보통 --target-high 와 같아야 합니다.""")
+
+
+def _tranche_price(text: str) -> float | None:
+    """래더 한 줄에서 첫 가격을 뽑는다. 예: "1차 ≤$185.5 (25%) — 조건" → 185.5"""
+    m = re.search(r"\$\s*([0-9][0-9,]*(?:\.[0-9]+)?)", text or "")
+    if not m:
+        return None
+    try:
+        return float(m.group(1).replace(",", ""))
+    except ValueError:
+        return None
 
 
 def append_call(row: dict) -> None:

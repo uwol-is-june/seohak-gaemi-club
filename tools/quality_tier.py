@@ -44,6 +44,7 @@ TAX_RATE = 0.21
 TH_ROIC = 15.0           # (1) >=15%
 TH_FCF_MARGIN = 15.0     # (2) >=15%
 TH_DECLINE_YEARS = 1     # (3) <=1회
+TH_DECLINE_PCT = -5.0    # (3) 이보다 얕은 역성장은 세지 않는다 (2026-09-23 · SAP 에서 발견)
 TH_MOAT = 4              # (5) 별4+
 
 # (4) 이익 안정성 — 깊이가 아니라 **반복성과 회복력**으로 본다.
@@ -119,9 +120,26 @@ def compute_axes(annual: dict) -> dict:
         fcf_margins.append((ocf - (capex or 0)) / rev * 100)
 
     # (3) 매출 역성장 연도 — 연속한 연도끼리만 비교한다.
+    #
+    # 🔴 **횟수가 아니라 깊이로 센다** (2026-09-23 정정). 축 ④ 가 2026-09-14 에 "깊이가 아니라
+    # 반복성·회복력"으로 바뀐 것의 짝이다. ③ 은 반대 방향의 같은 병을 앓고 있었다 —
+    # **−0.8% 와 −30% 를 똑같이 1회로 세면서 10년 창에 COVID 가 들어 있다.**
+    #
+    # 실측(SAP): 2020 **−0.8%** · 2021 **−1.4%** 두 해가 걸려 T3 로 떨어졌는데,
+    # 나머지 8년은 전부 +5.3~11.5% 였고 2022~2025 는 4년 연속 성장했다.
+    # 구독·반복매출 사업에서 1% 남짓의 딥은 환율·소규모 매각·계약 타이밍의 잡음이지
+    # 사업이 줄어든 것이 아니다. 그래서 **TH_DECLINE_PCT 보다 얕은 역성장은 세지 않는다.**
+    # (원시 횟수는 shallowDeclines 로 그대로 보고해 판단 근거를 숨기지 않는다.)
     revs = [(y, _num(v.get("revenue"))) for y, v in rows]
     revs = [(y, r) for y, r in revs if r is not None]
-    decline_years = [str(revs[i][0]) for i in range(1, len(revs)) if revs[i][1] < revs[i - 1][1]]
+    decline_years, shallow_declines = [], []
+    for i in range(1, len(revs)):
+        prev, cur = revs[i - 1][1], revs[i][1]
+        if cur >= prev or not prev:
+            continue
+        pct = (cur / prev - 1) * 100.0
+        label = f"{revs[i][0]}({pct:+.1f}%)"
+        (decline_years if pct < TH_DECLINE_PCT else shallow_declines).append(label)
 
     # (4) 이익 peak-to-trough — 고점을 경신해 온 뒤의 최대 낙폭.
     #
@@ -177,6 +195,7 @@ def compute_axes(annual: dict) -> dict:
         "fcfYears": len(fcf_margins),
         "declineYearCount": len(decline_years) if len(revs) >= 2 else None,
         "declineYears": decline_years,
+        "shallowDeclines": shallow_declines,
         "profitDrawdownPct": round(worst_dd, 1) if worst_dd is not None else None,
         "drawdownEpisodes": len(episodes) if profits else None,
         "episodes": [_episode_out(e, profits) for e in episodes],
@@ -320,7 +339,7 @@ def main() -> None:
     print(f"  {'-' * 60}")
     print(f"  (1) {roic_label:<22}{fmt(axes['roicPct'], '%'):>10}   {'>=15%':<10}{MARK[c['roic']]}")
     print(f"  (2) {'평균 FCF마진':<22}{fmt(axes['fcfMarginPct'], '%'):>10}   {'>=15%':<10}{MARK[c['fcfMargin']]}")
-    print(f"  (3) {'매출 역성장 연도':<22}{fmt(axes['declineYearCount'], '회', 0):>10}   {'<=1회':<10}{MARK[c['decline']]}")
+    print(f"  (3) {'매출 역성장 연도':<22}{fmt(axes['declineYearCount'], '회', 0):>10}   {'<=1회(-5%초과만)':<10}{MARK[c['decline']]}")
     print(f"  (4) {'순이익 peak-to-trough':<22}{fmt(axes['profitDrawdownPct'], '%'):>10}   {'>-35%':<10}{MARK[c['profitStability']]}")
     print(f"  (5) {'해자':<22}{(str(args.moat) + '점') if args.moat else '-':>10}   {'4점+':<10}{MARK[c['moat']]}")
     print()
@@ -328,7 +347,10 @@ def main() -> None:
         print("  주의: EBIT/투하자본이 성립하지 않아 ROE로 대체했다(금융·보험에서 흔하다).")
         print("        ROE는 레버리지로 부풀 수 있으므로 부채비율을 함께 봐야 한다.")
     if axes["declineYears"]:
-        print(f"  · 역성장 연도: {', '.join(axes['declineYears'])}")
+        print(f"  · 역성장 연도(유의미, {TH_DECLINE_PCT:.0f}% 초과): {', '.join(axes['declineYears'])}")
+    if axes.get("shallowDeclines"):
+        print(f"  · 얕은 역성장(판정 제외): {', '.join(axes['shallowDeclines'])}")
+        print(f"    (구독·반복매출에서 {abs(TH_DECLINE_PCT):.0f}% 이내 딥은 환율·소규모 매각·계약 타이밍 잡음으로 본다)")
     if axes["episodes"]:
         for e in axes["episodes"]:
             rec = f"{e['recoveredYear']}년 회복" if e["recoveredYear"] else "미회복"
