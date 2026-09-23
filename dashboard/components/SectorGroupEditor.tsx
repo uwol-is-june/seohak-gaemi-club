@@ -137,7 +137,7 @@ export function SectorGroupEditor({
                 <button
                   onClick={() => removeGroup(g.id)}
                   title="그룹 삭제"
-                  className="shrink-0 rounded-full border border-hairline px-3 py-2 text-xs text-mute hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/10 transition-colors active:scale-95"
+                  className="shrink-0 rounded-full border border-hairline px-3 py-2 text-xs text-mute hover:text-danger hover:border-danger/40 hover:bg-danger/10 transition-colors active:scale-95"
                 >
                   삭제
                 </button>

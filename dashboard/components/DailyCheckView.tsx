@@ -282,7 +282,7 @@ export function DailyCheckView() {
                       </td>
                       <td className="px-4 py-3 text-right font-mono">
                         {chg != null ? (
-                          <span className={up ? "text-red-400" : "text-breeze"}>
+                          <span className={up ? "text-up" : "text-down"}>
                             {up ? "+" : ""}
                             {chg.toFixed(2)}%
                           </span>

@@ -40,9 +40,9 @@ import { ReportModal } from "./ReportModal";
 //      결측이 빈칸으로 드러난다. 안 보이는 결측은 영원히 안 채워진다.
 
 const STATUS_STYLE: Record<CallStatus, { label: string; color: string; dot: string }> = {
-  적중: { label: "적중", color: "text-emerald-300 bg-emerald-500/15", dot: "bg-emerald-400" },
-  빗나감: { label: "빗나감", color: "text-red-300 bg-red-500/15", dot: "bg-red-400" },
-  진행중: { label: "진행중", color: "text-amber-300 bg-amber-500/15", dot: "bg-amber-400" },
+  적중: { label: "적중", color: "text-success bg-success/15", dot: "bg-success" },
+  빗나감: { label: "빗나감", color: "text-danger bg-danger/15", dot: "bg-danger" },
+  진행중: { label: "진행중", color: "text-warn bg-warn/15", dot: "bg-warn" },
   unknown: { label: "미채점", color: "text-mute bg-canvas-soft", dot: "bg-canvas-mid" },
 };
 
@@ -83,7 +83,7 @@ const TRANCHE_HOWTO =
 // 수익률·손익 색은 앱 전역 규칙(한국식: 상승=빨강, 하락=파랑)을 따른다.
 function moveColor(v: number | null | undefined): string {
   if (v == null) return "text-mute";
-  return v >= 0 ? "text-red-400" : "text-breeze";
+  return v >= 0 ? "text-up" : "text-down";
 }
 
 function fmtPrice(v: number): string {
@@ -207,7 +207,7 @@ export function TrackRecordView() {
 
       {error && (
         <div className="flex items-center gap-3 text-xs mb-4">
-          <span className="text-red-300">트랙레코드를 불러오지 못했습니다.</span>
+          <span className="text-danger">트랙레코드를 불러오지 못했습니다.</span>
           <button
             onClick={load}
             className="px-3 py-1 rounded-full border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
@@ -272,7 +272,7 @@ export function TrackRecordView() {
           </div>
 
           {!holdingsReady && (
-            <p className="mb-3 text-[11px] text-amber-300">
+            <p className="mb-3 text-[11px] text-warn">
               보유 정보를 불러오지 못해 <span className="text-body">보유·관찰 분리가 비활성</span>입니다 — 전체만
               표시합니다.
             </p>
@@ -407,7 +407,7 @@ function TickerCard({
             <span className="font-mono text-ink text-base tracking-[-0.02em]">{group.ticker}</span>
             {chaseBreach && (
               <span
-                className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-red-400"
+                className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-warn"
                 role="img"
                 aria-label="추격 금지선 초과 — 전 차수 미활성"
                 title={"추격 금지선 초과 — 전 차수 미활성. 가격이 닿아도 집행하지 않는다." + NL + chaseBreach}
@@ -416,7 +416,7 @@ function TickerCard({
             {/* 논제 건수는 **항상** 띄운다 — 1건일 때만 칩이 사라지면 카드마다 머리 줄이 달라진다. */}
             <span
               className={`rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
-                conflict ? "bg-amber-500/15 text-amber-300" : "border border-hairline text-mute"
+                conflict ? "bg-warn/15 text-warn" : "border border-hairline text-mute"
               }`}
               title={conflict ? conflict.reasons.join("\n") : undefined}
             >
@@ -487,7 +487,7 @@ function TickerCard({
                 ⬛ 미산출
               </span>
             ) : reached ? (
-              <span className="font-mono text-emerald-300 truncate">
+              <span className="font-mono text-success truncate">
                 {goal.reached} · {fmtPrice(goal.price)}
               </span>
             ) : (
@@ -507,8 +507,8 @@ function TickerCard({
         <div className="px-4 pb-4">
           {/* 충돌 배너 — 무엇이 갈리는지 먼저 말한다. */}
           {conflict && (
-            <div className="rounded-lg border border-amber-400/30 bg-amber-500/[0.07] px-3 py-2">
-              <div className="eyebrow text-[9px] text-amber-300 mb-1">논제 충돌 {group.active.length}건</div>
+            <div className="rounded-lg border border-warn/30 bg-warn/[0.07] px-3 py-2">
+              <div className="eyebrow text-[9px] text-warn mb-1">논제 충돌 {group.active.length}건</div>
               <ul className="flex flex-col gap-0.5">
                 {conflict.reasons.map((r, i) => (
                   <li key={i} className="text-[11px] text-body leading-snug">
@@ -650,7 +650,7 @@ function ThesisBlock({
           밴드 양끝 두 숫자는 실행할 수 없다(CLAUDE.md '진입 밴드는 래더로 쓴다'). */}
       {ladderExpected && !hasLadder && (
         <p className="mt-1.5 text-[10px] leading-snug text-mute" title={TRANCHE_HOWTO}>
-          {ladderNoun} <span className="text-amber-300">⬛ 미산출</span> —{" "}
+          {ladderNoun} <span className="text-warn">⬛ 미산출</span> —{" "}
           {c.call === "keep"
             ? "보유 중이어도 추가 매수 구간이 없으면 주가가 내려왔을 때 얼마에 얼마나 살지 정할 수 없다."
             : "밴드 양끝만으로는 집행할 수 없다."}{" "}
@@ -705,7 +705,7 @@ function ThesisBlock({
                     : "장식 밴드 · 대응 미기록"
                   : "실행 가능"
           }
-          tone={!fillExpected || fp == null ? "text-mute" : fpLow ? "text-amber-300" : "text-ink"}
+          tone={!fillExpected || fp == null ? "text-mute" : fpLow ? "text-warn" : "text-ink"}
           title={
             !fillExpected
               ? "이 밴드는 내려오길 기다리는 진입가가 아니라 도달 목표가다 — 하락 체결 확률이 성립하지 않는다."
@@ -751,7 +751,7 @@ function ThesisBlock({
           label="기회비용"
           value={c.opportunityCostPct != null ? `${c.opportunityCostPct.toFixed(1)}pp` : "—"}
           sub={c.call === "hold" ? "기다려서 포기" : c.call === "avoid" ? "피해서 포기" : "판단 대가"}
-          tone={c.opportunityCostPct != null && c.opportunityCostPct > 0 ? "text-amber-300" : "text-mute"}
+          tone={c.opportunityCostPct != null && c.opportunityCostPct > 0 ? "text-warn" : "text-mute"}
           title="이 판단을 따랐을 때 SPY 대비 포기한 수익(0 이하는 이득)"
         />
       </div>

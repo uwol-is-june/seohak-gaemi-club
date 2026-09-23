@@ -49,7 +49,7 @@ export function ReportModal({
                 type="button"
                 onClick={() => onRequestDelete(path)}
                 title="이 보고서 삭제"
-                className="rounded-full border border-hairline px-3 py-1.5 text-xs text-mute hover:text-red-300 hover:border-red-500/40 hover:bg-red-500/10 transition-colors active:scale-95"
+                className="rounded-full border border-hairline px-3 py-1.5 text-xs text-mute hover:text-danger hover:border-danger/40 hover:bg-danger/10 transition-colors active:scale-95"
               >
                 삭제
               </button>

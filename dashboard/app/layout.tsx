@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
+import { Noto_Sans_KR, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-// Universal Sans는 xAI 독점 폰트 → Inter(가변)로 대체(디스플레이+본문).
-// Geist Mono는 문서가 명시한 브랜드 동반 폰트 — 대문자 eyebrow/label 전용.
-const inter = Inter({
-  variable: "--font-inter",
+// Toss Product Sans는 배포되지 않는 독점 폰트 → Noto Sans KR로 대체.
+// 이전 Inter는 한글 글리프가 없어 한국어가 시스템 폰트로 폴백하고 있었다.
+// (더 가까운 대체는 Pretendard지만 Google Fonts에 없어 별도 파일이 필요하다)
+const notoSansKr = Noto_Sans_KR({
+  variable: "--font-noto-kr",
   subsets: ["latin"],
+  weight: ["400", "500", "700", "900"],
   display: "swap",
 });
 
@@ -31,7 +33,7 @@ export default function RootLayout({
     // 불일치가 뜬다. suppressHydrationWarning은 이 엘리먼트에만 적용된다.
     <html
       lang="ko"
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${notoSansKr.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-canvas text-body">{children}</body>

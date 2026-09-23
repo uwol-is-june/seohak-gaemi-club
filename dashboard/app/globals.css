@@ -2,35 +2,58 @@
 @plugin "@tailwindcss/typography";
 
 /* ─────────────────────────────────────────────────────────────────────────
-   xAI 디자인 시스템 토큰 — docs/DESIGN-x.ai.md 기반.
-   원칙: near-black 캔버스(#0a0a0a) 단일 서페이스 + 화이트 아웃라인 pill이 전체
-   인터랙티브 어휘 + Universal Sans(Inter 대체) weight 400 + 음수 트래킹 +
-   Geist Mono 대문자 eyebrow. 그림자 없음 — 헤어라인 보더가 모든 elevation.
+   토스증권 레퍼런스 다크 토큰.
+
+   공개 확인된 값(토스증권 문서): primary #3182F6 · grey 700 #4E5968 ·
+   radius 7/8/12/16 · spacing 4/8/12/14/16 · Toss Product Sans(비공개).
+   다크 팔레트와 등락 색은 공개되지 않아 토스 grey 스케일에서 파생하고
+   WCAG 2.1 상대휘도로 대비를 직접 측정했다(주석의 x:1 값이 실측치).
+
+   🔴 등락은 한국 관례다 — 상승 빨강 / 하락 파랑. 미국식(초록 상승)과 정반대.
+   🔴 등락 축과 판정 축은 다르다. up/down은 가격 방향, success/danger는
+      콜의 적중·빗나감이다. 섞어 쓰면 "빗나감"이 "상승"으로 읽힌다.
    ───────────────────────────────────────────────────────────────────────── */
 
 @theme {
-  /* 서페이스 — near-black 단일 캔버스 + 미세하게 밝은 카드/소프트 */
-  --color-canvas: #0a0a0a; /* 유일한 페이지 배경 */
-  --color-canvas-soft: #1a1c20; /* hover·툴팁·인풋 */
-  --color-canvas-card: #191919; /* 카드 fill */
-  --color-canvas-mid: #363a3f; /* 중첩 서페이스·코드 목업 */
-  --color-hairline: #212327; /* 1px 디바이더 */
+  /* 서페이스 — 토스 grey 900 계열에서 파생한 4단 */
+  --color-canvas: #14181f; /* 페이지 배경 */
+  --color-canvas-card: #191f28; /* 카드 fill */
+  --color-canvas-soft: #232a35; /* hover·인풋·중첩 카드 */
+  --color-canvas-mid: #2e3742; /* raised·구분 */
+  --color-hairline: #232a35; /* 1px 디바이더 (장식 — 구조는 서페이스 단차가 진다) */
 
-  /* 텍스트 */
-  --color-ink: #ffffff; /* 기본 텍스트·디스플레이 */
-  --color-body: #dadbdf; /* 보조 본문 */
-  --color-mute: #7d8187; /* 캡션·파인프린트·eyebrow */
+  /* 텍스트 — 괄호 값은 카드(#191f28) 위 실측 대비 */
+  --color-ink: #f2f4f6; /* 기본 (15.02:1) */
+  --color-body: #b0b8c1; /* 보조 본문 (8.26:1) */
+  --color-mute: #8b95a1; /* 캡션·라벨 (5.45:1) */
+  --color-faint: #6b7684; /* 비활성·미산출 (3.59:1 — UI 전용, 본문 금지) */
 
-  /* 액센트 — 마케팅 표면엔 드물게, 일러스트/코드/포인트에만 */
-  --color-sunset: #ff7a17;
-  --color-sunset-soft: #ffc285;
-  --color-dusk: #7c3aed;
-  --color-twilight: #c4b5fd;
-  --color-breeze: #a0c3ec;
-  --color-midnight: #0d1726;
+  /* 등락 (가격 방향) — 한국 관례 */
+  --color-up: #ff5a67; /* 상승 (5.45:1) */
+  --color-down: #4593fc; /* 하락·진입 기회 (5.39:1) */
 
-  /* 폰트 — Universal Sans는 독점 → Inter로 대체(디스플레이+본문), Geist Mono는 eyebrow/label */
-  --font-sans: var(--font-inter), Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* 판정 (콜 채점·조건 충족) — 등락과 다른 축 */
+  --color-success: #15c47e; /* 적중·조건 충족 (7.28:1) */
+  --color-danger: #ff5a67; /* 빗나감·오류 (5.45:1) */
+  --color-warn: #ffb020; /* 진행중·조건 미충족·추격금지 (9.06:1) */
+
+  /* 액션 */
+  --color-primary: #3182f6; /* 토스 공개값 — fill 전용(카드 위 4.46:1이라 본문 텍스트 금지) */
+  --color-primary-press: #1b64da; /* 버튼 fill (흰 글자 5.41:1) */
+  --color-on-primary: #ffffff;
+  --color-border-control: #6b7684; /* 입력·선택 경계 (3.01:1, WCAG 1.4.11) */
+
+  /* 레거시 액센트 별칭 — 기존 사용처가 남아 있어 토스 팔레트로 재지정 */
+  --color-breeze: #4593fc; /* 링크 */
+  --color-sunset: #ffb020;
+  --color-sunset-soft: #ffd089;
+  --color-twilight: #7fb4fd;
+  --color-dusk: #3182f6;
+  --color-midnight: #14181f;
+
+  /* 폰트 — Toss Product Sans는 비공개 → Noto Sans KR로 대체(한글 우선).
+     Geist Mono는 수치·티커 등 고정폭이 필요한 곳에만 남긴다. */
+  --font-sans: var(--font-noto-kr), "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 }
 
@@ -47,26 +70,33 @@ body {
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* 🔴 금융 대시보드의 숫자는 열에서 자리를 지켜야 한다. 비례폭이면 행마다
+     소수점이 어긋나 세로로 훑어 비교할 수 없다. 개별 컴포넌트에 흩뿌리지
+     않고 여기 한 번만 건다. */
+  font-variant-numeric: tabular-nums;
 }
 
-/* 디스플레이: 절대 볼드 금지 — weight 400 + 음수 트래킹이 위계를 만든다.
-   (docs: 96px에서 -2.4px, 사이즈별로 스케일. 크기+트래킹이 강조를 담당) */
+/* 디스플레이: 토스는 굵은 제목 + 짧은 한국어 문장으로 위계를 만든다.
+   (이전 xAI 토큰은 weight 400 + 강한 음수 트래킹이었다 — 정반대) */
 h1, h2, h3, h4 {
-  font-weight: 400;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-/* 화이트-투명 포커스 링 (다크 캔버스용) */
+/* 포커스 링 — 다크에서 3:1을 넘는 브랜드 블루 */
 :where(a, button, input, [tabindex]):focus-visible {
-  outline: 1px solid rgba(255, 255, 255, 0.5);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* Geist Mono 대문자 eyebrow — 코드 코멘트처럼 읽히는 시그니처 라벨 */
+/* 섹션 라벨 — 대문자 모노 eyebrow는 xAI 시그니처였다.
+   토스는 작고 굵은 한글 라벨을 쓴다. */
 .eyebrow {
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--color-mute);
 }
 

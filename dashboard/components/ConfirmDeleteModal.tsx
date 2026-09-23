@@ -39,7 +39,7 @@ export function ConfirmDeleteModal({
           GitHub에 삭제 커밋이 생성됩니다(git 히스토리로 복구 가능). 로컬 클론은{" "}
           <span className="font-mono text-body">git pull</span>로 동기화하세요.
         </p>
-        {error && <p className="text-xs text-red-300 mb-3">{error}</p>}
+        {error && <p className="text-xs text-danger mb-3">{error}</p>}
         <div className="flex justify-end gap-2">
           <button
             type="button"
@@ -53,7 +53,7 @@ export function ConfirmDeleteModal({
             type="button"
             onClick={onConfirm}
             disabled={busy}
-            className="rounded-full border border-red-500/40 bg-red-500/10 text-red-300 px-4 py-1.5 text-sm font-medium hover:bg-red-500/20 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="rounded-full border border-danger/40 bg-danger/10 text-danger px-4 py-1.5 text-sm font-medium hover:bg-danger/20 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {busy ? "삭제 중…" : "삭제"}
           </button>

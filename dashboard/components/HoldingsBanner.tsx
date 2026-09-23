@@ -211,10 +211,10 @@ export function HoldingsBanner({
               <div className="eyebrow text-[10px] mb-1">TOTAL P/L</div>
               <div className="flex items-baseline gap-2">
                 {/* 정확히 0인 손익은 중립(색·부호 없음) — TASK-69 */}
-                <div className={`text-2xl tracking-[-0.02em] ${totalPL > 0 ? "text-red-400" : totalPL < 0 ? "text-breeze" : "text-mute"}`}>
+                <div className={`text-2xl tracking-[-0.02em] ${totalPL > 0 ? "text-up" : totalPL < 0 ? "text-down" : "text-mute"}`}>
                   {totalPL > 0 ? "+" : ""}{money(totalPL)}
                 </div>
-                <div className={`text-[11px] ${totalPL > 0 ? "text-red-400" : totalPL < 0 ? "text-breeze" : "text-mute"}`}>
+                <div className={`text-[11px] ${totalPL > 0 ? "text-up" : totalPL < 0 ? "text-down" : "text-mute"}`}>
                   {totalPL > 0 ? "+" : ""}{totalPLPct.toFixed(2)}%
                 </div>
               </div>
@@ -275,9 +275,9 @@ export function HoldingsBanner({
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 font-mono text-[11px] ${
                         dir > 0
-                          ? "text-red-400 bg-red-500/10"
+                          ? "text-up bg-up/10"
                           : dir < 0
-                            ? "text-breeze bg-breeze/10"
+                            ? "text-down bg-down/10"
                             : "text-mute bg-canvas-soft"
                       }`}
                     >
@@ -305,7 +305,7 @@ export function HoldingsBanner({
                     <div className="relative h-1.5 rounded-full bg-canvas-soft overflow-hidden">
                       <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-canvas-mid" />
                       <div
-                        className={`absolute inset-y-0 ${up ? "left-1/2 bg-red-400" : "right-1/2 bg-breeze"}`}
+                        className={`absolute inset-y-0 ${up ? "left-1/2 bg-up" : "right-1/2 bg-down"}`}
                         style={{ width: `${frac * 50}%` }}
                       />
                     </div>

@@ -768,7 +768,7 @@ export function HomeView({
 
               {!files && loadError && (
                 <div className="flex items-center gap-3 text-xs">
-                  <span className="text-red-300">보고서를 불러오지 못했습니다.</span>
+                  <span className="text-danger">보고서를 불러오지 못했습니다.</span>
                   <button
                     onClick={() => setReloadKey((k) => k + 1)}
                     className="px-3 py-1 rounded-full border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
@@ -992,7 +992,7 @@ export function HomeView({
                       <span
                         className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
                           current.due.state === "done"
-                            ? "text-emerald-300 bg-emerald-500/15"
+                            ? "text-success bg-success/15"
                             : current.due.state === "due"
                               ? "text-sunset-soft bg-sunset/10"
                               : "border border-hairline text-mute"
@@ -1013,7 +1013,7 @@ export function HomeView({
                         onClick={() => setModalPath(portfolioReport.path)}
                         className="w-full flex items-center gap-2 rounded-lg bg-canvas-card border border-hairline px-4 py-3 text-left hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99] mb-6"
                       >
-                        <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-rose-300 bg-rose-500/10">
+                        <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-twilight bg-twilight/10">
                           최신 점검
                         </span>
                         <span className="text-xs font-mono text-body flex-1 truncate">{portfolioReport.name}</span>
@@ -1037,7 +1037,7 @@ export function HomeView({
                             <span
                               className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                                 due.state === "done"
-                                  ? "text-emerald-300 bg-emerald-500/15"
+                                  ? "text-success bg-success/15"
                                   : due.state === "due"
                                     ? "text-sunset-soft bg-sunset/10"
                                     : "border border-hairline text-body"

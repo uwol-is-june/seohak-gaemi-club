@@ -46,7 +46,7 @@ export function ReportContentView({
   if (loading) return <p className="text-sm text-mute">불러오는 중...</p>;
   if (error)
     return (
-      <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+      <div className="rounded-lg border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
         {error}
       </div>
     );

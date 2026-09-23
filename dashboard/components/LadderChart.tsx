@@ -99,11 +99,11 @@ export function LadderChart({
         {/* 추격 금지선 — 이 위로는 전 차수 미활성 */}
         {noChaseAbove != null && (
           <div className="absolute flex items-center" style={{ left: 0, right: 0, top: y(noChaseAbove) }}>
-            <span className="font-mono text-[9px] text-red-300 text-right" style={{ width: AXIS_X - 6 }}>
+            <span className="font-mono text-[9px] text-warn text-right" style={{ width: AXIS_X - 6 }}>
               {fmt(noChaseAbove)}
             </span>
-            <span className="ml-1.5 flex-1 border-t border-dashed border-red-400/60" />
-            <span className="eyebrow text-[8px] text-red-300 pl-1">추격금지</span>
+            <span className="ml-1.5 flex-1 border-t border-dashed border-warn/60" />
+            <span className="eyebrow text-[8px] text-warn pl-1">추격금지</span>
           </div>
         )}
 
@@ -183,7 +183,7 @@ export function LadderChart({
               {t.condition && (
                 <span
                   title={t.condition}
-                  className="rounded-full border border-amber-400/40 px-1.5 py-px text-[8px] text-amber-300"
+                  className="rounded-full border border-warn/40 px-1.5 py-px text-[8px] text-warn"
                 >
                   조건
                 </span>
@@ -196,7 +196,7 @@ export function LadderChart({
       {/* 차트 아래 — 그림으로 못 담는 '언제 집행 가능한가'의 원문 */}
       <div className="mt-2 flex flex-col gap-1">
         {chaseBreached && (
-          <p className="text-[10px] text-red-300 leading-snug">
+          <p className="text-[10px] text-warn leading-snug">
             추격금지선 {fmt(noChaseAbove as number)} 초과 — 전 차수 미활성. 가격이 닿아도 집행하지 않는다.
           </p>
         )}
@@ -212,7 +212,7 @@ export function LadderChart({
           .filter((t) => t.condition || t.caveat)
           .map((t, i) => (
             <p key={i} className="text-[10px] text-mute leading-snug">
-              <span className="eyebrow text-[9px] text-amber-300">{t.label}</span>{" "}
+              <span className="eyebrow text-[9px] text-warn">{t.label}</span>{" "}
               {t.condition ? <span className="text-body">AND {t.condition}</span> : null}
               {t.caveat ? <span className="text-mute"> {t.caveat}</span> : null}
             </p>
@@ -221,7 +221,7 @@ export function LadderChart({
           <p key={`n${i}`} className="text-[10px] text-mute leading-snug">
             {t.condition ? (
               <>
-                <span className="eyebrow text-[9px] text-amber-300">공통</span>{" "}
+                <span className="eyebrow text-[9px] text-warn">공통</span>{" "}
                 <span className="text-body">{t.condition}</span>
               </>
             ) : (

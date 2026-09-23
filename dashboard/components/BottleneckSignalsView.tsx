@@ -53,7 +53,7 @@ export function BottleneckSignalsView({
   if (!files && loadError) {
     return (
       <div className="flex items-center gap-3 text-xs">
-        <span className="text-red-300">보고서를 불러오지 못했습니다.</span>
+        <span className="text-danger">보고서를 불러오지 못했습니다.</span>
         <button
           onClick={onRetry}
           className="px-3 py-1 rounded-full border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
@@ -88,7 +88,7 @@ export function BottleneckSignalsView({
         <p className="mt-4 pt-4 border-t border-hairline text-xs text-mute leading-relaxed">
           이 스캔은 <span className="text-body">새로 발견한 것이 있을 때만 파일을 만든다</span> — 목록이
           비어 있으면 그날 공급망에 새 움직임이 없었다는 뜻이다. 파일명에 티커가 박힌 것(
-          <span className="text-emerald-300">후보 발견</span>)만 밸류에이션 확인까지 통과한 심층연구
+          <span className="text-success">후보 발견</span>)만 밸류에이션 확인까지 통과한 심층연구
           대상이고, <span className="text-body">신호만</span>은 병목 움직임은 있으나 살 만한 상장사가
           없었던 경우다.
         </p>

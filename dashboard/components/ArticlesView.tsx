@@ -26,8 +26,8 @@ import { ReportContentView } from "./ReportContentView";
 const SHAPE_TINT: Record<string, string> = {
   news: "text-sunset bg-sunset/10",
   deep: "text-breeze bg-breeze/10",
-  compare: "text-teal-300 bg-teal-500/10",
-  market: "text-cyan-300 bg-cyan-500/10",
+  compare: "text-success bg-success/10",
+  market: "text-twilight bg-twilight/10",
 };
 
 export function ArticlesView({
@@ -77,7 +77,7 @@ export function ArticlesView({
   if (!files && loadError) {
     return (
       <div className="flex items-center gap-3 text-xs">
-        <span className="text-red-300">보고서를 불러오지 못했습니다.</span>
+        <span className="text-danger">보고서를 불러오지 못했습니다.</span>
         <button
           onClick={onRetry}
           className="px-3 py-1 rounded-full border border-hairline text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
@@ -268,7 +268,7 @@ function ArticleRow({
         >
           <path d="m9 6 6 6-6 6" />
         </svg>
-        <span className="shrink-0 rounded-full px-2 py-0.5 text-[11px] text-emerald-300 bg-emerald-500/15">
+        <span className="shrink-0 rounded-full px-2 py-0.5 text-[11px] text-success bg-success/15">
           아티클
         </span>
         <span className="min-w-0 flex-1 truncate text-sm text-ink tracking-[-0.01em]">{article.subject}</span>
@@ -322,7 +322,7 @@ function SourceRow({
           {source.subject} <span className="text-mute">· {source.kindLabel}</span>
         </button>
         {source.hasArticle && (
-          <span className="shrink-0 text-[11px] text-emerald-300">아티클 있음</span>
+          <span className="shrink-0 text-[11px] text-success">아티클 있음</span>
         )}
         <span className="shrink-0 text-[11px] font-mono text-mute hidden sm:inline">{source.date ?? "—"}</span>
         <button
