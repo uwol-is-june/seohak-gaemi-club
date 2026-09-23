@@ -84,3 +84,18 @@ export function healthTone(v: number | null): string {
 export function initials(ticker: string): string {
   return ticker.replace(/[^A-Z0-9]/gi, "").slice(0, 2).toUpperCase();
 }
+
+/**
+ * 종목 단위 건강도.
+ *
+ * 🔴 건강도는 종목 하나의 상태인데 **어느 콜의 conviction 에 적혀 있을지는 그때그때다.**
+ * 대표 콜 하나만 보면 CEG 처럼 다른 논제에 적힌 값을 통째로 놓친다(실제로 놓쳤다).
+ * 살아있는 논제를 전부 훑어 먼저 나오는 값을 쓴다.
+ */
+export function groupHealth(calls: { conviction?: string }[]): number | null {
+  for (const c of calls) {
+    const h = parseHealth(c.conviction);
+    if (h != null) return h;
+  }
+  return null;
+}

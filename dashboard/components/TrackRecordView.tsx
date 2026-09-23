@@ -43,7 +43,7 @@ import { ReportModal } from "./ReportModal";
 
 import {
   STATUS_STYLE, BAND_META, LOW_FILL_PLAN_LABEL, NL, TRANCHE_HOWTO, moveColor, fmtPrice,
-  parseHealth, healthTone, initials,
+  parseHealth, groupHealth, healthTone, initials,
 } from "./track-record/meta";
 
 // 표시 축 — '실제 들고 있는 것'과 '아직 안 산 것'은 읽는 목적이 다르다.
@@ -93,7 +93,7 @@ const DISABLED_AXIS_HINT = "보유 정보를 불러오지 못해 축을 나눌 �
 // 🔴 헤더와 행이 **같은 그리드 템플릿**을 써야 컬럼이 맞는다.
 // 한쪽만 고치면 조용히 어긋나므로 상수 하나에서 온다.
 const ROW_GRID =
-  "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 md:grid-cols-[56px_minmax(0,1fr)_124px_100px_76px_132px]";
+  "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 md:grid-cols-[56px_minmax(0,1fr)_120px_92px_68px_108px_132px]";
 
 export function TrackRecordView() {
   const [calls, setCalls] = useState<ScoredCall[] | null>(null);
@@ -194,7 +194,7 @@ export function TrackRecordView() {
         return typeof fp === "number" ? -fp : Number.POSITIVE_INFINITY;
       }
       if (sort === "health") {
-        const h = parseHealth(lead.conviction);
+        const h = groupHealth(g.active.length > 0 ? g.active : g.history);
         return h ?? Number.POSITIVE_INFINITY;
       }
       // gap — 집행 지점까지의 거리(절대값). 래더도 목표도 없으면 뒤로.
@@ -401,7 +401,8 @@ export function TrackRecordView() {
                 <span className="eyebrow text-[10px]">티어 · 체결확률</span>
                 <span className="eyebrow text-[10px]">집행가</span>
                 <span className="eyebrow text-[10px]">건강도</span>
-                <span className="eyebrow text-right text-[10px]">현재가 · 전일 대비</span>
+                <span className="eyebrow text-right text-[10px]">현재가</span>
+                <span className="eyebrow text-right text-[10px]">집행까지</span>
               </div>
               {rows.map((g) => (
                 <TickerCard
@@ -505,7 +506,7 @@ function TickerCard({
   // 프로젝트 규칙: "AND 조건이 붙은 차수는 가격만 닿아도 집행하지 않는다."
   // 이게 펼쳐야만 보이면 접은 채로 훑다가 가격만 보고 오집행한다.
   // ⚠️ 데이터에 있는 건 '조건이 붙어 있다'까지다 — 충족 여부는 기록되지 않는다.
-  const health = parseHealth(lead?.conviction);
+  const health = groupHealth(group.active.length > 0 ? group.active : group.history);
   const fpRaw = lead?.target?.fillProbability;
   const fillProb = typeof fpRaw === "number" ? fpRaw : null;
   // 25% 미만이면 밴드가 실행 계획이 아니라 장식이다(CLAUDE.md 체결확률 규칙).
@@ -561,10 +562,10 @@ function TickerCard({
                 />
               )}
             </span>
-            <span className="flex flex-wrap items-center gap-1">
+            <span className="flex min-w-0 flex-nowrap items-center gap-1 overflow-hidden">
               {/* 논제 건수는 **항상** 띄운다 — 1건일 때만 사라지면 카드마다 머리 줄이 달라진다. */}
               <span
-                className={`rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
+                className={`shrink-0 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
                   conflict ? "bg-warn/15 text-warn" : "border border-hairline text-mute"
                 }`}
                 title={conflict ? conflict.reasons.join("\n") : undefined}
@@ -573,7 +574,7 @@ function TickerCard({
               </span>
               {group.resolvedOnly && (
                 <span
-                  className="rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute"
+                  className="shrink-0 whitespace-nowrap rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute"
                   title="살아있는 논제가 없습니다 — 채점이 끝난 마지막 판단만 남겨둡니다."
                 >
                   종료
@@ -581,10 +582,10 @@ function TickerCard({
               )}
               {refresh.length > 0 && (
                 <span
-                  className="rounded-full bg-twilight/20 px-1.5 py-0.5 text-[9px] font-medium text-twilight"
+                  className="shrink-0 whitespace-nowrap rounded-full bg-twilight/20 px-1.5 py-0.5 text-[9px] font-medium text-twilight"
                   title={refresh.map((f) => `${f.skill} — ${f.reasons.join(" · ")}`).join("\n")}
                 >
-                  갱신 필요 {refresh.map((f) => `/${f.skill}`).join(", ")}
+                  갱신 필요{refresh.length > 1 ? ` ${refresh.length}` : ""}
                 </span>
               )}
             </span>
@@ -627,64 +628,73 @@ function TickerCard({
           </span>
 
           <span className="flex flex-col items-end gap-0.5">
-            <span className="font-mono text-base tracking-[-0.02em] text-ink">
+            <span className="font-mono text-[15px] tracking-[-0.02em] text-ink">
               {priceNow != null ? fmtPrice(priceNow) : "—"}
             </span>
-            <span className="flex items-center justify-end gap-1 font-mono text-[11px]">
-              {dayChange != null && dayChangePct != null ? (
-                <>
-                  <Delta value={dayChange} format="currency" size="sm" bold={false} />
-                  <span className={moveColor(dayChangePct)}>
-                    ({dayChangePct >= 0 ? "+" : ""}
-                    {dayChangePct.toFixed(2)}%)
-                  </span>
-                </>
-              ) : (
-                <span className="text-mute">전일 대비 —</span>
-              )}
-            </span>
+            {dayChangePct != null ? (
+              <Delta value={dayChangePct} size="sm" bold={false} />
+            ) : (
+              <span className="font-mono text-[10.5px] text-mute">—</span>
+            )}
+          </span>
+
+          {/* 🔴 마지막 칸 = 집행까지. 이 화면을 보는 목적이 "어느 종목이 집행에 가까운가"라
+              가장 먼저 눈에 들어오는 우측 끝에 큰 숫자로 둔다(목업과 같은 자리). */}
+          <span className="hidden flex-col items-end gap-1 md:flex">
+            {goal == null || gapPct == null ? (
+              <span
+                className="font-mono text-[12px] text-mute"
+                title="관망 논제의 진입 래더도, 매수·보유 논제의 목표 상단도 없어 거리를 산출할 수 없습니다."
+              >
+                □ 미산출
+              </span>
+            ) : reached ? (
+              <span className="font-mono text-[16px] font-bold text-success">{goal.reached}</span>
+            ) : (
+              <Delta value={gapPct} size="lg" />
+            )}
+            {goal != null && nearPct != null && (
+              <span className="block h-1.5 w-full overflow-hidden rounded-full bg-canvas-soft">
+                <span
+                  className={`block h-full rounded-full ${reached ? "bg-success" : "bg-down"}`}
+                  style={{ width: `${reached ? 100 : nearPct}%` }}
+                />
+              </span>
+            )}
           </span>
         </div>
 
-        {/* 집행까지 — 게이지가 종목 간 거리를 한눈에 비교하게 한다 */}
+        {/* 보조 줄 — 매수가·조건부 칩. 좁은 화면(md 미만)에서는 위 컬럼이 접히므로
+            집행까지 거리도 여기서 진다. */}
         <div className="mt-2.5 flex items-center gap-2.5 text-[11px]">
-          <span className="eyebrow shrink-0 text-[9px]">{goal?.label ?? "집행까지"}</span>
-          {goal == null || gapPct == null ? (
-            <span
-              className="font-mono text-mute"
-              title="관망 논제의 진입 래더도, 매수·보유 논제의 목표 상단도 없어 거리를 산출할 수 없습니다."
-            >
-              □ 미산출
-            </span>
-          ) : reached ? (
-            <span className="font-mono text-success">
-              {goal.reached} · {fmtPrice(goal.price)}
-            </span>
-          ) : (
-            <span className="font-mono font-bold text-body">
-              {gapPct >= 0 ? "+" : ""}
-              {gapPct.toFixed(1)}%
-            </span>
-          )}
-          {goal != null && nearPct != null && (
-            <span className="block h-1.5 flex-1 overflow-hidden rounded-full bg-canvas-soft">
-              <span
-                className={`block h-full rounded-full ${reached ? "bg-success" : "bg-down"}`}
-                style={{ width: `${reached ? 100 : nearPct}%` }}
-              />
-            </span>
-          )}
-          {avgPrice != null && (
-            <span className="hidden shrink-0 font-mono text-[10px] text-mute sm:inline">
-              매수 {fmtPrice(avgPrice)}
-              {plPct != null && (
-                <span className={`ml-1 ${moveColor(plPct)}`}>
-                  {plPct >= 0 ? "+" : ""}
-                  {plPct.toFixed(1)}%
-                </span>
-              )}
-            </span>
-          )}
+          <span className="flex items-center gap-2 md:hidden">
+            <span className="eyebrow shrink-0 text-[9px]">{goal?.label ?? "집행까지"}</span>
+            {goal == null || gapPct == null ? (
+              <span className="font-mono text-mute">□ 미산출</span>
+            ) : reached ? (
+              <span className="font-mono text-success">{goal.reached}</span>
+            ) : (
+              <Delta value={gapPct} size="sm" />
+            )}
+          </span>
+          {/* 🔴 칸을 지우지 않는다(파일 머리 TASK-110 규칙 2). 값이 없으면 '미보유'로
+              남겨야 행 높이가 같고, 결측이 화면에서 드러난다. */}
+          <span className="shrink-0 font-mono text-[10px] text-mute">
+            {avgPrice != null ? (
+              <>
+                매수 {fmtPrice(avgPrice)}
+                {plPct != null && (
+                  <span className={`ml-1 ${moveColor(plPct)}`}>
+                    {plPct >= 0 ? "+" : ""}
+                    {plPct.toFixed(1)}%
+                  </span>
+                )}
+              </>
+            ) : (
+              "미보유"
+            )}
+          </span>
+          <span className="flex-1" />
           {gated && (
             <span
               className="shrink-0 rounded-full bg-warn/15 px-1.5 py-px text-[10px] font-medium text-warn"

@@ -20,7 +20,8 @@ import { readJsonSafe } from "@/lib/fetch-json";
 import type { ScoredCall } from "@/lib/calls";
 import { groupTheses, entryTopPrice, type ThesisGroup } from "@/lib/thesis-groups";
 import { parseTranches, pricedTranches, topTranchePrice } from "@/lib/tranche";
-import { parseHealth, healthTone, initials, fmtPrice } from "../track-record/meta";
+import { groupHealth as gh, healthTone, initials, fmtPrice } from "../track-record/meta";
+
 import { Delta, TierBadge } from "../primitives";
 
 const HEALTH_ALERT_BELOW = 6;
@@ -42,7 +43,14 @@ function goalPrice(lead: ScoredCall): number | null {
   return null;
 }
 
-export function UrgentThesisCard({ onOpen }: { onOpen: () => void }) {
+export function UrgentThesisCard({
+  onOpen,
+  onCount,
+}: {
+  onOpen: () => void;
+  /** 사이드바 배지가 쓸 살아있는 논제 수. 같은 fetch 를 두 번 하지 않으려고 올려준다. */
+  onCount?: (n: number) => void;
+}) {
   const [calls, setCalls] = useState<ScoredCall[] | null>(null);
 
   useEffect(() => {
@@ -67,7 +75,7 @@ export function UrgentThesisCard({ onOpen }: { onOpen: () => void }) {
         price != null && lead.priceNow != null && lead.priceNow > 0
           ? ((price - lead.priceNow) / lead.priceNow) * 100
           : null;
-      const health = parseHealth(lead.conviction);
+      const health = gh(g.active);
       const all = g.active.flatMap((c) => pricedTranches(parseTranches(c.target?.tranches)));
       const withCond = all.filter((t) => t.condition).length;
       cands.push({
@@ -85,6 +93,30 @@ export function UrgentThesisCard({ onOpen }: { onOpen: () => void }) {
     if (alarmed.length > 0) return alarmed[0];
     return [...cands].sort((a, b) => near(a) - near(b))[0];
   }, [calls]);
+
+  // 배지 숫자를 부모로. 렌더 중 setState 를 피하려 이펙트에서 낸다.
+  const liveCount = useMemo(
+    () => (calls ? groupTheses(calls).filter((g) => g.active.length > 0).length : null),
+    [calls]
+  );
+  useEffect(() => {
+    if (liveCount != null) onCount?.(liveCount);
+  }, [liveCount, onCount]);
+
+  // 히어로에 뽑힌 한 건을 뺀 나머지 경보. 목업의 '논제 건강도 경보' 목록이다.
+  const alerts = useMemo(() => {
+    if (!calls) return [];
+    const out: Pick[] = [];
+    for (const g of groupTheses(calls)) {
+      const lead = g.active[0];
+      if (!lead || g.ticker === pick?.group.ticker) continue;
+      const health = gh(g.active);
+      if (!(g.refresh.length > 0 || (health != null && health < HEALTH_ALERT_BELOW))) continue;
+      out.push({ group: g, lead, gapPct: null, health, gated: null, alarmed: true });
+    }
+    // 건강도가 낮은 순. 없는 건(갱신 필요만 붙은 건) 뒤로.
+    return out.sort((a, b) => (a.health ?? 99) - (b.health ?? 99)).slice(0, 4);
+  }, [calls, pick]);
 
   if (!pick) return null;
 
@@ -176,6 +208,50 @@ export function UrgentThesisCard({ onOpen }: { onOpen: () => void }) {
           </button>
         </div>
       </div>
+
+      {/* 나머지 경보 — 히어로가 한 건만 띄우므로, 다른 흔들리는 논제가 통째로
+          안 보이면 안 된다. 목록이 아니라 '더 있다'는 신호다(최대 4건). */}
+      {alerts.length > 0 && (
+        <div className="mt-3 rounded-2xl bg-canvas-card p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="text-[15px] font-bold text-ink">논제 건강도 경보</span>
+            <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-up px-1.5 text-[11px] font-bold text-canvas">
+              {alerts.length}
+            </span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {alerts.map((a) => (
+              <button
+                key={a.group.ticker}
+                type="button"
+                onClick={onOpen}
+                className="flex items-center gap-3 rounded-xl bg-canvas-soft px-4 py-3 text-left transition-colors hover:bg-canvas-mid"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-canvas-mid text-[10px] font-bold text-body">
+                  {initials(a.group.ticker)}
+                </span>
+                <span className="flex min-w-0 flex-col gap-0.5">
+                  <span className="font-mono text-[14px] font-bold text-ink">{a.group.ticker}</span>
+                  <span className="truncate text-[12px] text-mute">
+                    {a.group.refresh.length > 0
+                      ? a.group.refresh.map((f) => `/${f.skill}`).join(", ") + " 다시 돌려야 해요"
+                      : "논제 건강도가 기준 아래예요"}
+                  </span>
+                </span>
+                {a.health != null ? (
+                  <span className={`ml-auto shrink-0 font-mono text-[15px] font-bold ${healthTone(a.health)}`}>
+                    {a.health}/10
+                  </span>
+                ) : (
+                  <span className="ml-auto shrink-0 rounded-full bg-warn/15 px-2 py-0.5 text-[11px] font-bold text-warn">
+                    갱신 필요
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
