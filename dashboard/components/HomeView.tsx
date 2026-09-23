@@ -72,11 +72,11 @@ function navViewOfTab(tab: string): NavView {
 
 // 탭별 상단바 라벨(eyebrow = GeistMono 대문자, title = 한글). 리서치 프로세스(flows)
 // 탭은 여기 없고 activeFlow.title 로 폴백한다. 분야 탭도 여기 없고 분야명으로 폴백한다.
-const TAB_HEADERS: Record<string, { eyebrow: string; title: string }> = {
-  "portfolio-overview": { eyebrow: "PORTFOLIO", title: "포트폴리오" },
-  "track-record": { eyebrow: "TRACK RECORD", title: "트랙레코드" },
-  "bottleneck-signals": { eyebrow: "BOTTLENECK", title: "병목 신호" },
-  articles: { eyebrow: "ARTICLES", title: "아티클" },
+const TAB_HEADERS: Record<string, { title: string }> = {
+  "portfolio-overview": { title: "포트폴리오" },
+  "track-record": { title: "트랙레코드" },
+  "bottleneck-signals": { title: "병목 신호" },
+  articles: { title: "아티클" },
 };
 
 // 분야 탭 상단바의 도구 아이콘. 누르면 '새 리서치 시작' 모달이 열린다(TASK-91).
@@ -500,7 +500,6 @@ export function HomeView({
   // 평탄화하면 접어둔 것이 그대로 다시 나와 드릴다운이 무의미해진다.
   const rootEntries = navGroups.flatMap((g) => g.entries);
   const activeFlow = flows.find((f) => f.id === flowTab);
-  const headerEyebrow = activeDomain ? "DOMAIN" : (TAB_HEADERS[flowTab]?.eyebrow ?? flowTab.toUpperCase());
   const headerTitle = activeDomain ?? TAB_HEADERS[flowTab]?.title ?? activeFlow?.title ?? "";
   // 상단바 도구 아이콘이 열 실행 대상. 분야 탭이면 종목 발굴 플로우, 단계가 있는
   // 플로우 탭(실적 점검)이면 그 플로우. 그 외 탭(포트폴리오·트랙레코드…)은 아이콘 없음.
@@ -545,10 +544,10 @@ export function HomeView({
   return (
     <div className="min-h-screen bg-canvas text-body flex">
       {/* ── 사이드바 (데스크톱) — xAI app-shell ── */}
-      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-hairline sticky top-0 h-screen">
-        <div className="px-5 py-5 border-b border-hairline">
-          <div className="eyebrow text-[10px]">SEOHAK GAEMI CLUB</div>
-          <div className="mt-1.5 text-lg tracking-[-0.02em] text-ink">서학개미클럽</div>
+      <aside className="hidden md:flex w-60 shrink-0 flex-col sticky top-0 h-screen">
+        <div className="px-5 py-5">
+          <div className="text-lg font-bold tracking-[-0.02em] text-ink">서학개미클럽</div>
+          <div className="mt-0.5 text-[12px] text-mute">미국 주식 가치투자 리서치</div>
         </div>
         {/* 드릴다운 네비(TASK-96) — 최상위 목록과 서브메뉴가 같은 자리를 번갈아 쓴다.
             key 를 navView 로 두면 전환 때 리마운트돼 방향 애니메이션이 매번 재생된다. */}
@@ -589,7 +588,7 @@ export function HomeView({
             <div key={navView} className="flex flex-col gap-0.5 nav-view-forward">
               <button
                 onClick={closeDrill}
-                className="w-full flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-mute hover:text-ink hover:bg-canvas-soft transition-colors"
+                className="w-full flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm text-mute hover:text-ink hover:bg-canvas-soft transition-colors"
               >
                 <span aria-hidden="true">&larr;</span>
                 뒤로
@@ -673,8 +672,7 @@ export function HomeView({
         {/* 데스크톱 상단바 — mono eyebrow + 페이지 타이틀 + primary 액션 */}
         <header className="hidden md:flex sticky top-0 z-30 bg-canvas/90 backdrop-blur border-b border-hairline px-8 h-16 items-center justify-between">
           <div>
-            <div className="eyebrow text-[10px]">{headerEyebrow}</div>
-            <div className="text-lg tracking-[-0.02em] text-ink leading-tight">{headerTitle}</div>
+            <div className="text-xl font-bold tracking-[-0.02em] text-ink leading-tight">{headerTitle}</div>
           </div>
           {launchable && <ResearchLaunchButton onClick={() => setLaunchTarget(launchable)} />}
         </header>
@@ -741,7 +739,7 @@ export function HomeView({
               )}
 
               {files && !hasDomainContent && (
-                <div className="rounded-lg border border-dashed border-hairline bg-canvas-card px-5 py-8 text-center">
+                <div className="rounded-xl border border-dashed border-hairline bg-canvas-card px-5 py-8 text-center">
                   <p className="text-sm text-body">
                     아직 &apos;{activeDomain}&apos; 분야의 결과물이 없습니다.
                   </p>
@@ -758,7 +756,7 @@ export function HomeView({
                   {/* ── 선별 레이어: 이 분야 안의 섹터 ──
                       1차(분야)는 좌측 nav가 이미 정했으므로 이 카드는 섹터 한 줄뿐이다.
                       섹터 → 분야 / 종목 → 섹터 분류는 두 편집 버튼으로 덮어쓴다(TASK-81/82). */}
-                  <div className="mb-6 rounded-lg border border-hairline bg-canvas-card p-4 sm:p-5">
+                  <div className="mb-6 rounded-2xl bg-canvas-card p-4 sm:p-5">
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <span className="eyebrow text-[10px] text-mute">섹터</span>
                       <div className="flex shrink-0 gap-1.5">
@@ -784,7 +782,7 @@ export function HomeView({
                             key={s}
                             onClick={() => setSectorTab(s)}
                             className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 flex items-center gap-1.5 ${
-                              sectorTab === s ? "bg-white text-canvas" : "text-mute hover:text-ink hover:bg-canvas-soft"
+                              sectorTab === s ? "bg-ink text-canvas" : "text-mute hover:text-ink hover:bg-canvas-soft"
                             }`}
                           >
                             {s}
@@ -831,7 +829,7 @@ export function HomeView({
                                 }}
                                 className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors active:scale-95 ${
                                   active
-                                    ? "bg-white text-canvas border-white"
+                                    ? "bg-ink text-canvas border-ink"
                                     : "border-hairline text-body hover:text-ink hover:bg-canvas-soft"
                                 }`}
                               >
@@ -853,7 +851,7 @@ export function HomeView({
                                 title={screenByCompany[c] ?? "미검사"}
                                 className={`shrink-0 rounded-full pl-2 pr-3 py-1.5 text-xs font-mono font-medium border transition-colors active:scale-95 flex items-center gap-1.5 ${
                                   active
-                                    ? "bg-white text-canvas border-white"
+                                    ? "bg-ink text-canvas border-ink"
                                     : "border-hairline text-body hover:text-ink hover:bg-canvas-soft"
                                 }`}
                               >
@@ -876,7 +874,7 @@ export function HomeView({
                                   title={f.name}
                                   className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors active:scale-95 ${
                                     active
-                                      ? "bg-white text-canvas border-white"
+                                      ? "bg-ink text-canvas border-ink"
                                       : "border-hairline text-mute hover:text-ink hover:bg-canvas-soft"
                                   }`}
                                 >
@@ -947,7 +945,7 @@ export function HomeView({
               <p className="text-sm text-mute mb-4 leading-relaxed">{flow.subtitle}</p>
             )}
                     {/* 지금 언제인지 — 카드의 "5월 중순" 문자열만으론 오늘이 그때인지 알 수 없다. */}
-                    <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-hairline bg-canvas-card px-4 py-3 text-xs">
+                    <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl bg-canvas-card px-4 py-3 text-xs">
                       <span className="eyebrow text-[10px] shrink-0">다음 점검</span>
                       <span className="text-ink">{current.q.label}</span>
                       <span className="font-mono text-body">{fmtDue(current.due.date)}</span>
@@ -973,7 +971,7 @@ export function HomeView({
                     {portfolioReport ? (
                       <button
                         onClick={() => setModalPath(portfolioReport.path)}
-                        className="w-full flex items-center gap-2 rounded-lg bg-canvas-card border border-hairline px-4 py-3 text-left hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99] mb-6"
+                        className="w-full flex items-center gap-2 rounded-xl bg-canvas-card border border-hairline px-4 py-3 text-left hover:border-border-control hover:bg-canvas-soft transition-colors active:scale-[0.99] mb-6"
                       >
                         <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium text-twilight bg-twilight/10">
                           최신 점검
@@ -990,8 +988,8 @@ export function HomeView({
                           key={q.label}
                           onClick={() => onOpenFlowModal(flow)}
                           // 지금 할 차례인 분기는 테두리로 눈에 띄게 한다.
-                          className={`text-left rounded-lg border bg-canvas-card p-5 hover:border-white/30 hover:bg-canvas-soft transition-all group active:scale-[0.99] ${
-                            due.state === "due" ? "border-white/30" : "border-hairline"
+                          className={`text-left rounded-xl border bg-canvas-card p-5 hover:border-border-control hover:bg-canvas-soft transition-all group active:scale-[0.99] ${
+                            due.state === "due" ? "border-border-control" : "border-hairline"
                           }`}
                         >
                           <div className="flex items-center justify-between gap-2 mb-2">

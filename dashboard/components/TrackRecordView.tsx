@@ -214,7 +214,7 @@ export function TrackRecordView() {
       )}
 
       {calls && calls.length === 0 && !error && (
-        <div className="rounded-lg border border-dashed border-hairline bg-canvas-card px-5 py-8 text-center">
+        <div className="rounded-xl border border-dashed border-hairline bg-canvas-card px-5 py-8 text-center">
           <p className="text-sm text-body">아직 기록된 논제가 없습니다.</p>
           <p className="mt-1.5 text-xs text-mute leading-relaxed">
             <code className="font-mono text-breeze">/investment-checklist</code>,{" "}
@@ -232,7 +232,7 @@ export function TrackRecordView() {
             <div
               role="group"
               aria-label="추적 대상"
-              className="inline-flex rounded-full border border-hairline bg-canvas-soft p-0.5"
+              className="inline-flex rounded-full bg-canvas-soft p-0.5"
             >
               {AXES.map((a) => {
                 const active = axis === a.id;
@@ -245,7 +245,7 @@ export function TrackRecordView() {
                     disabled={disabled}
                     title={disabled ? DISABLED_AXIS_HINT : undefined}
                     className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium transition-colors active:scale-95 ${
-                      active ? "bg-white text-canvas" : "text-mute hover:text-ink"
+                      active ? "bg-ink text-canvas" : "text-mute hover:text-ink"
                     } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
                   >
                     {a.label}
@@ -275,7 +275,7 @@ export function TrackRecordView() {
           )}
 
           {rows.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-hairline bg-canvas-card px-5 py-8 text-center text-xs text-mute">
+            <div className="rounded-xl border border-dashed border-hairline bg-canvas-card px-5 py-8 text-center text-xs text-mute">
               {axis === "held"
                 ? "보유 종목 중 논제가 기록된 것이 없습니다."
                 : "관찰 논제가 없습니다 — 기록된 논제가 전부 보유 종목입니다."}
@@ -388,12 +388,12 @@ function TickerCard({
   }, [group.active, priceNow]);
 
   return (
-    <div className="rounded-lg border border-hairline bg-canvas-card">
+    <div className="rounded-2xl bg-canvas-card">
       {/* 헤더 — 누르면 펼친다. 종목 · 상태 칩 · 현재가 · 전일 대비 */}
       <button
         onClick={onToggle}
         aria-expanded={open}
-        className="group w-full rounded-lg p-4 text-left transition-colors hover:bg-canvas-soft/40"
+        className="group w-full rounded-xl p-4 text-left transition-colors hover:bg-canvas-soft/40"
       >
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">
@@ -503,7 +503,7 @@ function TickerCard({
         <div className="px-4 pb-4">
           {/* 충돌 배너 — 무엇이 갈리는지 먼저 말한다. */}
           {conflict && (
-            <div className="rounded-lg border border-warn/30 bg-warn/[0.07] px-3 py-2">
+            <div className="rounded-xl border border-warn/30 bg-warn/[0.07] px-3 py-2">
               <div className="eyebrow text-[9px] text-warn mb-1">논제 충돌 {group.active.length}건</div>
               <ul className="flex flex-col gap-0.5">
                 {conflict.reasons.map((r, i) => (
@@ -517,7 +517,7 @@ function TickerCard({
 
           {/* 갱신 필요 — 충돌 배너가 '무엇이 갈리는지'라면, 이건 '무엇을 다시 돌려야 하는지'다. */}
           {refresh.length > 0 && (
-            <div className="mt-2 rounded-lg border border-twilight/30 bg-twilight/[0.07] px-3 py-2">
+            <div className="mt-2 rounded-xl border border-twilight/30 bg-twilight/[0.07] px-3 py-2">
               <div className="eyebrow mb-1.5 text-[9px] text-twilight">
                 다시 돌릴 스킬 {refresh.length}개
               </div>

@@ -100,7 +100,7 @@ export function SectorGroupEditor({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="w-full max-w-2xl my-8 rounded-lg bg-canvas border border-hairline overflow-hidden focus:outline-none"
+        className="w-full max-w-2xl my-8 rounded-xl bg-canvas-card overflow-hidden focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-hairline">
@@ -126,13 +126,13 @@ export function SectorGroupEditor({
           </p>
 
           {draft.map((g) => (
-            <div key={g.id} className="rounded-lg border border-hairline bg-canvas-card p-4">
+            <div key={g.id} className="rounded-2xl bg-canvas-card p-4">
               <div className="flex items-center gap-2 mb-3">
                 <input
                   value={g.name}
                   onChange={(e) => rename(g.id, e.target.value)}
                   placeholder={namePlaceholder}
-                  className="flex-1 rounded-lg bg-canvas-soft border border-hairline px-3 py-2 text-sm text-ink placeholder-mute focus:outline-none focus:border-white/40 transition-colors"
+                  className="flex-1 rounded-xl bg-canvas-soft border border-hairline px-3 py-2 text-sm text-ink placeholder-mute focus:outline-none focus:border-border-control transition-colors"
                 />
                 <button
                   onClick={() => removeGroup(g.id)}
@@ -151,7 +151,7 @@ export function SectorGroupEditor({
                       onClick={() => assign(c, g.id)}
                       className={`rounded-full px-3 py-1 text-xs transition-colors border active:scale-95 ${
                         selected
-                          ? "bg-white text-canvas border-white"
+                          ? "bg-ink text-canvas border-ink"
                           : "bg-transparent text-body border-hairline hover:text-ink hover:bg-canvas-soft"
                       }`}
                     >
@@ -166,7 +166,7 @@ export function SectorGroupEditor({
 
           <button
             onClick={addGroup}
-            className="rounded-lg border border-dashed border-hairline px-4 py-2.5 text-sm text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-[0.99]"
+            className="rounded-xl border border-dashed border-hairline px-4 py-2.5 text-sm text-body hover:text-ink hover:bg-canvas-soft transition-colors active:scale-[0.99]"
           >
             + 그룹 추가
           </button>
@@ -234,7 +234,7 @@ export function SectorGroupEditor({
             <button
               onClick={save}
               disabled={!canSave}
-              className="rounded-full bg-white text-canvas px-4 py-1.5 text-sm font-medium hover:bg-white/90 transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="rounded-xl bg-primary-press text-on-primary min-h-11 px-4 text-sm font-bold hover:brightness-110 transition-[filter,transform] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               저장
             </button>

@@ -83,7 +83,7 @@ export function CompanyReportBrowser({
               }}
               className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors active:scale-95 ${
                 active
-                  ? "bg-white text-canvas border-white"
+                  ? "bg-ink text-canvas border-ink"
                   : "border-hairline text-body hover:text-ink hover:bg-canvas-soft"
               }`}
             >
@@ -105,7 +105,7 @@ export function CompanyReportBrowser({
                 title={f.name}
                 className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors active:scale-95 ${
                   active
-                    ? "bg-white text-canvas border-white"
+                    ? "bg-ink text-canvas border-ink"
                     : "border-hairline text-mute hover:text-ink hover:bg-canvas-soft"
                 }`}
               >

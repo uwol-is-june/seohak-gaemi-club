@@ -93,7 +93,7 @@ export function ArticlesView({
   return (
     <div className="flex flex-col gap-6">
       {/* ── 현황 + 이 탭의 읽는 법 ── */}
-      <div className="rounded-lg border border-hairline bg-canvas-card p-4 sm:p-5">
+      <div className="rounded-2xl bg-canvas-card p-4 sm:p-5">
         <div className="eyebrow text-[10px] text-ink mb-3">발행 현황</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Stat label="발행된 아티클" value={String(index.articles.length)} hint="reports/ 안의 -article- 파일" />
@@ -126,7 +126,7 @@ export function ArticlesView({
           카드는 <span className="text-body">아티클 본문만 재편집</span>할 뿐 새로 조사하지 않는다.
         </p>
         {index.articles.length === 0 ? (
-          <div className="rounded-lg border border-hairline bg-canvas-soft p-8 text-center">
+          <div className="rounded-xl bg-canvas-soft p-8 text-center">
             <div className="text-base text-ink tracking-[-0.02em]">아직 쓴 아티클이 없습니다</div>
             <p className="mt-2 text-xs text-mute leading-relaxed max-w-md mx-auto">
               아래 소재 중 하나에서 명령을 복사해 실행하면 여기에 쌓입니다. 저장 경로는
@@ -149,7 +149,7 @@ export function ArticlesView({
                     onCopyCards={() => copy(`cards:${a.path}`, a.cardCommand)}
                   />
                   {open && (
-                    <div className="mt-1.5 rounded-lg border border-hairline bg-canvas-card p-5 sm:p-6">
+                    <div className="mt-1.5 rounded-2xl bg-canvas-card p-5 sm:p-6">
                       <ReportContentView path={a.path} onOpenReport={onOpenReport} />
                     </div>
                   )}
@@ -241,10 +241,10 @@ function ArticleRow({
 }) {
   return (
     <div
-      className={`rounded-lg border px-4 py-3 transition-all flex items-center gap-3 ${
+      className={`rounded-xl border px-4 py-3 transition-all flex items-center gap-3 ${
         open
-          ? "border-white/30 bg-canvas-soft"
-          : "border-hairline bg-canvas-card hover:border-white/20 hover:bg-canvas-soft"
+          ? "border-border-control bg-canvas-soft"
+          : "border-hairline bg-canvas-card hover:border-canvas-mid hover:bg-canvas-soft"
       }`}
     >
       <button
@@ -281,7 +281,7 @@ function ArticleRow({
         title={article.cardCommand}
         className={`shrink-0 rounded-full px-3 py-1 text-xs transition-colors active:scale-95 ${
           copied
-            ? "bg-white text-canvas"
+            ? "bg-ink text-canvas"
             : "border border-hairline text-body hover:text-ink hover:bg-canvas-soft"
         }`}
       >
@@ -304,10 +304,10 @@ function SourceRow({
 }) {
   return (
     <div
-      className={`rounded-lg border px-4 py-3 transition-colors ${
+      className={`rounded-xl border px-4 py-3 transition-colors ${
         source.hasArticle
           ? "border-hairline bg-canvas opacity-60"
-          : "border-hairline bg-canvas-card hover:border-white/20"
+          : "border-hairline bg-canvas-card hover:border-canvas-mid"
       }`}
     >
       <div className="flex items-center gap-3">
@@ -330,7 +330,7 @@ function SourceRow({
           title={source.command}
           className={`shrink-0 rounded-full px-3 py-1 text-xs transition-colors active:scale-95 ${
             copied
-              ? "bg-white text-canvas"
+              ? "bg-ink text-canvas"
               : "border border-hairline text-body hover:text-ink hover:bg-canvas-soft"
           }`}
         >

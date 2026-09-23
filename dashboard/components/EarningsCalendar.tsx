@@ -171,7 +171,7 @@ export function EarningsCalendar({
   const bannerError = axis === "calls" ? callsError ?? error : error;
 
   return (
-    <section className="mb-8 rounded-lg border border-hairline bg-canvas-card p-5">
+    <section className="mb-8 rounded-2xl bg-canvas-card p-5">
       {/* 제목·설명 문구는 제거됨(2026-08-12 요청) — 축 탭과 D± 배지가 같은 정보를
           이미 담고 있어 중복이었다. 로딩 표시만 남긴다. */}
       {(loading || (axis === "calls" && callsLoading)) && (
@@ -182,7 +182,7 @@ export function EarningsCalendar({
       <div
         role="group"
         aria-label="실적 캘린더 대상"
-        className="mb-4 inline-flex rounded-full border border-hairline bg-canvas-soft p-0.5"
+        className="mb-4 inline-flex rounded-full bg-canvas-soft p-0.5"
       >
         {AXES.map((a) => {
           const active = axis === a.id;
@@ -192,7 +192,7 @@ export function EarningsCalendar({
               onClick={() => setAxis(a.id)}
               aria-pressed={active}
               className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-medium transition-colors active:scale-95 ${
-                active ? "bg-white text-canvas" : "text-mute hover:text-ink"
+                active ? "bg-ink text-canvas" : "text-mute hover:text-ink"
               }`}
             >
               {a.label}

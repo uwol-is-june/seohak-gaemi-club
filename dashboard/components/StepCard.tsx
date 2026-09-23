@@ -98,7 +98,7 @@ export function StepCard({
   }
 
   return (
-    <div className="rounded-lg border border-hairline bg-canvas-card p-6">
+    <div className="rounded-2xl bg-canvas-card p-6">
       <div className="flex items-center gap-3 mb-3">
         <div className={`h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-sm ${colors.bg} ${colors.text}`}>
           {index + 1}
@@ -118,7 +118,7 @@ export function StepCard({
                   key={g.label}
                   onClick={() => setSectorTab(i)}
                   className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors active:scale-95 ${
-                    sectorTab === i ? "bg-white text-canvas" : "text-mute hover:text-ink"
+                    sectorTab === i ? "bg-ink text-canvas" : "text-mute hover:text-ink"
                   }`}
                 >
                   {g.label}
@@ -132,7 +132,7 @@ export function StepCard({
                   onClick={() => onInputChange(sector)}
                   className={`rounded-full px-3 py-1 text-xs transition-colors border active:scale-95 ${
                     input === sector
-                      ? "bg-white text-canvas border-white"
+                      ? "bg-ink text-canvas border-ink"
                       : "bg-transparent text-body border-hairline hover:text-ink hover:bg-canvas-soft"
                   }`}
                 >
@@ -157,7 +157,7 @@ export function StepCard({
                     aria-pressed={selected}
                     className={`rounded-full px-3 py-1 text-xs transition-colors border active:scale-95 ${
                       selected
-                        ? "bg-white text-canvas border-white"
+                        ? "bg-ink text-canvas border-ink"
                         : "bg-transparent text-body border-hairline hover:text-ink hover:bg-canvas-soft"
                     }`}
                   >
@@ -173,13 +173,13 @@ export function StepCard({
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
           placeholder={step.inputPlaceholder}
-          className="w-full rounded-lg bg-canvas-soft border border-hairline px-3.5 py-2.5 text-sm text-ink placeholder-mute focus:outline-none focus:border-white/40 transition-colors"
+          className="w-full rounded-xl bg-canvas-soft border border-hairline px-3.5 py-2.5 text-sm text-ink placeholder-mute focus:outline-none focus:border-border-control transition-colors"
         />
       </div>
 
       <div className="mb-4">
-        <div className="eyebrow text-[11px] mb-1.5">RUN IN TERMINAL</div>
-        <div className="flex items-center gap-2 rounded-lg bg-canvas-mid/40 border border-hairline px-3.5 py-2.5">
+        <div className="eyebrow text-[11px] mb-1.5">터미널에서 실행</div>
+        <div className="flex items-center gap-2 rounded-xl bg-canvas-mid/40 border border-hairline px-3.5 py-2.5">
           <code className={`flex-1 text-sm font-mono ${colors.command}`}>{command}</code>
           <button
             onClick={handleCopy}

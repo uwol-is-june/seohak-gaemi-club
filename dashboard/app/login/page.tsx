@@ -47,23 +47,23 @@ function LoginForm() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-lg border border-hairline bg-canvas-card p-6 flex flex-col gap-4"
+          className="rounded-2xl bg-canvas-card p-6 flex flex-col gap-4"
         >
           <div>
-            <label className="eyebrow block text-[11px] mb-1.5">PASSWORD</label>
+            <label className="eyebrow block text-[11px] mb-1.5">비밀번호</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoFocus
               autoComplete="current-password"
-              className="w-full rounded-lg bg-canvas-soft border border-hairline px-4 py-2.5 text-sm text-ink placeholder-mute focus:outline-none focus:border-white/40 transition-colors"
+              className="w-full rounded-xl bg-canvas-soft border border-hairline px-4 py-2.5 text-sm text-ink placeholder-mute focus:outline-none focus:border-border-control transition-colors"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <div className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger">
+            <div className="rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger">
               {error}
             </div>
           )}
@@ -71,7 +71,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={loading || password.length === 0}
-            className="w-full rounded-full py-2.5 text-sm font-medium text-canvas bg-white hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
+            className="w-full rounded-xl min-h-12 text-[15px] font-bold text-on-primary bg-primary-press hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed transition-[filter,transform] active:scale-[0.98]"
           >
             {loading ? "확인 중..." : "입장"}
           </button>

@@ -46,7 +46,7 @@ export function ReportContentView({
   if (loading) return <p className="text-sm text-mute">불러오는 중...</p>;
   if (error)
     return (
-      <div className="rounded-lg border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
+      <div className="rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
         {error}
       </div>
     );
@@ -56,13 +56,13 @@ export function ReportContentView({
     <>
       {asOf && (
         <div
-          className={`mb-4 flex items-center gap-2 rounded-lg border px-3 py-2 text-xs ${
+          className={`mb-4 flex items-center gap-2 rounded-xl border px-3 py-2 text-xs ${
             asOf.stale
               ? "border-sunset/30 bg-sunset/10 text-sunset-soft"
               : "border-hairline bg-canvas-soft text-mute"
           }`}
         >
-          <span className="eyebrow text-[10px]">AS-OF</span>
+          <span className="eyebrow text-[10px]">기준 시각</span>
           <span className="font-mono">{asOf.text}</span>
           <span>· 작성 시점의 스냅샷입니다. 실시간 가격·최신 실적과 다를 수 있습니다.</span>
           {asOf.stale && <span className="font-medium">— 오래된 분석(재검토 권장)</span>}

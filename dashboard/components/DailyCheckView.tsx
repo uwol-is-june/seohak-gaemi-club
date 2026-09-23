@@ -149,7 +149,7 @@ export function DailyCheckView() {
           <div
             role="group"
             aria-label="급변동 기준"
-            className="flex rounded-full border border-hairline bg-canvas-soft p-0.5"
+            className="flex rounded-full bg-canvas-soft p-0.5"
           >
             {CHECK_THRESHOLDS.map((t) => {
               const active = threshold === t;
@@ -159,7 +159,7 @@ export function DailyCheckView() {
                   onClick={() => setThreshold(t)}
                   aria-pressed={active}
                   className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors active:scale-95 ${
-                    active ? "bg-white text-canvas" : "text-mute hover:text-ink"
+                    active ? "bg-ink text-canvas" : "text-mute hover:text-ink"
                   }`}
                 >
                   ±{t}%
@@ -179,7 +179,7 @@ export function DailyCheckView() {
           </button>
           <span
             role="tooltip"
-            className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-64 -translate-x-1/2 rounded-lg border border-hairline bg-canvas-card px-3 py-2.5 text-xs leading-relaxed text-mute opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+            className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 w-64 -translate-x-1/2 rounded-2xl bg-canvas-card px-3 py-2.5 text-xs leading-relaxed text-mute opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
           >
             보유 종목의 <span className="text-body">당일 등락</span>을 조회해 급변동 종목을 선별합니다.
             기준을 넘는 종목은 <span className="font-mono text-body">/news-pulse</span> 명령을 복사해
@@ -242,7 +242,7 @@ export function DailyCheckView() {
 
       {/* 표 */}
       {holdings && holdings.length > 0 && (
-        <div className="rounded-lg border border-hairline bg-canvas-card overflow-hidden">
+        <div className="rounded-2xl bg-canvas-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -250,7 +250,7 @@ export function DailyCheckView() {
                   <th className="text-left px-4 py-2.5 eyebrow text-[10px]">종목</th>
                   <th className="text-right px-4 py-2.5 eyebrow text-[10px]">현재가</th>
                   <th className="text-right px-4 py-2.5 eyebrow text-[10px]">당일</th>
-                  <th className="text-right px-4 py-2.5 eyebrow text-[10px]">PULSE</th>
+                  <th className="text-right px-4 py-2.5 eyebrow text-[10px]">오늘의 시세</th>
                 </tr>
               </thead>
               <tbody>
@@ -261,7 +261,7 @@ export function DailyCheckView() {
                   return (
                     <tr
                       key={h.ticker}
-                      className={`border-b border-hairline last:border-0 ${flag ? "bg-white/[0.03]" : ""}`}
+                      className={`border-b border-hairline last:border-0 ${flag ? "bg-ink/[0.03]" : ""}`}
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
@@ -298,7 +298,7 @@ export function DailyCheckView() {
                           title="/news-pulse 명령 복사"
                           className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors active:scale-95 ${
                             flag
-                              ? "border-white/40 text-ink hover:bg-white hover:text-canvas"
+                              ? "border-border-control text-ink hover:bg-ink hover:text-canvas"
                               : "border-hairline text-mute hover:text-ink hover:bg-canvas-soft"
                           }`}
                         >

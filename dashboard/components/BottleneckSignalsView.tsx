@@ -69,7 +69,7 @@ export function BottleneckSignalsView({
   return (
     <div className="flex flex-col gap-6">
       {/* ── 스캔 상태 + 이 탭의 읽는 법 ── */}
-      <div className="rounded-lg border border-hairline bg-canvas-card p-4 sm:p-5">
+      <div className="rounded-2xl bg-canvas-card p-4 sm:p-5">
         <div className="eyebrow text-[10px] text-ink mb-3">스캔 상태</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Stat label="스캔 시각" value={`매일 ${SCAN_TIME}`} hint="미국장 마감 후" />
@@ -108,7 +108,7 @@ export function BottleneckSignalsView({
                 onClick={() => setSelected(s.path)}
                 className={`rounded-full px-3 py-1.5 text-xs transition-colors active:scale-95 ${
                   selected === s.path
-                    ? "bg-white text-canvas"
+                    ? "bg-ink text-canvas"
                     : "border border-hairline text-body hover:text-ink hover:bg-canvas-soft"
                 }`}
               >
@@ -121,7 +121,7 @@ export function BottleneckSignalsView({
 
       {/* ── 날짜별 스캔 기록 ── */}
       {!hasAny ? (
-        <div className="rounded-lg border border-hairline bg-canvas-soft p-8 sm:p-12 text-center">
+        <div className="rounded-xl bg-canvas-soft p-8 sm:p-12 text-center">
           <div className="text-base text-ink tracking-[-0.02em]">아직 기록된 신호가 없습니다</div>
           <p className="mt-2 text-xs text-mute leading-relaxed max-w-md mx-auto">
             매일 {SCAN_TIME} 스캔이 돌지만, 공급 부족·리드타임·물량배정 관련 새 움직임이 잡히지
@@ -153,7 +153,7 @@ export function BottleneckSignalsView({
 
       {/* ── 선택한 스캔 본문 ── */}
       {selected && (
-        <div className="rounded-lg border border-hairline bg-canvas-card p-5 sm:p-6">
+        <div className="rounded-2xl bg-canvas-card p-5 sm:p-6">
           <ReportContentView path={selected} onOpenReport={onOpenReport} />
         </div>
       )}
@@ -184,10 +184,10 @@ function SignalRow({
   return (
     <button
       onClick={onSelect}
-      className={`w-full text-left rounded-lg border px-4 py-3 transition-all active:scale-[0.99] flex items-center gap-3 ${
+      className={`w-full text-left rounded-xl border px-4 py-3 transition-all active:scale-[0.99] flex items-center gap-3 ${
         active
-          ? "border-white/30 bg-canvas-soft"
-          : "border-hairline bg-canvas-card hover:border-white/20 hover:bg-canvas-soft"
+          ? "border-border-control bg-canvas-soft"
+          : "border-hairline bg-canvas-card hover:border-canvas-mid hover:bg-canvas-soft"
       }`}
     >
       <span className="shrink-0 w-12 text-xs font-mono text-mute">{signal.time ?? "—"}</span>

@@ -88,7 +88,7 @@ export function LadderChart({
         {/* 목표·진입 밴드 음영 — 차수가 어느 구간에 놓였는지의 배경 */}
         {bandLow != null && bandHigh != null && (
           <div
-            className="absolute rounded-sm bg-white/[0.035] border-y border-hairline"
+            className="absolute rounded-sm bg-ink/[0.035] border-y border-hairline"
             style={{ left: AXIS_X, right: 0, top: y(bandHigh), height: Math.max(2, y(bandLow) - y(bandHigh)) }}
           />
         )}
@@ -124,7 +124,7 @@ export function LadderChart({
             <span className="font-mono text-[10px] text-ink text-right" style={{ width: AXIS_X - 6 }}>
               {fmt(priceNow)}
             </span>
-            <span className="ml-1.5 flex-1 border-t border-white/50" />
+            <span className="ml-1.5 flex-1 border-t border-ink/50" />
             <span className="eyebrow text-[8px] text-ink pl-1">현재가</span>
           </div>
         )}

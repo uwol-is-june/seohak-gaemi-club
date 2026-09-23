@@ -27,7 +27,7 @@ export function CollapsibleReportCard({
   const confPill = getConfidencePill(file.confidence);
 
   return (
-    <div className="rounded-lg border border-hairline bg-canvas-card overflow-hidden">
+    <div className="rounded-2xl bg-canvas-card overflow-hidden">
       <div
         className={`flex items-center gap-1.5 px-5 py-3 ${open ? "border-b border-hairline" : ""}`}
       >

@@ -38,7 +38,7 @@ export function FlowModal({ flow, onClose }: { flow: Flow; onClose: () => void }
           aria-modal="true"
           aria-label={flow.title}
           tabIndex={-1}
-          className="w-full max-w-2xl my-8 rounded-lg bg-canvas border border-hairline overflow-hidden focus:outline-none"
+          className="w-full max-w-2xl my-8 rounded-xl bg-canvas-card overflow-hidden focus:outline-none"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between px-6 py-4 border-b border-hairline">

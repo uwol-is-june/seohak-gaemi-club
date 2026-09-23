@@ -29,7 +29,7 @@ export function ConfirmDeleteModal({
         aria-modal="true"
         aria-label="보고서 삭제 확인"
         tabIndex={-1}
-        className="w-full max-w-md rounded-lg bg-canvas border border-hairline p-6 focus:outline-none"
+        className="w-full max-w-md rounded-xl bg-canvas-card p-6 focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-lg text-ink tracking-[-0.02em] mb-2">보고서 삭제</h3>

@@ -1,7 +1,7 @@
 /**
  * NavItem / NavChip — 사이드바 항목과 모바일 탭 칩.
  *
- * 🔴 선택 상태를 흰 pill(`bg-white text-canvas`)로 뒤집던 것이 xAI 어휘였다.
+ * 🔴 선택 상태를 순백 pill(`bg-white text-canvas`)로 뒤집던 것이 xAI 어휘였다.
  *    토스는 같은 어두운 면 안에서 **한 단 밝은 배경 + 굵은 글자**로 현재 위치를
  *    말한다. 반전은 한 화면에 하나뿐인 primary 액션에만 남긴다.
  */

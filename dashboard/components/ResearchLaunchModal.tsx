@@ -41,7 +41,7 @@ export function ResearchLaunchModal({
         aria-modal="true"
         aria-label={`${flow.title} 실행`}
         tabIndex={-1}
-        className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-lg bg-canvas border border-hairline p-6 focus:outline-none"
+        className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-xl bg-canvas-card p-6 focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3 mb-5">
@@ -71,10 +71,10 @@ export function ResearchLaunchModal({
                 )}
               <button
                 onClick={() => onLaunch(si)}
-                className="text-left rounded-lg border border-hairline bg-canvas-card p-5 hover:border-white/30 hover:bg-canvas-soft transition-all group active:scale-[0.99]"
+                className="text-left rounded-2xl bg-canvas-card p-5 hover:border-border-control hover:bg-canvas-soft transition-all group active:scale-[0.99]"
               >
                 <div className="flex items-start gap-4">
-                  <div className="mt-0.5 h-7 w-7 shrink-0 rounded-full bg-white/10 text-ink flex items-center justify-center text-sm">
+                  <div className="mt-0.5 h-7 w-7 shrink-0 rounded-full bg-canvas-mid text-ink flex items-center justify-center text-sm">
                     {si + 1}
                   </div>
                   <div className="min-w-0 flex-1">

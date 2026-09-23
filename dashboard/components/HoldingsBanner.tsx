@@ -120,10 +120,10 @@ export function HoldingsBanner({
   // 카드별 비중 표시에는 쓰이지 않으며, 집중도 분석은 /portfolio-review 의 몫이다.
 
   return (
-    <section className="mb-10 rounded-lg border border-hairline bg-canvas-card p-6">
+    <section className="mb-10 rounded-2xl bg-canvas-card p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h2 className="eyebrow text-[11px]">PORTFOLIO</h2>
+          <h2 className="eyebrow text-[11px]">포트폴리오</h2>
           {list.length > 0 && (
             <span className="font-mono text-[11px] text-mute">{list.length}종목</span>
           )}
@@ -137,7 +137,7 @@ export function HoldingsBanner({
           <div
             role="group"
             aria-label="통화 선택"
-            className="flex rounded-full border border-hairline bg-canvas-soft p-0.5"
+            className="flex rounded-full bg-canvas-soft p-0.5"
           >
             {(["USD", "KRW"] as const).map((c) => {
               const active = ccy === c;
@@ -150,7 +150,7 @@ export function HoldingsBanner({
                   aria-pressed={active}
                   title={disabled ? "환율 불러오는 중..." : `${c}로 표시`}
                   className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-colors active:scale-95 ${
-                    active ? "bg-white text-canvas" : "text-mute hover:text-ink"
+                    active ? "bg-ink text-canvas" : "text-mute hover:text-ink"
                   } ${disabled ? "cursor-not-allowed opacity-40 hover:text-mute" : ""}`}
                 >
                   {c === "USD" ? "$ USD" : "₩ KRW"}
@@ -204,12 +204,12 @@ export function HoldingsBanner({
         <>
           {/* KPI 메트릭 타일 — 총 평가금액 + 총 손익 (POSITIONS 타일 제거) */}
           <div className="grid grid-cols-2 gap-2 mb-4">
-            <div className="rounded-lg border border-hairline bg-canvas p-4">
-              <div className="eyebrow text-[10px] mb-1">TOTAL VALUE</div>
+            <div className="rounded-2xl bg-canvas-soft p-4">
+              <div className="eyebrow text-[10px] mb-1">총 평가금액</div>
               <div className="text-2xl tracking-[-0.02em] text-ink">{money(total)}</div>
             </div>
-            <div className="rounded-lg border border-hairline bg-canvas p-4">
-              <div className="eyebrow text-[10px] mb-1">TOTAL P/L</div>
+            <div className="rounded-2xl bg-canvas-soft p-4">
+              <div className="eyebrow text-[10px] mb-1">총 손익</div>
               <div className="flex items-baseline gap-2">
                 {/* 정확히 0인 손익은 중립(색·부호 없음) — TASK-69 */}
                 <div className={`text-2xl tracking-[-0.02em] ${totalPL > 0 ? "text-up" : totalPL < 0 ? "text-down" : "text-mute"}`}>
@@ -254,9 +254,9 @@ export function HoldingsBanner({
                         },
                       }
                     : {})}
-                  className={`group flex flex-col gap-3 rounded-lg border border-hairline bg-canvas p-4 ${
+                  className={`group flex flex-col gap-3 rounded-2xl bg-canvas-soft p-4 ${
                     canDrill
-                      ? "cursor-pointer hover:border-white/30 hover:bg-canvas-soft transition-colors active:scale-[0.99]"
+                      ? "cursor-pointer hover:border-border-control hover:bg-canvas-soft transition-colors active:scale-[0.99]"
                       : ""
                   }`}
                 >

@@ -33,7 +33,7 @@ export function ReportModal({
         aria-modal="true"
         aria-label={`보고서: ${filename}`}
         tabIndex={-1}
-        className="w-full max-w-6xl max-h-[92vh] flex flex-col rounded-lg bg-canvas border border-hairline overflow-hidden focus:outline-none"
+        className="w-full max-w-6xl max-h-[92vh] flex flex-col rounded-xl bg-canvas-card overflow-hidden focus:outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-hairline shrink-0 bg-canvas/80 backdrop-blur">
