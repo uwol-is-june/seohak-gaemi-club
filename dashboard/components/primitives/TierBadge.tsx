@@ -2,7 +2,7 @@
  * TierBadge — 퀄리티 티어(skills/quality-tier.md).
  *
  * 티어를 모르면 "이 할인율이 타당한가"를 판단할 수 없다. 요구 안전마진이
- * 티어별로 다르기 때문이다. 그래서 미기록(`null`)을 빈칸이 아니라 ⬛로 드러낸다 —
+ * 티어별로 다르기 때문이다. 그래서 미기록(`null`)을 빈칸이 아니라 □로 드러낸다 —
  * 안 보이는 결측은 영원히 안 채워진다.
  */
 
@@ -32,7 +32,7 @@ export function TierBadge({
         title={`퀄리티 티어 미기록 — 요구 안전마진의 기준이 없다.\npython3 tools/quality_tier.py ${ticker ?? "{티커}"} --moat {★}`}
         className={`inline-flex shrink-0 items-center rounded-md border border-hairline px-2 py-0.5 text-[11px] font-medium text-mute ${className}`}
       >
-        ⬛ 티어 미기록
+        □ 티어 미기록
       </span>
     );
   }

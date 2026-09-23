@@ -7,7 +7,7 @@ import { groupTheses, entryTopPrice, type ThesisGroup, type RefreshFlag } from "
 import { parseTranches, pricedTranches, topTranchePrice } from "@/lib/tranche";
 import type { Holding } from "@/lib/toss";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
-import { Delta, TIER_META } from "./primitives";
+import { Delta, TierBadge, TIER_META } from "./primitives";
 import { LadderChart } from "./LadderChart";
 import { PriceHistoryChart } from "./track-record/PriceHistoryChart";
 import { ReportModal } from "./ReportModal";
@@ -37,17 +37,27 @@ import { ReportModal } from "./ReportModal";
 // 나란히 놓고 읽을 수가 없었다. 규칙 셋으로 고정했다:
 //   1) 카드 폭은 언제나 1열, 논제는 **세로로 쌓는다** — 래더의 가격 축 폭이 항상 같다.
 //   2) 접힌 줄의 요약은 **두 슬롯 고정**(매수가 / 진입·목표까지). 값이 없으면 칸을
-//      지우지 않고 '미보유' · '⬛ 미산출'로 남긴다.
+//      지우지 않고 '미보유' · '□ 미산출'로 남긴다.
 //   3) 펼친 논제는 **3×3 숫자 표 고정** — 티어·호라이즌·체결확률까지 표의 칸이라
 //      결측이 빈칸으로 드러난다. 안 보이는 결측은 영원히 안 채워진다.
 
 import {
   STATUS_STYLE, BAND_META, LOW_FILL_PLAN_LABEL, NL, TRANCHE_HOWTO, moveColor, fmtPrice,
+  parseHealth, healthTone, initials,
 } from "./track-record/meta";
 
 // 표시 축 — '실제 들고 있는 것'과 '아직 안 산 것'은 읽는 목적이 다르다.
 // 보유는 "지금 어떻게 되고 있나", 관찰은 "언제 살 수 있나"(진입 래더까지 거리).
 type Axis = "all" | "held" | "watch";
+
+// 정렬 축. 라벨은 "무엇을 기준으로 세로로 읽을 것인가"를 그대로 말한다.
+type SortKey = "gap" | "fill" | "health" | "ticker";
+const SORT_LABEL: Record<SortKey, string> = {
+  gap: "집행까지 가까운 순",
+  fill: "체결확률 높은 순",
+  health: "건강도 낮은 순",
+  ticker: "티커순",
+};
 
 const DISABLED_AXIS_HINT = "보유 정보를 불러오지 못해 축을 나눌 수 없습니다.";
 
@@ -60,6 +70,10 @@ export function TrackRecordView() {
   // 실패해도 화면 본체는 그대로 유효하므로 조용히 무시하고 매수가만 비운다.
   const [holdings, setHoldings] = useState<Holding[] | null>(holdingsCache);
   const [axis, setAxis] = useState<Axis>("all");
+  // 🔴 이 화면을 보는 목적은 "어느 종목이 집행에 가까운가"다(TASK-137).
+  //    기본 정렬이 그 질문을 답해야 한다 — 보유 여부로만 묶으면 10종목에서
+  //    가까운 것이 목록 한가운데 묻힌다.
+  const [sort, setSort] = useState<SortKey>("gap");
   // 펼친 종목 집합은 부모가 쥔다 — '모두 펼치기'가 카드 내부 상태로는 불가능하다.
   const [openTickers, setOpenTickers] = useState<Set<string>>(new Set());
 
@@ -122,14 +136,42 @@ export function TrackRecordView() {
       axis === "all" || !holdingsReady
         ? groups
         : groups.filter((g) => (axis === "held" ? heldTickers.has(g.ticker) : !heldTickers.has(g.ticker)));
-    // 보유 정보가 없으면 가를 기준 자체가 없다 — 원래 순서를 건드리지 않는다.
-    if (!holdingsReady) return list;
-    // Array#sort 는 안정 정렬이라 보유 여부만 비교하면 나머지 순서는 보존된다.
-    // groups 를 직접 정렬하면 useMemo 가 쥔 배열을 훼손하므로 반드시 복사본을 정렬한다.
-    return [...list].sort(
-      (a, b) => Number(heldTickers.has(b.ticker)) - Number(heldTickers.has(a.ticker))
-    );
-  }, [axis, groups, heldTickers, holdingsReady]);
+
+    // 정렬 키를 종목당 하나 뽑는다. 값이 없는 종목은 항상 뒤로 보낸다 —
+    // □(미산출)이 위에 섞이면 "가까운 순"이라는 약속이 깨진다.
+    const keyOf = (g: ThesisGroup): number => {
+      // 살아있는 논제가 없는 종목(resolvedOnly)은 active 가 비어 history 최신으로 폴백한다.
+      const lead = g.active[0] ?? g.history[0];
+      if (!lead) return Number.POSITIVE_INFINITY;
+      if (sort === "ticker") return 0;
+      if (sort === "fill") {
+        const fp = lead.target?.fillProbability;
+        return typeof fp === "number" ? -fp : Number.POSITIVE_INFINITY;
+      }
+      if (sort === "health") {
+        const h = parseHealth(lead.conviction);
+        return h ?? Number.POSITIVE_INFINITY;
+      }
+      // gap — 집행 지점까지의 거리(절대값). 래더도 목표도 없으면 뒤로.
+      const top = lead.call === "hold" ? entryTopPrice(lead) : topTranchePrice(parseTranches(lead.target?.tranches));
+      const price = top ?? (lead.call === "buy" || lead.call === "keep" ? lead.target?.high ?? null : null);
+      if (price == null || lead.priceNow == null || lead.priceNow <= 0) return Number.POSITIVE_INFINITY;
+      return Math.abs((price - lead.priceNow) / lead.priceNow);
+    };
+
+    const sorted = [...list].sort((a, b) => {
+      if (sort === "ticker") return a.ticker.localeCompare(b.ticker);
+      const ka = keyOf(a);
+      const kb = keyOf(b);
+      if (ka !== kb) return ka - kb;
+      return a.ticker.localeCompare(b.ticker);
+    });
+
+    // 보유 종목을 위로 올리는 건 '전체' 축에서만 — Array#sort 가 안정 정렬이라
+    // 위에서 잡은 순서는 그대로 보존된다.
+    if (!holdingsReady || axis !== "all") return sorted;
+    return sorted.sort((a, b) => Number(heldTickers.has(b.ticker)) - Number(heldTickers.has(a.ticker)));
+  }, [axis, sort, groups, heldTickers, holdingsReady]);
 
   const toggleTicker = useCallback((t: string) => {
     setOpenTickers((prev) => {
@@ -216,14 +258,32 @@ export function TrackRecordView() {
               })}
             </div>
 
-            {rows.length > 0 && (
-              <button
-                onClick={toggleAll}
-                className="rounded-full border border-hairline px-3 py-1 text-[11px] text-mute hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+            <div className="flex items-center gap-2">
+              {/* 정렬 — 이 화면의 목적("어느 종목이 집행에 가까운가")을 사용자가 바꿀 수 있게. */}
+              <label htmlFor="tr-sort" className="eyebrow text-[9px]">
+                정렬
+              </label>
+              <select
+                id="tr-sort"
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortKey)}
+                className="min-h-9 cursor-pointer rounded-full bg-canvas-soft px-3 text-[11px] font-medium text-body outline-none hover:text-ink"
               >
-                {allOpen ? "모두 접기" : "모두 펼치기"}
-              </button>
-            )}
+                {(Object.keys(SORT_LABEL) as SortKey[]).map((k) => (
+                  <option key={k} value={k} className="bg-canvas-card text-body">
+                    {SORT_LABEL[k]}
+                  </option>
+                ))}
+              </select>
+              {rows.length > 0 && (
+                <button
+                  onClick={toggleAll}
+                  className="min-h-9 rounded-full border border-hairline px-3 text-[11px] text-mute hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
+                >
+                  {allOpen ? "모두 접기" : "모두 펼치기"}
+                </button>
+              )}
+            </div>
           </div>
 
           {!holdingsReady && (
@@ -240,7 +300,8 @@ export function TrackRecordView() {
                 : "관찰 논제가 없습니다 — 기록된 논제가 전부 보유 종목입니다."}
             </div>
           ) : (
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
+            <div className="grid grid-cols-1 gap-3 items-start">
+              {/* 🔴 1열 고정. 2열로 깔면 좌우 카드의 컬럼 x 위치가 달라져 세로 비교가 깨진다. */}
               {rows.map((g) => (
                 <TickerCard
                   key={g.ticker}
@@ -264,7 +325,7 @@ export function TrackRecordView() {
 
 // ── 종목 카드 ─────────────────────────────────────────────────────────────
 // 카드 하나 = 종목 하나. **골격은 모든 종목이 같다**(파일 머리의 TASK-110 규칙 셋).
-// 값이 없는 칸은 지우지 않고 ⬛ 로 남긴다 — 빈칸은 화면의 결함이 아니라 원장의 결함이고,
+// 값이 없는 칸은 지우지 않고 □ 로 남긴다 — 빈칸은 화면의 결함이 아니라 원장의 결함이고,
 // 보여야 채워진다(실측 2026-09-22: 살아있는 논제 16건 중 티어 1건 · 체결확률 0건 · 래더 7건).
 function TickerCard({
   group,
@@ -343,6 +404,12 @@ function TickerCard({
   // 프로젝트 규칙: "AND 조건이 붙은 차수는 가격만 닿아도 집행하지 않는다."
   // 이게 펼쳐야만 보이면 접은 채로 훑다가 가격만 보고 오집행한다.
   // ⚠️ 데이터에 있는 건 '조건이 붙어 있다'까지다 — 충족 여부는 기록되지 않는다.
+  const health = parseHealth(lead?.conviction);
+  const fpRaw = lead?.target?.fillProbability;
+  const fillProb = typeof fpRaw === "number" ? fpRaw : null;
+  // 25% 미만이면 밴드가 실행 계획이 아니라 장식이다(CLAUDE.md 체결확률 규칙).
+  const fillLow = fillProb != null && fillProb < 25;
+
   const gated = useMemo(() => {
     const all = group.active.flatMap((c) => pricedTranches(parseTranches(c.target?.tranches)));
     const withCond = all.filter((t) => t.condition).length;
@@ -371,53 +438,101 @@ function TickerCard({
         aria-expanded={open}
         className="group w-full rounded-xl p-4 text-left transition-colors hover:bg-canvas-soft/40"
       >
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`text-[9px] text-mute transition-transform ${open ? "rotate-90" : ""}`}>
-              ▶
+        {/* 🔴 정렬된 컬럼으로 세운다(TASK-137). 예전엔 칩과 숫자가 좌우로 흐르는 한 줄이라
+            종목마다 같은 항목이 다른 x 위치에 놓였다 — 세로로 훑어 비교할 수가 없었다. */}
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 md:grid-cols-[auto_minmax(0,1fr)_124px_100px_76px_132px]">
+          <span className="flex items-center gap-2">
+            <span className={`text-[9px] text-mute transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-canvas-soft text-[11px] font-bold text-body">
+              {initials(group.ticker)}
             </span>
-            <span className="font-mono text-ink text-base tracking-[-0.02em]">{group.ticker}</span>
-            {chaseBreach && (
+          </span>
+
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="flex items-center gap-1.5">
+              <span className="font-mono text-base tracking-[-0.02em] text-ink">{group.ticker}</span>
+              {chaseBreach && (
+                <span
+                  className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-warn"
+                  role="img"
+                  aria-label="추격 금지선 초과 — 전 차수 미활성"
+                  title={"추격 금지선 초과 — 전 차수 미활성. 가격이 닿아도 집행하지 않는다." + NL + chaseBreach}
+                />
+              )}
+            </span>
+            <span className="flex flex-wrap items-center gap-1">
+              {/* 논제 건수는 **항상** 띄운다 — 1건일 때만 사라지면 카드마다 머리 줄이 달라진다. */}
               <span
-                className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-warn"
-                role="img"
-                aria-label="추격 금지선 초과 — 전 차수 미활성"
-                title={"추격 금지선 초과 — 전 차수 미활성. 가격이 닿아도 집행하지 않는다." + NL + chaseBreach}
-              />
-            )}
-            {/* 논제 건수는 **항상** 띄운다 — 1건일 때만 칩이 사라지면 카드마다 머리 줄이 달라진다. */}
+                className={`rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
+                  conflict ? "bg-warn/15 text-warn" : "border border-hairline text-mute"
+                }`}
+                title={conflict ? conflict.reasons.join("\n") : undefined}
+              >
+                논제 {group.active.length}건{conflict ? " · 충돌" : ""}
+              </span>
+              {group.resolvedOnly && (
+                <span
+                  className="rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute"
+                  title="살아있는 논제가 없습니다 — 채점이 끝난 마지막 판단만 남겨둡니다."
+                >
+                  종료
+                </span>
+              )}
+              {refresh.length > 0 && (
+                <span
+                  className="rounded-full bg-twilight/20 px-1.5 py-0.5 text-[9px] font-medium text-twilight"
+                  title={refresh.map((f) => `${f.skill} — ${f.reasons.join(" · ")}`).join("\n")}
+                >
+                  갱신 필요 {refresh.map((f) => `/${f.skill}`).join(", ")}
+                </span>
+              )}
+            </span>
+          </span>
+
+          {/* 티어 · 체결확률 — 같은 밴드라도 티어를 모르면 할인율이 타당한지 못 본다 */}
+          <span className="hidden min-w-0 flex-col gap-0.5 md:flex">
+            <span className="eyebrow text-[9px]">티어 · 체결확률</span>
+            <span className="flex items-center gap-1.5">
+              <TierBadge tier={lead?.tier ?? null} ticker={group.ticker} showMos={false} />
+              {fillProb != null ? (
+                <span
+                  className={`font-mono text-[11px] ${fillLow ? "text-warn" : "text-body"}`}
+                  title={fillLow ? "체결확률 25% 미만 — 밴드가 실행 계획이 아니라 장식일 수 있다." : undefined}
+                >
+                  {fillProb.toFixed(1)}%
+                </span>
+              ) : (
+                <span className="font-mono text-[11px] text-mute" title="체결확률 미기록">
+                  □
+                </span>
+              )}
+            </span>
+          </span>
+
+          <span className="hidden min-w-0 flex-col gap-0.5 md:flex">
+            <span className="eyebrow text-[9px]">{goal ? goal.label.replace("까지", "가") : "집행가"}</span>
+            <span className="font-mono text-[12px] text-body">{goal != null ? fmtPrice(goal.price) : "□"}</span>
+          </span>
+
+          <span className="hidden min-w-0 flex-col gap-0.5 md:flex">
+            <span className="eyebrow text-[9px]">건강도</span>
             <span
-              className={`rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
-                conflict ? "bg-warn/15 text-warn" : "border border-hairline text-mute"
-              }`}
-              title={conflict ? conflict.reasons.join("\n") : undefined}
+              className={`font-mono text-[12px] ${healthTone(health)}`}
+              title={
+                health == null
+                  ? "콜 기록에 건강도가 없습니다 — reports/track-record.md 가 정본입니다."
+                  : undefined
+              }
             >
-              논제 {group.active.length}건{conflict ? " · 충돌" : ""}
+              {health != null ? `${health}/10` : "□"}
             </span>
-            {group.resolvedOnly && (
-              <span
-                className="rounded-full border border-hairline px-1.5 py-0.5 text-[9px] text-mute"
-                title="살아있는 논제가 없습니다 — 채점이 끝난 마지막 판단만 남겨둡니다."
-              >
-                종료
-              </span>
-            )}
-            {/* 갱신 필요 — 접힌 줄에서도 "어느 스킬을 다시 돌려야 하나"가 보여야 한다. */}
-            {refresh.length > 0 && (
-              <span
-                className="rounded-full bg-twilight/20 px-1.5 py-0.5 text-[9px] font-medium text-twilight"
-                title={refresh.map((f) => `${f.skill} — ${f.reasons.join(" · ")}`).join("\n")}
-              >
-                갱신 필요 {refresh.map((f) => `/${f.skill}`).join(", ")}
-              </span>
-            )}
-          </div>
-          <div className="text-right">
-            <div className="font-mono text-ink text-base tracking-[-0.02em]">
+          </span>
+
+          <span className="flex flex-col items-end gap-0.5">
+            <span className="font-mono text-base tracking-[-0.02em] text-ink">
               {priceNow != null ? fmtPrice(priceNow) : "—"}
-            </div>
-            {/* 전일 대비 — 금액은 Delta(색+부호+도형 3겹)가 지고, % 는 괄호로 덧붙인다. */}
-            <div className="flex items-center justify-end gap-1 font-mono text-[11px]">
+            </span>
+            <span className="flex items-center justify-end gap-1 font-mono text-[11px]">
               {dayChange != null && dayChangePct != null ? (
                 <>
                   <Delta value={dayChange} format="currency" size="sm" bold={false} />
@@ -429,72 +544,57 @@ function TickerCard({
               ) : (
                 <span className="text-mute">전일 대비 —</span>
               )}
-            </div>
-          </div>
+            </span>
+          </span>
         </div>
 
-        {/* 요약 — 접힌 채로 훑을 때 필요한 두 슬롯. **항상 두 칸 다 그린다**(빈 값은 ⬛/미보유). */}
-        <div className="mt-2 grid grid-cols-2 gap-x-4 text-[11px]">
-          <span className="flex items-center gap-1.5 min-w-0">
-            <span className="eyebrow text-[9px] shrink-0">매수가</span>
-            {avgPrice != null ? (
-              <>
-                <span className="font-mono text-body">{fmtPrice(avgPrice)}</span>
-                {plPct != null && (
-                  <span className={`font-mono ${moveColor(plPct)}`}>
-                    {plPct >= 0 ? "+" : ""}
-                    {plPct.toFixed(1)}%
-                  </span>
-                )}
-              </>
-            ) : (
-              <span className="font-mono text-mute">{held ? "—" : "미보유"}</span>
-            )}
-          </span>
-          <span className="flex min-w-0 flex-col gap-1">
-            <span className="flex items-center gap-1.5 min-w-0">
-              <span className="eyebrow text-[9px] shrink-0">{goal?.label ?? "집행까지"}</span>
-              {goal == null || gapPct == null ? (
-                <span
-                  className="font-mono text-mute"
-                  title="관망 논제의 진입 래더도, 매수·보유 논제의 목표 상단도 없어 거리를 산출할 수 없습니다."
-                >
-                  ⬛ 미산출
-                </span>
-              ) : reached ? (
-                <span className="font-mono text-success truncate">
-                  {goal.reached} · {fmtPrice(goal.price)}
-                </span>
-              ) : (
-                <>
-                  <span className="font-mono text-body">
-                    {gapPct >= 0 ? "+" : ""}
-                    {gapPct.toFixed(1)}%
-                  </span>
-                  <span className="font-mono text-[10px] text-mute truncate">→ {fmtPrice(goal.price)}</span>
-                </>
-              )}
-              {gated && (
-                <span
-                  className="ml-auto shrink-0 rounded-full bg-warn/15 px-1.5 py-px text-[10px] font-medium text-warn"
-                  title={`집행 차수 ${gated.total}개 중 ${gated.withCond}개에 AND 조건이 붙어 있습니다.
-가격이 닿아도 조건이 충족되지 않으면 집행하지 않습니다.
-(충족 여부는 기록되지 않으므로 논제를 펼쳐 직접 확인하세요.)`}
-                >
-                  조건부 {gated.withCond}/{gated.total}
+        {/* 집행까지 — 게이지가 종목 간 거리를 한눈에 비교하게 한다 */}
+        <div className="mt-2.5 flex items-center gap-2.5 text-[11px]">
+          <span className="eyebrow shrink-0 text-[9px]">{goal?.label ?? "집행까지"}</span>
+          {goal == null || gapPct == null ? (
+            <span
+              className="font-mono text-mute"
+              title="관망 논제의 진입 래더도, 매수·보유 논제의 목표 상단도 없어 거리를 산출할 수 없습니다."
+            >
+              □ 미산출
+            </span>
+          ) : reached ? (
+            <span className="font-mono text-success">
+              {goal.reached} · {fmtPrice(goal.price)}
+            </span>
+          ) : (
+            <span className="font-mono font-bold text-body">
+              {gapPct >= 0 ? "+" : ""}
+              {gapPct.toFixed(1)}%
+            </span>
+          )}
+          {goal != null && nearPct != null && (
+            <span className="block h-1.5 flex-1 overflow-hidden rounded-full bg-canvas-soft">
+              <span
+                className={`block h-full rounded-full ${reached ? "bg-success" : "bg-down"}`}
+                style={{ width: `${reached ? 100 : nearPct}%` }}
+              />
+            </span>
+          )}
+          {avgPrice != null && (
+            <span className="hidden shrink-0 font-mono text-[10px] text-mute sm:inline">
+              매수 {fmtPrice(avgPrice)}
+              {plPct != null && (
+                <span className={`ml-1 ${moveColor(plPct)}`}>
+                  {plPct >= 0 ? "+" : ""}
+                  {plPct.toFixed(1)}%
                 </span>
               )}
             </span>
-            {/* 거리 게이지 — 채워질수록 집행에 가깝다. 도달하면 색이 바뀐다. */}
-            {goal != null && nearPct != null && (
-              <span className="block h-1 w-full overflow-hidden rounded-full bg-canvas-soft">
-                <span
-                  className={`block h-full rounded-full ${reached ? "bg-success" : "bg-down"}`}
-                  style={{ width: `${reached ? 100 : nearPct}%` }}
-                />
-              </span>
-            )}
-          </span>
+          )}
+          {gated && (
+            <span
+              className="shrink-0 rounded-full bg-warn/15 px-1.5 py-px text-[10px] font-medium text-warn"
+              title={`집행 차수 ${gated.total}개 중 ${gated.withCond}개에 AND 조건이 붙어 있습니다.${NL}가격이 닿아도 조건이 충족되지 않으면 집행하지 않습니다.${NL}(충족 여부는 기록되지 않으므로 논제를 펼쳐 직접 확인하세요.)`}
+            >
+              조건부 {gated.withCond}/{gated.total}
+            </span>
+          )}
         </div>
       </button>
 
@@ -560,7 +660,7 @@ function TickerCard({
 // ── 논제 한 건(= 보고서 한 건의 결론) ────────────────────────────────────
 // **모든 논제가 정확히 같은 3단 구조다**(TASK-110): 출처 줄 → 래더 그림 → 3×3 숫자 표.
 // 예전에는 티어·호라이즌·체결확률이 '있는 콜만' 칩으로 붙어서 논제마다 머리 줄의 길이와
-// 항목이 달랐다. 지금은 셋 다 표의 고정 칸이고, 없으면 ⬛ 로 비어 있는 것이 보인다 —
+// 항목이 달랐다. 지금은 셋 다 표의 고정 칸이고, 없으면 □ 로 비어 있는 것이 보인다 —
 // 안 보이는 결측과 보이는 결측은 다르다(전자는 영원히 안 채워진다).
 //
 // 핵심 가정·레드라인·판단 근거 산문은 보고서 원문이 정본이라 스킬 이름을 눌러 모달로 본다.
@@ -596,7 +696,7 @@ function ThesisBlock({
   // 아니라 '올라가야 할 목표가'라 하락 체결 개념이 성립하지 않는다(래더보다 좁은 범위다:
   // buy 는 분할 매수 계획이 있을 수 있지만 하락을 기다리지는 않는다).
   // 기준은 record_call.py 의 게이트1(`call == "hold"` 일 때만 체결확률 필수)과 같다.
-  // 안 가르면 보유 종목에 ⬛ 미산출이 뜨는데, 산출할 것이 애초에 없다.
+  // 안 가르면 보유 종목에 □ 미산출이 뜨는데, 산출할 것이 애초에 없다.
   const fillExpected = c.call === "hold";
 
   return (
@@ -654,7 +754,7 @@ function ThesisBlock({
           밴드 양끝 두 숫자는 실행할 수 없다(CLAUDE.md '진입 밴드는 래더로 쓴다'). */}
       {ladderExpected && !hasLadder && (
         <p className="mt-1.5 text-[10px] leading-snug text-mute" title={TRANCHE_HOWTO}>
-          {ladderNoun} <span className="text-warn">⬛ 미산출</span> —{" "}
+          {ladderNoun} <span className="text-warn">□ 미산출</span> —{" "}
           {c.call === "keep"
             ? "보유 중이어도 추가 매수 구간이 없으면 주가가 내려왔을 때 얼마에 얼마나 살지 정할 수 없다."
             : "밴드 양끝만으로는 집행할 수 없다."}{" "}
@@ -667,7 +767,7 @@ function ThesisBlock({
       <div className="mt-2.5 grid grid-cols-3 gap-px overflow-hidden rounded-md border border-hairline bg-hairline">
         <Stat
           label="티어"
-          value={c.tier ?? "⬛"}
+          value={c.tier ?? "□"}
           sub={
             c.tier
               ? c.requiredMosPct != null
@@ -684,7 +784,7 @@ function ThesisBlock({
         />
         <Stat
           label="호라이즌"
-          value={c.horizonMonths != null ? `${c.horizonMonths}M` : "⬛"}
+          value={c.horizonMonths != null ? `${c.horizonMonths}M` : "□"}
           sub={
             c.horizonMonths == null
               ? "미산출"
@@ -697,7 +797,7 @@ function ThesisBlock({
         />
         <Stat
           label="체결확률"
-          value={!fillExpected ? "—" : fp == null ? "⬛" : fpUnknown ? "산출불가" : `${fp}%`}
+          value={!fillExpected ? "—" : fp == null ? "□" : fpUnknown ? "산출불가" : `${fp}%`}
           sub={
             !fillExpected
               ? "해당 없음"

@@ -53,3 +53,34 @@ export function moveColor(v: number | null | undefined): string {
 export function fmtPrice(v: number): string {
   return `$${v.toFixed(2)}`;
 }
+
+/**
+ * 논제 건강도 — 원장(calls.jsonl)에 전용 필드가 없어 `conviction` 자유 텍스트에서 뽑는다.
+ *
+ * 실제로 섞여 있는 표기: "★★★☆☆ (논제 건강도 5/10)" · "건강도 3/10 (7/10에서 하락)" ·
+ * "논제 건강도 7/10 (데이터 신뢰도 높음)". 없는 콜도 많다 — 그럴 땐 null 로 두고
+ * 화면에서 □로 드러낸다(빈칸으로 숨기면 영원히 안 채워진다).
+ *
+ * ⚠️ 정본은 reports/track-record.md 다. 여기 값은 콜을 기록할 때 같이 적어둔 스냅샷이라
+ * 마크다운을 나중에 고쳤으면 뒤처질 수 있다.
+ */
+export function parseHealth(conviction: string | undefined | null): number | null {
+  if (!conviction) return null;
+  const m = conviction.match(/건강도\s*(\d+(?:\.\d+)?)\s*\/\s*10/);
+  if (!m) return null;
+  const v = Number(m[1]);
+  return Number.isFinite(v) && v >= 0 && v <= 10 ? v : null;
+}
+
+/** 건강도 색 — 6 미만이면 논제가 흔들리는 중이다. */
+export function healthTone(v: number | null): string {
+  if (v == null) return "text-mute";
+  if (v < 4) return "text-danger";
+  if (v < 6.5) return "text-warn";
+  return "text-ink";
+}
+
+/** 티커 이니셜 — 아바타 원에 넣는 두 글자. */
+export function initials(ticker: string): string {
+  return ticker.replace(/[^A-Z0-9]/gi, "").slice(0, 2).toUpperCase();
+}

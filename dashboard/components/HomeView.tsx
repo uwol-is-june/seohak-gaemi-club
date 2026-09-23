@@ -9,6 +9,7 @@ import { NavItem as NavButton, NavChip } from "./primitives";
 import { ReportContentView } from "./ReportContentView";
 import { ReportModal } from "./ReportModal";
 import { CompanyReportBrowser } from "./CompanyReportBrowser";
+import { UrgentThesisCard } from "./home/UrgentThesisCard";
 import { HoldingsBanner } from "./HoldingsBanner";
 import { DailyCheckView } from "./DailyCheckView";
 import { TrackRecordView } from "./TrackRecordView";
@@ -604,6 +605,10 @@ export function HomeView({
           {flowTab === "portfolio-overview" ? (
             <div className="flex flex-col gap-8">
               <div>
+                {/* 🔴 "얼마인가"(잔고)보다 "오늘 뭘 봐야 하나"가 먼저다(TASK-137).
+                    한 건만 띄운다 — 목록을 또 만들면 트랙레코드 탭과 화면이 둘이 되고
+                    둘이 어긋나기 시작한다. 이 카드는 입구지 목록이 아니다. */}
+                <UrgentThesisCard onOpen={() => goToTab("track-record")} />
                 <HoldingsBanner
                   reportedTickers={reportedTickers}
                   onDrill={drillToTicker}
