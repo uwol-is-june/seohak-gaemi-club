@@ -11,17 +11,33 @@ This version has breaking changes — APIs, conventions, and file structure may 
 Read로 먼저 읽고 그 언어로 구현한다.** 이 단계를 건너뛰지 말 것. 임의의 색/폰트/그림자/라운드
 값을 지어내지 말고, 항상 아래 토큰과 문서 수치를 사용한다.
 
-- **현재 적용본: `../docs/DESIGN-x.ai.md`** (xAI 디자인 언어).
-- 여러 `DESIGN-*.md`가 있으면 **가장 최근에 추가/수정된 것**이 현재 소스다 (사용자가 새 문서를 넣어
-  방향을 교체하는 패턴). 확실치 않으면 `docs/`를 확인하고, 애매하면 사용자에게 어느 문서인지 묻는다.
-- 과거 버전 `../docs/DESIGN-apple.md`(Apple 라이트)는 이력 — 현재 적용본 아님.
+- **현재 적용본: [`../docs/DESIGN-toss.md`](../docs/DESIGN-toss.md)** (토스증권 레퍼런스 다크, 2026-09-23~).
+- 과거 `../docs/DESIGN-x.ai.md`(xAI)·`DESIGN-apple.md`는 **폐기**다. x.ai 문서는 지금 코드와
+  정면으로 어긋나므로(볼드 금지·그림자 없음·시맨틱 팔레트 없음) 그대로 적용하면 리뉴얼을 되돌린다.
+- 여러 `DESIGN-*.md`가 있으면 **가장 최근 것**이 현재 소스다(사용자가 새 문서를 넣어 방향을
+  교체하는 패턴). 애매하면 사용자에게 묻는다.
 
-핵심 원칙 (요약 — 상세·수치는 문서 참조):
-- **near-black 단일 캔버스**: 페이지 배경 canvas(#0a0a0a), 카드 canvas-card(#191919), 인풋/hover canvas-soft(#1a1c20). 라이트 모드 없음 — dark-canvas 전용.
-- **화이트 pill이 전체 인터랙티브 어휘**: 대부분 아웃라인 pill(`rounded-full border border-hairline`), 주요 액션만 화이트-필 pill(`bg-white text-canvas`). 컬러 CTA 없음.
-- **레이아웃은 대시보드 앱셸**: 좌측 고정 사이드바(nav row 활성표시 = **화이트-필** `bg-white text-canvas`, 모바일 가로 탭과 통일) + 메인 상단바. 모바일은 상단바 + 가로 탭.
-- **타이포 = 두 얼굴**: 디스플레이/본문 Inter(Universal Sans 대체) **weight 400 절대 볼드 금지** + 음수 트래킹(`tracking-[-0.03em]`). 라벨/eyebrow는 **Geist Mono 대문자 + 양수 트래킹** → `.eyebrow` 클래스 사용.
-- **그림자 금지**: 1px `border-hairline`(#212327)가 모든 elevation. 카드는 `rounded-lg`(8px).
-- **컬러 액센트는 드물게**: sunset/dusk/breeze/twilight는 코드·데이터·포인트에만. 시맨틱 색(합격 emerald / 탈락 red / 손익)은 '데이터 의미'라 예외로 유지.
+핵심 원칙 (요약 — 상세·수치·대비 실측값은 문서 참조):
+- **색 축이 셋이고 절대 섞지 않는다.** 등락(`up`/`down`) · 판정(`success`/`danger`/`warn`) ·
+  분류(`cat-1`~`cat-4`). 섞으면 "빗나감"이 "상승"으로 읽힌다.
+- 🔴 **등락은 한국 관례 — 상승 빨강(`up`) / 하락 파랑(`down`).** 미국식(초록 상승)과 정반대.
+  이 앱에선 **하락이 곧 진입 기회**라 진입 구간·래더 차수·"1차까지 N%"도 전부 `down` 파랑이다.
+- 🔴 **색으로만 말하지 않는다.** 손익은 색+부호+도형 3겹. 직접 만들지 말고 `<Delta>` 를 쓴다 —
+  프리미티브가 강제한다.
+- **서페이스 단차가 위계를 진다. 카드에 보더를 두지 않는다.** canvas(#14181F) → canvas-card
+  (#191F28) → canvas-soft(#232A35) → canvas-mid(#2E3742). 카드 안의 블록은 **반드시 한 단 위로**.
+- **타이포**: Noto Sans KR(Toss Product Sans 대체), 제목 **weight 700**, 본문 15px.
+  `tabular-nums` 는 `body` 에 전역으로 걸려 있다. **영문 대문자 eyebrow 금지** — 굵은 한글 라벨.
+- **반경**: 카드 `rounded-2xl`(16px) · 내부 블록 `rounded-xl`(12px) · 칩 `rounded-full`.
+  터치 타깃 최소 44px(`min-h-11`).
+- **흰 pill 반전은 필터 칩에만.** 사이드바 현재 위치는 한 단 밝은 배경 + 굵은 글자.
+  primary 액션(화면당 1개)은 토스 블루 fill(`bg-primary-press`).
+- `primary`(#3182F6)는 **fill 전용** — 카드 위 4.46:1이라 본문 텍스트 금지.
+  `faint`(#6B7684)는 **UI 전용** — 3.59:1이라 본문 금지.
 
-토큰은 `app/globals.css`의 `@theme`에 정의됨 → `bg-canvas bg-canvas-card bg-canvas-soft bg-canvas-mid text-ink text-body text-mute border-hairline text-breeze text-sunset text-twilight` + `.eyebrow` 클래스. 인라인 hex 지양.
+**재사용 부품이 먼저다**: `components/primitives/` (Delta · StatusChip · TierBadge · Card ·
+NavItem · Button). 직접 스타일링하기 전에 여기 있는지 본다.
+
+**작업 후 반드시**: `python3 tools/check_design_tokens.py` — 토큰 오용을 기계가 막는다.
+
+토큰 정본은 `app/globals.css` 의 `@theme` 이다(문서와 값이 갈리면 코드가 맞다). 인라인 hex 금지.

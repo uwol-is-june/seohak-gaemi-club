@@ -238,6 +238,26 @@ components:
     typography: "{typography.body-sm}"
 
 ---
+---
+
+> # ⛔ 폐기됨 (2026-09-23)
+>
+> **이 문서는 더 이상 UI/UX 기준이 아니다. 아카이브 목적으로만 남긴다.**
+>
+> 현재 단일 소스는 **[`DESIGN-toss.md`](DESIGN-toss.md)** — 토스증권 레퍼런스 다크.
+>
+> 아래 내용 중 다음은 **현재 코드와 정면으로 어긋난다**. 읽고 그대로 적용하면
+> 리뉴얼을 되돌리게 된다:
+>
+> | 이 문서 | 현재 |
+> |---|---|
+> | 디스플레이 weight 400, 볼드 금지 | `h1~h4` weight **700** |
+> | 그림자 없음 · 헤어라인이 모든 elevation | **서페이스 단차**가 위계를 진다(헤어라인은 1.26:1이라 구조를 못 졌다) |
+> | 별도 시맨틱 팔레트 없음 | 등락(up/down) · 판정(success/danger/warn) · 분류(cat-1~4) **세 축** |
+> | 대문자 모노 eyebrow | 굵은 한글 라벨 |
+> | near-black `#0a0a0a` 캔버스 | `#14181F` |
+> | Universal Sans → Inter 대체 | **Noto Sans KR** (Inter는 한글 글리프가 없었다) |
+
 
 
 ## Overview
