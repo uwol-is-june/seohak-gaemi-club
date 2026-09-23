@@ -1,4 +1,3 @@
-"use client";
 import { pricedTranches, noteTranches, type Tranche } from "@/lib/tranche";
 
 // 분할 진입 래더를 **가격 축 위의 그림**으로 그린다(TASK-97).
