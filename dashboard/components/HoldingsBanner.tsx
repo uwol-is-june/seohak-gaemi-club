@@ -3,6 +3,7 @@ import { readJsonSafe } from "@/lib/fetch-json";
 import { useCallback, useEffect, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Holding } from "@/lib/toss";
 import { fmtUsd, fmtKrw } from "@/lib/report-helpers";
+import { Delta } from "./primitives";
 import { type Ccy, CCY_STORAGE_KEY, MAX_AUTO_RELOADS, retryDelayMs, holdingsErrorText, holdingsCache, fxCache, setFxCache, persistFx, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
 
 // 보유 카드는 **숫자만** 보여준다 — 티커·손익률·현재가·평단·평가금액까지.
@@ -214,9 +215,9 @@ export function HoldingsBanner({
                 <div className={`text-2xl tracking-[-0.02em] ${totalPL > 0 ? "text-up" : totalPL < 0 ? "text-down" : "text-mute"}`}>
                   {totalPL > 0 ? "+" : ""}{money(totalPL)}
                 </div>
-                <div className={`text-[11px] ${totalPL > 0 ? "text-up" : totalPL < 0 ? "text-down" : "text-mute"}`}>
-                  {totalPL > 0 ? "+" : ""}{totalPLPct.toFixed(2)}%
-                </div>
+                {/* 금액은 통화 포맷이 따로 있어 Delta 를 못 쓴다. 대신 퍼센트를 Delta 로
+                    내보내 도형(▲/▼)을 확보한다 — 색만으로 손익을 말하지 않기 위해서다. */}
+                <Delta value={totalPL === 0 ? 0 : totalPLPct} size="sm" />
               </div>
             </div>
           </div>

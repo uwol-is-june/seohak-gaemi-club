@@ -5,6 +5,7 @@ import { flows, DISCOVERY_SECTOR_GROUPS, type Flow } from "@/lib/flows";
 import { ReportFile } from "@/lib/reports-store";
 import { type SectorGroup, DEFAULT_SECTOR_GROUPS, DEFAULT_DOMAIN_GROUPS, UNCLASSIFIED_SECTOR, SCREEN_GROUPS, sectorOfWith, getSectorReportInfo, SECTOR_SECTIONS, reportDateLabel } from "@/lib/report-helpers";
 import { canonicalSector, domainOfSector, mergeAutoSectorGroups, sectorsInDomain, UNCLASSIFIED_DOMAIN, type AutoSectorMap, type DomainGroup } from "@/lib/sector-domains";
+import { NavItem as NavButton, NavChip } from "./primitives";
 import { ReportContentView } from "./ReportContentView";
 import { ReportModal } from "./ReportModal";
 import { CompanyReportBrowser } from "./CompanyReportBrowser";
@@ -66,47 +67,8 @@ function navViewOfTab(tab: string): NavView {
 
 // 사이드바·서브메뉴 공용 버튼. 최상위 항목·드릴다운 입구·하위 항목이 같은 모양을 쓴다
 // (드릴다운으로 들어가도 '다른 화면'이 아니라 같은 목록의 다음 단계로 읽히게).
-function NavButton({
-  label,
-  active,
-  onClick,
-  chevron,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  chevron?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
-        active ? "bg-white text-canvas" : "text-body hover:text-ink hover:bg-canvas-soft"
-      }`}
-    >
-      <span className="flex-1 text-left truncate">{label}</span>
-      {chevron && (
-        <span className={`shrink-0 text-xs ${active ? "text-canvas/50" : "text-mute"}`} aria-hidden="true">
-          &rsaquo;
-        </span>
-      )}
-    </button>
-  );
-}
-
-// 모바일 탭 로우용 칩. 데스크톱 NavButton 과 같은 드릴다운을 좁은 폭에서 표현한다.
-function NavChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-95 ${
-        active ? "bg-white text-canvas" : "text-mute hover:text-ink"
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
+// NavButton · NavChip 은 components/primitives/NavItem.tsx 로 옮겼다.
+// (선택 상태를 흰 pill로 뒤집던 xAI 어휘 → 한 단 밝은 배경 + 굵은 글자)
 
 // 탭별 상단바 라벨(eyebrow = GeistMono 대문자, title = 한글). 리서치 프로세스(flows)
 // 탭은 여기 없고 activeFlow.title 로 폴백한다. 분야 탭도 여기 없고 분야명으로 폴백한다.

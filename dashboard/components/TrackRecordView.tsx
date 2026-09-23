@@ -7,6 +7,7 @@ import { groupTheses, entryTopPrice, type ThesisGroup, type RefreshFlag } from "
 import { parseTranches, pricedTranches, topTranchePrice } from "@/lib/tranche";
 import type { Holding } from "@/lib/toss";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
+import { TIER_META } from "./primitives";
 import { LadderChart } from "./LadderChart";
 import { ReportModal } from "./ReportModal";
 
@@ -56,13 +57,8 @@ const BAND_META: Record<CallType, { short: string; long: string; why: string }> 
   avoid: { short: "참고", long: "참고 밴드", why: "채점(하락 방향)에 쓰이지 않는 적정가 추정" },
 };
 
-// 퀄리티 티어(skills/quality-tier.md). 요구 안전마진이 티어별로 다르므로, 같은 밴드라도
-// 티어를 모르면 "이 할인율이 타당한가"를 판단할 수 없다 — 그래서 밴드 옆에 함께 띄운다.
-const TIER_META: Record<"T1" | "T2" | "T3", { label: string; mos: string }> = {
-  T1: { label: "T1 컴파운더", mos: "요구 MOS 0~15%" },
-  T2: { label: "T2 우량 안정", mos: "요구 MOS 15~30%" },
-  T3: { label: "T3 시클리컬·턴어라운드·저품질", mos: "요구 MOS 30~40%" },
-};
+// 퀄리티 티어 메타는 components/primitives/TierBadge.tsx 가 유일한 출처다
+// (같은 정의가 두 곳에 있으면 한쪽만 고쳐져 어긋난다).
 
 // 체결확률 25% 미만일 때 택한 대응(record_call.py 가 셋 중 하나를 강제한다).
 const LOW_FILL_PLAN_LABEL: Record<string, string> = {
