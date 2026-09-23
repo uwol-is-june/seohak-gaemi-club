@@ -9,6 +9,7 @@ import { NavItem as NavButton, NavChip } from "./primitives";
 import { ReportContentView } from "./ReportContentView";
 import { ReportModal } from "./ReportModal";
 import { CompanyReportBrowser } from "./CompanyReportBrowser";
+import { NavIcon } from "./home/nav-icons";
 import { UrgentThesisCard } from "./home/UrgentThesisCard";
 import { HoldingsBanner } from "./HoldingsBanner";
 import { DailyCheckView } from "./DailyCheckView";
@@ -403,8 +404,8 @@ export function HomeView({
       // 시간 축 — '지금 내 포지션이 어떤가'에 답하는 둘. 상시로 보므로 접지 않는다.
       label: "운용",
       entries: [
-        { kind: "item", item: { id: "portfolio-overview", label: "포트폴리오" } },
-        { kind: "item", item: { id: "track-record", label: "트랙레코드" } },
+        { kind: "item", item: { id: "portfolio-overview", label: "포트폴리오", icon: "portfolio" } },
+        { kind: "item", item: { id: "track-record", label: "트랙레코드", icon: "track" } },
       ],
     },
     // 드릴다운 둘은 그룹 라벨 없이 나란히 선다 — 각자가 이미 묶음의 이름이다.
@@ -413,7 +414,7 @@ export function HomeView({
       // 발행용 글(/investment-article). 다른 보고서가 '내 판단용'이라면 이건 '남에게
       // 보여줄 것'이라 축이 종목·분야가 아니라 발행 상태다.
       label: "발행",
-      entries: [{ kind: "item", item: { id: "articles", label: "아티클" } }],
+      entries: [{ kind: "item", item: { id: "articles", label: "아티클", icon: "article" } }],
     },
   ];
   // 최상위에 실제로 보이는 칸들(모바일 탭 로우가 쓴다). 드릴다운 안쪽 항목은 여기 없다 —
@@ -489,6 +490,7 @@ export function HomeView({
                         label={e.item.label}
                         active={flowTab === e.item.id}
                         onClick={() => goToTab(e.item.id)}
+                        icon={e.item.icon ? <NavIcon name={e.item.icon} /> : undefined}
                       />
                     ) : (
                       <NavButton
@@ -498,6 +500,7 @@ export function HomeView({
                         active={navViewOfTab(flowTab) === e.view}
                         chevron
                         onClick={() => openDrill(e.view)}
+                        icon={<NavIcon name={e.view === "inspect" ? "inspect" : "reports"} />}
                       />
                     )
                   )}

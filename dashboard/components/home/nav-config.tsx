@@ -7,6 +7,7 @@
 
 import { DISCOVERY_SECTOR_GROUPS } from "@/lib/flows";
 import { UNCLASSIFIED_DOMAIN } from "@/lib/sector-domains";
+import type { NavIconName } from "./nav-icons";
 
 // 루트에 있지만 '섹터 리서치'가 아닌 문서(각자 전용 탭이 따로 있음).
 export const ROOT_NON_SECTOR = new Set(["portfolio-latest.md", "track-record.md"]);
@@ -31,7 +32,7 @@ export const DOMAIN_TABS = [...DISCOVERY_SECTOR_GROUPS.map((g) => g.label), UNCL
 // 화면으로 바뀐다. navView 는 **사이드바가 무엇을 그리는지**만 담는다 — 어느 탭이
 // 열려 있는가는 여전히 flowTab 이 유일한 출처다(둘을 합치면 '뒤로'가 탭까지 닫아버린다).
 export type NavView = "root" | "inspect" | "reports";
-export type NavItem = { id: string; label: string };
+export type NavItem = { id: string; label: string; icon?: NavIconName };
 // 최상위 nav 한 칸 — 바로 탭을 여는 항목이거나, 하위 목록으로 들어가는 입구다.
 export type NavEntry = { kind: "item"; item: NavItem } | { kind: "drill"; view: Exclude<NavView, "root"> };
 

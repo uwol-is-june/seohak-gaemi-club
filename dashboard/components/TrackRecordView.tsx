@@ -52,6 +52,35 @@ type Axis = "all" | "held" | "watch";
 
 // 정렬 축. 라벨은 "무엇을 기준으로 세로로 읽을 것인가"를 그대로 말한다.
 type SortKey = "gap" | "fill" | "health" | "ticker";
+
+// 상태 필터 — 축(보유/관찰)과 다른 축이다. "지금 집행을 막고 있는 게 무엇인가"로 좁힌다.
+type Flag = "gated" | "decorative" | "noLadder";
+const FLAG_LABEL: Record<Flag, { label: string; why: string }> = {
+  gated: {
+    label: "조건 대기",
+    why: "AND 조건이 붙은 차수가 있습니다 — 가격이 닿아도 조건 없이는 집행하지 않습니다.",
+  },
+  decorative: {
+    label: "장식 밴드",
+    why: "체결확률 25% 미만 — 밴드가 실행 계획이 아니라 장식일 수 있습니다.",
+  },
+  noLadder: {
+    label: "차수 미분할",
+    why: "가격이 붙은 차수가 없습니다 — 밴드 양끝 두 숫자로는 집행할 수 없습니다.",
+  },
+};
+
+// 종목 하나가 어떤 깃발을 달고 있나. 정렬·필터·행 렌더가 같은 판정을 써야 어긋나지 않는다.
+function flagsOf(g: ThesisGroup): Set<Flag> {
+  const out = new Set<Flag>();
+  const lead = g.active[0] ?? g.history[0];
+  const priced = g.active.flatMap((c) => pricedTranches(parseTranches(c.target?.tranches)));
+  if (priced.some((t) => t.condition)) out.add("gated");
+  if (priced.length === 0) out.add("noLadder");
+  const fp = lead?.target?.fillProbability;
+  if (typeof fp === "number" && fp < 25) out.add("decorative");
+  return out;
+}
 const SORT_LABEL: Record<SortKey, string> = {
   gap: "집행까지 가까운 순",
   fill: "체결확률 높은 순",
@@ -60,6 +89,11 @@ const SORT_LABEL: Record<SortKey, string> = {
 };
 
 const DISABLED_AXIS_HINT = "보유 정보를 불러오지 못해 축을 나눌 수 없습니다.";
+
+// 🔴 헤더와 행이 **같은 그리드 템플릿**을 써야 컬럼이 맞는다.
+// 한쪽만 고치면 조용히 어긋나므로 상수 하나에서 온다.
+const ROW_GRID =
+  "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 md:grid-cols-[56px_minmax(0,1fr)_124px_100px_76px_132px]";
 
 export function TrackRecordView() {
   const [calls, setCalls] = useState<ScoredCall[] | null>(null);
@@ -74,6 +108,8 @@ export function TrackRecordView() {
   //    기본 정렬이 그 질문을 답해야 한다 — 보유 여부로만 묶으면 10종목에서
   //    가까운 것이 목록 한가운데 묻힌다.
   const [sort, setSort] = useState<SortKey>("gap");
+  // 복수 선택 — 겹치는 종목이 많아 하나만 고르게 하면 오히려 못 찾는다.
+  const [flags, setFlags] = useState<Set<Flag>>(new Set());
   // 펼친 종목 집합은 부모가 쥔다 — '모두 펼치기'가 카드 내부 상태로는 불가능하다.
   const [openTickers, setOpenTickers] = useState<Set<string>>(new Set());
 
@@ -132,10 +168,19 @@ export function TrackRecordView() {
   // (살아있는 논제 우선 → 최근 갱신순 → 티커). 실제로 돈이 들어가 있는 종목이 스크롤
   // 아래에 묻히면, 훑어야 할 것과 지켜봐야 할 것의 우선순위가 뒤집힌다.
   const rows = useMemo(() => {
-    const list =
+    const byAxis =
       axis === "all" || !holdingsReady
         ? groups
         : groups.filter((g) => (axis === "held" ? heldTickers.has(g.ticker) : !heldTickers.has(g.ticker)));
+    // 깃발이 여럿 선택되면 **하나라도 달린** 종목을 남긴다(교집합이면 대개 0건이 된다).
+    const list =
+      flags.size === 0
+        ? byAxis
+        : byAxis.filter((g) => {
+            const f = flagsOf(g);
+            for (const k of flags) if (f.has(k)) return true;
+            return false;
+          });
 
     // 정렬 키를 종목당 하나 뽑는다. 값이 없는 종목은 항상 뒤로 보낸다 —
     // □(미산출)이 위에 섞이면 "가까운 순"이라는 약속이 깨진다.
@@ -171,7 +216,7 @@ export function TrackRecordView() {
     // 위에서 잡은 순서는 그대로 보존된다.
     if (!holdingsReady || axis !== "all") return sorted;
     return sorted.sort((a, b) => Number(heldTickers.has(b.ticker)) - Number(heldTickers.has(a.ticker)));
-  }, [axis, sort, groups, heldTickers, holdingsReady]);
+  }, [axis, sort, flags, groups, heldTickers, holdingsReady]);
 
   const toggleTicker = useCallback((t: string) => {
     setOpenTickers((prev) => {
@@ -181,6 +226,12 @@ export function TrackRecordView() {
       return next;
     });
   }, []);
+  const flagCounts = useMemo(() => {
+    const c: Record<Flag, number> = { gated: 0, decorative: 0, noLadder: 0 };
+    for (const g of groups) for (const k of flagsOf(g)) c[k] += 1;
+    return c;
+  }, [groups]);
+
   const allOpen = rows.length > 0 && rows.every((g) => openTickers.has(g.ticker));
   const toggleAll = () => setOpenTickers(allOpen ? new Set() : new Set(rows.map((g) => g.ticker)));
 
@@ -286,6 +337,46 @@ export function TrackRecordView() {
             </div>
           </div>
 
+          {/* 상태 필터 — "지금 집행을 막고 있는 게 무엇인가"로 좁힌다. 축 탭과 다른 축이다. */}
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            {(Object.keys(FLAG_LABEL) as Flag[]).map((k) => {
+              const on = flags.has(k);
+              const n = flagCounts[k];
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() =>
+                    setFlags((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(k)) next.delete(k);
+                      else next.add(k);
+                      return next;
+                    })
+                  }
+                  aria-pressed={on}
+                  disabled={n === 0}
+                  title={FLAG_LABEL[k].why}
+                  className={`flex min-h-8 items-center gap-1.5 rounded-full px-3 text-[11px] font-medium transition-colors active:scale-95 ${
+                    on ? "bg-warn/20 text-warn" : "bg-canvas-soft text-mute hover:text-ink"
+                  } ${n === 0 ? "cursor-not-allowed opacity-40" : ""}`}
+                >
+                  {FLAG_LABEL[k].label}
+                  <span className={on ? "text-warn/70" : "text-mute/70"}>{n}</span>
+                </button>
+              );
+            })}
+            {flags.size > 0 && (
+              <button
+                type="button"
+                onClick={() => setFlags(new Set())}
+                className="min-h-8 rounded-full px-2.5 text-[11px] text-mute hover:text-ink"
+              >
+                해제
+              </button>
+            )}
+          </div>
+
           {!holdingsReady && (
             <p className="mb-3 text-[11px] text-warn">
               보유 정보를 불러오지 못해 <span className="text-body">보유·관찰 분리가 비활성</span>입니다 — 전체만
@@ -302,6 +393,16 @@ export function TrackRecordView() {
           ) : (
             <div className="grid grid-cols-1 gap-3 items-start">
               {/* 🔴 1열 고정. 2열로 깔면 좌우 카드의 컬럼 x 위치가 달라져 세로 비교가 깨진다. */}
+              {/* 컬럼 헤더 — 행마다 라벨을 반복하지 않기 위해 한 줄로 뽑는다.
+                  카드의 p-4 와 같은 좌우 여백(px-4)을 줘야 컬럼이 행과 맞는다. */}
+              <div className={`${ROW_GRID} hidden px-4 pb-1 md:grid`} aria-hidden="true">
+                <span />
+                <span className="eyebrow text-[10px]">종목</span>
+                <span className="eyebrow text-[10px]">티어 · 체결확률</span>
+                <span className="eyebrow text-[10px]">집행가</span>
+                <span className="eyebrow text-[10px]">건강도</span>
+                <span className="eyebrow text-right text-[10px]">현재가 · 전일 대비</span>
+              </div>
               {rows.map((g) => (
                 <TickerCard
                   key={g.ticker}
@@ -440,7 +541,7 @@ function TickerCard({
       >
         {/* 🔴 정렬된 컬럼으로 세운다(TASK-137). 예전엔 칩과 숫자가 좌우로 흐르는 한 줄이라
             종목마다 같은 항목이 다른 x 위치에 놓였다 — 세로로 훑어 비교할 수가 없었다. */}
-        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 md:grid-cols-[auto_minmax(0,1fr)_124px_100px_76px_132px]">
+        <div className={ROW_GRID}>
           <span className="flex items-center gap-2">
             <span className={`text-[9px] text-mute transition-transform ${open ? "rotate-90" : ""}`}>▶</span>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-canvas-soft text-[11px] font-bold text-body">
@@ -490,8 +591,7 @@ function TickerCard({
           </span>
 
           {/* 티어 · 체결확률 — 같은 밴드라도 티어를 모르면 할인율이 타당한지 못 본다 */}
-          <span className="hidden min-w-0 flex-col gap-0.5 md:flex">
-            <span className="eyebrow text-[9px]">티어 · 체결확률</span>
+          <span className="hidden min-w-0 items-center gap-1.5 md:flex">
             <span className="flex items-center gap-1.5">
               <TierBadge tier={lead?.tier ?? null} ticker={group.ticker} showMos={false} />
               {fillProb != null ? (
@@ -509,13 +609,11 @@ function TickerCard({
             </span>
           </span>
 
-          <span className="hidden min-w-0 flex-col gap-0.5 md:flex">
-            <span className="eyebrow text-[9px]">{goal ? goal.label.replace("까지", "가") : "집행가"}</span>
-            <span className="font-mono text-[12px] text-body">{goal != null ? fmtPrice(goal.price) : "□"}</span>
+          <span className="hidden min-w-0 md:block">
+            <span className="font-mono text-[12.5px] text-body">{goal != null ? fmtPrice(goal.price) : "□"}</span>
           </span>
 
-          <span className="hidden min-w-0 flex-col gap-0.5 md:flex">
-            <span className="eyebrow text-[9px]">건강도</span>
+          <span className="hidden min-w-0 md:block">
             <span
               className={`font-mono text-[12px] ${healthTone(health)}`}
               title={
