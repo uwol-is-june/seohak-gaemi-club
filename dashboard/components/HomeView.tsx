@@ -10,7 +10,6 @@ import { ReportContentView } from "./ReportContentView";
 import { ReportModal } from "./ReportModal";
 import { CompanyReportBrowser } from "./CompanyReportBrowser";
 import { NavIcon } from "./home/nav-icons";
-import { UrgentThesisCard } from "./home/UrgentThesisCard";
 import { HoldingsBanner } from "./HoldingsBanner";
 import { DailyCheckView } from "./DailyCheckView";
 import { TrackRecordView } from "./TrackRecordView";
@@ -21,6 +20,7 @@ import { BottleneckSignalsView } from "./BottleneckSignalsView";
 import { ArticlesView } from "./ArticlesView";
 import { ResearchLaunchModal } from "./ResearchLaunchModal";
 import { CollapsibleReportCard } from "./CollapsibleReportCard";
+import { groupTheses } from "@/lib/thesis-groups";
 import { isBottleneckCompany } from "@/lib/bottleneck";
 import { isArticlePath } from "@/lib/articles";
 import { quarterDue, quarterBadge, fmtDue } from "@/lib/quarter-due";
@@ -89,9 +89,26 @@ export function HomeView({
   const [deletePath, setDeletePath] = useState<string | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  // 사이드바 배지용 개수. 논제 수는 UrgentThesisCard 가 이미 /api/calls 를 받으므로
-  // 거기서 올려받는다 — 같은 데이터를 두 번 받으면 두 숫자가 어긋난다.
+  // 사이드바 '트랙레코드' 배지용 살아있는 논제 수.
+  // /api/calls 는 로컬 JSONL 한 번 읽기라 배지 하나를 위해 불러도 부담이 없다.
   const [thesisCount, setThesisCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/calls")
+      .then(readJsonSafe)
+      .then((d) => {
+        if (!alive) return;
+        const calls = Array.isArray(d.calls) ? d.calls : [];
+        setThesisCount(groupTheses(calls).filter((g) => g.active.length > 0).length);
+      })
+      .catch(() => {
+        // 배지가 안 뜰 뿐 화면 본체와 무관하다.
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -155,16 +172,6 @@ export function HomeView({
             (f) => f.company === null && !ROOT_NON_SECTOR.has(f.name) && !isArticlePath(f.path)
           )
         : [],
-    [files]
-  );
-  // 홈의 '최근 보고서' — committedAt(마지막 커밋 시각)이 정본이다. 파일명 날짜는
-  // 보고서가 다루는 **기간**이지 쓴 시각이 아니라 최신순 정렬에 쓰면 어긋난다.
-  const recentReports = useMemo(
-    () =>
-      (files ?? [])
-        .filter((f) => f.committedAt)
-        .sort((a, b) => (b.committedAt ?? "").localeCompare(a.committedAt ?? ""))
-        .slice(0, 4),
     [files]
   );
   const portfolioReport = useMemo(
@@ -625,29 +632,6 @@ export function HomeView({
                 {/* 🔴 "얼마인가"(잔고)보다 "오늘 뭘 봐야 하나"가 먼저다(TASK-137).
                     한 건만 띄운다 — 목록을 또 만들면 트랙레코드 탭과 화면이 둘이 되고
                     둘이 어긋나기 시작한다. 이 카드는 입구지 목록이 아니다. */}
-                <UrgentThesisCard onOpen={() => goToTab("track-record")} onCount={setThesisCount} />
-
-                {/* 최근 보고서 — 방금 쓴 것으로 바로 돌아갈 입구(목업의 같은 자리). */}
-                {recentReports.length > 0 && (
-                  <section className="mb-6 rounded-2xl bg-canvas-card p-5">
-                    <div className="mb-3 text-[15px] font-bold text-ink">최근 보고서</div>
-                    <div className="flex flex-col gap-1">
-                      {recentReports.map((f) => (
-                        <button
-                          key={f.path}
-                          type="button"
-                          onClick={() => setModalPath(f.path)}
-                          className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-left transition-colors hover:bg-canvas-soft"
-                        >
-                          <span className="truncate font-mono text-[13px] text-body">{f.name}</span>
-                          <span className="ml-auto shrink-0 font-mono text-[11px] text-mute">
-                            {(f.committedAt ?? "").slice(5, 10)}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                )}
                 <HoldingsBanner
                   reportedTickers={reportedTickers}
                   onDrill={drillToTicker}
