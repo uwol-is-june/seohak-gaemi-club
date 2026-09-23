@@ -1,0 +1,46 @@
+{
+  "_comment": "티커 → CIK 폴백 캐시. www.sec.gov/files/company_tickers.json 이 403 으로 막혔을 때만 쓴다 (2026-09-22 실측: www.sec.gov 는 UA 무관 403, data.sec.gov 는 정상). 각 항목은 https://data.sec.gov/submissions/CIK{cik}.json 로 티커 일치를 확인해 넣었다. 새 종목은 같은 방식으로 검증하고 추가한다 — 기억으로 적지 않는다.",
+  "_verifiedAt": "2026-09-22",
+  "tickers": {
+    "NVDA": {
+      "cik": "0001045810",
+      "title": "NVIDIA CORP"
+    },
+    "TSM": {
+      "cik": "0001046179",
+      "title": "TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD"
+    },
+    "SAP": {
+      "cik": "0001000184",
+      "title": "SAP SE"
+    },
+    "ADBE": {
+      "cik": "0000796343",
+      "title": "ADOBE INC."
+    },
+    "AMZN": {
+      "cik": "0001018724",
+      "title": "AMAZON COM INC"
+    },
+    "GOOGL": {
+      "cik": "0001652044",
+      "title": "Alphabet Inc."
+    },
+    "QLYS": {
+      "cik": "0001107843",
+      "title": "QUALYS, INC."
+    },
+    "CEG": {
+      "cik": "0001868275",
+      "title": "Constellation Energy Corp"
+    },
+    "AXP": {
+      "cik": "0000004962",
+      "title": "AMERICAN EXPRESS CO"
+    },
+    "TECK": {
+      "cik": "0000886986",
+      "title": "TECK RESOURCES LTD"
+    }
+  }
+}

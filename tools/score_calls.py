@@ -334,6 +334,12 @@ def aggregate(scored: list[dict]) -> dict:
                     if s.get("call") == "hold" and s.get("status") == "진행중"
                     and isinstance(s.get("opportunityCostPct"), (int, float))]
     running_costs = [s["opportunityCostPct"] for s in running_hold]
+    # 부호 있는 순 초과수익 — 위 기회비용은 적중을 0 으로 깎아 평균이 항상 >=0 이다.
+    # 그것만 보면 "기다린 게 이득이었다"가 화면에 영원히 안 뜬다(편향 교정 지표의 편향).
+    hold_excesses = [s["excessReturnPct"] for s in hold_resolved]
+    running_excesses = [s["excessReturnPct"] for s in running_hold
+                        if isinstance(s.get("excessReturnPct"), (int, float))]
+    mean = lambda xs: (sum(xs) / len(xs)) if xs else None
 
     return {
         "resolvedCount": n,
@@ -353,6 +359,12 @@ def aggregate(scored: list[dict]) -> dict:
         "holdResolvedCount": len(hold_resolved),
         "inProgressHoldOpportunityCostAvgPct": (sum(running_costs) / len(running_costs)) if running_costs else None,
         "inProgressHoldCount": len(running_hold),
+        "holdNetExcessAvgPct": mean(hold_excesses),
+        "inProgressHoldNetExcessAvgPct": mean(running_excesses),
+        # 평균만 보면 '한 종목이 크게 도망감'과 '전 종목이 고르게 뒤처짐'이 같아 보인다 —
+        # 전자는 개별 논제 문제, 후자라야 프로세스 편향이라 처방이 정반대다.
+        "holdLaggingCount": sum(1 for v in hold_excesses if v > 0),
+        "inProgressHoldLaggingCount": sum(1 for v in running_excesses if v > 0),
     }
 
 
@@ -394,12 +406,20 @@ def print_table(scored: list[dict], agg: dict) -> None:
         print(f"  (buy/keep 은 {BENCHMARK_TICKER} 초과가 적중, hold/avoid 는 미달이 적중 — 안 산 게 이득이었나)")
     if agg.get("avgExcessReturnPct") is not None:
         print(f"평균 초과수익: {agg['avgExcessReturnPct']:+.1f}pp")
-    if agg.get("holdOpportunityCostAvgPct") is not None:
-        print(f"관망(hold) 평균 기회비용: {agg['holdOpportunityCostAvgPct']:.1f}pp "
-              f"(확정 {agg['holdResolvedCount']}건) — 기다리느라 포기한 상대수익")
-    if agg.get("inProgressHoldOpportunityCostAvgPct") is not None:
-        print(f"관망(hold) 잠정 기회비용: {agg['inProgressHoldOpportunityCostAvgPct']:.1f}pp "
-              f"(진행중 {agg['inProgressHoldCount']}건) — 확정 전 참고치")
+    def _hold_line(label, net, cost, count, lagging):
+        if net is None:
+            return
+        verdict = "기다린 비용" if net > 0 else "기다린 이득" if net < 0 else "차이 없음"
+        print(f"관망(hold) {label} 순 초과수익: {net:+.1f}pp ({count}건 중 {lagging}건 뒤처짐) — {verdict}")
+        if cost is not None:
+            # 적중 건을 0 으로 깎은 평균 — 순수치와 달리 음수가 안 나온다. 보조 표기로만 쓴다.
+            print(f"  └ 기회비용 평균: {cost:.1f}pp (적중 건은 0 으로 계산)")
+
+    _hold_line("확정", agg.get("holdNetExcessAvgPct"), agg.get("holdOpportunityCostAvgPct"),
+               agg.get("holdResolvedCount"), agg.get("holdLaggingCount"))
+    _hold_line("진행중(잠정)", agg.get("inProgressHoldNetExcessAvgPct"),
+               agg.get("inProgressHoldOpportunityCostAvgPct"),
+               agg.get("inProgressHoldCount"), agg.get("inProgressHoldLaggingCount"))
     if agg["smallSample"]:
         print("⚠️ 표본이 작습니다(<10). 적중률은 성과가 아니라 규율 신호로만 해석하세요.")
 

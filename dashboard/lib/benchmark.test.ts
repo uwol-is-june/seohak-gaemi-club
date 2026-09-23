@@ -84,12 +84,29 @@ check("평균 초과수익 = (22 + -13)/2", agg.avgExcessReturnPct, 4.5);
 check("진행중 관망 1건", agg.inProgressHoldCount, 1);
 check("진행중 관망 잠정 기회비용 42pp", agg.inProgressHoldOpportunityCostAvgPct, 42);
 
+// 부호 있는 순 초과수익 (2026-09-22) — 기회비용은 적중을 0 으로 깎아 **음수가 못 나온다**.
+// a(+22pp, 뒤처짐) 와 b(-13pp, 기다린 이득)가 섞이면 순수치는 +4.5pp 이고 기회비용은 11pp 다:
+// 같은 표본을 놓고 한쪽은 "절반은 옳았다", 다른 쪽은 "손해뿐"이라고 말한다.
+check("hold 순 초과수익 = (22 + -13)/2", agg.holdNetExcessAvgPct, 4.5);
+check("뒤처진 hold 1건 (a만)", agg.holdLaggingCount, 1);
+check("진행중 hold 순 초과수익 42pp", agg.inProgressHoldNetExcessAvgPct, 42);
+check("진행중 뒤처진 1건", agg.inProgressHoldLaggingCount, 1);
+
+// 관망이 전부 적중한 표본에서 순수치는 음수여야 한다 — 기회비용은 0 을 내놓는다.
+const aggWin = aggregate([
+  mk({ id: "w1", call: "hold", returnPct: -5, ...scoreBenchmark({ call: "hold", returnPct: -5 }, 8) }),
+  mk({ id: "w2", call: "hold", returnPct: 0, ...scoreBenchmark({ call: "hold", returnPct: 0 }, 8) }),
+]);
+check("전부 적중 → 기회비용 0", aggWin.holdOpportunityCostAvgPct, 0);
+check("전부 적중 → 순수치 음수 = (-13 + -8)/2", aggWin.holdNetExcessAvgPct, -10.5);
+check("전부 적중 → 뒤처짐 0건", aggWin.holdLaggingCount, 0);
+
 if (failures.length > 0) {
   console.error(`❌ 벤치마크 채점 실패 (${failures.length}건):`);
   for (const f of failures) console.error("  - " + f);
   process.exit(1);
 }
-console.log("✅ 벤치마크 대비 채점 통과 (18 케이스)");
+console.log("✅ 벤치마크 대비 채점 통과 (25 케이스)");
 
 // ── 중복 접기 (TASK-104) ─────────────────────────────────────────────
 // 같은 id(티커-날짜-스킬)만 접는다. 같은 날 **다른 스킬**의 콜은 서로 다른 판단이므로

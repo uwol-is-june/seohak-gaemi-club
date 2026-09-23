@@ -205,13 +205,45 @@ def http_get_json(url: str, **kw) -> dict:
 
 
 # ── SEC: 티커 → CIK ──────────────────────────────────────────────────────────
+SEC_CIK_CACHE = REPO_ROOT / "data" / "sec-cik-map.json"
+
+
+def _cik_from_cache(want: str) -> tuple[str, str] | None:
+    """로컬 폴백 캐시에서 티커 → (CIK, 회사명).
+
+    🔴 www.sec.gov 는 UA 를 뭘 주든 403 을 내는 시기가 있다(2026-09-22 실측: 이메일형
+    UA 포함 전부 403). 그런데 정작 XBRL 본체인 data.sec.gov 는 멀쩡히 열린다 —
+    즉 **티커→CIK 한 줄 때문에** 재무 도구 전체가 멎는다. 그래서 그 한 줄만 캐시한다.
+    캐시 항목은 data.sec.gov/submissions/CIK{cik}.json 로 티커 일치를 확인해 넣는다.
+    """
+    try:
+        blob = json.loads(SEC_CIK_CACHE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    row = (blob.get("tickers") or {}).get(want)
+    if not row:
+        return None
+    return str(row["cik"]).zfill(10), str(row.get("title", ""))
+
+
 def resolve_cik(ticker: str) -> tuple[str, str]:
     """티커 → (10자리 zero-padded CIK, 회사명). 실패 시 SystemExit."""
     want = ticker.strip().upper()
     try:
         data = http_get_json(SEC_TICKERS_URL)
     except RuntimeError as e:
-        sys.exit(f"오류: SEC 티커 목록을 가져오지 못했습니다 — {e}")
+        cached = _cik_from_cache(want)
+        if cached:
+            print(
+                f"주의: SEC 티커 목록을 못 받아 로컬 캐시로 대체합니다 ({SEC_CIK_CACHE.name}) — {e}",
+                file=sys.stderr,
+            )
+            return cached
+        sys.exit(
+            f"오류: SEC 티커 목록을 가져오지 못했습니다 — {e}"
+            f"\n  → {SEC_CIK_CACHE} 에 이 티커의 CIK 를 넣으면 우회됩니다"
+            f"(https://data.sec.gov/submissions/CIK{{cik}}.json 로 검증 후 추가)."
+        )
 
     # {"0": {"cik_str": 320193, "ticker": "AAPL", "title": "Apple Inc."}, ...}
     for row in data.values():

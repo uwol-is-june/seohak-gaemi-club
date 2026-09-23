@@ -90,16 +90,29 @@ let ledgerLines = 0;
 let checkedRows = 0;
 try {
   const raw = readFileSync(ledgerPath, "utf-8");
+  // 🔴 **정정본만 본다.** 원장은 append-only 라 표기를 고치는 유일한 방법이 같은 id 로
+  // 한 줄 더 쌓는 것이다(dedupeCalls 와 같은 규칙: recordedAt 최신이 정정본). 낡은 줄까지
+  // 검사하면 **이미 고친 표기 때문에 테스트가 영원히 빨갛게 남는다** — 화면은 그 줄을 그리지 않는다.
+  type LedgerRow = { id?: string; recordedAt?: string; ticker?: string; target?: { tranches?: string[] } };
+  const parsed: LedgerRow[] = [];
   for (const line of raw.split("\n")) {
     const t = line.trim();
     if (!t) continue;
     ledgerLines += 1;
-    let obj: { ticker?: string; target?: { tranches?: string[] } };
     try {
-      obj = JSON.parse(t);
+      parsed.push(JSON.parse(t) as LedgerRow);
     } catch {
       continue; // 깨진 줄은 라우트도 건너뛴다
     }
+  }
+  const live = new Map<string, LedgerRow>();
+  parsed.forEach((o, i) => {
+    const key = o.id ?? `__noid-${i}`;
+    const prev = live.get(key);
+    if (!prev || (o.recordedAt ?? "") >= (prev.recordedAt ?? "")) live.set(key, o);
+  });
+
+  for (const obj of live.values()) {
     const rows = obj.target?.tranches;
     if (!Array.isArray(rows)) continue;
     for (const row of rows) {

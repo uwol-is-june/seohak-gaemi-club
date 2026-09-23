@@ -219,6 +219,21 @@ export interface CallAggregate {
    */
   inProgressHoldOpportunityCostAvgPct: number | null;
   inProgressHoldCount: number;
+  /**
+   * 관망의 **순(net) 초과수익**(pp) — 부호 있는 값. 양수면 종목이 SPY 를 이겼다(= 기다린 비용),
+   * 음수면 SPY 에 미달했다(= 기다린 게 이득). `holdOpportunityCostAvgPct` 는 적중을 0 으로
+   * 뭉개서 **구조적으로 음수가 못 나온다** — 그것만 띄우면 "기다림이 옳았다"를 영원히
+   * 출력할 수 없는 계기가 된다. 편향 교정 지표가 스스로 편향되면 안 되므로 순수치를 같이 낸다.
+   */
+  holdNetExcessAvgPct: number | null;
+  inProgressHoldNetExcessAvgPct: number | null;
+  /**
+   * 뒤처지는(=종목이 SPY 초과) 관망 콜 수. 평균만 보면 **한 종목이 크게 도망간 것**과
+   * **전 종목이 고르게 뒤처지는 것**이 같아 보이는데, 전자는 개별 논제 문제이고 후자라야
+   * 프로세스 편향이다 — 처방이 정반대라 분해가 필요하다.
+   */
+  holdLaggingCount: number;
+  inProgressHoldLaggingCount: number;
 }
 
 const DAYS_PER_MONTH = 30.44;
@@ -353,6 +368,10 @@ export function scoreCall(call: RawCall, priceNow: number | null, today: Date): 
   return base;
 }
 
+function mean(xs: number[]): number | null {
+  return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+}
+
 export function aggregate(scored: ScoredCall[]): CallAggregate {
   const resolved = scored.filter((s) => s.status === "적중" || s.status === "빗나감");
   const hits = resolved.filter((s) => s.directionHit === true).length;
@@ -375,6 +394,11 @@ export function aggregate(scored: ScoredCall[]): CallAggregate {
     (s) => s.call === "hold" && s.status === "진행중" && typeof s.opportunityCostPct === "number"
   );
   const runningHoldCosts = runningHold.map((s) => s.opportunityCostPct as number);
+  // 부호 있는 순 초과수익 — 위 기회비용은 적중을 0 으로 깎아 평균이 항상 ≥0 이다.
+  const holdExcesses = holdResolved.map((s) => s.excessReturnPct as number);
+  const runningHoldExcesses = runningHold
+    .map((s) => s.excessReturnPct)
+    .filter((v): v is number => typeof v === "number");
 
   return {
     resolvedCount: n,
@@ -400,5 +424,9 @@ export function aggregate(scored: ScoredCall[]): CallAggregate {
       ? runningHoldCosts.reduce((a, b) => a + b, 0) / runningHoldCosts.length
       : null,
     inProgressHoldCount: runningHold.length,
+    holdNetExcessAvgPct: mean(holdExcesses),
+    inProgressHoldNetExcessAvgPct: mean(runningHoldExcesses),
+    holdLaggingCount: holdExcesses.filter((v) => v > 0).length,
+    inProgressHoldLaggingCount: runningHoldExcesses.filter((v) => v > 0).length,
   };
 }
