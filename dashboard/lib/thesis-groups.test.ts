@@ -8,7 +8,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { scoreCall, type RawCall, type ScoredCall } from "./calls.ts";
-import { detectConflict, groupTheses } from "./thesis-groups.ts";
+import { bandDrift, detectConflict, detectRefresh, groupTheses } from "./thesis-groups.ts";
 
 const failures: string[] = [];
 function check(name: string, got: unknown, want: unknown) {
@@ -118,6 +118,81 @@ check("논제 1건이면 충돌 없음", detectConflict([call({ skill: "a" })]),
   check("resolvedOnly 표시", groups[0].resolvedOnly, true);
 }
 
+// ── 갱신 필요 판정 ───────────────────────────────────────────────────────
+{
+  // 충돌 중 뒤처진 논제 → 그 스킬을 다시 돌려야 한다. 최신 쪽은 대상이 아니다.
+  const old = call({ skill: "investment-team", date: "2026-08-06", call: "hold", target: { low: 138, high: 172, horizonMonths: 12 } });
+  const fresh = call({ skill: "thesis-tracker", date: "2026-08-28", call: "hold", target: { low: 163, high: 205, horizonMonths: 12 } });
+  const flags = detectRefresh([fresh, old], true);
+  check("뒤처진 스킬만 갱신 대상", flags.map((f) => f.skill), ["investment-team"]);
+  check("뒤처짐 사유", flags[0]?.reasons[0]?.includes("22일 뒤처짐"), true);
+}
+{
+  // 충돌이 없으면 날짜 차이만으로는 갱신을 요구하지 않는다.
+  const flags = detectRefresh(
+    [
+      call({ skill: "a", date: "2026-08-28" }),
+      call({ skill: "b", date: "2026-08-06" }),
+    ],
+    false
+  );
+  check("합의 중이면 뒤처짐은 사유 아님", flags.length, 0);
+}
+{
+  // 분기 검토(90일)를 넘기면 충돌이 없어도 갱신 대상이다.
+  const flags = detectRefresh([call({ skill: "a", date: "2026-04-01" })], false);
+  check("분기 검토 경과 감지", flags[0]?.reasons[0]?.includes("분기 검토"), true);
+}
+{
+  // 밴드 이탈 — 요구 MOS 기준(티어 상대). skills/quality-tier.md 2.5단계.
+  // T1(요구 15%): 밴드 상단 $255 에 현재가 $354.97 → 이탈률 +39.2% > 15% → 발동.
+  const t1 = call(
+    { skill: "thesis-tracker", date: "2026-06-01", tier: "T1", requiredMosPct: 15,
+      target: { low: 205, high: 255, horizonMonths: 12 } },
+    354.97
+  );
+  check("밴드 이탈 감지(T1)", bandDrift(t1)?.driftPct.toFixed(1), "39.2");
+  check("밴드 이탈 → 갱신 필요", detectRefresh([t1], false)[0]?.reasons.some((r) => r.includes("밴드 이탈")), true);
+
+  // 같은 이탈률이라도 요구 MOS 가 크면 정상이다 — 이것이 "티어 상대"의 핵심.
+  // T3(요구 35%): 밴드 상단 $50 에 현재가 $66.76 → 이탈률 +33.5% < 35% → 미발동.
+  const t3 = call(
+    { skill: "thesis-tracker", date: "2026-06-01", tier: "T3", requiredMosPct: 35,
+      target: { low: 42, high: 50, horizonMonths: 12 } },
+    66.76
+  );
+  check("요구 MOS 큰 티어는 같은 이탈률에서 미발동", bandDrift(t3), null);
+
+  // 종전의 +20% 고정 기준이었다면 T3 도 발동했을 것이다(33.5% > 20%) — 회귀 방지.
+  check("고정 20% 기준이면 오발동했을 케이스", t3.priceNow! / 50 - 1 > 0.20, true);
+
+  // hold 가 아니면 보지 않는다(보유 중인 콜에 진입 밴드 규칙을 적용하면 안 된다).
+  check("keep 콜은 밴드 이탈 대상 아님", bandDrift(call(
+    { skill: "thesis-tracker", date: "2026-06-01", call: "keep", tier: "T1", requiredMosPct: 15,
+      target: { low: 205, high: 255, horizonMonths: 12 } }, 354.97
+  )), null);
+
+  // 재산출 직후(30일 이내)는 보지 않는다 — 결론이 catalyst-wait 면 밴드는 여전히 멀다.
+  // 가드가 없으면 방금 끝낸 검토를 즉시 다시 요구한다(2026-09-23 QLYS 에서 발견).
+  check("재산출 직후는 이탈 판정 제외", bandDrift(call(
+    { skill: "thesis-tracker", date: "2026-08-20", tier: "T2", requiredMosPct: 20,
+      target: { low: 93, high: 106, horizonMonths: 12 } }, 183.32
+  )), null);
+  // 30일이 지나면 같은 콜이 잡힌다.
+  check("30일 경과 후에는 이탈 판정 재개", bandDrift(call(
+    { skill: "thesis-tracker", date: "2026-07-20", tier: "T2", requiredMosPct: 20,
+      target: { low: 93, high: 106, horizonMonths: 12 } }, 183.32
+  ))?.driftPct.toFixed(1), "72.9");
+
+  // 요구 MOS 가 원장에 없으면 판정하지 않는다(추정 금지).
+  check("요구 MOS 결측이면 미판정", bandDrift(call(
+    { skill: "thesis-tracker", date: "2026-06-01", target: { low: 205, high: 255, horizonMonths: 12 } }, 354.97
+  )), null);
+}
+check("종료 종목은 갱신 요구 없음", groupTheses([
+  call({ skill: "a", date: "2026-01-01", call: "buy", target: { low: 250, high: 300, horizonMonths: 1 } }, 100),
+])[0].refresh.length, 0);
+
 // ── 실제 원장 ────────────────────────────────────────────────────────────
 const ledgerPath = fileURLToPath(new URL("../../data/calls.jsonl", import.meta.url));
 try {
@@ -144,6 +219,11 @@ try {
   console.log(`   원장 ${rows.length}콜 → ${groups.length}종목, 논제 2건 이상 ${multi.length}종목, 충돌 ${conflicting.length}종목`);
   for (const g of conflicting) {
     console.log(`   · ${g.ticker}: ${g.conflict!.reasons.join(" / ")}`);
+  }
+  const needsRefresh = groups.filter((g) => g.refresh.length > 0);
+  console.log(`   갱신 필요 ${needsRefresh.length}종목`);
+  for (const g of needsRefresh) {
+    console.log(`   · ${g.ticker}: ${g.refresh.map((f) => `${f.skill}(${f.date}) ${f.reasons.join(" · ")}`).join(" / ")}`);
   }
   if (groups.some((g) => g.active.length === 0)) {
     failures.push("[원장] 살아있는 논제가 0건인 종목이 생겼다 — 종목이 화면에서 사라진다");
