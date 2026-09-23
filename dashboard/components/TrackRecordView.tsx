@@ -7,7 +7,7 @@ import { groupTheses, entryTopPrice, type ThesisGroup, type RefreshFlag } from "
 import { parseTranches, pricedTranches, topTranchePrice } from "@/lib/tranche";
 import type { Holding } from "@/lib/toss";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
-import { TIER_META } from "./primitives";
+import { Delta, TIER_META } from "./primitives";
 import { LadderChart } from "./LadderChart";
 import { ReportModal } from "./ReportModal";
 
@@ -331,6 +331,23 @@ function TickerCard({
   // 내려와야 닿는 지점(진입·증액 래더)은 gap ≥ 0 이 '도달', 올라가야 닿는 목표가는 gap ≤ 0 이 '달성'.
   const reached = gapPct != null && (goal?.dir === "down" ? gapPct >= 0 : gapPct <= 0);
 
+  // 거리를 **막대로도** 보여준다(TASK-135). 종목이 10개를 넘으면 퍼센트 숫자만으로는
+  // "어느 게 더 가까운가"를 세로로 훑어 비교하기 어렵다. 40%를 '멀다'의 기준으로 잡는다 —
+  // 실제 관찰 논제의 거리가 8~34% 범위에 있어 이 안에서 차이가 드러난다.
+  const NEAR_SCALE = 40;
+  const nearPct =
+    gapPct == null ? null : Math.max(0, Math.min(100, (1 - Math.abs(gapPct) / NEAR_SCALE) * 100));
+
+  // 🔴 가격이 닿아도 집행하면 안 되는 차수가 몇 개인가.
+  // 프로젝트 규칙: "AND 조건이 붙은 차수는 가격만 닿아도 집행하지 않는다."
+  // 이게 펼쳐야만 보이면 접은 채로 훑다가 가격만 보고 오집행한다.
+  // ⚠️ 데이터에 있는 건 '조건이 붙어 있다'까지다 — 충족 여부는 기록되지 않는다.
+  const gated = useMemo(() => {
+    const all = group.active.flatMap((c) => pricedTranches(parseTranches(c.target?.tranches)));
+    const withCond = all.filter((t) => t.condition).length;
+    return all.length > 0 && withCond > 0 ? { withCond, total: all.length } : null;
+  }, [group.active]);
+
   // 추격 금지선 초과 — **접힌 줄에서 바로 보여야 하는 단 하나의 경보**(TASK-113).
   // 이 선을 넘으면 어떤 차수도 활성화되지 않는다. 즉 '가격이 닿아도 사지 않는다'가
   // 되는데, 그 사실을 펼쳐야만 알 수 있으면(LadderChart 안에만 있었다) 접은 채로
@@ -398,13 +415,15 @@ function TickerCard({
             <div className="font-mono text-ink text-base tracking-[-0.02em]">
               {priceNow != null ? fmtPrice(priceNow) : "—"}
             </div>
-            {/* 전일 대비 — 금액과 %를 함께. 색은 한국식(상승 빨강 / 하락 파랑). */}
-            <div className={`font-mono text-[11px] ${moveColor(dayChangePct)}`}>
+            {/* 전일 대비 — 금액은 Delta(색+부호+도형 3겹)가 지고, % 는 괄호로 덧붙인다. */}
+            <div className="flex items-center justify-end gap-1 font-mono text-[11px]">
               {dayChange != null && dayChangePct != null ? (
                 <>
-                  {dayChangePct >= 0 ? "▲" : "▼"} ${Math.abs(dayChange).toFixed(2)} (
-                  {dayChangePct >= 0 ? "+" : ""}
-                  {dayChangePct.toFixed(2)}%)
+                  <Delta value={dayChange} format="currency" size="sm" bold={false} />
+                  <span className={moveColor(dayChangePct)}>
+                    ({dayChangePct >= 0 ? "+" : ""}
+                    {dayChangePct.toFixed(2)}%)
+                  </span>
                 </>
               ) : (
                 <span className="text-mute">전일 대비 —</span>
@@ -431,27 +450,48 @@ function TickerCard({
               <span className="font-mono text-mute">{held ? "—" : "미보유"}</span>
             )}
           </span>
-          <span className="flex items-center gap-1.5 min-w-0">
-            <span className="eyebrow text-[9px] shrink-0">{goal?.label ?? "집행까지"}</span>
-            {goal == null || gapPct == null ? (
-              <span
-                className="font-mono text-mute"
-                title="관망 논제의 진입 래더도, 매수·보유 논제의 목표 상단도 없어 거리를 산출할 수 없습니다."
-              >
-                ⬛ 미산출
-              </span>
-            ) : reached ? (
-              <span className="font-mono text-success truncate">
-                {goal.reached} · {fmtPrice(goal.price)}
-              </span>
-            ) : (
-              <>
-                <span className="font-mono text-body">
-                  {gapPct >= 0 ? "+" : ""}
-                  {gapPct.toFixed(1)}%
+          <span className="flex min-w-0 flex-col gap-1">
+            <span className="flex items-center gap-1.5 min-w-0">
+              <span className="eyebrow text-[9px] shrink-0">{goal?.label ?? "집행까지"}</span>
+              {goal == null || gapPct == null ? (
+                <span
+                  className="font-mono text-mute"
+                  title="관망 논제의 진입 래더도, 매수·보유 논제의 목표 상단도 없어 거리를 산출할 수 없습니다."
+                >
+                  ⬛ 미산출
                 </span>
-                <span className="font-mono text-[10px] text-mute truncate">→ {fmtPrice(goal.price)}</span>
-              </>
+              ) : reached ? (
+                <span className="font-mono text-success truncate">
+                  {goal.reached} · {fmtPrice(goal.price)}
+                </span>
+              ) : (
+                <>
+                  <span className="font-mono text-body">
+                    {gapPct >= 0 ? "+" : ""}
+                    {gapPct.toFixed(1)}%
+                  </span>
+                  <span className="font-mono text-[10px] text-mute truncate">→ {fmtPrice(goal.price)}</span>
+                </>
+              )}
+              {gated && (
+                <span
+                  className="ml-auto shrink-0 rounded-full bg-warn/15 px-1.5 py-px text-[10px] font-medium text-warn"
+                  title={`집행 차수 ${gated.total}개 중 ${gated.withCond}개에 AND 조건이 붙어 있습니다.
+가격이 닿아도 조건이 충족되지 않으면 집행하지 않습니다.
+(충족 여부는 기록되지 않으므로 논제를 펼쳐 직접 확인하세요.)`}
+                >
+                  조건부 {gated.withCond}/{gated.total}
+                </span>
+              )}
+            </span>
+            {/* 거리 게이지 — 채워질수록 집행에 가깝다. 도달하면 색이 바뀐다. */}
+            {goal != null && nearPct != null && (
+              <span className="block h-1 w-full overflow-hidden rounded-full bg-canvas-soft">
+                <span
+                  className={`block h-full rounded-full ${reached ? "bg-success" : "bg-down"}`}
+                  style={{ width: `${reached ? 100 : nearPct}%` }}
+                />
+              </span>
             )}
           </span>
         </div>
