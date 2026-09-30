@@ -92,11 +92,17 @@ def verify_market_cap(price, shares, reported_cap, currency=""):
     r = exact(reported_cap)
 
     calculated = _CTX.multiply(p, s)
-    deviation = abs(float(calculated - r) / float(r)) * 100 if r != 0 else 0
 
     print("=" * 60)
     print("Market Cap Verification")
     print("=" * 60)
+    # 보고 시총이 0 이하이면 비교 기준이 없다 — 예전엔 편차 0% 로 '일치' 처리됐다(TASK-151).
+    if r <= 0:
+        print(f"  Calculated Cap:     {fmt_number(calculated)} {currency}")
+        print(f"  Reported Cap:       {fmt_number(r)} {currency}")
+        print("  ❌ 보고 시총이 0 이하 — 비교 불가. 출처의 시총 값을 다시 확인하세요.")
+        return False
+    deviation = abs(float(calculated - r) / float(r)) * 100
     print(f"  Price:              {p} {currency}")
     print(f"  Shares:             {fmt_number(s)}")
     print(f"  Calculated Cap:     {fmt_number(calculated)} {currency}")
@@ -211,7 +217,13 @@ def cross_validate(field_name, source_values: dict, unit="", tolerance_pct=2.0):
 
     all_ok = True
     for src, val in values.items():
-        dev = abs(float(val) - median) / median * 100 if median != 0 else 0
+        # 🔴 분모는 abs(median) — 순손실·음수 FCF 처럼 기준값이 음수면 편차가 음수가 되어
+        # 어떤 불일치도 '허용 범위 이내'로 통과했다(TASK-151). 기준값이 0 이면 상대편차를 정의할
+        # 수 없으므로 값도 0 일 때만 일치, 아니면 불일치로 본다(0 으로 뭉개 통과시키지 않는다).
+        if median != 0:
+            dev = abs(float(val) - median) / abs(median) * 100
+        else:
+            dev = 0.0 if float(val) == 0 else float("inf")
         status = "✅" if dev <= tolerance_pct else "❌"
         if dev > tolerance_pct:
             all_ok = False

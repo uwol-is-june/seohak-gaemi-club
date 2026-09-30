@@ -4,26 +4,28 @@
 // (콜의 불변성 원칙: 채점은 매 요청마다 라이브로 하되 원장 값은 절대 수정하지 않는다.)
 
 import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { requireAuth } from "@/lib/api-auth";
-import { BENCHMARK_TICKER, aggregate, dedupeCalls, scoreBenchmark, scoreCall, type RawCall } from "@/lib/calls";
+import {
+  BENCHMARK_TICKER,
+  aggregate,
+  dedupeCalls,
+  scoreBenchmark,
+  scoreCall,
+  type ClosePoint,
+  type RawCall,
+} from "@/lib/calls";
 import { mapLimit } from "@/lib/map-limit";
+import { repoPath } from "@/lib/repo-root";
+import { fetchQuote, toYahooSymbol } from "@/lib/yahoo";
 
-// dev 서버 cwd는 dashboard/ 이지만, 실행 위치에 흔들리지 않게 후보 경로를 순서대로 시도한다.
-const LEDGER_CANDIDATES = [
-  path.join(process.cwd(), "..", "data", "calls.jsonl"),
-  path.join(process.cwd(), "data", "calls.jsonl"),
-];
-
+// 원장 경로는 repoPath() 로 푼다(TASK-157) — 보고서·설정과 같은 루트 해석을 써야
+// 실행 위치가 바뀌어도 한쪽만 못 찾는 일이 없다.
 async function readLedger(): Promise<string | null> {
-  for (const p of LEDGER_CANDIDATES) {
-    try {
-      return await readFile(p, "utf-8");
-    } catch {
-      // 다음 후보 시도
-    }
+  try {
+    return await readFile(repoPath("data", "calls.jsonl"), "utf-8");
+  } catch {
+    return null;
   }
-  return null;
 }
 
 // jsonl 파싱 — 깨진 줄은 건너뛴다(원장 전체를 못 읽는 것보다 낫다).
@@ -44,53 +46,58 @@ function parseCalls(raw: string): RawCall[] {
   return calls;
 }
 
-function toYahooSymbol(ticker: string): string {
-  return ticker.trim().toUpperCase().replace(/[.\s]/g, "-");
-}
-
-// 현재가 + 전일 종가. 둘 다 같은 chart 메타에 들어 있어 전일 대비 표시(TASK-97)에
-// 추가 요청이 필요 없다. 전일 종가는 표시 전용이고 채점(scoreCall)에는 쓰지 않는다.
-// (같은 계산이 /api/quotes 에도 있다 — 그쪽은 daily check 용 별도 캐시 정책을 쓴다.)
-async function fetchQuote(ticker: string): Promise<{ price: number | null; prevClose: number | null }> {
+// 콜 이후 일별 종가 — hold 터치·호라이즌 동결 판정용(TASK-141). 티커의 가장 이른 콜부터 받는다.
+// 미조정 종가(quote.close)를 쓴다: priceAtCall 이 미조정 시세이고 fill_probability.py 도 같은 값을 본다.
+// 실패하면 null — scoreCall 이 현재가만으로 폴백한다(tools/score_calls.py fetch_close_history 와 동일).
+async function fetchCloseHistory(ticker: string, since: string): Promise<ClosePoint[] | null> {
+  const start = Date.parse(`${since}T00:00:00Z`);
+  if (Number.isNaN(start)) return null;
+  const period1 = Math.floor(start / 1000);
+  const period2 = Math.floor(Date.now() / 1000) + 86_400;
   try {
     const res = await fetch(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(toYahooSymbol(ticker))}?range=1d&interval=1d`,
-      { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }
-    );
-    if (!res.ok) return { price: null, prevClose: null };
-    const data = await res.json();
-    const meta = data?.chart?.result?.[0]?.meta;
-    const price = typeof meta?.regularMarketPrice === "number" ? meta.regularMarketPrice : null;
-    const prevClose =
-      typeof meta?.chartPreviousClose === "number"
-        ? meta.chartPreviousClose
-        : typeof meta?.previousClose === "number"
-          ? meta.previousClose
-          : null;
-    return { price, prevClose };
-  } catch {
-    return { price: null, prevClose: null };
-  }
-}
-
-// 벤치마크(SPY) 일별 조정종가. 기회비용 채점(TASK-100)의 기준선 —
-// "안 샀으면 그 돈이 있었을 곳"이 현금이 아니라 시장이기 때문이다.
-// 콜마다 부르지 않고 한 번만 받아 날짜로 조회한다(콜 23건 → 요청 1건).
-type BenchmarkSeries = { ts: number[]; closes: number[] };
-
-async function fetchBenchmarkSeries(): Promise<BenchmarkSeries | null> {
-  try {
-    const res = await fetch(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${BENCHMARK_TICKER}?range=5y&interval=1d&includeAdjustedClose=true`,
+      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(toYahooSymbol(ticker))}?period1=${period1}&period2=${period2}&interval=1d`,
       { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }
     );
     if (!res.ok) return null;
     const data = await res.json();
     const result = data?.chart?.result?.[0];
     const ts: unknown = result?.timestamp;
-    const adj: unknown = result?.indicators?.adjclose?.[0]?.adjclose;
+    const closes: unknown = result?.indicators?.quote?.[0]?.close;
+    if (!Array.isArray(ts) || !Array.isArray(closes)) return null;
+    const out: ClosePoint[] = [];
+    for (let i = 0; i < ts.length; i++) {
+      const t = ts[i];
+      const c = closes[i];
+      if (typeof t === "number" && typeof c === "number" && Number.isFinite(c)) {
+        out.push({ date: new Date(t * 1000).toISOString().slice(0, 10), close: c });
+      }
+    }
+    return out.length > 0 ? out : null;
+  } catch {
+    return null;
+  }
+}
+
+// 벤치마크(SPY) 일별 **미조정** 종가. 기회비용 채점(TASK-100)의 기준선 —
+// "안 샀으면 그 돈이 있었을 곳"이 현금이 아니라 시장이기 때문이다.
+// 콜마다 부르지 않고 한 번만 받아 날짜로 조회한다(콜 23건 → 요청 1건).
+// 🔴 종목이 미조정 가격이라 SPY 도 미조정(가격수익률)으로 맞춘다(TASK-152). SPY 만 배당조정이면
+// SPY 수익률이 연 ~1.3%p 부풀어 hold/avoid 쪽으로 채점이 기운다. tools/score_calls.py 와 같은 기준.
+type BenchmarkSeries = { ts: number[]; closes: number[] };
+
+async function fetchBenchmarkSeries(): Promise<BenchmarkSeries | null> {
+  try {
+    const res = await fetch(
+      `https://query1.finance.yahoo.com/v8/finance/chart/${BENCHMARK_TICKER}?range=5y&interval=1d`,
+      { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const result = data?.chart?.result?.[0];
+    const ts: unknown = result?.timestamp;
     const raw: unknown = result?.indicators?.quote?.[0]?.close;
-    const series = Array.isArray(adj) ? adj : Array.isArray(raw) ? raw : null;
+    const series = Array.isArray(raw) ? raw : null;
     if (!Array.isArray(ts) || !series || ts.length !== series.length) return null;
 
     // 결측 종가(휴장·데이터 공백)는 버린다 — 그대로 두면 인덱스가 어긋난다.
@@ -154,18 +161,25 @@ export async function GET() {
   // 티커별로 한 번씩만 시세 조회(중복 콜 절약).
   const tickers = Array.from(new Set(calls.map((c) => c.ticker)));
   // 아웃바운드 동시성 제한(TASK-70). 벤치마크 시계열은 콜 수와 무관하게 1건이라 같이 태운다.
-  const [quoteEntries, benchmark] = await Promise.all([
+  const firstDate = new Map<string, string>();
+  for (const c of calls) {
+    const prev = firstDate.get(c.ticker);
+    if (!prev || c.date < prev) firstDate.set(c.ticker, c.date);
+  }
+  const [quoteEntries, pathEntries, benchmark] = await Promise.all([
     mapLimit(tickers, 6, async (t) => [t, await fetchQuote(t)] as const),
+    mapLimit(tickers, 6, async (t) => [t, await fetchCloseHistory(t, firstDate.get(t) ?? "")] as const),
     fetchBenchmarkSeries(),
   ]);
   const quoteMap = new Map(quoteEntries);
+  const pathMap = new Map(pathEntries);
   // 같은 날짜 콜이 여러 건이므로 날짜별로 한 번만 계산해 재사용한다.
   const benchmarkByDate = new Map<string, number | null>();
 
   const scored = calls
     .map((c) => {
       const q = quoteMap.get(c.ticker);
-      const scoredCall = scoreCall(c, q?.price ?? null, today);
+      const scoredCall = scoreCall(c, q?.price ?? null, today, pathMap.get(c.ticker));
       // 전일 대비는 채점 뒤에 얹는다 — scoreCall 의 입출력을 건드리지 않아야
       // tools/score_calls.py 와의 파리티 테스트가 그대로 유효하다.
       const price = q?.price ?? null;

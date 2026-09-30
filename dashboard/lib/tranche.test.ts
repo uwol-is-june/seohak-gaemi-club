@@ -7,7 +7,7 @@
 // 실행(Node 24+ 타입 스트리핑):  node dashboard/lib/tranche.test.ts
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { parseTranche, parseTranches, pricedTranches, topTranchePrice } from "./tranche.ts";
+import { ladderGating, parseTranche, parseTranches, pricedTranches, topTranchePrice } from "./tranche.ts";
 
 const failures: string[] = [];
 function check(name: string, got: unknown, want: unknown) {
@@ -83,6 +83,25 @@ function check(name: string, got: unknown, want: unknown) {
   check("최상단 차수 가격", topTranchePrice(list), 185);
 }
 check("빈 입력", parseTranches(undefined).length, 0);
+
+// ── 1.5) 조건 대기 집계 — AND: 공통조건은 래더 전체에 걸린다 (TASK-140) ───────
+{
+  const g = ladderGating(parseTranches(["1차 ≤$320 (30%)", "2차 ≤$290 (70%) — 조건 없음", "AND: ADR 프리미엄 레인지 하단"]));
+  check("공통조건: 전 차수 gated", [g.withCond, g.total], [2, 2]);
+  check("공통조건: 원문", g.common, ["ADR 프리미엄 레인지 하단"]);
+}
+{
+  const g = ladderGating(parseTranches(["1차 ≤$185 (25%) — AND 계약화 공시", "2차 ≤$148 (75%) — 조건 없음"]));
+  check("차수 조건만: 해당 차수만", [g.withCond, g.total], [1, 2]);
+}
+{
+  const g = ladderGating(parseTranches(["1차 ≤$185 (25%)", "2차 ≤$148 (75%)"]));
+  check("조건 없음: 0", [g.withCond, g.total], [0, 2]);
+}
+{
+  const g = ladderGating(parseTranches(["AND: 조건만 있고 차수 없음"]));
+  check("차수 없는 공통조건: total 0", [g.withCond, g.total], [0, 0]);
+}
 
 // ── 2) 실제 원장 전수 ──────────────────────────────────────────────────
 const ledgerPath = fileURLToPath(new URL("../../data/calls.jsonl", import.meta.url));

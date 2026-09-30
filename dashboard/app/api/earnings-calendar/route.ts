@@ -14,6 +14,7 @@
 // 화면은 "발표일 미상"으로 표시하고 앱은 계속 동작한다.
 
 import { requireAuth } from "@/lib/api-auth";
+import { toYahooSymbol } from "@/lib/yahoo";
 import { mapLimit } from "@/lib/map-limit";
 // 응답 타입·파서는 화면과 공유한다(lib/earnings-day.ts, 테스트도 거기 붙어 있다).
 import { emptyEarnings, parseEarnings, type EarningsInfo } from "@/lib/earnings-day";
@@ -27,13 +28,20 @@ const cache = new Map<string, { info: EarningsInfo; expiresAt: number }>();
 let creds: { cookie: string; crumb: string; expiresAt: number } | null = null;
 const CREDS_TTL_MS = 60 * 60 * 1000; // 1시간
 
-function toYahooSymbol(ticker: string): string {
-  return ticker.trim().toUpperCase().replace(/[.\s]/g, "-");
-}
+// 진행 중인 획득 요청 — 콜드 스타트에 mapLimit(6)이 동시에 getCreds 를 부르면 캐시가 비어 있어
+// 쿠키·crumb 요청이 6쌍 나간다(차단당하기 쉬운 바로 그 패턴). 첫 요청을 모두가 기다리게 한다(TASK-157).
+let credsInFlight: Promise<{ cookie: string; crumb: string } | null> | null = null;
 
 // Yahoo 쿠키 + crumb 획득. 실패 시 null(→ 호출부는 date=null로 graceful).
 async function getCreds(): Promise<{ cookie: string; crumb: string } | null> {
   if (creds && creds.expiresAt > Date.now()) return creds;
+  credsInFlight ??= fetchCreds().finally(() => {
+    credsInFlight = null;
+  });
+  return credsInFlight;
+}
+
+async function fetchCreds(): Promise<{ cookie: string; crumb: string } | null> {
   try {
     // 1) 쿠키 획득. fc.yahoo.com은 404를 주기도 하지만 Set-Cookie는 내려준다.
     const cRes = await fetch("https://fc.yahoo.com/", {

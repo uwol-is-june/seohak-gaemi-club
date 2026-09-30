@@ -85,15 +85,29 @@ def compute_axes(annual: dict) -> dict:
     rows = [(y, annual[y].get("values", {})) for y in years]
 
     # (1) ROIC — 투하자본이 0 이하인 해는 버린다(의미가 없다).
+    #
+    # 🔴 자기자본 음수(자본잠식)는 '데이터 없음'이 아니다(TASK-150). MCD·SBUX 처럼 자사주를
+    # 수십 년 사들인 컴파운더는 장부 자본이 음수라 `자본 + 장기부채 − 현금` 이 0 이하로 떨어지는
+    # 해가 생기고, 예전엔 그 해를 버린 뒤 ROE 대체(자본 ≤ 0 이면 또 버림)까지 비어
+    # "데이터부족 → 무조건 T3" 가 됐다. 그런 해는 **총부채 + 자본 − 현금**(= 총자산 − 현금)을
+    # 투하자본으로 쓴다 — 영업부채까지 분모에 넣어 ROIC 가 낮게 나오는 보수적 대체다.
     roics = []
+    alt_invested_years = 0
+    negative_equity_years = 0
     for _, v in rows:
         ebit = _num(v.get("operatingIncome"))
         eq = _num(v.get("equity"))
         ltd = _num(v.get("longTermDebt"))
         cash = _num(v.get("cash"))
+        liab = _num(v.get("totalLiabilities"))
+        if eq is not None and eq < 0:
+            negative_equity_years += 1
         if ebit is None or eq is None:
             continue
         invested = eq + (ltd or 0) - (cash or 0)
+        if invested <= 0 and liab is not None:
+            invested = liab + eq - (cash or 0)
+            alt_invested_years += 1
         if invested <= 0:
             continue
         roics.append(ebit * (1 - TAX_RATE) / invested * 100)
@@ -134,6 +148,10 @@ def compute_axes(annual: dict) -> dict:
     revs = [(y, r) for y, r in revs if r is not None]
     decline_years, shallow_declines = [], []
     for i in range(1, len(revs)):
+        # 연도가 비면(결측·라벨 충돌로 한 해가 빠짐) 2년치 변화를 1년 역성장으로 세게 된다 —
+        # 바로 이웃한 회계연도 쌍만 비교한다(TASK-149).
+        if int(revs[i][0]) - int(revs[i - 1][0]) != 1:
+            continue
         prev, cur = revs[i - 1][1], revs[i][1]
         if cur >= prev or not prev:
             continue
@@ -191,6 +209,9 @@ def compute_axes(annual: dict) -> dict:
         "roicPct": round(sum(roics) / len(roics), 1) if roics else None,
         "roicIsRoeFallback": roe_fallback,
         "roicYears": len(roics),
+        # 투하자본을 총부채+자본−현금으로 대체한 해 수 · 자기자본이 음수였던 해 수(TASK-150).
+        "roicAltInvestedYears": alt_invested_years,
+        "negativeEquityYears": negative_equity_years,
         "fcfMarginPct": round(sum(fcf_margins) / len(fcf_margins), 1) if fcf_margins else None,
         "fcfYears": len(fcf_margins),
         "declineYearCount": len(decline_years) if len(revs) >= 2 else None,
@@ -271,8 +292,12 @@ def judge(axes: dict, moat: int | None) -> dict:
     # 하드 T3 (2): 모르면 보수적으로.
     missing = [k for k, v in checks.items() if v is None]
     if missing:
-        return {"tier": "T3", "checks": checks, "missing": missing,
-                "reason": f"축 {', '.join(missing)} 데이터부족 — 표준상 무조건 T3(모르면 보수적으로)"}
+        reason = f"축 {', '.join(missing)} 데이터부족 — 표준상 무조건 T3(모르면 보수적으로)"
+        # 자본잠식 때문에 비었으면 '데이터 없음'과 구분해 적는다 — 사람이 T3 를 뒤집을 근거다.
+        if "roic" in missing and axes.get("negativeEquityYears"):
+            reason += (f" · ⚠️ ROIC 결측은 자기자본 음수({axes['negativeEquityYears']}개 연도, 자사주 매입 등) 때문 —"
+                       " 데이터 없음이 아니다. 투하자본을 직접 확인해 재판정할 것")
+        return {"tier": "T3", "checks": checks, "missing": missing, "reason": reason}
 
     passed = sum(1 for v in checks.values() if v)
     if passed == 5:

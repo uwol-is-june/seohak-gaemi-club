@@ -427,9 +427,6 @@ python3 tools/record_call.py --ticker {티커} --skill {스킬} --call {콜} \
   --tier {T1|T2|T3} --required-mos {요구 MOS %} ...
 ```
 
-> ⚠️ `--tier`/`--required-mos` 플래그는 **[TASK-99]에서 스키마와 함께 추가**된다.
-> 그 전까지는 보고서 본문의 "퀄리티 티어 판정" 절이 유일한 기록처다.
-
 ---
 
 ## 흔한 오용 (하지 말 것)

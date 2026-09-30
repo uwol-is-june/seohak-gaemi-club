@@ -4,7 +4,7 @@
 
 **혼자서도 투자 리서치 팀 하나를 굴리기 위한 도구 모음입니다.**
 
-[Claude Code](https://claude.ai/code) 위에서 동작하는 **미국 주식 가치투자 리서치 Skill 12개**와,
+[Claude Code](https://claude.ai/code) 위에서 동작하는 **미국 주식 가치투자 리서치 Skill 13개**와,
 그 결과물을 모아 보는 **웹 대시보드**로 이루어져 있습니다.
 버핏 · 멍거 · 단융핑 · 리루 — 네 명의 가치투자 대가가 쓰는 판단 기준을 각각의 AI 에이전트로 만들어,
 **서로 반박하게 시켜** 한 종목을 뜯어봅니다.
@@ -22,7 +22,7 @@
 - [이게 뭔가요?](#이게-뭔가요)
 - [그냥 AI한테 물어보면 안 되나요?](#그냥-ai한테-물어보면-안-되나요)
 - [빠른 시작](#빠른-시작)
-- [스킬 12개](#스킬-12개)
+- [스킬 13개](#스킬-13개)
 - [파이썬 도구](#파이썬-도구)
 - [대시보드](#대시보드)
 - [데이터 소스](#데이터-소스)
@@ -95,12 +95,12 @@ cd seohak-gaemi-club
 
 mkdir -p ~/.claude/commands
 cp skills/*.md ~/.claude/commands/
-rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
+rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-tier}.md
 ```
 
-> ⚠️ **마지막 줄을 빼지 마세요.** `skills/` 안의 이 3개는 실행 스킬이 아니라 다른 스킬이
+> ⚠️ **마지막 줄을 빼지 마세요.** `skills/` 안의 이 4개는 실행 스킬이 아니라 다른 스킬이
 > 참조하는 **공용 표준 문서**입니다. 슬래시 커맨드로 설치하면 호출해도 하는 일이 없으면서
-> 오발동 대상만 늘어납니다. 실제 설치 대상은 **실행 스킬 12개**입니다.
+> 오발동 대상만 늘어납니다. 실제 설치 대상은 **실행 스킬 13개**입니다.
 
 ### 3. 사용
 
@@ -133,7 +133,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 
 ---
 
-## 스킬 12개
+## 스킬 13개
 
 ### 리서치
 
@@ -171,6 +171,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 | 스킬 | 하는 일 |
 |---|---|
 | `/investment-article` | 완성된 리서치를 블로그·뉴스레터용 아티클로 변환 |
+| `/article-cards` | 발행된 아티클을 SNS 카드뉴스(PNG 1080×1350)로 변환 — 새로 조사하지 않는 변환기 |
 
 ### 공용 표준 문서 (슬래시 커맨드 아님)
 
@@ -181,6 +182,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget}.md
 | `skills/data-confidence.md` | 신뢰도 등급 (🟢🟡🔴⬛), 주장 유형 태그, 대시보드가 파싱하는 `<!-- confidence-summary -->` 블록 |
 | `skills/financial-data.md` | 출처 우선순위, 교차검증 오차 임계값 (1% / 5%), SEC 공시 유형 |
 | `skills/token-budget.md` | 토큰 규율 TB-1~TB-7 — 손자 에이전트 금지, 재시도 1회, 최근 산출물 재사용 |
+| `skills/quality-tier.md` | 퀄리티 티어 T1~T3 와 티어별 요구 안전마진 — `tools/quality_tier.py` 실행본의 판정 기준 |
 
 ---
 
@@ -422,7 +424,7 @@ Copyright (c) 2026 xbtlin (원본) · uwol-is-june (US Edition).
 
 ## 2. 스킬 변경
 
-원본 20개 → US Edition 15개 파일 (**실행 스킬 12개 + 공용 표준 문서 3개**).
+원본 20개 → US Edition 17개 파일 (**실행 스킬 13개 + 공용 표준 문서 4개**).
 
 ### 새로 만든 것
 
@@ -469,7 +471,7 @@ Copyright (c) 2026 xbtlin (원본) · uwol-is-june (US Edition).
 추정 금지"를 **선언하게 만들어** 보고서를 정직하게 유지시킵니다.
 
 **스킬 수를 줄인 게 개선입니다.** 슬래시 커맨드가 20개면 무엇을 언제 쓸지 헷갈리고,
-Claude가 엉뚱한 스킬을 오발동시킵니다. 지금은 **12개**이고, 각각이 언제 쓰이는지 겹치지 않습니다.
+Claude가 엉뚱한 스킬을 오발동시킵니다. 지금은 **13개**이고, 각각이 언제 쓰이는지 겹치지 않습니다.
 
 ### 역할 분담을 계약으로 고정
 
@@ -625,7 +627,7 @@ US Edition은 콜을 낼 때마다 `data/calls.jsonl` 에 **append-only로 박�
 | **비용** | 토큰 규율로 재시도 폐기분 제거 (실측 50.4M → 정상 범위 5~10M) |
 | **관리성** | 대시보드로 수십 개 보고서를 분야·섹터·종목 위계로 탐색 |
 | **이식성** | 절대경로 제거 — 어느 머신에서 클론해도 동작 |
-| **명료성** | 스킬 20개 → 12개. 역할 중복·비데이터 스킬 제거로 오발동 감소 |
+| **명료성** | 스킬 20개 → 13개. 역할 중복·비데이터 스킬 제거로 오발동 감소 |
 | **자기교정** | 스킬을 **실제로 돌려서** 결함을 찾고 그 자리에서 고칩니다. 첫 `/earnings-team` 실행에서 4건(3단계 병렬 오류·합성 시 원문 대조 누락·서브보고서 신뢰도 블록 누락·SEC UA 미문서화)을 찾아 수정했습니다 |
 | **판단의 이력** | 틀린 판단도 문서에 남깁니다. `docs/function.md` 는 폐지 결정의 근거뿐 아니라 **처음 내세웠다가 틀린 근거**까지 기록합니다 — 나중에 되돌릴 때 오염된 전제로 판단하지 않도록 |
 

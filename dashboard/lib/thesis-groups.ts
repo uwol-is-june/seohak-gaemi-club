@@ -11,7 +11,7 @@
 
 // node 로 직접 돌리는 테스트가 있어 값 import 는 확장자를 붙인다(lib/*.test.ts 규약).
 import type { ScoredCall, CallType } from "./calls";
-import { parseTranches, topTranchePrice } from "./tranche.ts";
+import { parseTranches, pricedTranches, topTranchePrice } from "./tranche.ts";
 
 /** 최상단 차수 가격이 이만큼 벌어지면 "어디부터 사기 시작하는가"가 다른 것으로 본다(%). */
 const TOP_PRICE_GAP_PCT = 15;
@@ -58,6 +58,62 @@ export function entryTopPrice(c: ScoredCall): number | null {
   if (top != null) return top;
   if (c.call !== "hold") return null;
   return typeof c.target?.high === "number" ? c.target.high : null;
+}
+
+/** 종목 하나의 '다음 집행 지점' — 접힌 줄의 거리 표시와 '집행까지 가까운 순' 정렬이 함께 쓴다. */
+export interface GroupGoal {
+  label: "진입까지" | "증액까지" | "목표까지";
+  price: number;
+  reached: "도달" | "달성";
+  /** down = 내려와야 닿는 집행 지점(진입·증액) · up = 올라가야 닿는 목표가(집행 지점 아님). */
+  dir: "down" | "up";
+}
+
+/**
+ * 종목 단위 집행 지점 (TASK-146).
+ *
+ * 🔴 기준가는 **대표 논제(lead)의 방향**이 정하고, 값은 **같은 방향의 살아있는 논제 전체**에서
+ * 가장 먼저 닿는(가장 비싼) 지점을 쓴다. 예전엔 정렬은 lead 하나만, 표시는 전체 max 를 봐서
+ * NVDA·TSM 처럼 논제가 여럿인 종목에서 정렬 순서와 화면 숫자가 어긋났다.
+ *
+ * - hold      → 진입 래더 최상단(없으면 밴드 상단) · "진입까지" · down
+ * - buy/keep  → 증액 래더 최상단 · "증액까지" · down.
+ *               래더가 없으면 목표 상단으로 폴백하되 "목표까지" · **up** — 집행 지점이 아니다(TASK-114).
+ * - avoid     → null (채점에 쓰지 않는 참고 밴드라 거리를 말하지 않는다)
+ */
+export function groupGoal(g: { active: ScoredCall[]; history: ScoredCall[] }): GroupGoal | null {
+  const lead = g.active[0] ?? g.history[0];
+  if (!lead) return null;
+  if (lead.call === "hold") {
+    const tops = g.active
+      .filter((c) => c.call === "hold")
+      .map(entryTopPrice)
+      .filter((p): p is number => p != null);
+    if (tops.length === 0) return null;
+    return { label: "진입까지", price: Math.max(...tops), reached: "도달", dir: "down" };
+  }
+  if (lead.call === "buy" || lead.call === "keep") {
+    const tops = g.active
+      .filter((c) => c.call === "buy" || c.call === "keep")
+      .map((c) => topTranchePrice(parseTranches(c.target?.tranches)))
+      .filter((p): p is number => p != null);
+    if (tops.length > 0) return { label: "증액까지", price: Math.max(...tops), reached: "도달", dir: "down" };
+    const hi = lead.target?.high;
+    return typeof hi === "number" ? { label: "목표까지", price: hi, reached: "달성", dir: "up" } : null;
+  }
+  return null;
+}
+
+/**
+ * '집행까지 가까운 순' 정렬 키 — 현재가에서 집행 지점까지의 상대 거리(절대값).
+ * 집행 지점이 아닌 목표가(dir="up")·미산출은 ∞ 로 뒤에 보낸다.
+ */
+export function goalGapKey(g: { active: ScoredCall[]; history: ScoredCall[] }): number {
+  const goal = groupGoal(g);
+  const lead = g.active[0] ?? g.history[0];
+  const now = lead?.priceNow;
+  if (!goal || goal.dir === "up" || now == null || now <= 0) return Number.POSITIVE_INFINITY;
+  return Math.abs((goal.price - now) / now);
 }
 
 function bandOf(c: ScoredCall): [number, number] | null {
@@ -176,15 +232,36 @@ function daysBetween(a: string, b: string): number {
  */
 export function bandDrift(
   c: ScoredCall
-): { driftPct: number; requiredMosPct: number } | null {
+): { driftPct: number; requiredMosPct: number; mosFromTier: boolean } | null {
   if (c.call !== "hold") return null;
   if (c.elapsedDays < FRESH_BAND_DAYS) return null;
   const high = c.target?.high;
-  const mos = c.requiredMosPct;
   if (c.priceNow == null || typeof high !== "number" || high <= 0) return null;
-  if (typeof mos !== "number" || !Number.isFinite(mos)) return null;
+  // 원장에 요구 MOS 가 없으면 **티어 상한**으로 폴백한다(CLAUDE.md "없으면 티어 상한 T1 15%·
+  // T2 30%·T3 40%") — TASK-148. 예전엔 null 을 돌려 MOS 를 안 적은 콜은 판정 대상에서 조용히 빠졌다.
+  const recorded = typeof c.requiredMosPct === "number" && Number.isFinite(c.requiredMosPct);
+  const mos = recorded ? (c.requiredMosPct as number) : c.tier ? TIER_MAX_MOS[c.tier] : null;
+  if (mos == null) return null;
   const driftPct = (c.priceNow / high - 1) * 100;
-  return driftPct > mos ? { driftPct, requiredMosPct: mos } : null;
+  return driftPct > mos ? { driftPct, requiredMosPct: mos, mosFromTier: !recorded } : null;
+}
+
+/** 티어별 요구 MOS 상한(%) — skills/quality-tier.md. tools/record_call.py TIER_MOS_RANGE 의 상단과 같다. */
+const TIER_MAX_MOS: Record<"T1" | "T2" | "T3", number> = { T1: 15, T2: 30, T3: 40 };
+
+/**
+ * `target.high` 와 래더 1차 가격이 어긋나는가 — tools/record_call.py 게이트 4 와 같은 규칙(0.5% 초과).
+ *
+ * 대시보드는 target.high 로 채점·이탈 판정을 하고 사람은 1차를 읽는다. 둘이 다르면 같은 종목이
+ * 화면과 문서에서 정반대로 보인다(AXP: 원장 $250 → 🔴 재산출 강제 / 래더 1차 $280 → ✅).
+ * 🔴 hold 만 본다 — keep/buy 의 target 은 **도달 목표가**라 증액 래더와 다른 게 정상이다(CLAUDE.md).
+ */
+export function highLadderMismatch(c: ScoredCall): { high: number; first: number } | null {
+  if (c.call !== "hold") return null;
+  const high = c.target?.high;
+  const first = pricedTranches(parseTranches(c.target?.tranches))[0]?.price;
+  if (typeof high !== "number" || first == null) return null;
+  return Math.abs(first - high) > 0.005 * Math.max(first, high) ? { high, first } : null;
 }
 
 export function detectRefresh(active: ScoredCall[], conflicted: boolean): RefreshFlag[] {
@@ -202,11 +279,20 @@ export function detectRefresh(active: ScoredCall[], conflicted: boolean): Refres
     if (c.elapsedDays > REVIEW_CYCLE_DAYS) {
       reasons.push(`분기 검토(${REVIEW_CYCLE_DAYS}일) 경과 — ${c.elapsedDays}일째`);
     }
-    const drift = bandDrift(c);
-    if (drift != null) {
+    // 밴드 상단이 래더 1차와 다르면 이탈률 자체가 틀린 숫자다 — 이탈 판정보다 이 교정이 먼저다.
+    const mismatch = highLadderMismatch(c);
+    if (mismatch != null) {
       reasons.push(
-        `밴드 이탈 +${drift.driftPct.toFixed(1)}% > 요구 MOS ${drift.requiredMosPct}% — 재산출 강제`
+        `원장 밴드 상단 ${fmt(mismatch.high)} ≠ 래더 1차 ${fmt(mismatch.first)} — 같은 숫자로 재기록`
       );
+    } else {
+      const drift = bandDrift(c);
+      if (drift != null) {
+        const mosLabel = drift.mosFromTier
+          ? `티어 상한 ${drift.requiredMosPct}%(요구 MOS 미기록)`
+          : `요구 MOS ${drift.requiredMosPct}%`;
+        reasons.push(`밴드 이탈 +${drift.driftPct.toFixed(1)}% > ${mosLabel} — 재산출 강제`);
+      }
     }
     if (reasons.length > 0) flags.push({ skill: c.skill, date: c.date, reasons });
   }

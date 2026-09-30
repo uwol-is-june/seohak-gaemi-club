@@ -3,11 +3,11 @@ import { readJsonSafe } from "@/lib/fetch-json";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScoredCall, CallStatus, CallType } from "@/lib/calls";
 import { CALL_LABEL } from "@/lib/report-helpers";
-import { groupTheses, entryTopPrice, type ThesisGroup, type RefreshFlag } from "@/lib/thesis-groups";
-import { parseTranches, pricedTranches, topTranchePrice } from "@/lib/tranche";
+import { groupTheses, groupGoal, goalGapKey, type ThesisGroup, type RefreshFlag } from "@/lib/thesis-groups";
+import { ladderGating, parseTranches, pricedTranches } from "@/lib/tranche";
 import type { Holding } from "@/lib/toss";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
-import { Delta, TierBadge, TIER_META } from "./primitives";
+import { Delta } from "./primitives";
 import { LadderChart } from "./LadderChart";
 import { PriceHistoryChart } from "./track-record/PriceHistoryChart";
 import { ReportModal } from "./ReportModal";
@@ -38,12 +38,14 @@ import { ReportModal } from "./ReportModal";
 //   1) 카드 폭은 언제나 1열, 논제는 **세로로 쌓는다** — 래더의 가격 축 폭이 항상 같다.
 //   2) 접힌 줄의 요약은 **두 슬롯 고정**(매수가 / 진입·목표까지). 값이 없으면 칸을
 //      지우지 않고 '미보유' · '□ 미산출'로 남긴다.
-//   3) 펼친 논제는 **3×3 숫자 표 고정** — 티어·호라이즌·체결확률까지 표의 칸이라
-//      결측이 빈칸으로 드러난다. 안 보이는 결측은 영원히 안 채워진다.
+//   3) 펼친 논제는 **2×3 숫자 표 고정** — 콜 시점 대비 한 줄 · 벤치마크 대비 한 줄.
+//      호라이즌은 '경과' 칸 보조줄이라 결측이 □ 로 드러난다. 안 보이는 결측은 영원히 안 채워진다.
+//      (티어·체결확률은 화면에서 뺐다 — TASK-159. 원장 필드·record_call 게이트·bandDrift 의
+//       요구 MOS 판정은 그대로다. 숫자는 논제 파일과 원장에 있다.)
 
 import {
-  STATUS_STYLE, BAND_META, LOW_FILL_PLAN_LABEL, NL, TRANCHE_HOWTO, moveColor, fmtPrice,
-  parseHealth, groupHealth, healthTone, initials,
+  STATUS_STYLE, BAND_META, NL, TRANCHE_HOWTO, moveColor, fmtPrice,
+  groupHealthDated, healthTone, initials,
 } from "./track-record/meta";
 
 // 표시 축 — '실제 들고 있는 것'과 '아직 안 산 것'은 읽는 목적이 다르다.
@@ -51,18 +53,14 @@ import {
 type Axis = "all" | "held" | "watch";
 
 // 정렬 축. 라벨은 "무엇을 기준으로 세로로 읽을 것인가"를 그대로 말한다.
-type SortKey = "gap" | "fill" | "health" | "ticker";
+type SortKey = "gap" | "health" | "ticker";
 
 // 상태 필터 — 축(보유/관찰)과 다른 축이다. "지금 집행을 막고 있는 게 무엇인가"로 좁힌다.
-type Flag = "gated" | "decorative" | "noLadder";
+type Flag = "gated" | "noLadder";
 const FLAG_LABEL: Record<Flag, { label: string; why: string }> = {
   gated: {
     label: "조건 대기",
     why: "AND 조건이 붙은 차수가 있습니다 — 가격이 닿아도 조건 없이는 집행하지 않습니다.",
-  },
-  decorative: {
-    label: "장식 밴드",
-    why: "체결확률 25% 미만 — 밴드가 실행 계획이 아니라 장식일 수 있습니다.",
   },
   noLadder: {
     label: "차수 미분할",
@@ -73,17 +71,14 @@ const FLAG_LABEL: Record<Flag, { label: string; why: string }> = {
 // 종목 하나가 어떤 깃발을 달고 있나. 정렬·필터·행 렌더가 같은 판정을 써야 어긋나지 않는다.
 function flagsOf(g: ThesisGroup): Set<Flag> {
   const out = new Set<Flag>();
-  const lead = g.active[0] ?? g.history[0];
-  const priced = g.active.flatMap((c) => pricedTranches(parseTranches(c.target?.tranches)));
-  if (priced.some((t) => t.condition)) out.add("gated");
-  if (priced.length === 0) out.add("noLadder");
-  const fp = lead?.target?.fillProbability;
-  if (typeof fp === "number" && fp < 25) out.add("decorative");
+  // 공통조건(AND: 줄)도 봐야 한다 — ladderGating 이 래더 전체 조건을 차수마다 적용한다(TASK-140).
+  const ladders = g.active.map((c) => ladderGating(parseTranches(c.target?.tranches)));
+  if (ladders.some((l) => l.withCond > 0)) out.add("gated");
+  if (ladders.every((l) => l.total === 0)) out.add("noLadder");
   return out;
 }
 const SORT_LABEL: Record<SortKey, string> = {
   gap: "집행까지 가까운 순",
-  fill: "체결확률 높은 순",
   health: "건강도 낮은 순",
   ticker: "티커순",
 };
@@ -93,7 +88,7 @@ const DISABLED_AXIS_HINT = "보유 정보를 불러오지 못해 축을 나눌 �
 // 🔴 헤더와 행이 **같은 그리드 템플릿**을 써야 컬럼이 맞는다.
 // 한쪽만 고치면 조용히 어긋나므로 상수 하나에서 온다.
 const ROW_GRID =
-  "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 md:grid-cols-[56px_minmax(0,1fr)_120px_92px_68px_108px_132px]";
+  "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 md:grid-cols-[56px_minmax(0,1fr)_92px_68px_108px_132px]";
 
 export function TrackRecordView() {
   const [calls, setCalls] = useState<ScoredCall[] | null>(null);
@@ -189,19 +184,13 @@ export function TrackRecordView() {
       const lead = g.active[0] ?? g.history[0];
       if (!lead) return Number.POSITIVE_INFINITY;
       if (sort === "ticker") return 0;
-      if (sort === "fill") {
-        const fp = lead.target?.fillProbability;
-        return typeof fp === "number" ? -fp : Number.POSITIVE_INFINITY;
-      }
       if (sort === "health") {
-        const h = groupHealth(g.active.length > 0 ? g.active : g.history);
-        return h ?? Number.POSITIVE_INFINITY;
+        const h = groupHealthDated(g.active, g.history);
+        return h?.value ?? Number.POSITIVE_INFINITY;
       }
-      // gap — 집행 지점까지의 거리(절대값). 래더도 목표도 없으면 뒤로.
-      const top = lead.call === "hold" ? entryTopPrice(lead) : topTranchePrice(parseTranches(lead.target?.tranches));
-      const price = top ?? (lead.call === "buy" || lead.call === "keep" ? lead.target?.high ?? null : null);
-      if (price == null || lead.priceNow == null || lead.priceNow <= 0) return Number.POSITIVE_INFINITY;
-      return Math.abs((price - lead.priceNow) / lead.priceNow);
+      // gap — 집행 지점까지의 거리(절대값). 접힌 줄이 보여주는 거리와 **같은 함수**에서 온다
+      // (TASK-146). 집행 지점이 아닌 목표가(래더 없는 buy/keep)·미산출은 뒤로.
+      return goalGapKey(g);
     };
 
     const sorted = [...list].sort((a, b) => {
@@ -227,7 +216,7 @@ export function TrackRecordView() {
     });
   }, []);
   const flagCounts = useMemo(() => {
-    const c: Record<Flag, number> = { gated: 0, decorative: 0, noLadder: 0 };
+    const c: Record<Flag, number> = { gated: 0, noLadder: 0 };
     for (const g of groups) for (const k of flagsOf(g)) c[k] += 1;
     return c;
   }, [groups]);
@@ -398,7 +387,6 @@ export function TrackRecordView() {
               <div className={`${ROW_GRID} hidden px-4 pb-1 md:grid`} aria-hidden="true">
                 <span />
                 <span className="eyebrow text-[10px]">종목</span>
-                <span className="eyebrow text-[10px]">티어 · 체결확률</span>
                 <span className="eyebrow text-[10px]">집행가</span>
                 <span className="eyebrow text-[10px]">건강도</span>
                 <span className="eyebrow text-right text-[10px]">현재가</span>
@@ -428,7 +416,7 @@ export function TrackRecordView() {
 // ── 종목 카드 ─────────────────────────────────────────────────────────────
 // 카드 하나 = 종목 하나. **골격은 모든 종목이 같다**(파일 머리의 TASK-110 규칙 셋).
 // 값이 없는 칸은 지우지 않고 □ 로 남긴다 — 빈칸은 화면의 결함이 아니라 원장의 결함이고,
-// 보여야 채워진다(실측 2026-09-22: 살아있는 논제 16건 중 티어 1건 · 체결확률 0건 · 래더 7건).
+// 보여야 채워진다(실측 2026-09-22: 살아있는 논제 16건 중 래더 7건).
 function TickerCard({
   group,
   held,
@@ -460,35 +448,8 @@ function TickerCard({
   // 🔴 기준가는 **대표 논제의 방향**이 정한다 — 같은 숫자라도 hold 는 내려오길 기다리는
   // 진입가고 buy/keep 은 올라가야 할 목표가라 방향이 정반대다(BAND_META).
   // 슬롯 위치는 고정하고 라벨만 바꾼다. 칸 자체는 없애지 않는다.
-  const goal = useMemo(() => {
-    if (!lead) return null;
-    if (lead.call === "hold") {
-      // 살아있는 관망 논제 중 **가장 먼저 닿는**(가장 비싼) 집행 지점.
-      const tops = group.active
-        .filter((c) => c.call === "hold")
-        .map(entryTopPrice)
-        .filter((p): p is number => p != null);
-      if (tops.length === 0) return null;
-      return { label: "진입까지", price: Math.max(...tops), reached: "도달", dir: "down" as const };
-    }
-    if (lead.call === "buy" || lead.call === "keep") {
-      // 🔴 보유 종목이 접힌 줄에서 알고 싶은 것은 '목표까지 얼마'가 아니라
-      // **"얼마에 더 사나"** 다(TASK-114). 증액 래더가 있으면 그 최상단 차수를 먼저 쓰고,
-      // 래더가 없는 논제만 목표 상단으로 폴백한다. 둘은 방향이 정반대라 dir 로 가른다.
-      const tops = group.active
-        .filter((c) => c.call === "buy" || c.call === "keep")
-        .map((c) => topTranchePrice(parseTranches(c.target?.tranches)))
-        .filter((p): p is number => p != null);
-      if (tops.length > 0) {
-        return { label: "증액까지", price: Math.max(...tops), reached: "도달", dir: "down" as const };
-      }
-      const hi = lead.target?.high;
-      return typeof hi === "number"
-        ? { label: "목표까지", price: hi, reached: "달성", dir: "up" as const }
-        : null;
-    }
-    return null; // avoid — 채점에 쓰지 않는 참고 밴드라 거리를 말하지 않는다.
-  }, [lead, group.active]);
+  // 계산은 lib/thesis-groups.ts groupGoal — '집행까지 가까운 순' 정렬(goalGapKey)과 공용이다(TASK-146).
+  const goal = useMemo(() => groupGoal(group), [group]);
 
   const gapPct =
     goal != null && priceNow != null && priceNow > 0 ? ((goal.price - priceNow) / priceNow) * 100 : null;
@@ -506,16 +467,17 @@ function TickerCard({
   // 프로젝트 규칙: "AND 조건이 붙은 차수는 가격만 닿아도 집행하지 않는다."
   // 이게 펼쳐야만 보이면 접은 채로 훑다가 가격만 보고 오집행한다.
   // ⚠️ 데이터에 있는 건 '조건이 붙어 있다'까지다 — 충족 여부는 기록되지 않는다.
-  const health = groupHealth(group.active.length > 0 ? group.active : group.history);
-  const fpRaw = lead?.target?.fillProbability;
-  const fillProb = typeof fpRaw === "number" ? fpRaw : null;
-  // 25% 미만이면 밴드가 실행 계획이 아니라 장식이다(CLAUDE.md 체결확률 규칙).
-  const fillLow = fillProb != null && fillProb < 25;
+  // 🔴 살아있는 논제에 건강도가 없으면 지나간 콜까지 뒤진다(날짜를 달고).
+  // 예전 코드는 `active.length > 0 ? active : history` 였는데 **active 는 비는 일이 없어**
+  // (채점이 다 끝나도 최신 1건을 남긴다) history 가 실제로 조회된 적이 없었다.
+  const healthAt = groupHealthDated(group.active, group.history);
+  const health = healthAt?.value ?? null;
 
   const gated = useMemo(() => {
-    const all = group.active.flatMap((c) => pricedTranches(parseTranches(c.target?.tranches)));
-    const withCond = all.filter((t) => t.condition).length;
-    return all.length > 0 && withCond > 0 ? { withCond, total: all.length } : null;
+    const ladders = group.active.map((c) => ladderGating(parseTranches(c.target?.tranches)));
+    const total = ladders.reduce((n, l) => n + l.total, 0);
+    const withCond = ladders.reduce((n, l) => n + l.withCond, 0);
+    return total > 0 && withCond > 0 ? { withCond, total } : null;
   }, [group.active]);
 
   // 추격 금지선 초과 — **접힌 줄에서 바로 보여야 하는 단 하나의 경보**(TASK-113).
@@ -591,25 +553,6 @@ function TickerCard({
             </span>
           </span>
 
-          {/* 티어 · 체결확률 — 같은 밴드라도 티어를 모르면 할인율이 타당한지 못 본다 */}
-          <span className="hidden min-w-0 items-center gap-1.5 md:flex">
-            <span className="flex items-center gap-1.5">
-              <TierBadge tier={lead?.tier ?? null} ticker={group.ticker} showMos={false} />
-              {fillProb != null ? (
-                <span
-                  className={`font-mono text-[11px] ${fillLow ? "text-warn" : "text-body"}`}
-                  title={fillLow ? "체결확률 25% 미만 — 밴드가 실행 계획이 아니라 장식일 수 있다." : undefined}
-                >
-                  {fillProb.toFixed(1)}%
-                </span>
-              ) : (
-                <span className="font-mono text-[11px] text-mute" title="체결확률 미기록">
-                  □
-                </span>
-              )}
-            </span>
-          </span>
-
           <span className="hidden min-w-0 md:block">
             <span className="font-mono text-[12.5px] text-body">{goal != null ? fmtPrice(goal.price) : "□"}</span>
           </span>
@@ -619,12 +562,20 @@ function TickerCard({
               className={`font-mono text-[12px] ${healthTone(health)}`}
               title={
                 health == null
-                  ? "콜 기록에 건강도가 없습니다 — reports/track-record.md 가 정본입니다."
-                  : undefined
+                  ? `콜 기록에 건강도가 없습니다.${NL}기록: python3 tools/record_call.py --health N${NL}(정본은 reports/track-record.md 의 건강도 열)`
+                  : healthAt?.stale
+                    ? `${healthAt.date} 콜에 기록된 값입니다 — 가장 최근 콜은 건강도를 적지 않았습니다.${NL}그 사이 달라졌을 수 있으니 reports/track-record.md 를 확인하세요.`
+                    : undefined
               }
             >
               {health != null ? `${health}/10` : "□"}
             </span>
+            {/* 🔴 낡은 값은 날짜 없이 보여주면 안 된다 — 오늘 값으로 읽힌다. */}
+            {healthAt?.stale && healthAt.date && (
+              <span className="block font-mono text-[9px] leading-tight text-mute">
+                {healthAt.date.slice(5)}
+              </span>
+            )}
           </span>
 
           <span className="flex flex-col items-end gap-0.5">
@@ -708,39 +659,45 @@ function TickerCard({
 
       {open && (
         <div className="px-4 pb-4">
-          {/* 충돌 배너 — 무엇이 갈리는지 먼저 말한다. */}
-          {conflict && (
-            <div className="rounded-xl border border-warn/30 bg-warn/[0.07] px-3 py-2">
-              <div className="eyebrow text-[9px] text-warn mb-1">논제 충돌 {group.active.length}건</div>
-              <ul className="flex flex-col gap-0.5">
-                {conflict.reasons.map((r, i) => (
-                  <li key={i} className="text-[11px] text-body leading-snug">
-                    {r}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* 충돌 배너('무엇이 갈리는지')와 갱신 배너('무엇을 다시 돌려야 하는지')는
+              서로 다른 축이라 **가로로 나란히** 둔다. 위아래로 쌓으면 카드 폭의 절반을
+              비운 채 세로 두 칸을 먹었다. 한쪽만 있으면 flex-1 이 폭을 전부 가져가므로
+              단독일 때 모양은 예전과 같다. md 미만에서는 다시 세로로 접힌다. */}
+          {(conflict || refresh.length > 0) && (
+            <div className="flex flex-col gap-2 md:flex-row md:items-stretch">
+              {conflict && (
+                <div className="min-w-0 rounded-xl border border-warn/30 bg-warn/[0.07] px-3 py-2 md:flex-1">
+                  <div className="eyebrow text-[9px] text-warn mb-1">논제 충돌 {group.active.length}건</div>
+                  <ul className="flex flex-col gap-0.5">
+                    {conflict.reasons.map((r, i) => (
+                      <li key={i} className="text-[11px] text-body leading-snug">
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-          {/* 갱신 필요 — 충돌 배너가 '무엇이 갈리는지'라면, 이건 '무엇을 다시 돌려야 하는지'다. */}
-          {refresh.length > 0 && (
-            <div className="mt-2 rounded-xl border border-twilight/30 bg-twilight/[0.07] px-3 py-2">
-              <div className="eyebrow mb-1.5 text-[9px] text-twilight">
-                다시 돌릴 스킬 {refresh.length}개
-              </div>
-              <ul className="flex flex-col gap-2">
-                {refresh.map((f) => (
-                  <li key={f.skill} className="flex flex-col gap-0.5">
-                    {/* 그대로 복사해 붙이면 실행되는 한 줄 — 배너의 목적은 이 한 줄이다. */}
-                    <span className="font-mono text-[12px] leading-none text-ink">
-                      /{f.skill} {group.ticker}
-                    </span>
-                    <span className="text-[10px] leading-snug text-mute">
-                      {f.date} 판단 · {f.reasons.join(" · ")}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              {refresh.length > 0 && (
+                <div className="min-w-0 rounded-xl border border-twilight/30 bg-twilight/[0.07] px-3 py-2 md:flex-1">
+                  <div className="eyebrow mb-1.5 text-[9px] text-twilight">
+                    다시 돌릴 스킬 {refresh.length}개
+                  </div>
+                  <ul className="flex flex-col gap-2">
+                    {refresh.map((f) => (
+                      <li key={f.skill} className="flex flex-col gap-0.5">
+                        {/* 그대로 복사해 붙이면 실행되는 한 줄 — 배너의 목적은 이 한 줄이다. */}
+                        <span className="font-mono text-[12px] leading-none text-ink">
+                          /{f.skill} {group.ticker}
+                        </span>
+                        <span className="text-[10px] leading-snug text-mute">
+                          {f.date} 판단 · {f.reasons.join(" · ")}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
 
@@ -766,9 +723,9 @@ function TickerCard({
 }
 
 // ── 논제 한 건(= 보고서 한 건의 결론) ────────────────────────────────────
-// **모든 논제가 정확히 같은 3단 구조다**(TASK-110): 출처 줄 → 래더 그림 → 3×3 숫자 표.
-// 예전에는 티어·호라이즌·체결확률이 '있는 콜만' 칩으로 붙어서 논제마다 머리 줄의 길이와
-// 항목이 달랐다. 지금은 셋 다 표의 고정 칸이고, 없으면 □ 로 비어 있는 것이 보인다 —
+// **모든 논제가 정확히 같은 3단 구조다**(TASK-110): 출처 줄 → 래더 그림 → 2×3 숫자 표.
+// 예전에는 호라이즌 같은 규격이 '있는 콜만' 칩으로 붙어서 논제마다 머리 줄의 길이와
+// 항목이 달랐다. 지금은 표의 고정 칸이고, 없으면 □ 로 비어 있는 것이 보인다 —
 // 안 보이는 결측과 보이는 결측은 다르다(전자는 영원히 안 채워진다).
 //
 // 핵심 가정·레드라인·판단 근거 산문은 보고서 원문이 정본이라 스킬 이름을 눌러 모달로 본다.
@@ -796,16 +753,6 @@ function ThesisBlock({
   const st = STATUS_STYLE[c.status] ?? STATUS_STYLE.unknown;
   const cl = CALL_LABEL[c.call] ?? CALL_LABEL.hold;
 
-  const fp = c.target?.fillProbability;
-  const fpUnknown = fp === "unknown";
-  const fpLow = fpUnknown || (typeof fp === "number" && fp < 25);
-  const fpPlan = c.target?.lowFillPlan ? LOW_FILL_PLAN_LABEL[c.target.lowFillPlan] : null;
-  // 체결확률은 **hold 에만** 의미가 있다 — 나머지 콜의 밴드는 '내려오길 기다리는 진입가'가
-  // 아니라 '올라가야 할 목표가'라 하락 체결 개념이 성립하지 않는다(래더보다 좁은 범위다:
-  // buy 는 분할 매수 계획이 있을 수 있지만 하락을 기다리지는 않는다).
-  // 기준은 record_call.py 의 게이트1(`call == "hold"` 일 때만 체결확률 필수)과 같다.
-  // 안 가르면 보유 종목에 □ 미산출이 뜨는데, 산출할 것이 애초에 없다.
-  const fillExpected = c.call === "hold";
 
   return (
     <div className="min-w-0">
@@ -850,7 +797,7 @@ function ThesisBlock({
       />
 
       {/* 래더가 '어느 가격에 얼마씩'이라면, 이 그림은 '그 가격에 올 법한가'를 답한다
-          (TASK-136). 체결확률 숫자의 근거가 같은 화면에 있어야 한다. */}
+          (TASK-136). 과거 낙폭 분포를 그림으로 보여준다. */}
       <PriceHistoryChart
         ticker={c.ticker}
         tranches={tranches}
@@ -870,65 +817,9 @@ function ThesisBlock({
         </p>
       )}
 
-      {/* 숫자 표 — **3×3 고정**. 첫 줄은 논제의 규격(티어·호라이즌·체결확률),
-          가운데는 콜 시점 대비, 아래는 벤치마크 대비. 어느 종목·어느 스킬이든 9칸이 같다. */}
+      {/* 숫자 표 — **2×3 고정**. 윗줄은 콜 시점 대비, 아랫줄은 벤치마크 대비.
+          어느 종목·어느 스킬이든 6칸이 같다. 호라이즌은 '경과' 칸의 보조줄이다. */}
       <div className="mt-2.5 grid grid-cols-3 gap-px overflow-hidden rounded-md border border-hairline bg-hairline">
-        <Stat
-          label="티어"
-          value={c.tier ?? "□"}
-          sub={
-            c.tier
-              ? c.requiredMosPct != null
-                ? `요구 MOS ${c.requiredMosPct}%`
-                : TIER_META[c.tier].mos
-              : "미산출"
-          }
-          tone={c.tier ? "text-ink" : "text-mute"}
-          title={
-            c.tier
-              ? `${TIER_META[c.tier].label} — ${TIER_META[c.tier].mos}`
-              : `퀄리티 티어 미기록 — 요구 안전마진의 기준이 없다.\npython3 tools/quality_tier.py ${c.ticker} --moat {★}`
-          }
-        />
-        <Stat
-          label="호라이즌"
-          value={c.horizonMonths != null ? `${c.horizonMonths}M` : "□"}
-          sub={
-            c.horizonMonths == null
-              ? "미산출"
-              : c.horizonProgress != null
-                ? `${Math.round(c.horizonProgress * 100)}% 경과`
-                : null
-          }
-          tone={c.horizonMonths != null ? "text-ink" : "text-mute"}
-          title="이 논제가 맞다고 주장하는 기간. 지나면 채점이 확정된다."
-        />
-        <Stat
-          label="체결확률"
-          value={!fillExpected ? "—" : fp == null ? "□" : fpUnknown ? "산출불가" : `${fp}%`}
-          sub={
-            !fillExpected
-              ? "해당 없음"
-              : fp == null
-                ? "미산출"
-                : fpLow
-                  ? fpPlan
-                    ? `장식 → ${fpPlan}`
-                    : "장식 밴드 · 대응 미기록"
-                  : "실행 가능"
-          }
-          tone={!fillExpected || fp == null ? "text-mute" : fpLow ? "text-warn" : "text-ink"}
-          title={
-            !fillExpected
-              ? "이 밴드는 내려오길 기다리는 진입가가 아니라 도달 목표가다 — 하락 체결 확률이 성립하지 않는다."
-              : fp == null
-                ? `밴드가 호라이즌 안에 닿을 확률 미기록 — 닿을 리 없는 밴드도 계획처럼 보인다.\npython3 tools/fill_probability.py --ticker ${c.ticker} --target ${c.target?.high ?? "{가격}"} --horizon-months ${c.horizonMonths ?? 12} --price ${c.priceAtCall}`
-                : fpUnknown
-                  ? "상장 이력이 짧아 베이스레이트 산출 불가 — 0%와 다르다"
-                  : `콜 시점가 기준, 과거 ${c.horizonMonths ?? "?"}개월 창에서 이 낙폭이 실현된 비율 (tools/fill_probability.py)`
-          }
-        />
-
         <Stat label="시점가" value={fmtPrice(c.priceAtCall)} title="콜을 낸 날의 주가(불변 · 채점 기준)" />
         <Stat
           label="시점 대비"
@@ -936,7 +827,19 @@ function ThesisBlock({
           tone={c.returnPct != null ? moveColor(c.returnPct) : "text-mute"}
           title="콜 시점가 대비 현재가"
         />
-        <Stat label="경과" value={`${c.elapsedDays}d`} title="콜을 낸 날로부터 지난 일수" />
+        <Stat
+          label="경과"
+          value={`${c.elapsedDays}d`}
+          sub={
+            c.horizonMonths == null
+              ? "호라이즌 □"
+              : c.horizonProgress != null
+                ? `${c.horizonMonths}M 중 ${Math.round(c.horizonProgress * 100)}%`
+                : `${c.horizonMonths}M`
+          }
+          tone={c.horizonMonths != null ? "text-ink" : "text-mute"}
+          title="콜을 낸 날로부터 지난 일수 · 호라이즌(이 논제가 맞다고 주장하는 기간 — 지나면 채점이 확정된다)"
+        />
 
         {/* 벤치마크 대비(TASK-100) — 밴드 터치만 보면 "안 사서 잃은 것"이 안 보인다. */}
         <Stat
@@ -973,7 +876,7 @@ function ThesisBlock({
 
 // ── 표 한 칸 ─────────────────────────────────────────────────────────────
 // sub 는 값이 없어도 **자리를 비워 둔다**(nbsp) — 어떤 칸은 두 줄, 어떤 칸은 한 줄이면
-// 3×3 표의 행 높이가 논제마다 달라져 카드끼리 눈으로 맞춰볼 수 없다.
+// 2×3 표의 행 높이가 논제마다 달라져 카드끼리 눈으로 맞춰볼 수 없다.
 function Stat({
   label,
   value,

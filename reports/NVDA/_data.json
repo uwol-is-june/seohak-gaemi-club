@@ -4,7 +4,7 @@
   "companyName": "NVIDIA CORP",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-08-06T01:13:30.580116+00:00",
+  "generatedAt": "2026-09-23T06:15:15.141430+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001045810.json",
@@ -27,7 +27,7 @@
   },
   "freshness": {
     "latestPeriodEnd": "2026-01-25",
-    "monthsOld": 6.3,
+    "monthsOld": 7.9,
     "stale": false
   },
   "annual": {
@@ -1189,7 +1189,7 @@
   },
   "crossValidation": {
     "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/NVDA?symbol=NVDA&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374887610&period2=1786065210",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/NVDA?symbol=NVDA&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1379052915&period2=1790230515",
     "worst": "중대 불일치",
     "items": [
       {

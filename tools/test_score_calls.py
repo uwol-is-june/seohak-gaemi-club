@@ -32,13 +32,21 @@ def main() -> int:
     failures = []
     for case in data["cases"]:
         today = date.fromisoformat(case["today"])
-        result = sc.score_call(case["call"], case["priceNow"], today)
+        path = [tuple(x) for x in case["path"]] if case.get("path") else None
+        result = sc.score_call(case["call"], case["priceNow"], today, path)
         for key, want in case["expect"].items():
             got = result.get(key)
             if got != want:
                 failures.append(f"[{case['name']}] {key}: 기대 {want!r} ≠ 실제 {got!r}")
 
-    total = len(data["cases"])
+    # 중복 접기 파리티(TASK-139) — 키는 id + call.
+    for case in data.get("dedupeCases", []):
+        kept = sorted([c["id"], c["call"], c["priceAtCall"]] for c in sc.dedupe_calls(case["calls"]))
+        want = sorted(case["expect"])
+        if kept != want:
+            failures.append(f"[dedupe: {case['name']}] 기대 {want} ≠ 실제 {kept}")
+
+    total = len(data["cases"]) + len(data.get("dedupeCases", []))
     if failures:
         print(f"❌ 파리티 실패 ({len(failures)}건):")
         for f in failures:

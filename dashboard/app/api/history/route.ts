@@ -10,6 +10,7 @@
 // 화면의 그림과 원장의 체결확률이 어긋나지 않는다.
 
 import { requireAuth } from "@/lib/api-auth";
+import { toYahooSymbol } from "@/lib/yahoo";
 import { mapLimit } from "@/lib/map-limit";
 
 export interface HistoryPoint {
@@ -37,11 +38,6 @@ const MAX_POINTS = 160; // 폭 700px 차트에서 이 이상은 점이 겹친다
 const ALLOWED_RANGES = new Set(["6mo", "1y", "2y", "5y"]);
 
 const cache = new Map<string, { history: History; expiresAt: number }>();
-
-// quotes 라우트와 같은 정규화 규칙(BRK.B → BRK-B).
-function toYahooSymbol(ticker: string): string {
-  return ticker.trim().toUpperCase().replace(/[.\s]/g, "-");
-}
 
 /** 균등 간격으로 솎되 **첫 점과 마지막 점은 반드시 남긴다**(시작가·현재가가 잘리면 안 된다). */
 function downsample(points: HistoryPoint[], max: number): HistoryPoint[] {

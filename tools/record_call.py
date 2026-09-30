@@ -61,6 +61,19 @@ LOW_FILL_THRESHOLD = 25.0
 # 장식 밴드일 때 반드시 택해야 하는 대응. 셋 다 아니면 그 밴드는 기록하지 않는다.
 VALID_LOW_FILL_PLANS = ("starter", "catalyst-wait", "widen-horizon")
 
+# 티어별 요구 안전마진 범위(%) — skills/quality-tier.md. 범위 밖이면 티어 판정과 MOS 가 어긋난 것이다.
+TIER_MOS_RANGE = {"T1": (0.0, 15.0), "T2": (15.0, 30.0), "T3": (30.0, 40.0)}
+
+# 논제(건강도)를 다루는 스킬 — 이 스킬의 콜이나 keep/hold 콜은 --health 가 빠지면 경고한다.
+THESIS_SKILLS = ("thesis-tracker", "investment-team", "investment-checklist")
+
+# 래더 한 줄의 허용 형식(TASK-143) — dashboard/lib/tranche.ts 의 PRICE_RE · LADDER_NOTE_RE 와 같다.
+#   ① 가격이 있는 차수:  "1차 ≤$185 (25%) — AND 조건"
+#   ② 래더 공통조건:     "AND: ADR 프리미엄 레인지 하단"
+# 둘 다 아닌 자유 서술은 래더 파서가 아무것도 못 건져 화면에 안 그려진다.
+TRANCHE_PRICE_RE = re.compile(r"\$\s*([0-9][\d,]*(?:\.\d+)?)")
+TRANCHE_NOTE_RE = re.compile(r"^AND\s*[:：]", re.IGNORECASE)
+
 # 이 낙폭 이상을 이 호라이즌 안에 요구하면 종목 판단이 아니라 마켓타이밍 베팅이다.
 MARKET_TIMING_DROP_PCT = 20.0
 MARKET_TIMING_HORIZON_MONTHS = 12
@@ -122,9 +135,42 @@ def make_id(ticker: str, call_date: str, skill: str) -> str:
     return f"{ticker}-{call_date.replace('-', '')}-{skill}"
 
 
+def parse_call_date(raw: str | None, price: float | None) -> str:
+    """--date 검증(TASK-142). 형식이 틀리면 원장 채점이 전부 NaN/폴백으로 흐른다.
+
+    과거 날짜에 --price 가 없으면 **오늘 시세가 과거 시점가로 박제된다** — 콜의 불변 값이
+    처음부터 틀린 채로 들어가므로 막는다. 미래 날짜는 존재할 수 없는 콜이다.
+    """
+    today = date.today()
+    if raw is None:
+        return today.isoformat()
+    try:
+        d = date.fromisoformat(raw.strip())
+    except ValueError:
+        sys.exit(f"오류: --date 는 YYYY-MM-DD 형식이어야 합니다: {raw}")
+    if d > today:
+        sys.exit(f"오류: --date {d} 는 미래입니다(오늘 {today}).")
+    if d < today and price is None:
+        sys.exit(f"""오류: 과거 날짜({d}) 콜에는 --price 가 필수입니다.
+  생략하면 오늘 시세가 그날의 시점가로 박제됩니다(불변 값 오염). 그날 종가를 직접 넘기세요.""")
+    return d.isoformat()
+
+
+def validate_tranches(tranches: list[str] | None) -> None:
+    """래더 줄 형식 검사(TASK-143) — 사후 tranche.test.ts 가 아니라 기록 시점에 막는다."""
+    for t in tranches or []:
+        text = (t or "").strip()
+        if TRANCHE_NOTE_RE.match(text) or TRANCHE_PRICE_RE.search(text):
+            continue
+        sys.exit(f"""오류: --tranche "{text}" 는 래더로 읽을 수 없습니다.
+  한 줄은 ①가격이 있는 차수이거나 ②'AND:' 로 시작하는 공통조건이어야 합니다.
+    예) "1차 ≤$185 (25%) — AND 계약화 60%+ 공시"   "AND: ADR 프리미엄 4주+ 레인지 하단"
+  자유 서술(예: "잔여는 조정 시 분할")은 --reason 이나 논제 파일에 적으세요.""")
+
+
 def build_call(args: argparse.Namespace) -> dict:
     ticker = normalize_ticker(args.ticker)
-    call_date = args.date or date.today().isoformat()
+    call_date = parse_call_date(args.date, args.price)
 
     price = args.price
     if price is None:
@@ -142,6 +188,30 @@ def build_call(args: argparse.Namespace) -> dict:
     tier = args.tier.strip().upper() if args.tier else None
     if tier is not None and tier not in VALID_TIERS:
         sys.exit(f"오류: --tier 는 {VALID_TIERS} 중 하나여야 합니다: {tier}")
+
+    if args.health is not None and not (0 <= args.health <= 10):
+        sys.exit(f"오류: --health 는 0~10 범위여야 합니다: {args.health}")
+    if args.health is None and (call in ("keep", "hold") or args.skill in THESIS_SKILLS):
+        print("⚠️ 경고: --health 가 없습니다. 논제 건강도(0~10)를 넘기지 않으면 대시보드 건강도 칸이\n"
+              "   '측정 안 함'으로 남습니다. 값이 그대로여도 매 콜에 다시 넘기세요(CLAUDE.md).")
+
+    if args.target_low is not None and args.target_high is not None and args.target_low > args.target_high:
+        sys.exit(f"오류: --target-low {args.target_low} 가 --target-high {args.target_high} 보다 큽니다.")
+
+    if args.required_mos is not None:
+        if not (0 <= args.required_mos <= 100):
+            sys.exit(f"오류: --required-mos 는 0~100(%) 범위여야 합니다: {args.required_mos}")
+        if tier is not None:
+            lo, hi = TIER_MOS_RANGE[tier]
+            if not (lo <= args.required_mos <= hi):
+                print(f"⚠️ 경고: {tier} 의 요구 MOS 범위는 {lo:g}~{hi:g}% 인데 {args.required_mos:g}% 입니다.\n"
+                      "   티어 판정과 할인율이 어긋났습니다(skills/quality-tier.md). 의도라면 논제에 근거를 적으세요.")
+    if call == "hold" and (tier is None or args.required_mos is None):
+        print("⚠️ 경고: hold 콜에 --tier / --required-mos 가 없습니다. 대시보드 밴드이탈 판정이 티어 상한\n"
+              "   폴백으로 돌고, 사후에 '할인율 판단이 옳았나'를 채점할 수 없습니다.\n"
+              f"   python3 tools/quality_tier.py {ticker} --moat {{★}} 로 판정해 함께 넘기세요.")
+
+    validate_tranches(args.tranche)
 
     fill = parse_fill_probability(args.fill_probability)
     low_fill_plan = args.low_fill_plan.strip().lower() if args.low_fill_plan else None
@@ -161,6 +231,8 @@ def build_call(args: argparse.Namespace) -> dict:
         row["report"] = args.report
     if args.conviction:
         row["conviction"] = args.conviction
+    if args.health is not None:
+        row["health"] = round(float(args.health), 1)
     if args.reason:
         row["reason"] = args.reason
     if tier:
@@ -168,8 +240,13 @@ def build_call(args: argparse.Namespace) -> dict:
     if args.required_mos is not None:
         row["requiredMosPct"] = args.required_mos
 
-    # 목표가 밴드(선택): low/high/horizon 중 하나라도 주어지면 target 블록 생성.
-    if args.target_low is not None or args.target_high is not None or args.horizon_months is not None:
+    # 목표가 밴드(선택): 밴드·래더 플래그 중 하나라도 주어지면 target 블록 생성.
+    # 🔴 래더·추격금지선·체결확률만 넘긴 경우도 포함한다(TASK-142) — keep 증액 래더는
+    # target-low/high 없이 --tranche 만 넘기는 경우가 있는데, 예전엔 조건에서 빠져 조용히 버려졌다.
+    if any(v is not None for v in (
+        args.target_low, args.target_high, args.horizon_months,
+        args.tranche, args.no_chase, fill, low_fill_plan,
+    )):
         target: dict = {}
         if args.target_low is not None:
             target["low"] = args.target_low
@@ -248,8 +325,10 @@ def _check_band_gates(
     # 대시보드는 `target.high` 로 채점·밴드이탈 판정을 하고, 사람은 `tranches[0]`(1차)을 읽는다.
     # 두 숫자가 다르면 같은 종목이 화면과 문서에서 정반대로 보인다 — AXP 에서 실제 발생했다
     # (원장 $250 → 🔴 재산출 강제 / 래더 1차 $280 → ✅ 밴드 유효).
+    # hold 만 본다 — keep/buy 의 target 은 도달 목표가라 증액 래더와 다른 게 정상이다
+    # (CLAUDE.md "--target-low/high 는 도달 목표가 그대로"). dashboard highLadderMismatch 와 같은 규칙.
     tranches = target.get("tranches") or []
-    if high is not None and tranches:
+    if call == "hold" and high is not None and tranches:
         first = _tranche_price(tranches[0])
         if first is not None and abs(first - high) > 0.005 * max(first, high):
             print(f"""⚠️ 경고: --target-high ${high:,.2f} 와 1차 차수 가격 ${first:,.2f} 이 다릅니다.
@@ -269,29 +348,40 @@ def _tranche_price(text: str) -> float | None:
         return None
 
 
+def _ledger_rows() -> list[dict]:
+    """원장 줄을 per-line 안전 파싱(깨진 줄 하나 때문에 신규 기록이 실패하지 않게 — TASK-64)."""
+    if not LEDGER.exists():
+        return []
+    rows = []
+    for line in LEDGER.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return rows
+
+
 def append_call(row: dict) -> None:
     LEDGER.parent.mkdir(parents=True, exist_ok=True)
-    # append-only: 같은 id가 있으면 경고만 하고 그대로 추가(이력 보존).
-    if LEDGER.exists():
-        # 깨진 줄 하나 때문에 신규 콜 기록이 실패하지 않도록 per-line 으로 안전 파싱한다(TASK-64).
-        dup = False
-        for line in LEDGER.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                if json.loads(line).get("id") == row["id"]:
-                    dup = True
-                    break
-            except json.JSONDecodeError:
-                continue
-        if dup:
-            print(f"주의: 같은 id({row['id']})의 콜이 이미 있습니다. 이력 보존을 위해 새 줄로 추가합니다.")
+    rows = _ledger_rows()
+    # 🔴 같은 날·같은 스킬이라도 call 이 다르면 별개 판단이다(TASK-139). 관망(hold) 뒤에
+    # 사용자 매수 buy 를 append 하는 경우가 대표적 — 같은 id 를 쓰면 채점기가 hold 를 지운다.
+    # id 뒤에 call 을 붙여 서로 다른 id 로 남긴다(대시보드 React key·dedupe 둘 다 안전).
+    base = row["id"]
+    if any(r.get("id") == base and r.get("call") != row["call"] for r in rows):
+        row["id"] = f"{base}-{row['call']}"
+        print(f"주의: {base} 에 다른 call 이 이미 있어 id 를 {row['id']} 로 기록합니다(기존 콜 보존).")
+    # append-only: 같은 id·같은 call 이 있으면 경고만 하고 그대로 추가(이력 보존 · 최신이 정정본).
+    if any(r.get("id") == row["id"] for r in rows):
+        print(f"주의: 같은 id({row['id']})의 콜이 이미 있습니다. 이력 보존을 위해 새 줄로 추가합니다.")
     with LEDGER.open("a", encoding="utf-8") as f:
         f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="콜 원장에 매수/보유/회피 콜을 append")
     ap.add_argument("--ticker", required=True, help="티커 (예: AAPL)")
     ap.add_argument("--skill", required=True, help="콜을 낸 스킬 (예: investment-checklist)")
@@ -303,6 +393,11 @@ def main() -> None:
     ap.add_argument("--date", help="콜 시점 YYYY-MM-DD (기본: 오늘)")
     ap.add_argument("--report", help="근거 보고서 경로 (예: reports/AAPL/AAPL-checklist-20260723.md)")
     ap.add_argument("--conviction", help="확신도/신뢰도 (예: ★★★★☆)")
+    ap.add_argument("--health", type=float, default=None,
+                    help="논제 건강도 0~10 (reports/track-record.md 의 건강도 열과 같은 값). "
+                         "🔴 별점(--conviction)과 다른 축이다 — 별점은 확신도, 건강도는 "
+                         "가정·레드라인의 현재 상태다. 자유 텍스트에 적지 말고 이 플래그로 "
+                         "넘긴다(대시보드가 숫자 필드를 먼저 읽는다)")
     ap.add_argument("--reason", help="이 콜을 낸 사유 (예: 목표가 대비 고평가라 진입 대기)")
     ap.add_argument("--price", type=float, help="콜 시점 주가(USD). 생략 시 Yahoo에서 fetch")
     ap.add_argument("--target-low", type=float, help="목표가 밴드 하단(USD)")
@@ -333,14 +428,20 @@ def main() -> None:
                     help="핵심 가정(⚑)들 — 값 여러 개 또는 플래그 반복 모두 누적됨")
     ap.add_argument("--invalidation", nargs="*", action="extend", default=None,
                     help="무효화/레드라인 조건들 — 값 여러 개 또는 플래그 반복 모두 누적됨")
-    args = ap.parse_args()
+    return ap
 
+
+def main() -> None:
+    args = build_parser().parse_args()
     row = build_call(args)
     append_call(row)
     tgt = ""
     if "target" in row:
         t = row["target"]
-        tgt = f" · 목표 {t.get('low', '?')}~{t.get('high', '?')} ({t.get('horizonMonths', '?')}M)"
+        if "low" in t or "high" in t or "horizonMonths" in t:
+            tgt = f" · 목표 {t.get('low', '?')}~{t.get('high', '?')} ({t.get('horizonMonths', '?')}M)"
+        if "tranches" in t:
+            tgt += f" · 래더 {len(t['tranches'])}줄"
         if "fillProbability" in t:
             fp = t["fillProbability"]
             tgt += f" · 체결확률 {fp if fp == 'unknown' else str(fp) + '%'}"

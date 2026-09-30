@@ -1,5 +1,6 @@
 import { CONFIG_FILES, readConfig, writeConfig } from "@/lib/config-store";
 import { requireAuth } from "@/lib/api-auth";
+import { sanitizeGroups as sanitizeGroupsShared } from "@/lib/group-sanitize";
 import { DEFAULT_DOMAIN_GROUPS } from "@/lib/report-helpers";
 import type { DomainGroup } from "@/lib/sector-domains";
 
@@ -9,37 +10,9 @@ import type { DomainGroup } from "@/lib/sector-domains";
 // 저장값이 없으면 프로세스 가이드 '섹터 구조 파악'의 섹터 피커에서 파생한 기본 시드를 준다.
 const CONFIG_FILE = CONFIG_FILES.sectorDomainGroups;
 
-// 인증된 클라이언트라도 거대 blob 을 설정 파일에 저장하지 못하도록 상한을 둔다(TASK-54).
-const MAX_GROUPS = 100;
-const MAX_MEMBERS_PER_GROUP = 500;
-const MAX_STR = 200;
-
-// 외부 입력(PUT 바디)을 신뢰하지 않고 형태를 검증·정규화한다. 상한 초과 시 null(→400).
-// sector-groups 라우트와 같은 골격이지만, 멤버가 섹터명이라 대문자 변환을 하지 않는다
+// 검증·상한은 lib/group-sanitize.ts 공용(TASK-157). 멤버가 섹터명이라 대문자 변환을 하지 않는다
 // (티커는 upper-case 정규화가 맞지만 'AI Semiconductors'는 표기를 보존해야 한다).
-function sanitizeGroups(input: unknown): DomainGroup[] | null {
-  if (!Array.isArray(input)) return null;
-  if (input.length > MAX_GROUPS) return null;
-  const groups: DomainGroup[] = [];
-  for (const g of input) {
-    if (!g || typeof g !== "object") return null;
-    const rec = g as Record<string, unknown>;
-    if (typeof rec.name !== "string" || rec.name.length > MAX_STR) return null;
-    if (typeof rec.id !== "string" && typeof rec.id !== "undefined") return null;
-    if (typeof rec.id === "string" && rec.id.length > MAX_STR) return null;
-    if (!Array.isArray(rec.tickers) || rec.tickers.length > MAX_MEMBERS_PER_GROUP) return null;
-    const tickers = rec.tickers
-      .filter((t): t is string => typeof t === "string" && t.length <= MAX_STR)
-      .map((t) => t.trim())
-      .filter(Boolean);
-    groups.push({
-      id: typeof rec.id === "string" ? rec.id : `g-${groups.length}`,
-      name: rec.name.trim(),
-      tickers,
-    });
-  }
-  return groups;
-}
+const sanitizeGroups = (input: unknown): DomainGroup[] | null => sanitizeGroupsShared(input, { upper: false });
 
 export async function GET() {
   const unauth = await requireAuth();

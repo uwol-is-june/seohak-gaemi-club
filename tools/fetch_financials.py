@@ -267,8 +267,17 @@ def _fy_label(end_iso: str) -> int:
     같은 fy 로 붙는다. 따라서 fy 를 쓰면 안 되고, 데이터 자체의 end 날짜로 라벨한다.
     (AAPL 2023-09-30 → FY2023, NVDA 2024-01-28 → FY2024, WMT 2024-01-31 → FY2024
      — 모두 회사 자체 표기와 일치.) 모호함이 없도록 periodEnd 를 항상 함께 남긴다.
+
+    🔴 52/53주 회계연도 예외(TASK-149): "12월 마지막 일요일" 식으로 끝나는 회사는 종료일이
+    1월 초로 넘어가는 해가 있다(JNJ FY2020 = 2021-01-03). 종료 연도를 그대로 쓰면 그 해가
+    한 해 밀리고, 다음 해(2021-01-02 → 2022 가 아니라 2021 이어야 함)와 라벨이 충돌해 **한 해가
+    통째로 사라진다**. 1월 1~7일 종료는 전년도 회계연도로 본다. NVDA(1월 말)·WMT(1월 31일)처럼
+    1월 하순에 끝나는 회사는 회사 자체 표기가 종료 연도라 그대로 둔다.
     """
-    return int(end_iso[:4])
+    d = date.fromisoformat(end_iso[:10])
+    if d.month == 1 and d.day <= 7:
+        return d.year - 1
+    return d.year
 
 
 def _annual_points(fact_units: list[dict], kind: str) -> dict[int, dict]:

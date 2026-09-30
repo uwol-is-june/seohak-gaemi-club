@@ -98,7 +98,9 @@ def base_rate(closes: list[float], required_drop: float, window: int) -> dict:
         lowest = min(closes[i + 1 : i + 1 + window])
         move = lowest / base - 1.0
         worst_moves.append(move)
-        if move <= required_drop:
+        # 정확히 목표가에 닿은 경우도 체결이다 — 90/100−1 = −0.0999…98 처럼 부동소수점 오차로
+        # 경계가 미체결로 떨어지지 않게 허용오차를 둔다.
+        if move <= required_drop + 1e-9:
             hits += 1
 
     if not worst_moves:
@@ -106,6 +108,9 @@ def base_rate(closes: list[float], required_drop: float, window: int) -> dict:
 
     return {
         "samples": len(worst_moves),
+        # 창이 겹치는 표본(하루씩 밀어 잰다)이라 서로 독립이 아니다 — 독립 관측은 대략
+        # samples / window 개다(TASK-158). 이 값이 작으면 확률 숫자를 과신하지 않는다.
+        "effectiveSamples": round(len(worst_moves) / window, 1),
         "hits": hits,
         "probability": round(hits / len(worst_moves) * 100, 1),
         "medianMaxDrawdown": round(median(worst_moves) * 100, 1),
@@ -134,6 +139,20 @@ def main() -> None:
     price = args.price if args.price is not None else closes[-1]
     if price <= 0:
         sys.exit("오류: 기준 현재가가 0 이하입니다.")
+
+    # 목표가가 현재가 이상이면 낙폭이 필요 없다 — 지금 가격이 이미 체결 구간이다(TASK-158).
+    # 베이스레이트를 돌리면 '0% 낙폭이 실현될 확률 = 100%' 라는 무의미한 숫자만 나온다.
+    if args.target >= price:
+        if args.json:
+            print(json.dumps({"ticker": args.ticker.upper(), "price": round(price, 4),
+                              "target": args.target, "alreadyInFillZone": True,
+                              "fillProbability": 100.0}, ensure_ascii=False))
+        else:
+            print(f"체결확률 — {args.ticker.upper()}")
+            print(f"  현재가 ${price:,.2f} ≤ 목표 ${args.target:,.2f} → **이미 체결 구간**입니다.")
+            print("  베이스레이트가 필요 없습니다. 기록 시 --fill-probability 100 으로 넘기고,")
+            print("  차수 AND 조건 충족 여부로 집행을 판단하세요(가격 조건은 이미 충족).")
+        return
 
     required_drop = args.target / price - 1.0
     window = args.horizon_months * TRADING_DAYS_PER_MONTH
@@ -166,6 +185,7 @@ def main() -> None:
         "lookbackYears": years_available,
         "fillProbability": prob,
         "samples": stats["samples"],
+        "effectiveSamples": stats["effectiveSamples"],
         "medianMaxDrawdownPct": stats["medianMaxDrawdown"],
         "worstDrawdownPct": stats["worstDrawdown"],
         "verdict": verdict,
@@ -179,7 +199,7 @@ def main() -> None:
     print(f"  현재가 ${payload['price']} → 목표 ${args.target} "
           f"(필요 낙폭 {payload['requiredDropPct']:+.1f}%)")
     print(f"  호라이즌 {args.horizon_months}개월 · 베이스레이트 {years_available}년 "
-          f"({stats['samples']:,}개 시작일)")
+          f"({stats['samples']:,}개 시작일 · 창이 겹쳐 독립 표본은 약 {stats['effectiveSamples']}개)")
     print()
     print(f"  ▶ fillProbability = {prob}%  → {verdict}")
     print()

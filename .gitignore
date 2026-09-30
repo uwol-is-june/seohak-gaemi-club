@@ -30,3 +30,6 @@ assets/cards/
 # 환경변수 (키/시크릿 포함 — 절대 커밋 금지)
 .env.local
 .env*.local
+
+# config-store 원자적 쓰기 임시 파일(TASK-157)
+data/*.tmp

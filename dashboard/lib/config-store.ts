@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { repoPath } from "./repo-root";
@@ -26,11 +27,30 @@ export async function readConfig(file: string): Promise<unknown | null> {
   }
 }
 
-/** 설정을 저장한다. 임시 파일에 쓰고 rename 해 중간에 끊겨도 원본이 깨지지 않게 한다. */
+// 파일별 쓰기 직렬화 큐. 같은 파일에 PUT 이 겹치면(탭 두 개에서 저장 등) 예전엔 같은
+// `${target}.tmp` 에 동시에 써서 한쪽 rename 이 ENOENT 로 실패하거나 내용이 섞였다(TASK-157).
+const writeQueues = new Map<string, Promise<void>>();
+
+/**
+ * 설정을 저장한다. 임시 파일에 쓰고 rename 해 중간에 끊겨도 원본이 깨지지 않게 한다.
+ * 같은 파일 쓰기는 도착 순서대로 한 번에 하나씩 — 마지막 요청이 최종 상태가 된다.
+ */
 export async function writeConfig(file: string, value: unknown): Promise<void> {
   const target = configPath(file);
-  await mkdir(path.dirname(target), { recursive: true });
-  const tmp = `${target}.tmp`;
-  await writeFile(tmp, JSON.stringify(value, null, 2) + "\n", "utf-8");
-  await rename(tmp, target);
+  const prev = writeQueues.get(target) ?? Promise.resolve();
+  const next = prev
+    .catch(() => {}) // 앞 쓰기 실패가 뒤 쓰기를 막지 않는다(실패는 그 호출자에게만 전달된다)
+    .then(async () => {
+      await mkdir(path.dirname(target), { recursive: true });
+      // pid + uuid — 여러 프로세스(dev 서버 재시작 겹침 등)가 같은 tmp 를 쓰지 않게 한다.
+      const tmp = `${target}.${process.pid}.${randomUUID()}.tmp`;
+      await writeFile(tmp, JSON.stringify(value, null, 2) + "\n", "utf-8");
+      await rename(tmp, target);
+    });
+  writeQueues.set(target, next);
+  try {
+    await next;
+  } finally {
+    if (writeQueues.get(target) === next) writeQueues.delete(target);
+  }
 }

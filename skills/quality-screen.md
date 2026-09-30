@@ -25,8 +25,8 @@ $ARGUMENTS 에 대해 열등주 제거 지표 스크리닝을 실행하여, 1류
 
 ```bash
 # 저장소 루트에서 상대경로로 실행한다(폴더명이 '개인자료/…' 등으로 달라도 동작).
-# python3가 없으면 py / python 순으로 시도.
-python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py quality-screen || python tools/site_preflight.py quality-screen
+# ⚠️ 이 환경에는 `python` 이 없다 — 반드시 `python3` 를 쓴다(CLAUDE.md).
+python3 tools/site_preflight.py quality-screen
 ```
 
 차단된 소스가 있으면 스크립트가 대체 소스를 출력한다. 진행은 계속하되, **다음 규칙을 반드시 지킨다(hard rule):**
@@ -119,6 +119,10 @@ python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py qua
 >   말고 **한 소스에서 여러 지표를 한 번에** 걷는다(stockanalysis 재무제표 한 페이지에 대부분 있다).
 > - 상한에 걸려 못 구한 지표는 `⬛`(데이터부족)으로 남기고 판정에서 제외한다 — 추측 금지.
 >   **상한은 정확도보다 우선하지 않는다**: 충돌하면 조사를 줄이고 빈칸을 남기는 쪽으로 푼다.
+> - 재시도는 기업당 1회까지. 재시도 전에 산출물부터 확인하고, 2회차도 실패하면 그 기업을
+>   "데이터 부족 — 제외"로 적고 진행한다. 배치 통째 재실행 금지(TB-2).
+> - 🔴 Agent를 띄울 때는 위 제약(하위 Agent 금지 · 조사 상한 · 재시도 1회)을 **각 Agent
+>   프롬프트에 인라인으로** 넣는다 — Agent는 이 문서를 읽지 않는다.
 > - 보고서는 **Write 1회로 저장**한다. 본문을 Edit로 나눠 붙이지 않는다(TB-5).
 > - ⚠️ 이 스킬 1회 실행(종목 1개)의 정상 범위는 **1~3M 토큰**이다. 종목 하나에 10M을
 >   넘겼다면 지표별로 검색을 쪼개고 있는 것이니 멈추고 수집 방식을 바꾼다.
@@ -230,7 +234,7 @@ python3 tools/site_preflight.py quality-screen || py tools/site_preflight.py qua
 
 > **위 `## 최종 판정` 블록은 개별 종목 모드에서 필수다.** `**최종 판정**: X` 단일 라인과
 > `<!-- quality-screen result: X -->` 마커를 **둘 다** 남긴다. 이 두 형태가 대시보드
-> `dashboard/lib/github.ts`의 결과 칩 파싱 계약이다(마커 1순위, 단일 라인 2순위).
+> `dashboard/lib/report-meta.ts`의 결과 칩 파싱 계약이다(마커 1순위, 단일 라인 2순위).
 
 ---
 

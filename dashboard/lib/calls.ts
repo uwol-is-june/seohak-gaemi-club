@@ -27,6 +27,18 @@ export interface RawCall {
   call: CallType;
   priceAtCall: number; // 콜 시점 주가 USD (불변)
   conviction?: string;
+  /**
+   * 논제 건강도 0~10 — 가정·레드라인의 현재 상태(reports/track-record.md 건강도 열과 같은 값).
+   *
+   * 🔴 **채점되는 값이 아니다.** 예측(call·priceAtCall·target)과 달리 사후 판정에 쓰이지 않는
+   * 상태 서술이라, 검토마다 갱신되는 것이 정상이다.
+   *
+   * 예전에는 전용 필드가 없어 `conviction` 자유 텍스트에서 "건강도 N/10" 을 정규식으로 긁었다.
+   * 그 결과 2026-09-23 일괄 재검토 콜 7건이 별점만 적는 순간 10종목 중 8종목이 화면에서
+   * 빈칸이 됐다(정본 마크다운에는 값이 다 있었다). 숫자 필드가 있는 콜은 이 값을 쓰고,
+   * 없는 옛 콜만 텍스트 파싱으로 폴백한다.
+   */
+  health?: number;
   report?: string;
   /**
    * 퀄리티 티어(skills/quality-tier.md). 요구 안전마진이 티어별로 다르므로
@@ -64,25 +76,30 @@ export interface RawCall {
  * (record_call.py 는 경고만 하고 이력 보존을 위해 추가한다). 그대로 채점하면 그 판단이
  * 두 번 세어져 적중률·기회비용 분모가 왜곡된다.
  *
- * 🔴 키는 `id`(= 티커-날짜-스킬)다. **같은 날 다른 스킬이 낸 콜은 중복이 아니다** —
+ * 🔴 키는 `id`(= 티커-날짜-스킬) **+ `call`** 이다. **같은 날 다른 스킬이 낸 콜은 중복이 아니다** —
  * 예: NVDA 2026-08-06 의 investment-team($172)과 thesis-tracker($205)는 서로 다른 판단이고,
  * 그 불일치를 드러내는 것이 논제 충돌 판정(thesis-groups.ts)의 목적이다. 합치면 안 된다.
+ * 같은 스킬이라도 call 이 다르면(관망 hold → 사용자 매수 후 buy) 별개 판단이다 — CLAUDE.md
+ * "기존 hold 콜은 지우지 않는다(관망 판단도 채점 대상)".
  *
  * 남기는 기준은 `recordedAt` 최신 — 늦게 기록된 쪽이 정정본이다. recordedAt 이 없으면
  * 파일에 나중에 나온 줄을 남긴다(원장은 시간순 append 이므로).
  */
 export function dedupeCalls(calls: RawCall[]): RawCall[] {
+  // 키 = id + call (TASK-139). 같은 id 라도 call 이 다르면 별개 판단 — hold 뒤에 같은 날
+  // buy 를 append 해도 hold 는 채점 대상으로 남는다. tools/score_calls.py dedupe_calls 와 동일.
   const latest = new Map<string, RawCall>();
   for (const c of calls) {
-    const prev = latest.get(c.id);
+    const key = `${c.id}|${c.call}`;
+    const prev = latest.get(key);
     if (!prev) {
-      latest.set(c.id, c);
+      latest.set(key, c);
       continue;
     }
     const a = prev.recordedAt ?? "";
     const b = c.recordedAt ?? "";
     // b >= a 이면 뒤에 온 줄로 교체 — 동률(둘 다 없음 포함)이면 나중 줄이 정정본이다.
-    if (b >= a) latest.set(c.id, c);
+    if (b >= a) latest.set(key, c);
   }
   return Array.from(latest.values());
 }
@@ -97,6 +114,8 @@ export interface ScoredCall {
   recordedAt?: string; // 기록 시각 ISO — 같은 날짜 콜의 최신 판별(종목당 최신 콜 접기).
   skill: string;
   conviction?: string;
+  /** 논제 건강도 0~10. 채점에 쓰이지 않는 상태 서술(RawCall.health 참조). */
+  health?: number;
   report?: string;
   tier?: "T1" | "T2" | "T3";
   requiredMosPct?: number;
@@ -110,6 +129,12 @@ export interface ScoredCall {
   returnPct: number | null;
   targetReached: boolean | null;
   targetErrorPct: number | null;
+  /** 판정에 쓴 가격 — 호라이즌이 끝났으면 종료일 종가(동결), 아니면 현재가(TASK-141). */
+  evalPrice?: number;
+  /** 동결 기준일(호라이즌 종료일). 동결되지 않았으면 없음. */
+  frozenAt?: string;
+  /** hold 전용 — 콜 이후(~호라이즌 종료) 최저 종가. 이 값 ≤ target.high 면 터치(체결). */
+  lowestSinceCall?: number;
   status: CallStatus;
   target?: {
     low?: number;
@@ -261,7 +286,28 @@ export function wilsonInterval(hits: number, n: number, z = 1.96): [number, numb
   return [Math.max(0, center - margin), Math.min(1, center + margin)];
 }
 
-export function scoreCall(call: RawCall, priceNow: number | null, today: Date): ScoredCall {
+/** 일별 종가 한 점(UTC 날짜 · 미조정 종가) — hold 터치·호라이즌 동결 판정용(TASK-141). */
+export interface ClosePoint {
+  date: string; // YYYY-MM-DD
+  close: number;
+}
+
+/**
+ * 콜 하나를 채점한다. tools/score_calls.py score_call 과 같은 규칙이어야 한다(파리티 픽스처).
+ *
+ * `path`(그 티커의 일별 종가, 오름차순)가 있으면 두 가지를 한다(TASK-141):
+ *  ① **호라이즌 동결** — 호라이즌이 끝난 콜은 오늘 가격이 아니라 종료일 종가로 판정한다.
+ *     오늘 가격으로 매일 재판정하면 확정된 결과가 주가 따라 뒤집힌다.
+ *  ② **hold 터치 판정** — 기간 중 최저 종가 ≤ target.high 면 적중(체결됨). 밴드를 뚫고 더
+ *     내려갔거나 터치 후 반등해도 체결은 일어났다. fill_probability.py 와 같은 사건 정의다.
+ * path 가 없으면 현재가만으로 판정한다(현재가 ≤ high 면 터치 확정, 아니면 빗나감).
+ */
+export function scoreCall(
+  call: RawCall,
+  priceNow: number | null,
+  today: Date,
+  path?: ClosePoint[] | null,
+): ScoredCall {
   // today 를 UTC 자정으로 정규화한다(TASK-72). callDate 는 UTC 자정인데 today 에
   // 시각대가 섞여 있으면 경과일·horizon 경과가 하루 어긋날 수 있어, 라우트가 어떤
   // 시각을 넘기든 안전하도록 여기서 자정으로 맞춘다.
@@ -296,6 +342,7 @@ export function scoreCall(call: RawCall, priceNow: number | null, today: Date): 
     recordedAt: call.recordedAt,
     skill: call.skill,
     conviction: call.conviction,
+    health: call.health,
     report: call.report,
     tier: call.tier,
     requiredMosPct: call.requiredMosPct,
@@ -319,8 +366,21 @@ export function scoreCall(call: RawCall, priceNow: number | null, today: Date): 
   const priceAt = call.priceAtCall;
   if (priceNow == null || typeof priceAt !== "number" || priceAt === 0) return base;
 
-  const ret = ((priceNow - priceAt) / priceAt) * 100;
-  base.returnPct = ret;
+  base.returnPct = ((priceNow - priceAt) / priceAt) * 100;
+
+  // 판정 가격 — 호라이즌이 끝났으면 종료일(이전 마지막 거래일) 종가로 동결한다.
+  const callIso = callDate.toISOString().slice(0, 10);
+  const endIso = horizonEnd ? horizonEnd.toISOString().slice(0, 10) : null;
+  let evalPrice = priceNow;
+  if (horizonElapsed && path && endIso) {
+    const toEnd = path.filter((p) => callIso < p.date && p.date <= endIso);
+    if (toEnd.length > 0) {
+      evalPrice = toEnd[toEnd.length - 1].close;
+      base.frozenAt = endIso;
+    }
+  }
+  base.evalPrice = evalPrice;
+  const ret = ((evalPrice - priceAt) / priceAt) * 100;
 
   const low = target.low;
   const high = target.high;
@@ -332,32 +392,42 @@ export function scoreCall(call: RawCall, priceNow: number | null, today: Date): 
   // buy/avoid 는 '방향' 예측이라 의도적으로 문턱을 두지 않는다(TASK-72): 오르면 buy 적중,
   // 내리면 avoid 적중. 정확히 보합(0%)은 방향이 실현되지 않았으므로 빗나감으로 본다.
   // (움직임 크기·목표가 도달은 targetReached/targetErrorPct 로 따로 채점.)
-  if (call.call === "buy") base.directionHit = priceNow > priceAt;
-  else if (call.call === "avoid") base.directionHit = priceNow < priceAt;
+  if (call.call === "buy") base.directionHit = evalPrice > priceAt;
+  else if (call.call === "avoid") base.directionHit = evalPrice < priceAt;
   else if (call.call === "keep") {
     // 보유 유지가 옳았나 = 계속 들고 있어도 손실이 없었나. 상방은 얼마든 열려 있으므로
     // 목표 밴드 상단을 넘겨도 적중이다(밴드는 targetReached 로 따로 채점).
     base.directionHit = ret >= -DRIFT_TOLERANCE_PCT;
   } else if (call.call === "hold") {
-    // 관망이 옳았나 = 기다린 진입 밴드로 실제 내려왔나. 밴드가 없으면(회색지대 판정)
-    // '크게 안 움직임'을 적중으로 본다.
-    base.directionHit =
-      typeof low === "number" && typeof high === "number"
-        ? low <= priceNow && priceNow <= high
-        : Math.abs(ret) <= DRIFT_TOLERANCE_PCT;
+    // 관망이 옳았나 = 기다린 진입 밴드에 실제로 닿았나(기간 중 최저 종가 ≤ 밴드 상단).
+    // "지금 밴드 안인가"로 보면 밴드를 뚫고 더 내려간 경우·터치 후 반등한 경우를 빗나감으로
+    // 센다 — 둘 다 체결은 일어났다. 밴드가 없으면(회색지대) '크게 안 움직임'을 적중으로 본다.
+    if (typeof high === "number") {
+      const todayIso = todayMid.toISOString().slice(0, 10);
+      const upto = endIso && endIso < todayIso ? endIso : todayIso;
+      const window = (path ?? []).filter((p) => callIso < p.date && p.date <= upto).map((p) => p.close);
+      const lowest = Math.min(...window, evalPrice);
+      base.lowestSinceCall = lowest;
+      base.directionHit = lowest <= high;
+    } else {
+      base.directionHit = Math.abs(ret) <= DRIFT_TOLERANCE_PCT;
+    }
   }
 
   if (typeof low === "number" && typeof high === "number") {
-    base.targetReached = low <= priceNow && priceNow <= high;
+    base.targetReached = low <= evalPrice && evalPrice <= high;
   }
   // mid === 0 은 '목표 없음'이 아니라 목표가 0 — 나눗셈 방지 겸 의도 명시(TASK-72).
-  if (mid != null && mid !== 0) base.targetErrorPct = ((priceNow - mid) / mid) * 100;
+  if (mid != null && mid !== 0) base.targetErrorPct = ((evalPrice - mid) / mid) * 100;
 
   // 상태 판정(TASK-44):
   //  - horizon 명시: 미경과=진행중, 경과 후 방향으로 확정.
   //  - horizon 없음: 최소 대기일(MIN_RESOLVE_DAYS) 전엔 진행중(당일 확정 오염 방지),
   //                  이후 방향으로 확정.
-  if (horizonMonths != null) {
+  //  - hold 터치는 되돌릴 수 없는 사건(체결)이라 호라이즌 중이어도 즉시 적중으로 확정한다.
+  if (call.call === "hold" && base.lowestSinceCall != null && base.directionHit === true) {
+    base.status = "적중";
+  } else if (horizonMonths != null) {
     if (!horizonElapsed) base.status = "진행중";
     else if (base.directionHit === true) base.status = "적중";
     else if (base.directionHit === false) base.status = "빗나감";

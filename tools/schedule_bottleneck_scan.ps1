@@ -25,6 +25,11 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# 한글 로그·프롬프트 인코딩 — 5.1 기본값은 콘솔 OEM(CP949) · 파이프 ASCII 라
+# ① claude 출력이 로그에서 깨지고 ② stdin 으로 넘긴 프롬프트의 한글이 '?' 로 바뀐다.
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = New-Object System.Text.UTF8Encoding $false
+
 # ─── 저장소 루트 (스크립트 위치 기준 — 절대경로 하드코딩 금지, CLAUDE.md 경로 규칙) ───
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
@@ -81,16 +86,39 @@ $allowedTools = @(
   'WebSearch', 'WebFetch',
   'Bash(python3 tools/*)'   # financial_rigor.py 등 보조 계산만 허용
 )
-$claudeArgs = @('-p', $prompt, '--allowedTools') + $allowedTools
+# 🔴 프롬프트는 인자가 아니라 **stdin 으로** 넘긴다. claude.cmd 는 배치 파일이라 cmd.exe 가
+# 인자를 다시 파싱하는데, 여러 줄 문자열은 첫 줄바꿈에서 잘리고 뒤따르는 --allowedTools 까지
+# 사라진다 → 무인 실행이 권한 프롬프트에서 전부 거부됐다(2026-08~09, 29회 연속 실패).
+$claudeArgs = @('-p', '--allowedTools') + $allowedTools
+
+# 네이티브 호출 헬퍼 — 5.1 에서 'Stop' + 2>&1 조합은 stderr 첫 줄(경고 한 줄이라도)을
+# NativeCommandError 로 던져 정상 실행을 실패로 끊는다. 호출 구간만 Continue 로 낮추고
+# stderr 레코드는 문자열로 풀어 로그에 남긴다.
+function Invoke-Native([scriptblock]$block) {
+  $prev = $ErrorActionPreference
+  $ErrorActionPreference = 'Continue'
+  try {
+    & $block 2>&1 | ForEach-Object { Add-Content -Path $log -Value ([string]$_) -Encoding utf8 }
+  } finally {
+    $ErrorActionPreference = $prev
+  }
+  return $LASTEXITCODE
+}
 
 if ($DryRun) {
   Write-Log "DRY RUN — 스캔을 건너뛴다 (claude: $claude)"
-  Write-Log "프롬프트 길이: $($prompt.Length)자, 트렌드: $trends"
+  Write-Log "프롬프트 길이: $($prompt.Length)자 · $(($prompt -split "`n").Count)줄 (stdin 전달), 트렌드: $trends"
   Write-Log "허용 도구: $($allowedTools -join ' ')"
 } else {
   try {
-    & $claude @claudeArgs 2>&1 | ForEach-Object { Add-Content -Path $log -Value $_ -Encoding utf8 }
-    Write-Log "스캔 완료 (exit: $LASTEXITCODE)"
+    $code = Invoke-Native { $prompt | & $claude @claudeArgs }
+    # 도구가 전부 거부돼도 claude 는 exit 0 으로 끝난다 — 로그에 '완료'만 남아 29회 실패가
+    # 안 보였다. 거부 문구가 찍혔으면 실패로 남긴다(회귀 감지).
+    if (Select-String -Path $log -Pattern "haven't granted it yet" -SimpleMatch -Quiet) {
+      Write-Log "ERROR: 도구 권한 거부가 감지됨 — --allowedTools 가 전달되지 않았을 수 있다 (exit: $code)"
+    } else {
+      Write-Log "스캔 완료 (exit: $code)"
+    }
   } catch {
     Write-Log "ERROR: 스캔 실패 — $_"
   }
@@ -104,8 +132,8 @@ if ($DryRun) {
 try {
   $publishArgs = @('tools/commit_reports.py')
   if ($DryRun) { $publishArgs += '--dry-run' }
-  python3 @publishArgs 2>&1 | ForEach-Object { Add-Content -Path $log -Value $_ -Encoding utf8 }
-  Write-Log "커밋 확인 완료"
+  $code = Invoke-Native { python3 @publishArgs }
+  Write-Log "커밋 확인 완료 (exit: $code)"
 } catch {
   Write-Log "WARN: 커밋 실패 — 다음 세션의 Stop 훅이 재시도한다. ($_)"
 }

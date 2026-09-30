@@ -1,6 +1,7 @@
 import { CONFIG_FILES, readConfig, writeConfig } from "@/lib/config-store";
 import { buildSectorAutoMap } from "@/lib/sector-auto-map";
 import { requireAuth } from "@/lib/api-auth";
+import { MAX_GROUPS, MAX_MEMBERS_PER_GROUP, MAX_STR, sanitizeGroups as sanitizeGroupsShared } from "@/lib/group-sanitize";
 
 // 종목별 보고서 탭의 섹터 그룹(이름 + 포함 티커) 설정. data/sector-groups.json 에 저장.
 // 브라우저 localStorage 대신 서버(파일) 저장이라 git 으로 이력·공유가 따라온다.
@@ -13,37 +14,8 @@ const DEFAULT_SECTOR_GROUPS = [
   { id: "space", name: "우주·항공", tickers: ["SPCX"] },
 ];
 
-type SectorGroup = { id: string; name: string; tickers: string[] };
-
-// 인증된 클라이언트라도 거대 blob 을 app_config 에 저장하지 못하도록 상한을 둔다(TASK-54).
-const MAX_GROUPS = 100;
-const MAX_TICKERS_PER_GROUP = 500;
-const MAX_STR = 200;
-
-// 외부 입력(PUT 바디)을 신뢰하지 않고 형태를 검증·정규화한다. 상한 초과 시 null(→400).
-function sanitizeGroups(input: unknown): SectorGroup[] | null {
-  if (!Array.isArray(input)) return null;
-  if (input.length > MAX_GROUPS) return null;
-  const groups: SectorGroup[] = [];
-  for (const g of input) {
-    if (!g || typeof g !== "object") return null;
-    const rec = g as Record<string, unknown>;
-    if (typeof rec.name !== "string" || rec.name.length > MAX_STR) return null;
-    if (typeof rec.id !== "string" && typeof rec.id !== "undefined") return null;
-    if (typeof rec.id === "string" && rec.id.length > MAX_STR) return null;
-    if (!Array.isArray(rec.tickers) || rec.tickers.length > MAX_TICKERS_PER_GROUP) return null;
-    const tickers = rec.tickers
-      .filter((t): t is string => typeof t === "string" && t.length <= MAX_STR)
-      .map((t) => t.trim().toUpperCase())
-      .filter(Boolean);
-    groups.push({
-      id: typeof rec.id === "string" ? rec.id : `g-${groups.length}`,
-      name: rec.name.trim(),
-      tickers,
-    });
-  }
-  return groups;
-}
+// 검증·상한은 lib/group-sanitize.ts 공용(TASK-157). 멤버가 티커라 대문자로 정규화한다.
+const sanitizeGroups = (input: unknown) => sanitizeGroupsShared(input, { upper: true });
 
 // 자동 맵도 보고서 마커에서 파싱한 값이라 형태를 검증한다(티커·섹터명 문자열, 길이 상한).
 function sanitizeAutoMap(input: unknown): Record<string, string> {
@@ -54,7 +26,7 @@ function sanitizeAutoMap(input: unknown): Record<string, string> {
     const ticker = k.trim().toUpperCase();
     const sector = v.trim();
     if (!ticker || !sector || ticker.length > MAX_STR || sector.length > MAX_STR) continue;
-    if (Object.keys(out).length >= MAX_GROUPS * MAX_TICKERS_PER_GROUP) break;
+    if (Object.keys(out).length >= MAX_GROUPS * MAX_MEMBERS_PER_GROUP) break;
     out[ticker] = sector;
   }
   return out;

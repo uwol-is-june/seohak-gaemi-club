@@ -8,7 +8,15 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { scoreCall, type RawCall, type ScoredCall } from "./calls.ts";
-import { bandDrift, detectConflict, detectRefresh, groupTheses } from "./thesis-groups.ts";
+import {
+  bandDrift,
+  detectConflict,
+  detectRefresh,
+  goalGapKey,
+  groupGoal,
+  groupTheses,
+  highLadderMismatch,
+} from "./thesis-groups.ts";
 
 const failures: string[] = [];
 function check(name: string, got: unknown, want: unknown) {
@@ -184,14 +192,60 @@ check("논제 1건이면 충돌 없음", detectConflict([call({ skill: "a" })]),
       target: { low: 93, high: 106, horizonMonths: 12 } }, 183.32
   ))?.driftPct.toFixed(1), "72.9");
 
-  // 요구 MOS 가 원장에 없으면 판정하지 않는다(추정 금지).
-  check("요구 MOS 결측이면 미판정", bandDrift(call(
+  // 요구 MOS 가 없으면 티어 상한으로 폴백한다(CLAUDE.md · TASK-148). 티어도 없으면 판정하지 않는다.
+  const noMos = bandDrift(call(
+    { skill: "thesis-tracker", date: "2026-06-01", tier: "T1", target: { low: 205, high: 255, horizonMonths: 12 } }, 354.97
+  ));
+  check("요구 MOS 결측 → 티어 상한 폴백", [noMos?.requiredMosPct, noMos?.mosFromTier], [15, true]);
+  check("요구 MOS·티어 모두 결측이면 미판정", bandDrift(call(
     { skill: "thesis-tracker", date: "2026-06-01", target: { low: 205, high: 255, horizonMonths: 12 } }, 354.97
+  )), null);
+
+  // target.high ≠ 래더 1차(AXP 250 vs 280) → 이탈률이 아니라 재기록을 요구한다(record_call 게이트 4).
+  const axp = call(
+    { skill: "thesis-tracker", date: "2026-06-01", tier: "T2", requiredMosPct: 25,
+      target: { low: 220, high: 250, horizonMonths: 12, tranches: ["1차 ≤$280 (1/3)", "2차 ≤$250 (1/3)", "3차 ≤$220 (1/3)"] } },
+    345
+  );
+  check("high ≠ 래더 1차 감지", highLadderMismatch(axp), { high: 250, first: 280 });
+  const axpReasons = detectRefresh([axp], false)[0]?.reasons ?? [];
+  check("불일치면 재기록 사유", axpReasons.some((r) => r.includes("≠ 래더 1차")), true);
+  check("불일치면 이탈 사유는 내지 않음(틀린 숫자)", axpReasons.some((r) => r.includes("밴드 이탈")), false);
+  check("keep 은 목표가≠증액 래더가 정상", highLadderMismatch(call(
+    { skill: "a", date: "2026-06-01", call: "keep", target: { high: 400, tranches: ["1차 ≤$280 (50%)"] } }, 345
   )), null);
 }
 check("종료 종목은 갱신 요구 없음", groupTheses([
   call({ skill: "a", date: "2026-01-01", call: "buy", target: { low: 250, high: 300, horizonMonths: 1 } }, 100),
 ])[0].refresh.length, 0);
+
+// ── 집행 지점: 정렬 키와 표시가 같은 값을 쓴다 (TASK-146) ─────────────────
+{
+  // 관망 논제 둘 — lead 는 $170, 다른 논제는 $185. 표시·정렬 모두 가장 먼저 닿는 $185 여야 한다.
+  const g = {
+    active: [
+      call({ skill: "thesis-tracker", call: "hold", target: { low: 150, high: 170, horizonMonths: 12 } }),
+      call({ skill: "investment-team", call: "hold", target: { low: 160, high: 185, horizonMonths: 12 } }),
+    ],
+    history: [],
+  };
+  check("hold goal = 논제 전체 max", groupGoal(g)?.price, 185);
+  check("hold 정렬 키 = 같은 값", goalGapKey(g), Math.abs((185 - 200) / 200));
+}
+{
+  // 래더 없는 keep — 목표가 폴백은 표시만 하고(up) 정렬에서는 뒤로(∞) 보낸다(TASK-114).
+  const g = { active: [call({ skill: "a", call: "keep", target: { low: 250, high: 300, horizonMonths: 12 } })], history: [] };
+  check("keep 폴백 방향", groupGoal(g)?.dir, "up");
+  check("keep 폴백 정렬 ∞", goalGapKey(g), Number.POSITIVE_INFINITY);
+}
+{
+  const g = {
+    active: [call({ skill: "a", call: "keep", target: { tranches: ["1차 ≤$180 (50%)", "2차 ≤$160 (50%)"] } })],
+    history: [],
+  };
+  check("keep 증액 래더", [groupGoal(g)?.label, groupGoal(g)?.price], ["증액까지", 180]);
+  check("keep 증액 정렬 키", goalGapKey(g), 0.1);
+}
 
 // ── 실제 원장 ────────────────────────────────────────────────────────────
 const ledgerPath = fileURLToPath(new URL("../../data/calls.jsonl", import.meta.url));

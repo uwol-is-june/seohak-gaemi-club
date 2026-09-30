@@ -1,75 +1,536 @@
 {
-  "_comment": "콜 채점 파리티 픽스처(TASK-60). dashboard/lib/calls.ts 와 tools/score_calls.py 가 동일 결과를 내야 한다. 두 곳의 테스트(dashboard/lib/calls.fixture.test.ts, tools/test_score_calls.py)가 이 파일을 함께 검증한다. today 는 UTC 기준 YYYY-MM-DD.",
+  "_comment": "콜 채점 파리티 픽스처(TASK-60). dashboard/lib/calls.ts 와 tools/score_calls.py 가 동일 결과를 내야 한다. 두 곳의 테스트(dashboard/lib/calls.fixture.test.ts, tools/test_score_calls.py)가 이 파일을 함께 검증한다. today 는 UTC 기준 YYYY-MM-DD. path(선택)는 [YYYY-MM-DD, 종가] 오름차순 — hold 터치·호라이즌 동결 판정 입력(TASK-141).",
   "cases": [
     {
       "name": "buy-up-40d-no-horizon → 적중",
-      "call": { "id": "c1", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "buy", "priceAtCall": 100 },
+      "call": {
+        "id": "c1",
+        "ticker": "X",
+        "date": "2026-06-14",
+        "skill": "s",
+        "call": "buy",
+        "priceAtCall": 100
+      },
       "priceNow": 110,
       "today": "2026-07-24",
-      "expect": { "status": "적중", "directionHit": true, "horizonMonths": null }
+      "expect": {
+        "status": "적중",
+        "directionHit": true,
+        "horizonMonths": null
+      }
     },
     {
       "name": "buy-today-no-horizon → 진행중(당일 확정 방지)",
-      "call": { "id": "c2", "ticker": "X", "date": "2026-07-24", "skill": "s", "call": "buy", "priceAtCall": 100 },
+      "call": {
+        "id": "c2",
+        "ticker": "X",
+        "date": "2026-07-24",
+        "skill": "s",
+        "call": "buy",
+        "priceAtCall": 100
+      },
       "priceNow": 110,
       "today": "2026-07-24",
-      "expect": { "status": "진행중", "directionHit": true, "horizonMonths": null }
+      "expect": {
+        "status": "진행중",
+        "directionHit": true,
+        "horizonMonths": null
+      }
     },
     {
       "name": "buy-flat-40d → 빗나감(보합은 방향 미실현)",
-      "call": { "id": "c3", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "buy", "priceAtCall": 100 },
+      "call": {
+        "id": "c3",
+        "ticker": "X",
+        "date": "2026-06-14",
+        "skill": "s",
+        "call": "buy",
+        "priceAtCall": 100
+      },
       "priceNow": 100,
       "today": "2026-07-24",
-      "expect": { "status": "빗나감", "directionHit": false }
+      "expect": {
+        "status": "빗나감",
+        "directionHit": false
+      }
     },
     {
       "name": "avoid-down-40d → 적중",
-      "call": { "id": "c4", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "avoid", "priceAtCall": 100 },
+      "call": {
+        "id": "c4",
+        "ticker": "X",
+        "date": "2026-06-14",
+        "skill": "s",
+        "call": "avoid",
+        "priceAtCall": 100
+      },
       "priceNow": 90,
       "today": "2026-07-24",
-      "expect": { "status": "적중", "directionHit": true }
+      "expect": {
+        "status": "적중",
+        "directionHit": true
+      }
     },
     {
       "name": "keep-down-5pct-40d → 적중(문턱 -10% 이내)",
-      "call": { "id": "c5", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "keep", "priceAtCall": 100 },
+      "call": {
+        "id": "c5",
+        "ticker": "X",
+        "date": "2026-06-14",
+        "skill": "s",
+        "call": "keep",
+        "priceAtCall": 100
+      },
       "priceNow": 95,
       "today": "2026-07-24",
-      "expect": { "status": "적중", "directionHit": true }
+      "expect": {
+        "status": "적중",
+        "directionHit": true
+      }
     },
     {
       "name": "hold-in-band-40d → 적중 + targetReached",
-      "call": { "id": "c6", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "hold", "priceAtCall": 100, "target": { "low": 90, "high": 110 } },
+      "call": {
+        "id": "c6",
+        "ticker": "X",
+        "date": "2026-06-14",
+        "skill": "s",
+        "call": "hold",
+        "priceAtCall": 100,
+        "target": {
+          "low": 90,
+          "high": 110
+        }
+      },
       "priceNow": 100,
       "today": "2026-07-24",
-      "expect": { "status": "적중", "directionHit": true, "targetReached": true }
+      "expect": {
+        "status": "적중",
+        "directionHit": true,
+        "targetReached": true
+      }
     },
     {
       "name": "horizon-12m-미경과 → 진행중",
-      "call": { "id": "c7", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "buy", "priceAtCall": 100, "target": { "horizonMonths": 12 } },
+      "call": {
+        "id": "c7",
+        "ticker": "X",
+        "date": "2026-06-14",
+        "skill": "s",
+        "call": "buy",
+        "priceAtCall": 100,
+        "target": {
+          "horizonMonths": 12
+        }
+      },
       "priceNow": 110,
       "today": "2026-07-24",
-      "expect": { "status": "진행중", "directionHit": true, "horizonMonths": 12 }
+      "expect": {
+        "status": "진행중",
+        "directionHit": true,
+        "horizonMonths": 12
+      }
     },
     {
       "name": "invalid-date → today 폴백, 진행중, NaN 없음",
-      "call": { "id": "c8", "ticker": "X", "date": "2026-13-45", "skill": "s", "call": "buy", "priceAtCall": 100 },
+      "call": {
+        "id": "c8",
+        "ticker": "X",
+        "date": "2026-13-45",
+        "skill": "s",
+        "call": "buy",
+        "priceAtCall": 100
+      },
       "priceNow": 110,
       "today": "2026-07-24",
-      "expect": { "status": "진행중", "directionHit": true, "horizonMonths": null, "elapsedDays": 0 }
+      "expect": {
+        "status": "진행중",
+        "directionHit": true,
+        "horizonMonths": null,
+        "elapsedDays": 0
+      }
     },
     {
       "name": "horizonMonths-0 → 즉시 확정",
-      "call": { "id": "c9", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "buy", "priceAtCall": 100, "target": { "horizonMonths": 0 } },
+      "call": {
+        "id": "c9",
+        "ticker": "X",
+        "date": "2026-06-14",
+        "skill": "s",
+        "call": "buy",
+        "priceAtCall": 100,
+        "target": {
+          "horizonMonths": 0
+        }
+      },
       "priceNow": 110,
       "today": "2026-07-24",
-      "expect": { "status": "적중", "directionHit": true, "horizonMonths": 0 }
+      "expect": {
+        "status": "적중",
+        "directionHit": true,
+        "horizonMonths": 0
+      }
     },
     {
       "name": "mid-0 → targetErrorPct null(0 나눗셈 방지)",
-      "call": { "id": "c10", "ticker": "X", "date": "2026-06-14", "skill": "s", "call": "buy", "priceAtCall": 100, "target": { "low": 0, "high": 0 } },
+      "call": {
+        "id": "c10",
+        "ticker": "X",
+        "date": "2026-06-14",
+        "skill": "s",
+        "call": "buy",
+        "priceAtCall": 100,
+        "target": {
+          "low": 0,
+          "high": 0
+        }
+      },
       "priceNow": 110,
       "today": "2026-07-24",
-      "expect": { "status": "적중", "directionHit": true, "targetErrorPct": null }
+      "expect": {
+        "status": "적중",
+        "directionHit": true,
+        "targetErrorPct": null
+      }
+    },
+    {
+      "name": "hold-터치 후 반등(TASK-141) → 호라이즌 중 즉시 적중",
+      "call": {
+        "id": "p11",
+        "ticker": "X",
+        "date": "2026-01-10",
+        "skill": "s",
+        "call": "hold",
+        "priceAtCall": 130,
+        "target": {
+          "low": 90,
+          "high": 110,
+          "horizonMonths": 12
+        }
+      },
+      "path": [
+        [
+          "2026-01-10",
+          130
+        ],
+        [
+          "2026-02-02",
+          118
+        ],
+        [
+          "2026-03-02",
+          105
+        ],
+        [
+          "2026-04-01",
+          125
+        ]
+      ],
+      "priceNow": 125,
+      "today": "2026-04-02",
+      "expect": {
+        "status": "적중",
+        "directionHit": true,
+        "lowestSinceCall": 105,
+        "targetReached": false
+      }
+    },
+    {
+      "name": "hold-밴드 하단까지 뚫고 내려감 → 적중(체결은 일어났다)",
+      "call": {
+        "id": "p12",
+        "ticker": "X",
+        "date": "2026-01-10",
+        "skill": "s",
+        "call": "hold",
+        "priceAtCall": 130,
+        "target": {
+          "low": 90,
+          "high": 110,
+          "horizonMonths": 12
+        }
+      },
+      "path": [
+        [
+          "2026-02-02",
+          100
+        ],
+        [
+          "2026-03-02",
+          80
+        ]
+      ],
+      "priceNow": 85,
+      "today": "2026-03-03",
+      "expect": {
+        "status": "적중",
+        "directionHit": true,
+        "lowestSinceCall": 80
+      }
+    },
+    {
+      "name": "hold-호라이즌 중 미터치 → 진행중",
+      "call": {
+        "id": "p13",
+        "ticker": "X",
+        "date": "2026-01-10",
+        "skill": "s",
+        "call": "hold",
+        "priceAtCall": 130,
+        "target": {
+          "low": 90,
+          "high": 110,
+          "horizonMonths": 12
+        }
+      },
+      "path": [
+        [
+          "2026-02-02",
+          125
+        ],
+        [
+          "2026-03-02",
+          120
+        ]
+      ],
+      "priceNow": 121,
+      "today": "2026-03-03",
+      "expect": {
+        "status": "진행중",
+        "directionHit": false,
+        "lowestSinceCall": 120
+      }
+    },
+    {
+      "name": "hold-호라이즌 종료 후에야 밴드 진입 → 종료일 동결로 빗나감",
+      "call": {
+        "id": "p14",
+        "ticker": "X",
+        "date": "2026-01-10",
+        "skill": "s",
+        "call": "hold",
+        "priceAtCall": 130,
+        "target": {
+          "low": 90,
+          "high": 110,
+          "horizonMonths": 3
+        }
+      },
+      "path": [
+        [
+          "2026-02-02",
+          125
+        ],
+        [
+          "2026-04-09",
+          116
+        ],
+        [
+          "2026-04-10",
+          115
+        ],
+        [
+          "2026-05-01",
+          100
+        ]
+      ],
+      "priceNow": 100,
+      "today": "2026-05-02",
+      "expect": {
+        "status": "빗나감",
+        "directionHit": false,
+        "lowestSinceCall": 115,
+        "evalPrice": 115,
+        "frozenAt": "2026-04-10"
+      }
+    },
+    {
+      "name": "buy-호라이즌 동결: 종료일 상승이면 이후 급락해도 적중",
+      "call": {
+        "id": "p15",
+        "ticker": "X",
+        "date": "2026-01-10",
+        "skill": "s",
+        "call": "buy",
+        "priceAtCall": 100,
+        "target": {
+          "horizonMonths": 3
+        }
+      },
+      "path": [
+        [
+          "2026-02-02",
+          105
+        ],
+        [
+          "2026-04-10",
+          120
+        ],
+        [
+          "2026-05-01",
+          90
+        ]
+      ],
+      "priceNow": 90,
+      "today": "2026-05-02",
+      "expect": {
+        "status": "적중",
+        "directionHit": true,
+        "evalPrice": 120,
+        "frozenAt": "2026-04-10"
+      }
+    },
+    {
+      "name": "hold-이력 없음 폴백: 현재가 > 상단 → 진행중·미터치",
+      "call": {
+        "id": "p16",
+        "ticker": "X",
+        "date": "2026-01-10",
+        "skill": "s",
+        "call": "hold",
+        "priceAtCall": 130,
+        "target": {
+          "low": 90,
+          "high": 110,
+          "horizonMonths": 12
+        }
+      },
+      "priceNow": 125,
+      "today": "2026-03-03",
+      "expect": {
+        "status": "진행중",
+        "directionHit": false,
+        "lowestSinceCall": 125
+      }
+    }
+  ],
+  "_dedupeComment": "중복 접기 파리티(TASK-139). 키는 id + call — 같은 날 같은 스킬이 hold 뒤에 buy 를 내도 hold 는 채점 대상으로 남는다. expect 는 남는 줄의 [id, call, priceAtCall] 목록(순서 무관).",
+  "dedupeCases": [
+    {
+      "name": "같은 id·같은 call 재실행 → 최신 1건",
+      "calls": [
+        {
+          "id": "A-20260901-t",
+          "ticker": "A",
+          "date": "2026-09-01",
+          "skill": "t",
+          "call": "hold",
+          "priceAtCall": 100,
+          "recordedAt": "2026-09-01T01:00:00Z"
+        },
+        {
+          "id": "A-20260901-t",
+          "ticker": "A",
+          "date": "2026-09-01",
+          "skill": "t",
+          "call": "hold",
+          "priceAtCall": 101,
+          "recordedAt": "2026-09-01T02:00:00Z"
+        }
+      ],
+      "expect": [
+        [
+          "A-20260901-t",
+          "hold",
+          101
+        ]
+      ]
+    },
+    {
+      "name": "같은 id·다른 call(hold→buy) → 둘 다 남는다",
+      "calls": [
+        {
+          "id": "A-20260901-t",
+          "ticker": "A",
+          "date": "2026-09-01",
+          "skill": "t",
+          "call": "hold",
+          "priceAtCall": 100,
+          "recordedAt": "2026-09-01T01:00:00Z"
+        },
+        {
+          "id": "A-20260901-t",
+          "ticker": "A",
+          "date": "2026-09-01",
+          "skill": "t",
+          "call": "buy",
+          "priceAtCall": 98,
+          "recordedAt": "2026-09-01T05:00:00Z"
+        }
+      ],
+      "expect": [
+        [
+          "A-20260901-t",
+          "hold",
+          100
+        ],
+        [
+          "A-20260901-t",
+          "buy",
+          98
+        ]
+      ]
+    },
+    {
+      "name": "같은 날 다른 스킬 → 중복 아님",
+      "calls": [
+        {
+          "id": "A-20260901-t",
+          "ticker": "A",
+          "date": "2026-09-01",
+          "skill": "t",
+          "call": "hold",
+          "priceAtCall": 100
+        },
+        {
+          "id": "A-20260901-u",
+          "ticker": "A",
+          "date": "2026-09-01",
+          "skill": "u",
+          "call": "hold",
+          "priceAtCall": 100
+        }
+      ],
+      "expect": [
+        [
+          "A-20260901-t",
+          "hold",
+          100
+        ],
+        [
+          "A-20260901-u",
+          "hold",
+          100
+        ]
+      ]
+    },
+    {
+      "name": "recordedAt 없음 동률 → 나중 줄이 정정본",
+      "calls": [
+        {
+          "id": "A-20260901-t",
+          "ticker": "A",
+          "date": "2026-09-01",
+          "skill": "t",
+          "call": "avoid",
+          "priceAtCall": 100
+        },
+        {
+          "id": "A-20260901-t",
+          "ticker": "A",
+          "date": "2026-09-01",
+          "skill": "t",
+          "call": "avoid",
+          "priceAtCall": 222
+        }
+      ],
+      "expect": [
+        [
+          "A-20260901-t",
+          "avoid",
+          222
+        ]
+      ]
     }
   ]
 }

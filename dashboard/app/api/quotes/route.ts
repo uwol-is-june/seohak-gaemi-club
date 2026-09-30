@@ -6,6 +6,7 @@
 
 import { requireAuth } from "@/lib/api-auth";
 import { mapLimit } from "@/lib/map-limit";
+import { fetchQuote as fetchRawQuote } from "@/lib/yahoo";
 
 interface Quote {
   ticker: string;
@@ -18,44 +19,18 @@ const TTL_MS = 60 * 1000; // 1분 — 온디맨드 버튼용이라 짧게
 const MAX_TICKERS = 50;
 const cache = new Map<string, { quote: Quote; expiresAt: number }>();
 
-// 토스/보고서 티커 → Yahoo 심볼 형식으로 정규화.
-// Yahoo는 클래스주에 대시를 쓴다(BRK.B/BRK B → BRK-B). 대소문자·공백 정리 포함.
-function toYahooSymbol(ticker: string): string {
-  return ticker.trim().toUpperCase().replace(/[.\s]/g, "-");
-}
-
 // 티커 하나의 시세를 Yahoo chart 메타에서 뽑아 온다. 실패는 null 필드로 graceful.
 async function fetchQuote(ticker: string): Promise<Quote> {
   const cached = cache.get(ticker);
   if (cached && cached.expiresAt > Date.now()) return cached.quote;
 
-  const empty: Quote = { ticker, price: null, prevClose: null, changePct: null };
-  try {
-    const res = await fetch(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(toYahooSymbol(ticker))}?range=1d&interval=1d`,
-      { headers: { "User-Agent": "Mozilla/5.0" }, cache: "no-store" }
-    );
-    if (!res.ok) throw new Error(`quote ${res.status}`);
-    const data = await res.json();
-    const meta = data?.chart?.result?.[0]?.meta;
-    const price = typeof meta?.regularMarketPrice === "number" ? meta.regularMarketPrice : null;
-    const prevClose =
-      typeof meta?.chartPreviousClose === "number"
-        ? meta.chartPreviousClose
-        : typeof meta?.previousClose === "number"
-          ? meta.previousClose
-          : null;
-    const changePct =
-      price != null && prevClose != null && prevClose !== 0
-        ? ((price - prevClose) / prevClose) * 100
-        : null;
-    const quote: Quote = { ticker, price, prevClose, changePct };
-    // 유효값을 얻었을 때만 캐시(일시적 실패를 1분 고정하지 않도록).
-    if (changePct != null) cache.set(ticker, { quote, expiresAt: Date.now() + TTL_MS });
-    return quote;
-  } catch {
-    return empty;
-  }
+  const { price, prevClose } = await fetchRawQuote(ticker);
+  const changePct =
+    price != null && prevClose != null && prevClose !== 0 ? ((price - prevClose) / prevClose) * 100 : null;
+  const quote: Quote = { ticker, price, prevClose, changePct };
+  // 유효값을 얻었을 때만 캐시(일시적 실패를 1분 고정하지 않도록).
+  if (changePct != null) cache.set(ticker, { quote, expiresAt: Date.now() + TTL_MS });
+  return quote;
 }
 
 export async function GET(request: Request) {

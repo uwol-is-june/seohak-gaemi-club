@@ -70,6 +70,38 @@ def fetch_price(ticker: str) -> float | None:
     return float(price) if isinstance(price, (int, float)) else None
 
 
+def fetch_close_history(ticker: str, since: str) -> list[tuple[str, float]] | None:
+    """콜 이후 일별 종가 [(YYYY-MM-DD, close)] — hold 터치·호라이즌 동결 판정용(TASK-141).
+
+    미조정 종가(quote.close)를 쓴다 — priceAtCall 이 미조정 시세이고, fill_probability.py 도
+    같은 값을 본다. 날짜는 거래소가 아니라 UTC 기준 날짜(콜 날짜와 같은 축)다.
+    """
+    sym = to_yahoo_symbol(ticker)
+    try:
+        start = int(datetime.strptime(since, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp())
+    except (ValueError, TypeError):
+        return None
+    end = int(datetime.now(timezone.utc).timestamp()) + 86_400
+    url = (f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}"
+           f"?period1={start}&period2={end}&interval=1d")
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        result = data["chart"]["result"][0]
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError,
+            ValueError, KeyError, IndexError, TypeError):
+        return None
+    ts = result.get("timestamp") or []
+    closes = (result.get("indicators", {}).get("quote") or [{}])[0].get("close") or []
+    out = [
+        (datetime.fromtimestamp(int(t), timezone.utc).date().isoformat(), float(c))
+        for t, c in zip(ts, closes)
+        if isinstance(t, (int, float)) and isinstance(c, (int, float))
+    ]
+    return out or None
+
+
 def add_months(d: date, months: int) -> date:
     m = d.month - 1 + months
     y = d.year + m // 12
@@ -100,25 +132,41 @@ def dedupe_calls(calls: list[dict]) -> list[dict]:
     (record_call.py 는 경고만 하고 이력 보존을 위해 추가한다). 그대로 채점하면 그 판단이
     두 번 세어져 적중률·기회비용 분모가 왜곡된다.
 
-    🔴 키는 id(= 티커-날짜-스킬)다. **같은 날 다른 스킬이 낸 콜은 중복이 아니다** —
+    🔴 키는 id(= 티커-날짜-스킬) + call 이다. **같은 날 다른 스킬이 낸 콜은 중복이 아니다** —
     서로 다른 판단이고, 그 불일치를 드러내는 것이 논제 충돌 판정의 목적이다.
+    같은 스킬이라도 **call 종류가 다르면 별개 판단이다**(TASK-139) — 사용자가 매수를 알려
+    같은 날 hold 뒤에 buy 를 append 하면, id 만 키로 쓸 경우 hold 가 지워져
+    "관망 판단도 채점 대상" 원칙이 깨진다.
 
     dashboard/lib/calls.ts 의 dedupeCalls 와 같은 규칙이어야 한다.
     """
-    latest: dict[str, dict] = {}
+    latest: dict[str, dict] = {}  # key = "id|call"
     for c in calls:
         cid = c.get("id")
         if not cid:
             continue
-        prev = latest.get(cid)
+        key = f"{cid}|{c.get('call')}"
+        prev = latest.get(key)
         # recordedAt 최신이 정정본. 동률(둘 다 없음 포함)이면 나중 줄을 남긴다.
         if prev is None or (c.get("recordedAt") or "") >= (prev.get("recordedAt") or ""):
-            latest[cid] = c
+            latest[key] = c
     return list(latest.values())
 
 
-def score_call(call: dict, now_price: float | None, today: date) -> dict:
-    """콜 하나를 채점. now_price 가 None이면 대부분 필드가 unknown."""
+def score_call(call: dict, now_price: float | None, today: date,
+               path: list[tuple[str, float]] | None = None) -> dict:
+    """콜 하나를 채점. now_price 가 None이면 대부분 필드가 unknown.
+
+    path: 그 티커의 일별 종가 [(YYYY-MM-DD, close)] (오름차순). 있으면 두 가지를 한다(TASK-141):
+      ① **호라이즌 동결** — 호라이즌이 끝난 콜은 오늘 가격이 아니라 **종료일 종가**로 판정한다.
+         오늘 가격으로 매일 재판정하면 확정된 결과가 주가 따라 뒤집힌다.
+      ② **hold 터치 판정** — 기간 중 최저 종가 ≤ target.high 면 적중(체결됨). 밴드를 뚫고 더
+         내려갔거나 터치 후 반등했어도 체결은 일어났다. tools/fill_probability.py 의 '기간 내
+         최저 종가 ≤ 목표' 와 같은 정의라, 기록 시 체결확률과 사후 채점이 같은 사건을 잰다.
+    path 가 없으면(시세 이력 실패·픽스처) 현재가만으로 판정한다 — 현재가 ≤ high 면 터치 확정,
+    아니면 이력을 몰라 빗나감으로 본다.
+    dashboard/lib/calls.ts scoreCall 과 같은 규칙이어야 한다.
+    """
     price_at = call.get("priceAtCall")
     call_type = call.get("call")
     try:
@@ -160,8 +208,19 @@ def score_call(call: dict, now_price: float | None, today: date) -> dict:
     if now_price is None or not isinstance(price_at, (int, float)) or price_at == 0:
         return result
 
-    ret = (now_price - price_at) / price_at * 100
-    result["returnPct"] = ret
+    result["returnPct"] = (now_price - price_at) / price_at * 100
+
+    # 판정 가격 — 호라이즌이 끝났으면 종료일(이전 마지막 거래일) 종가로 동결한다.
+    call_iso = call_date.isoformat()
+    end_iso = horizon_end.isoformat() if horizon_end else None
+    eval_price = now_price
+    if horizon_elapsed and path and end_iso:
+        closes_to_end = [c for d, c in path if call_iso < d <= end_iso]
+        if closes_to_end:
+            eval_price = closes_to_end[-1]
+            result["frozenAt"] = end_iso
+    result["evalPrice"] = eval_price
+    ret = (eval_price - price_at) / price_at * 100
 
     low, high = target.get("low"), target.get("high")
     mid = None
@@ -175,30 +234,39 @@ def score_call(call: dict, now_price: float | None, today: date) -> dict:
     # 방향 적중 — 콜은 '포지션'이 아니라 '예측'이고, keep 과 hold 는 정반대를 예측한다:
     #   buy   상승
     #   keep  보유 유지가 옳았나 = 의미 있는 하락이 없었나(상방은 무제한 허용)
-    #   hold  관망이 옳았나 = 기다린 진입 밴드로 내려왔나(밴드 없으면 ±문턱 횡보)
+    #   hold  관망이 옳았나 = 기간 중 최저 종가가 밴드 상단에 닿았나(밴드 없으면 ±문턱 횡보)
     #   avoid 하락
     if call_type == "buy":
-        result["directionHit"] = now_price > price_at
+        result["directionHit"] = eval_price > price_at
     elif call_type == "avoid":
-        result["directionHit"] = now_price < price_at
+        result["directionHit"] = eval_price < price_at
     elif call_type == "keep":
         result["directionHit"] = ret >= -DRIFT_TOLERANCE_PCT
     elif call_type == "hold":
-        if isinstance(low, (int, float)) and isinstance(high, (int, float)):
-            result["directionHit"] = low <= now_price <= high
+        if isinstance(high, (int, float)):
+            # 터치 = 콜 이후 ~ 호라이즌 종료(또는 오늘) 사이 최저 종가 ≤ 밴드 상단.
+            upto = min(end_iso, today.isoformat()) if end_iso else today.isoformat()
+            window = [c for d, c in (path or []) if call_iso < d <= upto]
+            lowest = min(window + [eval_price])
+            touched = lowest <= high
+            result["directionHit"] = touched
+            result["lowestSinceCall"] = lowest
         else:
             result["directionHit"] = abs(ret) <= DRIFT_TOLERANCE_PCT
 
     # 목표 도달·오차
     if isinstance(low, (int, float)) and isinstance(high, (int, float)):
-        result["targetReached"] = low <= now_price <= high
+        result["targetReached"] = low <= eval_price <= high
     # mid == 0 은 '목표 없음'이 아니라 목표가 0 — 나눗셈 방지 겸 의도 명시(TASK-72, calls.ts와 동일).
     if mid is not None and mid != 0:
-        result["targetErrorPct"] = (now_price - mid) / mid * 100
+        result["targetErrorPct"] = (eval_price - mid) / mid * 100
 
     # 상태(TASK-44): horizon 있으면 미경과=진행중, 경과=적중/빗나감.
     # horizon 없으면 최소 대기일 전엔 진행중(당일 확정 오염 방지), 이후 방향으로 확정.
-    if horizon_months is not None:
+    # hold 터치는 되돌릴 수 없는 사건이라(체결이 일어났다) 호라이즌 중이어도 즉시 적중으로 확정한다.
+    if call_type == "hold" and "lowestSinceCall" in result and result["directionHit"] is True:
+        result["status"] = "적중"
+    elif horizon_months is not None:
         if not horizon_elapsed:
             result["status"] = "진행중"
         elif result["directionHit"] is True:
@@ -215,10 +283,16 @@ def score_call(call: dict, now_price: float | None, today: date) -> dict:
 
 
 def fetch_benchmark_series(years: int = 5) -> list[tuple[int, float]] | None:
-    """벤치마크 일별 조정종가 [(unix_ts, close)]. 실패하면 None(0으로 뭉개지 않는다)."""
+    """벤치마크 일별 **미조정** 종가 [(unix_ts, close)]. 실패하면 None(0으로 뭉개지 않는다).
+
+    🔴 종목 쪽이 미조정 가격(priceAtCall·현재가)이라 SPY 도 미조정 종가(가격수익률)로 맞춘다
+    (TASK-152). 예전엔 SPY 만 배당조정 종가라 SPY 수익률이 연 ~1.3%p 부풀어 초과수익이
+    그만큼 낮게 잡혔다 → hold/avoid(SPY 미달이 적중) 쪽으로 채점이 편향됐다.
+    dashboard/app/api/calls/route.ts fetchBenchmarkSeries 와 같은 기준이어야 한다.
+    """
     url = (
         f"https://query1.finance.yahoo.com/v8/finance/chart/{BENCHMARK_TICKER}"
-        f"?range={years}y&interval=1d&includeAdjustedClose=true"
+        f"?range={years}y&interval=1d"
     )
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
@@ -230,9 +304,7 @@ def fetch_benchmark_series(years: int = 5) -> list[tuple[int, float]] | None:
         return None
 
     ts = result.get("timestamp") or []
-    adj = (result.get("indicators", {}).get("adjclose") or [{}])[0].get("adjclose")
-    raw = (result.get("indicators", {}).get("quote") or [{}])[0].get("close")
-    series = adj if isinstance(adj, list) else raw
+    series = (result.get("indicators", {}).get("quote") or [{}])[0].get("close")
     if not isinstance(ts, list) or not isinstance(series, list) or len(ts) != len(series):
         return None
 
@@ -434,13 +506,20 @@ def main() -> None:
     # 티커별 시세는 한 번씩만 fetch(중복 콜 절약).
     tickers = {c.get("ticker") for c in calls if c.get("ticker")}
     prices = {t: fetch_price(t) for t in tickers}
+    # hold 터치·호라이즌 동결용 일별 종가 — 티커의 가장 이른 콜부터(TASK-141).
+    first_date: dict[str, str] = {}
+    for c in calls:
+        t, d = c.get("ticker"), c.get("date") or ""
+        if t and d and (t not in first_date or d < first_date[t]):
+            first_date[t] = d
+    paths = {t: fetch_close_history(t, d) for t, d in first_date.items()}
     # 벤치마크 시계열은 콜 수와 무관하게 1건. 같은 날짜 콜이 많아 날짜별로 캐시한다.
     benchmark = fetch_benchmark_series()
     bm_by_date: dict[str, float | None] = {}
 
     scored = []
     for c in calls:
-        sc = score_call(c, prices.get(c.get("ticker")), today)
+        sc = score_call(c, prices.get(c.get("ticker")), today, paths.get(c.get("ticker")))
         d = sc.get("date") or ""
         if d not in bm_by_date:
             bm_by_date[d] = benchmark_return_since(benchmark, d)

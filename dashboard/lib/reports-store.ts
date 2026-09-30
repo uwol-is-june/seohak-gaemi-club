@@ -3,6 +3,7 @@ import { readdir, readFile, stat, unlink } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { repoPath, repoRoot } from "./repo-root";
+import { isInternal, isValidReportPath } from "./report-path";
 import {
   companyFromPath,
   parseConfidenceVerdict,
@@ -35,19 +36,6 @@ export interface ScannedReport {
   mtime: Date;
 }
 
-// 형식 가드: 경로가 reports/*.md 이고 상위 탈출(..)이 없어야 한다.
-function isValidReportPath(p: string): boolean {
-  return p.startsWith("reports/") && p.endsWith(".md") && !p.includes("..");
-}
-
-/**
- * `_` 로 시작하는 파일·폴더는 보고서가 아니라 원자료 캐시·공유 코퍼스다
- * (reports/{티커}/_data.md = SEC XBRL 추출, _q2-primary/ = Agent 공유 1차 자료).
- * 목록에 섞이면 대시보드에 원자료가 보고서로 뜬다.
- */
-function isInternal(relPath: string): boolean {
-  return relPath.split("/").slice(1).some((seg) => seg.startsWith("_"));
-}
 
 // ─── 파일 스캔 ──────────────────────────────────────────────────────────────
 async function walk(dir: string, relBase: string, out: ScannedReport[]): Promise<void> {

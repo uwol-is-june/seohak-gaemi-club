@@ -39,7 +39,15 @@ export async function DELETE(request: Request) {
   // CSRF·우발 삭제 방지(TASK-70): 삭제 대상을 커스텀 헤더로 재확인한다. 커스텀 헤더는
   // 교차 출처에서 CORS 프리플라이트 없이 설정할 수 없어(이 서버는 CORS 미허용) 사실상
   // 동일 출처 요청으로 제한된다.
-  if (request.headers.get("x-confirm-delete") !== path) {
+  // 헤더는 encodeURIComponent 로 온다(비 ISO-8859-1 한글 경로 — TASK-144). 깨진 인코딩은 불일치로 본다.
+  let confirmed: string | null = null;
+  try {
+    const raw = request.headers.get("x-confirm-delete");
+    confirmed = raw == null ? null : decodeURIComponent(raw);
+  } catch {
+    confirmed = null;
+  }
+  if (confirmed !== path) {
     return Response.json({ error: "삭제 확인 헤더가 없거나 일치하지 않습니다." }, { status: 400 });
   }
   try {

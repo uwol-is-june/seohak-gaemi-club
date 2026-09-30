@@ -454,7 +454,7 @@ export function HomeView({
     window.location.href = "/login";
   };
 
-  // 확인 모달에서 삭제 확정 → GitHub 삭제 커밋 → 목록 갱신 + 선택/모달 정리.
+  // 확인 모달에서 삭제 확정 → 작업트리 파일 삭제(git 으로 복구 가능) → 목록 갱신 + 선택/모달 정리.
   const confirmDelete = async () => {
     if (!deletePath) return;
     setDeleteBusy(true);
@@ -463,7 +463,9 @@ export function HomeView({
       const res = await fetch(`/api/reports/content?path=${encodeURIComponent(deletePath)}`, {
         method: "DELETE",
         // 서버가 요구하는 삭제 확인 헤더(동일 출처 강제 — TASK-70).
-        headers: { "x-confirm-delete": deletePath },
+        // 🔴 헤더 값은 ISO-8859-1 만 허용된다 — 한글 경로를 그대로 넣으면 fetch 가 TypeError 를
+        // 던져 삭제가 아예 안 된다(TASK-144). 인코딩해 보내고 서버가 디코드해 비교한다.
+        headers: { "x-confirm-delete": encodeURIComponent(deletePath) },
       });
       const d = await res.json();
       if (d.error) {

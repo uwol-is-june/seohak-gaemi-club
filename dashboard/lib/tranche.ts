@@ -165,6 +165,23 @@ export function noteTranches(list: Tranche[]): Tranche[] {
 }
 
 /**
+ * 래더 하나의 '조건 대기' 집계 — 가격 차수 중 몇 개가 조건 충족을 기다리는가 (TASK-140).
+ *
+ * 🔴 `AND:` 공통조건 줄(kind="note")은 **래더 전체**에 걸린다. 차수 줄에 조건이 없어도
+ * (심지어 "조건 없음"이라 적혀 있어도) 공통조건이 있으면 모든 차수가 gated 다.
+ * pricedTranches 만 보면 이 줄이 버려져 조건부 래더가 '가격만 닿으면 집행'으로 보인다
+ * — 원장 7건이 그렇게 표시됐다(오집행 위험).
+ */
+export function ladderGating(list: Tranche[]): { withCond: number; total: number; common: string[] } {
+  const priced = pricedTranches(list);
+  const common = noteTranches(list)
+    .map((t) => t.condition)
+    .filter((c): c is string => !!c);
+  const withCond = common.length > 0 ? priced.length : priced.filter((t) => t.condition).length;
+  return { withCond, total: priced.length, common };
+}
+
+/**
  * 래더의 '최상단 차수 가격' — 가장 먼저 닿는(가장 비싼) 집행 지점.
  * 논제끼리 "어디부터 사기 시작하는가"를 비교할 때 쓴다.
  */
