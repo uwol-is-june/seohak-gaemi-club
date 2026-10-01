@@ -55,6 +55,8 @@ export interface RawCall {
     tranches?: string[];
     /** 추격 금지선(USD). 현재가가 이 위면 어떤 차수도 활성화되지 않는다. */
     noChaseAbove?: number;
+    /** 내재가치(USD) — 표시용 목표가. 채점에 쓰지 않는다(TASK-164). hold 의 low/high 는 진입 밴드다. */
+    fairValue?: number;
     /**
      * 이 밴드가 호라이즌 안에 체결될 확률(%) — 과거 낙폭 베이스레이트(tools/fill_probability.py).
      * "unknown" 은 상장 이력이 짧아 산출 불가라는 뜻이며, 0% 와 구분해야 한다.
@@ -144,6 +146,8 @@ export interface ScoredCall {
     tranches?: string[];
     /** 추격 금지선(USD). 현재가가 이 위면 어떤 차수도 활성화되지 않는다. */
     noChaseAbove?: number;
+    /** 내재가치(USD) — 표시용 목표가. 채점에 쓰지 않는다(TASK-164). hold 의 low/high 는 진입 밴드다. */
+    fairValue?: number;
     /**
      * 이 밴드가 호라이즌 안에 체결될 확률(%) — 과거 낙폭 베이스레이트(tools/fill_probability.py).
      * "unknown" 은 상장 이력이 짧아 산출 불가라는 뜻이며, 0% 와 구분해야 한다.

@@ -4,7 +4,7 @@
   "companyName": "Constellation Energy Corp",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-08-06T01:33:12.794449+00:00",
+  "generatedAt": "2026-09-30T06:51:17.827196+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001868275.json",
@@ -27,7 +27,7 @@
   },
   "freshness": {
     "latestPeriodEnd": "2025-12-31",
-    "monthsOld": 7.2,
+    "monthsOld": 9.0,
     "stale": false
   },
   "annual": {
@@ -727,7 +727,7 @@
   },
   "crossValidation": {
     "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/CEG?symbol=CEG&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374888792&period2=1786066392",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/CEG?symbol=CEG&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1379659877&period2=1790837477",
     "worst": "중대 불일치",
     "items": [
       {

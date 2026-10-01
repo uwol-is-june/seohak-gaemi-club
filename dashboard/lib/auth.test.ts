@@ -6,9 +6,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash, createHmac } from "node:crypto";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { invalidateAllSessions, issueToken, safeEqual, verifyToken } from "./auth.ts";
 
 process.env.SITE_PASSWORD = "test-password";
+// 세션 태그 파일은 임시 디렉터리에 — 실제 dashboard/.session-tag 를 건드리지 않는다.
+process.env.DASH_SESSION_TAG_FILE = join(mkdtempSync(join(tmpdir(), "dash-auth-")), ".session-tag");
 const g = globalThis as typeof globalThis & { __dashSessionTag?: string };
 
 test("발급 직후 토큰은 라우트·미들웨어 모두 통과", () => {
@@ -27,10 +32,17 @@ test("로그아웃(전역 무효화) 뒤 옛 토큰은 라우트에서 거부 ·
   assert.equal(verifyToken(issueToken()), true);
 });
 
-test("재시작(세션 태그 소실) 뒤 옛 토큰은 부활하지 않는다", () => {
+test("재시작해도 로그인은 유지된다(태그가 파일에 남는다)", () => {
   const before = issueToken();
-  g.__dashSessionTag = undefined; // 새 프로세스 = 새 부팅 nonce
-  assert.equal(verifyToken(before), false);
+  g.__dashSessionTag = undefined; // 새 프로세스 = 메모리 소실
+  assert.equal(verifyToken(before), true);
+});
+
+test("로그아웃한 토큰은 재시작 뒤에도 부활하지 않는다", () => {
+  const old = issueToken();
+  invalidateAllSessions();
+  g.__dashSessionTag = undefined; // 재시작
+  assert.equal(verifyToken(old), false);
 });
 
 test("변조·형식 오류·만료 토큰 거부", () => {

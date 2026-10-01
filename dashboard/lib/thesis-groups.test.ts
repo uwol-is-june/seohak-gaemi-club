@@ -14,6 +14,7 @@ import {
   detectRefresh,
   goalGapKey,
   groupGoal,
+  groupTarget,
   groupTheses,
   highLadderMismatch,
 } from "./thesis-groups.ts";
@@ -233,18 +234,32 @@ check("종료 종목은 갱신 요구 없음", groupTheses([
   check("hold 정렬 키 = 같은 값", goalGapKey(g), Math.abs((185 - 200) / 200));
 }
 {
-  // 래더 없는 keep — 목표가 폴백은 표시만 하고(up) 정렬에서는 뒤로(∞) 보낸다(TASK-114).
+  // 래더 없는 keep — 다음 매수가는 없다(null). 목표 상단은 목표가 칸으로 간다(TASK-163).
   const g = { active: [call({ skill: "a", call: "keep", target: { low: 250, high: 300, horizonMonths: 12 } })], history: [] };
-  check("keep 폴백 방향", groupGoal(g)?.dir, "up");
-  check("keep 폴백 정렬 ∞", goalGapKey(g), Number.POSITIVE_INFINITY);
+  check("래더 없는 keep: 다음 매수가 없음", groupGoal(g), null);
+  check("래더 없는 keep: 정렬 ∞", goalGapKey(g), Number.POSITIVE_INFINITY);
+  check("래더 없는 keep: 목표가 = target.high", groupTarget(g)?.price, 300);
 }
 {
   const g = {
     active: [call({ skill: "a", call: "keep", target: { tranches: ["1차 ≤$180 (50%)", "2차 ≤$160 (50%)"] } })],
     history: [],
   };
-  check("keep 증액 래더", [groupGoal(g)?.label, groupGoal(g)?.price], ["증액까지", 180]);
+  check("keep 증액 래더", [groupGoal(g)?.kind, groupGoal(g)?.price], ["add", 180]);
   check("keep 증액 정렬 키", goalGapKey(g), 0.1);
+}
+{
+  // 관망의 밴드는 진입가라 목표가가 아니다 — 내재가치가 없으면 목표가 칸은 비고, 있으면 그 값(TASK-164).
+  const bare = { active: [call({ skill: "a", call: "hold", target: { low: 150, high: 170 } })], history: [] };
+  check("hold 목표가: 내재가치 없으면 null", groupTarget(bare), null);
+  const withFv = {
+    active: [
+      call({ skill: "a", date: "2026-08-20", call: "hold", target: { low: 150, high: 170 } }),
+      call({ skill: "b", date: "2026-08-01", call: "hold", target: { low: 150, high: 170, fairValue: 240 } }),
+    ],
+    history: [],
+  };
+  check("hold 목표가: 최근 내재가치", [groupTarget(withFv)?.price, groupTarget(withFv)?.source], [240, "fairValue"]);
 }
 
 // ── 실제 원장 ────────────────────────────────────────────────────────────

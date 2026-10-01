@@ -87,6 +87,17 @@ def test_ladder_only_keep_is_not_dropped():
     assert row["target"] == {"tranches": ["1차 ≤$90 (50%)", "AND: 가이던스 유지"], "noChaseAbove": 120.0}
 
 
+def test_fair_value_recorded_and_validated():
+    # 관망의 low/high 는 진입 밴드라 목표가(내재가치)는 별도 필드로만 전달된다(TASK-164).
+    row, _, err = build(f"{BASE} --call hold --tier T2 --required-mos 25 --target-low 70 --target-high 80 "
+                        "--horizon-months 24 --fill-probability 40 --fair-value 120")
+    assert err is None and row["target"]["fairValue"] == 120.0
+    row, _, err = build(f"{BASE} --call avoid --fair-value 90")
+    assert err is None and row["target"] == {"fairValue": 90.0}
+    _, _, err = build(f"{BASE} --call avoid --fair-value 0")
+    assert err and "--fair-value" in err
+
+
 def test_tranche_format_rejected():
     _, _, err = build(f'{BASE} --call keep --tranche "잔여는 조정 시 분할"')
     assert err and "래더로 읽을 수 없습니다" in err

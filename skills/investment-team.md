@@ -577,6 +577,7 @@ python3 tools/record_call.py \
   --call {buy|hold|avoid} --conviction "{종합 확신도}" --health {논제 건강도 0~10} \
   --tier {T1|T2|T3} --required-mos {요구 MOS %} \
   --target-low {목표 하단} --target-high {목표 상단} --horizon-months {기간} \
+  --fair-value {내재가치 USD} \
   --fill-probability {체결확률 % 또는 unknown} \
   --tranche "1차 ≤\${가격} ({비중}%) — {AND 조건 또는 조건 없음}" "2차 …" \
   --no-chase {추격 금지선} \
@@ -589,6 +590,8 @@ python3 tools/record_call.py \
   화면에는 밴드 두 숫자만 뜬다. 차수를 안 나눴으면 두 플래그를 생략한다(빈 값·추정 금지).
   한 줄은 ①가격이 있는 차수 ②`AND:` 공통조건 중 하나여야 한다(도구가 형식을 막는다).
 - `hold` 콜의 `--target-high` 는 래더 1차 가격과 같은 숫자여야 한다(게이트 4).
+- `--fair-value` 는 Buffett 관점 보고서의 내재가치(중립 시나리오)다. 대시보드 '목표가' 칸이 이 값을
+  쓴다 — `hold` 의 밴드는 진입가라 목표가로 쓸 수 없다. 채점에는 쓰지 않는다.
 - `--health` 는 Risk 관점(리루) 보고서의 가정·레드라인 상태를 0~10으로 넘긴다 — 빼면
   대시보드 건강도 칸이 '측정 안 함'이 된다.
 

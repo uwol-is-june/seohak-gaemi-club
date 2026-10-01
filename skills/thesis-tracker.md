@@ -583,9 +583,13 @@ python3 tools/record_call.py \
   --conviction "{★평점}" --health {논제 건강도 0~10} --reason "{이 콜을 낸 사유}" \
   --tier {T1|T2|T3} --required-mos {요구 MOS %} \
   --target-low {밴드 하단} --target-high {밴드 상단} --horizon-months {기간} \
+  --fair-value {내재가치 USD} \
   --fill-probability {체결확률 % 또는 unknown} \
   --load-bearing "{핵심 가정들}" --invalidation "{레드라인 조건들}"
 ```
+
+- **`--fair-value` 는 논제의 내재가치(목표가)다.** `hold` 의 `--target-low/high` 는 진입 밴드라
+  대시보드 '목표가' 칸은 이 값으로만 채워진다 — 빼면 목표가 칸이 `—` 로 남는다. 채점에는 쓰지 않는다.
 
 #### 🔴 `hold` 콜에는 체결확률이 필수다 (TASK-99)
 

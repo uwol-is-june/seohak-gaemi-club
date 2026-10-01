@@ -1,4 +1,6 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
 
 // 로그인 쿠키 이름
 export const AUTH_COOKIE = "dash_auth";
@@ -12,20 +14,49 @@ const PEPPER = "reality-escape-device.auth.v1";
 // 세션 세대 태그 — 토큰에 박혀 서명되고, 라우트 검증 때 현재 값과 같아야 통과한다.
 //
 // 🔴 예전엔 메모리 정수 epoch(0부터)였다. 재시작하면 0 으로 되돌아가 **로그아웃으로 죽인
-// 토큰(epoch 0 발급분)이 부활**했다(TASK-145). 이제 부팅마다 randomBytes nonce 로 시작하고
-// 로그아웃 때 새 nonce 로 교체한다 → 재시작도 로그아웃도 이전 토큰을 전부 무효화한다.
+// 토큰(epoch 0 발급분)이 부활**했다(TASK-145). 이제 randomBytes 태그를 쓰고 로그아웃 때
+// 새 태그로 교체한다 → 로그아웃한 토큰은 재시작 뒤에도 무효다.
 //
 // globalThis 에 두는 이유: dev 서버는 라우트 번들마다 모듈 인스턴스가 따로 생길 수 있는데,
 // 인스턴스마다 nonce 가 다르면 /api/login 이 발급한 토큰을 다른 라우트가 거부한다.
 // 주의: 로컬 단일 프로세스 전제. 여러 워커/인스턴스면 공유 저장소가 필요하다.
+//
+// 🔴 태그는 파일(dashboard/.session-tag, git 제외)에도 남긴다. 메모리에만 두면 **dev 서버를
+// 재시작할 때마다 전원 로그아웃**되는데, 미들웨어는 태그를 안 보므로(아래 verifyToken 참조)
+// 페이지는 열리고 API 만 전부 401 이 나 화면이 빈 채로 멈췄다(2026-09-30 실측). 파일에 두면
+// 재시작은 세션을 유지하고, 로그아웃만 태그를 교체해 이전 토큰을 죽인다 — TASK-145 의 목표
+// ("로그아웃한 토큰이 재시작으로 부활하지 않는다")는 그대로 지켜진다.
 const g = globalThis as typeof globalThis & { __dashSessionTag?: string };
+
+function tagFile(): string {
+  return process.env.DASH_SESSION_TAG_FILE ?? path.join(process.cwd(), ".session-tag");
+}
+
 function sessionTag(): string {
-  g.__dashSessionTag ??= randomBytes(12).toString("hex");
-  return g.__dashSessionTag;
+  if (g.__dashSessionTag) return g.__dashSessionTag;
+  try {
+    const saved = readFileSync(tagFile(), "utf-8").trim();
+    if (/^[0-9a-f]{24}$/.test(saved)) return (g.__dashSessionTag = saved);
+  } catch {
+    // 파일 없음 → 새로 만든다
+  }
+  return rotateTag();
+}
+
+function rotateTag(): string {
+  const tag = randomBytes(12).toString("hex");
+  g.__dashSessionTag = tag;
+  try {
+    writeFileSync(tagFile(), tag + "\n", "utf-8");
+  } catch (err) {
+    // 저장 실패는 치명적이지 않다 — 메모리 태그로 계속 동작하고, 재시작 시 재로그인만 필요하다.
+    console.error("세션 태그 저장 실패:", err);
+  }
+  return tag;
 }
 
 export function invalidateAllSessions(): void {
-  g.__dashSessionTag = randomBytes(12).toString("hex");
+  rotateTag();
 }
 
 // 서명 비밀: SITE_PASSWORD 기반이라 비밀번호를 바꾸면 기존 토큰이 전부 무효가 된다.

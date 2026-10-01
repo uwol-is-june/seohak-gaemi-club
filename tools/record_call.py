@@ -195,6 +195,9 @@ def build_call(args: argparse.Namespace) -> dict:
         print("⚠️ 경고: --health 가 없습니다. 논제 건강도(0~10)를 넘기지 않으면 대시보드 건강도 칸이\n"
               "   '측정 안 함'으로 남습니다. 값이 그대로여도 매 콜에 다시 넘기세요(CLAUDE.md).")
 
+    if args.fair_value is not None and args.fair_value <= 0:
+        sys.exit(f"오류: --fair-value 는 양수(USD)여야 합니다: {args.fair_value}")
+
     if args.target_low is not None and args.target_high is not None and args.target_low > args.target_high:
         sys.exit(f"오류: --target-low {args.target_low} 가 --target-high {args.target_high} 보다 큽니다.")
 
@@ -245,7 +248,7 @@ def build_call(args: argparse.Namespace) -> dict:
     # target-low/high 없이 --tranche 만 넘기는 경우가 있는데, 예전엔 조건에서 빠져 조용히 버려졌다.
     if any(v is not None for v in (
         args.target_low, args.target_high, args.horizon_months,
-        args.tranche, args.no_chase, fill, low_fill_plan,
+        args.tranche, args.no_chase, args.fair_value, fill, low_fill_plan,
     )):
         target: dict = {}
         if args.target_low is not None:
@@ -262,6 +265,10 @@ def build_call(args: argparse.Namespace) -> dict:
             target["tranches"] = args.tranche
         if args.no_chase is not None:
             target["noChaseAbove"] = args.no_chase
+        if args.fair_value is not None:
+            # 내재가치(USD) — 표시용(대시보드 목표가 칸). 채점에는 쓰지 않는다(TASK-164).
+            # hold 의 low/high 는 진입 밴드라 목표가가 아니므로, 목표가는 이 필드로만 전달된다.
+            target["fairValue"] = args.fair_value
         if fill is not None:
             # "unknown"은 문자열 그대로 박제한다 — 0% 로 뭉개면 "확률이 0"과 구분이 사라진다.
             target["fillProbability"] = fill
@@ -406,6 +413,9 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--tranche", nargs="*", action="extend", default=None,
                     help='분할 진입 래더 — 차수별로 하나씩. '
                          '예: --tranche "1차 ≤$185 (25%%) — 계약화 비율 60%%+ 공시" "2차 ≤$165 (35%%)"')
+    ap.add_argument("--fair-value", type=float, default=None,
+                    help="내재가치(USD) — 논제의 목표가. 채점에 쓰지 않는 표시용(대시보드 목표가 칸). "
+                         "hold 의 --target-low/high 는 진입 밴드라 목표가를 따로 넘긴다")
     ap.add_argument("--no-chase", type=float, default=None,
                     help="추격 금지선(USD). 이 가격을 넘으면 어떤 차수도 활성화되지 않는다")
     ap.add_argument("--tier", default=None,
@@ -442,6 +452,8 @@ def main() -> None:
             tgt = f" · 목표 {t.get('low', '?')}~{t.get('high', '?')} ({t.get('horizonMonths', '?')}M)"
         if "tranches" in t:
             tgt += f" · 래더 {len(t['tranches'])}줄"
+        if "fairValue" in t:
+            tgt += f" · 내재가치 ${t['fairValue']:,.2f}"
         if "fillProbability" in t:
             fp = t["fillProbability"]
             tgt += f" · 체결확률 {fp if fp == 'unknown' else str(fp) + '%'}"

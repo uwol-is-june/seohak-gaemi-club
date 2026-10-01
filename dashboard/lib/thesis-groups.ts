@@ -60,26 +60,27 @@ export function entryTopPrice(c: ScoredCall): number | null {
   return typeof c.target?.high === "number" ? c.target.high : null;
 }
 
-/** 종목 하나의 '다음 집행 지점' — 접힌 줄의 거리 표시와 '집행까지 가까운 순' 정렬이 함께 쓴다. */
+/** 종목 하나의 '다음 매수가' — 접힌 줄의 '매수까지' 표시와 '매수까지 가까운 순' 정렬이 함께 쓴다. */
 export interface GroupGoal {
-  label: "진입까지" | "증액까지" | "목표까지";
+  /** entry = 미보유 첫 진입(관망 래더) · add = 보유 중 추가 매수(증액 래더). */
+  kind: "entry" | "add";
   price: number;
-  reached: "도달" | "달성";
-  /** down = 내려와야 닿는 집행 지점(진입·증액) · up = 올라가야 닿는 목표가(집행 지점 아님). */
-  dir: "down" | "up";
 }
 
 /**
- * 종목 단위 집행 지점 (TASK-146).
+ * 종목 단위 다음 매수가 (TASK-146 · TASK-163).
  *
  * 🔴 기준가는 **대표 논제(lead)의 방향**이 정하고, 값은 **같은 방향의 살아있는 논제 전체**에서
  * 가장 먼저 닿는(가장 비싼) 지점을 쓴다. 예전엔 정렬은 lead 하나만, 표시는 전체 max 를 봐서
  * NVDA·TSM 처럼 논제가 여럿인 종목에서 정렬 순서와 화면 숫자가 어긋났다.
  *
- * - hold      → 진입 래더 최상단(없으면 밴드 상단) · "진입까지" · down
- * - buy/keep  → 증액 래더 최상단 · "증액까지" · down.
- *               래더가 없으면 목표 상단으로 폴백하되 "목표까지" · **up** — 집행 지점이 아니다(TASK-114).
- * - avoid     → null (채점에 쓰지 않는 참고 밴드라 거리를 말하지 않는다)
+ * - hold      → 진입 래더 최상단(없으면 밴드 상단) · entry
+ * - buy/keep  → 증액 래더 최상단 · add. 래더가 없으면 **null** — 모르는 것이 맞다.
+ * - avoid     → null
+ *
+ * 🔴 예전엔 래더 없는 buy/keep 에서 목표 상단(올라가야 할 가격)으로 폴백해 '집행가' 칸에 띄웠다.
+ * 같은 칸에 방향이 반대인 숫자가 섞여 "안 샀는데 집행가가 있다"는 혼동을 만들었다 — 목표가는
+ * 이제 {@link groupTarget} 이 따로 맡는다(TASK-163).
  */
 export function groupGoal(g: { active: ScoredCall[]; history: ScoredCall[] }): GroupGoal | null {
   const lead = g.active[0] ?? g.history[0];
@@ -89,30 +90,50 @@ export function groupGoal(g: { active: ScoredCall[]; history: ScoredCall[] }): G
       .filter((c) => c.call === "hold")
       .map(entryTopPrice)
       .filter((p): p is number => p != null);
-    if (tops.length === 0) return null;
-    return { label: "진입까지", price: Math.max(...tops), reached: "도달", dir: "down" };
+    return tops.length > 0 ? { kind: "entry", price: Math.max(...tops) } : null;
   }
   if (lead.call === "buy" || lead.call === "keep") {
     const tops = g.active
       .filter((c) => c.call === "buy" || c.call === "keep")
       .map((c) => topTranchePrice(parseTranches(c.target?.tranches)))
       .filter((p): p is number => p != null);
-    if (tops.length > 0) return { label: "증액까지", price: Math.max(...tops), reached: "도달", dir: "down" };
-    const hi = lead.target?.high;
-    return typeof hi === "number" ? { label: "목표까지", price: hi, reached: "달성", dir: "up" } : null;
+    return tops.length > 0 ? { kind: "add", price: Math.max(...tops) } : null;
   }
   return null;
 }
 
 /**
- * '집행까지 가까운 순' 정렬 키 — 현재가에서 집행 지점까지의 상대 거리(절대값).
- * 집행 지점이 아닌 목표가(dir="up")·미산출은 ∞ 로 뒤에 보낸다.
+ * 종목 단위 목표가 (TASK-163) — '목표가' 칸.
+ *
+ * 1순위: 살아있는 논제 중 가장 최근에 적힌 **내재가치**(`target.fairValue`, TASK-164).
+ * 2순위: 대표 논제가 buy/keep 이면 `target.high`(도달 목표가).
+ * 🔴 hold 의 `target.low/high` 는 **진입 밴드**라 목표가로 쓰지 않는다 — 내재가치가 기록되기
+ * 전까지 관망 종목의 목표가 칸은 비는 것이 맞다(원장에 없는 숫자를 화면이 지어내지 않는다).
+ */
+export function groupTarget(
+  g: { active: ScoredCall[]; history: ScoredCall[] },
+): { price: number; source: "fairValue" | "targetHigh"; date: string } | null {
+  for (const c of g.active) {
+    const fv = c.target?.fairValue;
+    if (typeof fv === "number" && fv > 0) return { price: fv, source: "fairValue", date: c.date };
+  }
+  const lead = g.active[0] ?? g.history[0];
+  if (lead && (lead.call === "buy" || lead.call === "keep")) {
+    const hi = lead.target?.high;
+    if (typeof hi === "number" && hi > 0) return { price: hi, source: "targetHigh", date: lead.date };
+  }
+  return null;
+}
+
+/**
+ * '매수까지 가까운 순' 정렬 키 — 현재가에서 다음 매수가까지의 상대 거리(절대값).
+ * 다음 매수가가 없으면 ∞ 로 뒤에 보낸다.
  */
 export function goalGapKey(g: { active: ScoredCall[]; history: ScoredCall[] }): number {
   const goal = groupGoal(g);
   const lead = g.active[0] ?? g.history[0];
   const now = lead?.priceNow;
-  if (!goal || goal.dir === "up" || now == null || now <= 0) return Number.POSITIVE_INFINITY;
+  if (!goal || now == null || now <= 0) return Number.POSITIVE_INFINITY;
   return Math.abs((goal.price - now) / now);
 }
 

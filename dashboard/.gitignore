@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 로그인 세션 태그(lib/auth.ts) — 비밀값이라 커밋 금지
+/.session-tag

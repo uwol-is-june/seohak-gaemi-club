@@ -6,6 +6,12 @@
 // 반환 타입은 기존 res.json() 과 동일하게 any — 호출부의 d.error/d.holdings 등 접근을 유지.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function readJsonSafe(res: Response): Promise<any> {
+  // 401 = 로그인 세션이 무효(로그아웃·비밀번호 변경 등). 미들웨어는 페이지를 통과시키므로
+  // 여기서 안 잡으면 화면이 빈 채로 "인증이 필요합니다"만 반복한다 → 로그인 화면으로 보낸다.
+  if (res.status === 401 && typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+    const from = window.location.pathname === "/" ? "" : `?from=${encodeURIComponent(window.location.pathname)}`;
+    window.location.href = `/login${from}`;
+  }
   const text = await res.text().catch(() => "");
   if (text) {
     try {
