@@ -8,7 +8,7 @@
 
 import type { ReactNode } from "react";
 
-export type NavIconName = "portfolio" | "track" | "inspect" | "reports" | "article" | "lab";
+export type NavIconName = "portfolio" | "track" | "inspect" | "reports" | "lab";
 
 const PATHS: Record<NavIconName, ReactNode> = {
   // 지갑 — 지금 들고 있는 것
@@ -45,14 +45,6 @@ const PATHS: Record<NavIconName, ReactNode> = {
     <>
       <path d="M7 2.5h4M7.5 2.5v4.5L3.5 14a1.5 1.5 0 0 0 1.3 2.2h8.4a1.5 1.5 0 0 0 1.3-2.2L10.5 7V2.5" />
       <path d="M5.2 11h7.6" />
-    </>
-  ),
-  // 발행 — 내보내는 글
-  article: (
-    <>
-      <path d="M3 4.5h9v10H3z" />
-      <path d="M12 7.5h3v7a1.5 1.5 0 0 1-3 0z" />
-      <path d="M5.5 7.5h4M5.5 10h4" />
     </>
   ),
 };

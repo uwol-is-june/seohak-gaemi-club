@@ -88,17 +88,6 @@ export const skills: DashboardItem[] = [
       { label: "Layer 2/3 소형 공급업체 데이터 부족", severity: "medium" },
     ],
   },
-  {
-    code: "S6",
-    flowGroup: "S",
-    name: "/investment-article",
-    status: "warning",
-    description: "기존 리서치 보고서를 블로그/뉴스레터 아티클로 변환",
-    tags: [],
-    risks: [
-      { label: "보고서 미존재 시 WebSearch만으로 품질 저하", severity: "medium" },
-    ],
-  },
 ];
 
 export const tools: DashboardItem[] = [

@@ -50,8 +50,6 @@ export function getFileBadge(filename: string): FileBadge {
   if (filename.includes("-news-")) return { label: "급변동", color: "text-cat-3 bg-cat-3/15" };
   if (filename.includes("-industry-")) return { label: "산업리서치", color: "text-cat-1 bg-cat-1/15" };
   if (filename.includes("-funnel-")) return { label: "퍼널", color: "text-cat-1 bg-cat-1/10" };
-  // /investment-article 산출물 — 종목 폴더 안에도 생기므로 '전체 보고서' 탭에서도 구분돼야 한다.
-  if (filename.includes("-article-")) return { label: "아티클", color: "text-cat-2 bg-cat-2/15" };
   if (filename === "portfolio-latest.md") return { label: "포트폴리오", color: "text-cat-4 bg-cat-4/15" };
   return { label: "MD", color: "text-mute bg-canvas-soft" };
 }

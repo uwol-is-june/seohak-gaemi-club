@@ -38,7 +38,7 @@
 |------|-----------|------|-----------|
 | **A1** | `/industry-research` | **S2** | `/news-pulse` |
 | **A2** | `/industry-funnel` | **S3** | `/bottleneck-hunter` |
-| **A3** | `/quality-screen` | **S6** | `/investment-article` |
+| **A3** | `/quality-screen` | | |
 | **A4** | `/investment-checklist` | | |
 | **A5+** | `/investment-team` | **T1** | `financial_rigor.py` |
 | **A6** | `/thesis-tracker` (논제 수립 모드) | **T2** | `report_audit.py` |
@@ -293,39 +293,6 @@ confidence 블록 · SEC UA 문서화).
 > `01-BusinessModel-DYP-Perspective.md` 다. 관점 자체는 거기 살아 있다.
 >
 > S5 코드는 재사용하지 않는다(과거 보고서·로그의 코드 참조가 어긋나지 않도록).
-
----
-
-### [S6] `/investment-article` ⚠️
-
-**언제**: 완성된 리서치 보고서를 블로그/뉴스레터 아티클로 변환할 때
-
-**의존성**: 선행 조건: 관련 보고서 파일 존재 (없으면 WebSearch로 대체 수집)
-
-**위험 요소**:
-| 위험 | 내용 | 심각도 |
-|------|------|--------|
-| 보고서 미존재 | 보고서 없이 실행 시 WebSearch 데이터로만 작성 → 품질 저하 | ⚠️ 중간 |
-
----
-
-## 4-1. 공용 표준 문서 (슬래시 커맨드 아님)
-
-`skills/` 에 있으나 **실행 스킬이 아니다** — 위 스킬들이 참조하는 규칙집이다.
-`~/.claude/commands/` 에 설치하지 않는다(호출해도 산출물이 없고 오발동 대상만 늘린다).
-
-| 문서 | 정의하는 것 | 참조 스킬 |
-|------|-----------|----------|
-| `skills/data-confidence.md` | 신뢰도 4등급(🟢🟡🔴⬛) · 유형 태그 · `<!-- confidence-summary -->` 블록 규격 | 11개 |
-| `skills/financial-data.md` | 출처 우선순위 · 교차검증 오차 규칙(1%/5%) · SEC 공시 유형 | 10개 |
-| `skills/token-budget.md` | 하드 규칙 TB-1~TB-7 (손자 에이전트 금지 · 재시도 1회 · 7일 내 산출물 재사용) | 8개 |
-
-> ⚠️ `data-confidence.md` 의 요약 블록 규격은 **대시보드가 파싱하는 기계 계약**이다
-> (`dashboard/lib/report-helpers.ts`). 형식을 바꾸면 신뢰도 pill이 깨진다.
-
----
-
-## 5. Python Tools
 
 ---
 

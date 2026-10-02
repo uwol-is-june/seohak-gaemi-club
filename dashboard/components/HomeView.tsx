@@ -17,14 +17,12 @@ import { EarningsCalendar } from "./EarningsCalendar";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { SectorGroupEditor } from "./SectorGroupEditor";
 import { BottleneckSignalsView } from "./BottleneckSignalsView";
-import { ArticlesView } from "./ArticlesView";
 import { LabView } from "./lab/LabView";
 import { LAB_REPORT_FOLDER } from "@/lib/lab";
 import { ResearchLaunchModal } from "./ResearchLaunchModal";
 import { CollapsibleReportCard } from "./CollapsibleReportCard";
 import { groupTheses } from "@/lib/thesis-groups";
 import { isBottleneckCompany } from "@/lib/bottleneck";
-import { isArticlePath } from "@/lib/articles";
 import { quarterDue, quarterBadge, fmtDue } from "@/lib/quarter-due";
 
 import {
@@ -194,13 +192,11 @@ export function HomeView({
   // 단, 섹터 리서치가 아닌 루트 문서는 제외한다:
   //   - portfolio-latest.md : '포트폴리오 점검' 탭 소관
   //   - track-record.md     : 수기 매매기록(자동 채점 '트랙레코드' 탭과 별개) — 섹터가 아님
-  //   - {주제}-article-*.md : 발행용 글 — '아티클' 탭 소관. 파일명이 섹터 규약과 안 맞아
-  //                           걸러내지 않으면 섹터 리서치의 '기타'로 섞인다.
   const rootFiles = useMemo(
     () =>
       files
         ? files.filter(
-            (f) => f.company === null && !ROOT_NON_SECTOR.has(f.name) && !isArticlePath(f.path)
+            (f) => f.company === null && !ROOT_NON_SECTOR.has(f.name)
           )
         : [],
     [files]
@@ -462,12 +458,6 @@ export function HomeView({
     // 드릴다운 둘은 그룹 라벨 없이 나란히 선다 — 각자가 이미 묶음의 이름이다.
     { label: null, entries: [{ kind: "drill", view: "inspect" }, { kind: "drill", view: "reports" }] },
     {
-      // 발행용 글(/investment-article). 다른 보고서가 '내 판단용'이라면 이건 '남에게
-      // 보여줄 것'이라 축이 종목·분야가 아니라 발행 상태다.
-      label: "발행",
-      entries: [{ kind: "item", item: { id: "articles", label: "아티클", icon: "article" } }],
-    },
-    {
       // 기존 시스템과 독립된 두 번째 의견(TASK-187). 매주 S&P 500 을 기계 규칙으로 걸러
       // 한 종목을 내고 무작위 대조군·SPY 와 비교해 채점한다 — 실험이라 맨 아래에 둔다.
       label: "실험",
@@ -700,14 +690,6 @@ export function HomeView({
           ) : flowTab === "lab" ? (
             /* 실험실 = 이번 주 추천 종목(tools/lab_screen.py → /lab-pick). 기존 판단 기록부와 분리. */
             <LabView refreshKey={reloadKey} onOpenReport={(p) => setModalPath(p)} />
-          ) : flowTab === "articles" ? (
-            /* 아티클 = /investment-article 산출물 + 그 소재가 되는 보고서의 실행 명령. */
-            <ArticlesView
-              files={files}
-              loadError={loadError}
-              onRetry={() => setReloadKey((k) => k + 1)}
-              onOpenReport={(p) => setModalPath(p)}
-            />
           ) : activeDomain ? (
             /* ── 분야 탭(TASK-91): 한 분야를 섹터 축과 종목 축 양쪽에서 본다 ──
                  · 위 = 섹터 리서치(/industry-research·/industry-funnel 등 루트 결과물)

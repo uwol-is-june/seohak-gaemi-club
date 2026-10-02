@@ -62,7 +62,6 @@ export const TAB_HEADERS: Record<string, { title: string }> = {
   "portfolio-overview": { title: "포트폴리오" },
   "track-record": { title: "트랙레코드" },
   "bottleneck-signals": { title: "병목 신호" },
-  articles: { title: "아티클" },
   lab: { title: "실험실" },
 };
 
