@@ -1,0 +1,21 @@
+{
+ "updatedAt": "2026-10-02",
+ "weeks": [
+  {
+   "runDate": "2026-10-02",
+   "week": "10월 1주차",
+   "kind": "pick",
+   "repeat": false,
+   "pickedOn": "2026-10-02",
+   "ticker": "AOS",
+   "name": "A. O. Smith",
+   "sector": "Industrials",
+   "price": 56.67,
+   "target": 80.8,
+   "stop": 48.17,
+   "targetPct": 42.6,
+   "stopPct": -15.0,
+   "horizonMonths": 12
+  }
+ ]
+}

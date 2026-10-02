@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14181f">
+<meta name="robots" content="noindex">
+<title>실험실 추천</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  /* 토큰은 대시보드(dashboard/app/globals.css · docs/DESIGN-toss.md)와 같은 값이다 — 다크 전용 */
+  :root {
+    --canvas: #14181f;
+    --card: #191f28;
+    --soft: #232a35;
+    --mid: #2e3742;
+    --ink: #f2f4f6;
+    --body: #b0b8c1;
+    --mute: #8b95a1;
+    --success: #15c47e;  /* 목표가 */
+    --danger: #ff5a67;   /* 철회가 */
+    --info: #7fb4fd;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--canvas); }
+  body {
+    color: var(--body);
+    font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+    min-height: 100dvh;
+  }
+  main {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: calc(20px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
+  }
+  header { padding: 8px 4px 20px; }
+  .eyebrow { font-size: 13px; font-weight: 600; color: var(--mute); }
+  h1 { margin-top: 6px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+  .sub { margin-top: 6px; font-size: 14px; color: var(--mute); line-height: 1.5; }
+
+  .list { display: flex; flex-direction: column; gap: 12px; }
+  .item { background: var(--card); border-radius: 20px; padding: 18px 18px 16px; }
+  .week { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--mute); }
+  .week b { color: var(--body); font-weight: 600; }
+  .badge {
+    font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px;
+    background: rgba(127, 180, 253, .15); color: var(--info);
+  }
+  .badge.neutral { background: var(--soft); color: var(--mute); }
+
+  .row { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+  .avatar {
+    flex: none; width: 44px; height: 44px; border-radius: 50%;
+    background: var(--mid); color: var(--ink);
+    display: grid; place-items: center; font-size: 13px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  .names { flex: 1; min-width: 0; }
+  .ticker { font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+  .name { margin-top: 2px; font-size: 13px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .price { text-align: right; }
+  .price .v { font-size: 17px; font-weight: 700; color: var(--ink); }
+  .price .l { margin-top: 2px; font-size: 12px; color: var(--mute); }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .stat { background: var(--soft); border-radius: 14px; padding: 12px 14px; }
+  .stat .l { font-size: 12px; color: var(--mute); }
+  .stat .v { margin-top: 4px; font-size: 16px; font-weight: 700; color: var(--ink); }
+  .stat .p { margin-left: 4px; font-size: 13px; font-weight: 600; }
+  .stat.target .p { color: var(--success); }
+  .stat.stop .p { color: var(--danger); }
+
+  .none { margin-top: 12px; font-size: 15px; color: var(--body); line-height: 1.5; }
+  .none small { display: block; margin-top: 2px; font-size: 13px; color: var(--mute); }
+
+  .empty, .error { padding: 48px 4px; text-align: center; color: var(--mute); font-size: 14px; }
+  footer { margin-top: 24px; padding: 0 4px; font-size: 12px; line-height: 1.6; color: var(--mute); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">실험실</div>
+    <h1>이번 주 추천</h1>
+    <p class="sub">매주 월요일, S&amp;P 500에서 한 종목</p>
+  </header>
+
+  <section class="list" id="list" aria-live="polite">
+    <div class="empty">불러오는 중…</div>
+  </section>
+
+  <footer>
+    철회가(추천가 −15%)에 닿거나 다음 주 후보에서 빠지면 정리, 아니면 12개월 보유를 가정해요.
+    실험 중인 방식이고 매수 권유가 아니에요.
+  </footer>
+</main>
+
+<script>
+  const money = (v) => "$" + Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const pct = (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(1) + "%";
+  const md = (iso) => { const [, m, d] = iso.split("-"); return Number(m) + "/" + Number(d); };
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+  // 목요일 기준 주차 — tools/build_lab_site.py week_label 과 같은 규칙.
+  function weekLabel(d) {
+    const thu = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7) + 3);
+    return `${thu.getMonth() + 1}월 ${Math.floor((thu.getDate() - 1) / 7) + 1}주차`;
+  }
+  const thisWeek = weekLabel(new Date());
+
+  function weekHead(w, latest) {
+    // 맨 위 항목이라도 이번 주 실행 전(월 오전)이면 지난주 추천이다 — '이번 주'로 보이면 안 된다.
+    const tag = latest ? (w.week === thisWeek ? "이번 주" : "최신") : "";
+    return `<div class="week"><b>${esc(w.week)}</b> · ${md(w.runDate)}
+      ${tag ? `<span class="badge">${tag}</span>` : ""}
+      ${w.repeat ? '<span class="badge neutral">지난 추천 유지</span>' : ""}</div>`;
+  }
+
+  function item(w, latest) {
+    if (w.kind === "none") {
+      return `<article class="item">${weekHead(w, latest)}
+        <p class="none">이번 주는 조건을 통과한 종목이 없어요<small>기준을 낮춰 억지로 고르지 않아요</small></p></article>`;
+    }
+    return `<article class="item">
+      ${weekHead(w, latest)}
+      <div class="row">
+        <div class="avatar" aria-hidden="true">${esc(w.ticker.slice(0, 4))}</div>
+        <div class="names">
+          <div class="ticker">${esc(w.ticker)}</div>
+          <div class="name">${esc(w.name)}</div>
+        </div>
+        <div class="price">
+          <div class="v">${money(w.price)}</div>
+          <div class="l">추천가 · ${md(w.pickedOn)}</div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat target"><div class="l">목표가</div><div class="v">${money(w.target)}<span class="p">${pct(w.targetPct)}</span></div></div>
+        <div class="stat stop"><div class="l">철회가</div><div class="v">${money(w.stop)}<span class="p">${pct(w.stopPct)}</span></div></div>
+      </div>
+    </article>`;
+  }
+
+  fetch("picks.json", { cache: "no-store" })
+    .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then((d) => {
+      const list = document.getElementById("list");
+      const weeks = Array.isArray(d.weeks) ? d.weeks : [];
+      list.innerHTML = weeks.length
+        ? weeks.map((w, i) => item(w, i === 0)).join("")
+        : '<div class="empty">아직 추천이 없어요. 매주 월요일 오전에 올라와요.</div>';
+    })
+    .catch(() => {
+      document.getElementById("list").innerHTML = '<div class="error">불러오지 못했어요. 잠시 후 다시 열어주세요.</div>';
+    });
+</script>
+</body>
+</html>

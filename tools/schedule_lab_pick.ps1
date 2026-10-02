@@ -8,7 +8,8 @@
 #   ① python3 tools/lab_screen.py   — S&P 500 기계 필터(토큰 0, 약 2분). Claude 가 실패해도 후보 순위는 남는다.
 #   ② claude -p (stdin)             — skills/lab-pick.md 결격 검증 → 보고서 + 판단 기록부
 #   ③ 기록 확인                      — data/lab-calls.jsonl 에 이번 실행일 기록이 생겼나(조용한 실패 감지)
-#   ④ python3 tools/commit_reports.py — 로컬 커밋(push 없음)
+#   ④ python3 tools/commit_reports.py — 로컬 커밋
+#   ⑤ git push                       — 공개 페이지(site/lab · Vercel) 갱신
 #
 # 왜 월요일 09:05 인가(2026-10-02 사용자 요청으로 08:30 → 09:05): 사용자가 깨어 있는 시간이고, 금요일 미국 종가가
 # 반영돼 있으며, 미국 장 개장(22:30) 전이다. ⚠️ 병목 스캔(매일 09:00)과 몇 분 겹칠 수 있다 —
@@ -162,6 +163,22 @@ try {
   Write-Log "커밋 확인 완료 (exit: $code)"
 } catch {
   Write-Log "WARN: 커밋 실패 — 다음 세션의 Stop 훅이 재시도한다. ($_)"
+}
+
+# ─── ⑤ push — 공개 페이지(site/lab, Vercel)가 GitHub 에서 새 추천을 받아 간다 (2026-10-02 사용자 승인) ───
+# 그 시점까지 쌓인 로컬 커밋(보고서 등)도 함께 올라간다 — 저장소는 이미 public 이다.
+# 사용자의 미커밋 작업은 --autostash 로 잠시 치웠다가 그대로 되돌린다(커밋하지 않는다).
+if ($DryRun) {
+  Write-Log "DRY RUN — push 건너뜀"
+} else {
+  $code = Invoke-Native { git pull --rebase --autostash origin main }
+  if ($code -ne 0) {
+    Write-Log "ERROR: git pull --rebase 실패 (exit: $code) — push 하지 않는다. 충돌을 손으로 풀고 push 할 것"
+  } else {
+    $code = Invoke-Native { git push origin main }
+    if ($code -ne 0) { Write-Log "ERROR: git push 실패 (exit: $code) — 공개 페이지가 갱신되지 않았다" }
+    else { Write-Log "push 완료 → Vercel 이 site/lab 을 다시 배포한다" }
+  }
 }
 
 Get-ChildItem $logDir -Filter '*.log' |

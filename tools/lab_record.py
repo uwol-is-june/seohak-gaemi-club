@@ -283,6 +283,13 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     append(rows)
+    # 공개 페이지(site/lab/picks.json)도 같은 순간 다시 만든다 — 기록과 페이지가 어긋나지 않게.
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import build_lab_site
+        build_lab_site.main([])
+    except Exception as e:  # noqa: BLE001 — 기록 자체는 이미 끝났다
+        print(f"주의: site/lab/picks.json 갱신 실패({type(e).__name__}: {e}) — python3 tools/build_lab_site.py")
     for r in rows:
         desc = r.get("ticker") or f"없음 (후보 {r.get('candidates')}개)"
         extra = (f" @ ${r['priceAtCall']} → 목표 ${r['target']} · 철회 ${r['stopLoss']}"

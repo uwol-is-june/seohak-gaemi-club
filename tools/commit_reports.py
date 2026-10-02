@@ -82,7 +82,7 @@ LEDGER_REL = "data/calls.jsonl"
 # 보정 측정 이력(TASK-180) — 판단 기록부처럼 append-only 원본이라 같은 백업 대상이다.
 CALIBRATION_REL = "data/calibration.jsonl"
 # 실험실(TASK-185) — 판단 기록부와 사전 등록 증거인 주간 스크리닝 결과. 캐시(data/_lab/cache/)는 .gitignore.
-LAB_RELS = ("data/lab-calls.jsonl", "data/_lab")
+LAB_RELS = ("data/lab-calls.jsonl", "data/_lab", "site/lab/picks.json")
 DATA_RELS = (LEDGER_REL, CALIBRATION_REL, *LAB_RELS)
 
 

@@ -114,9 +114,13 @@ type LabData = {
 
 const CALL_LABEL: Record<string, string> = { buy: "매수", keep: "보유", hold: "관망", avoid: "회피" };
 
+// 목요일 기준 주차(tools/build_lab_site.py week_label · site/lab 과 같은 규칙).
+// "날짜÷7" 은 10/02(금)·10/05(월)를 둘 다 '10월 1주차'로 겹쳤다.
 function weekLabel(iso: string): string {
   const d = new Date(`${iso}T00:00:00Z`);
-  return `${d.getUTCMonth() + 1}월 ${Math.ceil(d.getUTCDate() / 7)}주차`;
+  const thu = new Date(d);
+  thu.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7) + 3);
+  return `${thu.getUTCMonth() + 1}월 ${Math.floor((thu.getUTCDate() - 1) / 7) + 1}주차`;
 }
 
 function money(v: number | null | undefined): string {
