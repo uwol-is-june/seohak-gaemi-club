@@ -151,27 +151,23 @@ check("논제 1건이면 충돌 없음", detectConflict([call({ skill: "a" })]),
 
 // ── 갱신 필요 판정 ───────────────────────────────────────────────────────
 {
-  // 충돌 중 뒤처진 논제 → 그 스킬을 다시 돌려야 한다. 최신 쪽은 대상이 아니다.
-  const old = call({ skill: "investment-team", date: "2026-08-06", call: "hold", target: { low: 138, high: 172, horizonMonths: 12 } });
-  const fresh = call({ skill: "thesis-tracker", date: "2026-08-28", call: "hold", target: { low: 163, high: 205, horizonMonths: 12 } });
-  const flags = detectRefresh([fresh, old], true);
-  check("뒤처진 스킬만 갱신 대상", flags.map((f) => f.skill), ["investment-team"]);
-  check("뒤처짐 사유", flags[0]?.reasons[0]?.includes("22일 뒤처짐"), true);
+  // 더 최신 판단이 있는 옛 논제는 재실행 대상이 아니다(2026-10-02 폐지 — LLY 실측).
+  // 최신 판단이 답이고, 옛 스킬을 다시 돌리면 같은 결론을 새 기준으로 확인할 뿐이다.
+  const old = call({ skill: "investment-team", date: "2026-09-30", call: "hold", target: { low: 620, high: 712, horizonMonths: 12 } });
+  const fresh = call({ skill: "thesis-tracker", date: "2026-10-02", call: "hold", target: { low: 800, high: 901, horizonMonths: 12 } });
+  check("뒤처진 옛 판단 → 갱신 표기 없음", detectRefresh([fresh, old]).length, 0);
 }
 {
   // 충돌이 없으면 날짜 차이만으로는 갱신을 요구하지 않는다.
-  const flags = detectRefresh(
-    [
-      call({ skill: "a", date: "2026-08-28" }),
-      call({ skill: "b", date: "2026-08-06" }),
-    ],
-    false
-  );
+  const flags = detectRefresh([
+    call({ skill: "a", date: "2026-08-28" }),
+    call({ skill: "b", date: "2026-08-06" }),
+  ]);
   check("합의 중이면 뒤처짐은 사유 아님", flags.length, 0);
 }
 {
   // 분기 검토(90일)를 넘기면 충돌이 없어도 갱신 대상이다.
-  const flags = detectRefresh([call({ skill: "a", date: "2026-04-01" })], false);
+  const flags = detectRefresh([call({ skill: "a", date: "2026-04-01" })]);
   check("분기 검토 경과 감지", flags[0]?.reasons[0]?.includes("분기 검토"), true);
 }
 {
@@ -183,7 +179,7 @@ check("논제 1건이면 충돌 없음", detectConflict([call({ skill: "a" })]),
     354.97
   );
   check("밴드 이탈 감지(T1)", bandDrift(t1)?.driftPct.toFixed(1), "39.2");
-  check("밴드 이탈 → 갱신 필요", detectRefresh([t1], false)[0]?.reasons.some((r) => r.includes("밴드 이탈")), true);
+  check("밴드 이탈 → 갱신 필요", detectRefresh([t1])[0]?.reasons.some((r) => r.includes("밴드 이탈")), true);
 
   // 같은 이탈률이라도 요구 MOS 가 크면 정상이다 — 이것이 "티어 상대"의 핵심.
   // T3(요구 35%): 밴드 상단 $50 에 현재가 $66.76 → 이탈률 +33.5% < 35% → 미발동.
@@ -231,7 +227,7 @@ check("논제 1건이면 충돌 없음", detectConflict([call({ skill: "a" })]),
     345
   );
   check("high ≠ 래더 1차 감지", highLadderMismatch(axp), { high: 250, first: 280 });
-  const axpReasons = detectRefresh([axp], false)[0]?.reasons ?? [];
+  const axpReasons = detectRefresh([axp])[0]?.reasons ?? [];
   check("불일치면 재기록 사유", axpReasons.some((r) => r.includes("≠ 래더 1차")), true);
   check("불일치면 이탈 사유는 내지 않음(틀린 숫자)", axpReasons.some((r) => r.includes("밴드 이탈")), false);
   check("keep 은 목표가≠증액 래더가 정상", highLadderMismatch(call(
@@ -342,7 +338,7 @@ try {
   check("IV 92% → 정합", externalGap(ev(400, 433)), null);
   check("IV 139% → 낙관 이탈", externalGap(ev(600, 433))?.side, "optimistic");
   check("외부 미기록 → 판정 없음", externalGap(ev(300, undefined)), null);
-  check("이탈 → 갱신 사유", detectRefresh([ev(300, 433)], false)[0]?.reasons.some((r) => r.includes("보수 이탈")), true);
+  check("이탈 → 갱신 사유", detectRefresh([ev(300, 433)])[0]?.reasons.some((r) => r.includes("보수 이탈")), true);
 }
 
 if (failures.length > 0) {

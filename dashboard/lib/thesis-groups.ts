@@ -246,10 +246,9 @@ function daysBetween(a: string, b: string): number {
  * 살아있는 논제 중 **다시 판단해야 하는 것**. 충돌 배너가 "무엇이 갈리는지"를 말한다면
  * 이건 "그래서 어느 스킬을 돌려야 하는지"를 말한다 — 충돌을 봐도 다음 행동을 모르면 소용없다.
  *
- * 두 가지만 본다:
- *   1) 충돌 중 뒤처진 논제 — 더 최신 판단이 이미 있는데 옛 결론이 같이 살아 있다.
- *      (실측: NVDA investment-team 08-06 이 thesis-tracker 08-28 옆에 그대로 남아 있었다)
- *   2) 분기 검토 미경과 — 충돌이 없어도 90일이 지났으면 그 자체로 갱신 대상이다.
+ * 실제로 다시 판단할 근거가 있을 때만 띄운다:
+ *   - 분기 검토(90일) 경과 · 밴드 이탈 · 원장 밴드 ≠ 래더 1차 · 외부 적정가 이탈
+ *   ✖ "충돌 중 더 최신 판단이 있는 옛 논제"는 사유가 아니다(2026-10-02 폐지 — 아래 주석 참조).
  */
 /**
  * 밴드 이탈 판정 — skills/quality-tier.md 2.5단계 · thesis-tracker B4.5 (2026-09-23 개정).
@@ -326,18 +325,17 @@ export function highLadderMismatch(c: ScoredCall): { high: number; first: number
   return Math.abs(first - high) > 0.005 * Math.max(first, high) ? { high, first } : null;
 }
 
-export function detectRefresh(active: ScoredCall[], conflicted: boolean): RefreshFlag[] {
+export function detectRefresh(active: ScoredCall[]): RefreshFlag[] {
   if (active.length === 0) return [];
-  const newest = active.reduce((m, c) => (c.date > m.date ? c : m));
 
   const flags: RefreshFlag[] = [];
   for (const c of active) {
     const reasons: string[] = [];
-    if (conflicted && c.id !== newest.id && c.date < newest.date) {
-      reasons.push(
-        `${newest.skill} ${newest.date}보다 ${daysBetween(c.date, newest.date)}일 뒤처짐`
-      );
-    }
+    // 🔴 "충돌 중 뒤처진 논제 → 그 스킬 재실행"은 2026-10-02 폐지했다. 더 최신 판단이 이미 있으면
+    //    그게 답이고, 옛 스킬을 다시 돌리면 새 기준으로 같은 결론을 확인할 뿐이다(실측: LLY
+    //    investment-team 09-30 이 thesis-tracker 10-02 재산정 옆에서 '2일 뒤처짐 → 재실행'을 요구했다
+    //    — /investment-team 5~10M 토큰짜리 헛일). 옛 판단은 그 종목의 다음 판단이 7일 넘게 뒤에 오면 이력으로 내려간다.
+    //    충돌 배너(무엇이 갈리는지)는 그대로 둔다 — 여기서 없앤 건 '재실행하라'는 처방뿐이다.
     if (c.elapsedDays > REVIEW_CYCLE_DAYS) {
       reasons.push(`분기 검토(${REVIEW_CYCLE_DAYS}일) 경과 — ${c.elapsedDays}일째`);
     }
@@ -418,7 +416,7 @@ export function groupTheses(calls: ScoredCall[]): ThesisGroup[] {
       history: list.filter((c) => !activeIds.has(c.id)),
       conflict,
       // 채점이 끝난 종목(resolvedOnly)은 추적 대상이 아니라 이력이라 갱신을 요구하지 않는다.
-      refresh: resolvedOnly ? [] : detectRefresh(active, conflict != null),
+      refresh: resolvedOnly ? [] : detectRefresh(active),
       resolvedOnly,
     });
   }
