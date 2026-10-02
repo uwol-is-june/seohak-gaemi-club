@@ -655,10 +655,8 @@ function TickerCard({
 }
 
 // ── 논제 한 건(= 보고서 한 건의 결론) ────────────────────────────────────
-// **모든 논제가 정확히 같은 3단 구조다**(TASK-110): 출처 줄 → 래더 그림 → 2×3 숫자 표.
-// 예전에는 호라이즌 같은 규격이 '있는 콜만' 칩으로 붙어서 논제마다 머리 줄의 길이와
-// 항목이 달랐다. 지금은 표의 고정 칸이고, 없으면 □ 로 비어 있는 것이 보인다 —
-// 안 보이는 결측과 보이는 결측은 다르다(전자는 영원히 안 채워진다).
+// 출처 줄 → 건강도 근거 → 래더 그림 → 주가 이력. 예전 2×3 숫자 표(시점가·경과·SPY·
+// 초과수익·기회비용)는 서로 파생되는 값이 겹치고 판단에 쓰이지 않아 제거했다.
 //
 // 핵심 가정·레드라인·판단 근거 산문은 보고서 원문이 정본이라 스킬 이름을 눌러 모달로 본다.
 function ThesisBlock({
@@ -750,60 +748,6 @@ function ThesisBlock({
           차수·비중은 다음 검토 때 산출한다.
         </p>
       )}
-
-      {/* 숫자 표 — **2×3 고정**. 윗줄은 콜 시점 대비, 아랫줄은 벤치마크 대비.
-          어느 종목·어느 스킬이든 6칸이 같다. 호라이즌은 '경과' 칸의 보조줄이다. */}
-      <div className="mt-2.5 grid grid-cols-3 gap-px overflow-hidden rounded-md border border-hairline bg-hairline">
-        <Stat label="시점가" value={fmtPrice(c.priceAtCall)} title="콜을 낸 날의 주가(불변 · 채점 기준)" />
-        <Stat
-          label="시점 대비"
-          value={c.returnPct != null ? `${c.returnPct >= 0 ? "+" : ""}${c.returnPct.toFixed(1)}%` : "—"}
-          tone={c.returnPct != null ? moveColor(c.returnPct) : "text-mute"}
-          title="콜 시점가 대비 현재가"
-        />
-        <Stat
-          label="경과"
-          value={`${c.elapsedDays}d`}
-          sub={
-            c.horizonMonths == null
-              ? "호라이즌 □"
-              : c.horizonProgress != null
-                ? `${c.horizonMonths}M 중 ${Math.round(c.horizonProgress * 100)}%`
-                : `${c.horizonMonths}M`
-          }
-          tone={c.horizonMonths != null ? "text-ink" : "text-mute"}
-          title="콜을 낸 날로부터 지난 일수 · 호라이즌(이 논제가 맞다고 주장하는 기간 — 지나면 채점이 확정된다)"
-        />
-
-        {/* 벤치마크 대비(TASK-100) — 밴드 터치만 보면 "안 사서 잃은 것"이 안 보인다. */}
-        <Stat
-          label="SPY"
-          value={
-            c.benchmarkReturnPct != null
-              ? `${c.benchmarkReturnPct >= 0 ? "+" : ""}${c.benchmarkReturnPct.toFixed(1)}%`
-              : "—"
-          }
-          tone="text-mute"
-          title="같은 기간 SPY 수익률"
-        />
-        <Stat
-          label="초과수익"
-          value={
-            c.excessReturnPct != null
-              ? `${c.excessReturnPct >= 0 ? "+" : ""}${c.excessReturnPct.toFixed(1)}pp`
-              : "—"
-          }
-          tone={c.excessReturnPct != null ? moveColor(c.excessReturnPct) : "text-mute"}
-          title="종목 수익률 − SPY 수익률"
-        />
-        <Stat
-          label="기회비용"
-          value={c.opportunityCostPct != null ? `${c.opportunityCostPct.toFixed(1)}pp` : "—"}
-          sub={c.call === "hold" ? "기다려서 포기" : c.call === "avoid" ? "피해서 포기" : "판단 대가"}
-          tone={c.opportunityCostPct != null && c.opportunityCostPct > 0 ? "text-warn" : "text-mute"}
-          title="이 판단을 따랐을 때 SPY 대비 포기한 수익(0 이하는 이득)"
-        />
-      </div>
     </div>
   );
 }
@@ -871,30 +815,5 @@ function GapText({ pct, size }: { pct: number; size: "lg" | "sm" }) {
     <span className="whitespace-nowrap font-mono text-body">
       {n}% <span className="text-mute">하락 시</span>
     </span>
-  );
-}
-
-// ── 표 한 칸 ─────────────────────────────────────────────────────────────
-// sub 는 값이 없어도 **자리를 비워 둔다**(nbsp) — 어떤 칸은 두 줄, 어떤 칸은 한 줄이면
-// 2×3 표의 행 높이가 논제마다 달라져 카드끼리 눈으로 맞춰볼 수 없다.
-function Stat({
-  label,
-  value,
-  sub,
-  tone,
-  title,
-}: {
-  label: string;
-  value: string;
-  sub?: string | null;
-  tone?: string;
-  title?: string;
-}) {
-  return (
-    <div className="bg-canvas-card px-2 py-1.5" title={title}>
-      <div className="eyebrow text-[9px] mb-0.5">{label}</div>
-      <div className={`font-mono text-[12px] leading-tight ${tone ?? "text-ink"}`}>{value}</div>
-      <div className="font-mono text-[9px] leading-tight text-mute truncate">{sub ?? " "}</div>
-    </div>
   );
 }
