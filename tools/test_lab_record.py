@@ -101,6 +101,15 @@ def test_decision_only_on_recorded_pick():
     assert "중 하나" in _err(lambda: R.decision_row(rows, "LAB-20261005-AAA-pick", "maybe", NOW))
 
 
+def test_brief_lists_top_five_and_warns_when_already_recorded():
+    sc = _screen()
+    out = R.brief(sc, [])
+    assert "| 1 | AAA |" in out and "| 5 | EEE |" in out and "FFF" not in out
+    assert "아직 없음" in out
+    done = R.build_rows(sc, "AAA", False, [], None, [], NOW)
+    assert "이미 기록됨" in R.brief(sc, done)
+
+
 if __name__ == "__main__":
     import run_tests
     raise SystemExit(run_tests.run_module(sys.modules[__name__]))

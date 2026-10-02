@@ -11,6 +11,11 @@
 
 import type { ClosePoint } from "./calls";
 
+// 실험실 검증 보고서 폴더(reports/lab/lab-pick-YYYYMMDD.md). 티커 폴더가 아니다 —
+// companyFromPath 가 2번째 세그먼트를 티커로 읽어 'lab' 이 가짜 종목으로 잡히므로
+// 종목 축 화면에서 걸러낸다(bottleneck-map 과 같은 처리).
+export const LAB_REPORT_FOLDER = "lab";
+
 export type LabSkill = "lab-pick" | "lab-control";
 
 export interface LabCall {

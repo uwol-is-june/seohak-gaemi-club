@@ -19,6 +19,7 @@ import { SectorGroupEditor } from "./SectorGroupEditor";
 import { BottleneckSignalsView } from "./BottleneckSignalsView";
 import { ArticlesView } from "./ArticlesView";
 import { LabView } from "./lab/LabView";
+import { LAB_REPORT_FOLDER } from "@/lib/lab";
 import { ResearchLaunchModal } from "./ResearchLaunchModal";
 import { CollapsibleReportCard } from "./CollapsibleReportCard";
 import { groupTheses } from "@/lib/thesis-groups";
@@ -183,7 +184,7 @@ export function HomeView({
             new Set(
               files
                 .map((f) => f.company)
-                .filter((c): c is string => c !== null && !isBottleneckCompany(c))
+                .filter((c): c is string => c !== null && !isBottleneckCompany(c) && c !== LAB_REPORT_FOLDER)
             )
           ).sort()
         : [],

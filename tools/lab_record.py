@@ -22,6 +22,9 @@ append-only · 시점가는 도구 실측(모델 기억값 금지) · 받든 안
     # 후보 0개 또는 상위 5개 전부 탈락 → 이번 주 없음
     python3 tools/lab_record.py --screen data/_lab/screen-20261002.json --none
 
+    # 검증 대상 보기 (가장 최근 스크리닝, 기록 안 함)
+    python3 tools/lab_record.py --brief
+
     # 사용자 수락/거절 (실제 매수 여부와 별개 — 매수는 기존 매매 로그로)
     python3 tools/lab_record.py --decide LAB-20261002-AOS-pick accepted
 """
@@ -192,6 +195,41 @@ def build_rows(screen: dict, pick: str | None, none: bool, rejects: list[dict],
     return [{k: v for k, v in r.items() if v is not None} for r in rows]
 
 
+def latest_screen_path() -> Path | None:
+    files = sorted((REPO_ROOT / "data" / "_lab").glob("screen-*.json"))
+    return files[-1] if files else None
+
+
+def brief(screen: dict, existing: list[dict], n: int = MAX_RANK) -> str:
+    """스킬이 290KB JSON 을 통째로 읽지 않게 검증 대상만 압축해 보여준다(토큰 예산)."""
+    done = [r for r in existing if r.get("date") == screen["runDate"] and r.get("kind") != "decision"]
+    lines = [
+        f"스크리닝 {screen['runDate']} · 규칙 {screen['ruleVersion']} · 후보 {len(screen['candidates'])}개"
+        f" · 대조군 {(screen.get('control') or {}).get('ticker') or '없음'}",
+        "⚠️ 이 실행일은 이미 기록됨 — 다시 기록할 수 없다" if done else "기록: 아직 없음",
+        "",
+        "| 순위 | 티커 | 회사 | 섹터 | 현재가 | 목표가 | 상승여력 | 최신 FY | 주의 |",
+        "|---|---|---|---|---|---|---|---|---|",
+    ]
+    for t in screen["candidates"][:n]:
+        st = screen["stocks"][t]
+        m = st["metrics"]
+        flags = []
+        if m.get("spinoffSuspect"):
+            flags.append("분사의심 " + ",".join(f"{x['date']}×{x['ratio']}" for x in m["spinoffSuspect"]))
+        if m.get("imputed"):
+            flags.append("보완:" + "/".join(m["imputed"]))
+        lines.append(
+            f"| {st['rank']} | {t} | {st['name']} | {st['sector']} | ${m['price']:.2f} | "
+            f"${st['plan']['target']:.2f} | {m['upside'] * 100:+.1f}% | {m.get('latestPeriodEnd')} | "
+            f"{' · '.join(flags) or '—'} |"
+        )
+    if not screen["candidates"]:
+        near = screen.get("nearMiss")
+        lines.append(f"(후보 0개 — 근접: {near or '없음'}) → `--none` 으로 기록")
+    return "\n".join(lines)
+
+
 def decision_row(existing: list[dict], call_id: str, decision: str, now: str) -> dict:
     if decision not in DECISIONS:
         raise ValueError(f"결정은 {DECISIONS} 중 하나여야 합니다: {decision}")
@@ -218,10 +256,19 @@ def main(argv: list[str] | None = None) -> int:
                     help='위 순위 탈락 — "티커 | 사유 | 증거 URL"')
     ap.add_argument("--report", help="픽 보고서 경로 (reports/lab/lab-pick-YYYYMMDD.md)")
     ap.add_argument("--decide", nargs=2, metavar=("ID", "accepted|declined"), help="사용자 수락/거절 기록")
+    ap.add_argument("--brief", action="store_true", help="검증 대상(상위 5위)만 표로 출력 — 기록하지 않는다")
     args = ap.parse_args(argv)
 
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     existing = ledger_rows()
+    if args.brief:
+        path = REPO_ROOT / args.screen if args.screen else latest_screen_path()
+        if not path or not path.exists():
+            print("오류: 스크리닝 결과가 없습니다 — python3 tools/lab_screen.py 를 먼저 실행하세요.", file=sys.stderr)
+            return 1
+        print(f"{path.relative_to(REPO_ROOT).as_posix()}\n")
+        print(brief(json.loads(path.read_text(encoding="utf-8")), existing))
+        return 0
     try:
         if args.decide:
             rows = [decision_row(existing, args.decide[0], args.decide[1], now)]
