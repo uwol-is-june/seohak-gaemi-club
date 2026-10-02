@@ -45,6 +45,13 @@
   --color-cat-3: #f48fb1; /* pink   (7.42:1) */
   --color-cat-4: #94a3b8; /* slate  (6.46:1) */
 
+  /* 차트 선 전용 (실험실 누적 성과 · TASK-187) — 분류 축이지만 cat-* 보다 한 단 어둡다.
+     cat-* 는 텍스트 대비용으로 밝게 잡혀 있어 다크 차트 명도 밴드(OKLCH L 0.48~0.67)를 넘는다.
+     dataviz validate_palette.js --mode dark --surface #191f28 전 항목 통과
+     (CVD ΔE 15.9 · 일반시력 ΔE 23.7 · 대비 3:1+). 텍스트에는 쓰지 않는다 — 라벨은 ink/mute. */
+  --color-chart-1: #16a39e; /* teal — 실험실 */
+  --color-chart-2: #8f6ff5; /* violet — 대조군 */
+
   /* 액션 */
   --color-primary: #3182f6; /* 토스 공개값 — fill 전용(카드 위 4.46:1이라 본문 텍스트 금지) */
   --color-primary-press: #1b64da; /* 버튼 fill (흰 글자 5.41:1) */

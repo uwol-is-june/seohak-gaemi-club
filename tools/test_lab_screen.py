@@ -241,6 +241,13 @@ def test_upside_gate_applied_after_ranking():
     assert res["stocks"]["IN"]["score"]["v1"] == 100.0
 
 
+def test_json_safe_strips_non_finite():
+    import json
+    out = L.json_safe({"a": float("inf"), "b": [float("nan"), 1.5], "c": {"d": float("-inf")}})
+    assert out == {"a": None, "b": [None, 1.5], "c": {"d": None}}
+    json.dumps(out, allow_nan=False)  # 표준 JSON 으로 직렬화돼야 한다
+
+
 # ── 1절: 유니버스 파싱 ────────────────────────────────────────────────────────
 
 def test_parse_universe_table():

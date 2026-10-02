@@ -8,7 +8,7 @@
 
 import type { ReactNode } from "react";
 
-export type NavIconName = "portfolio" | "track" | "inspect" | "reports" | "article";
+export type NavIconName = "portfolio" | "track" | "inspect" | "reports" | "article" | "lab";
 
 const PATHS: Record<NavIconName, ReactNode> = {
   // 지갑 — 지금 들고 있는 것
@@ -38,6 +38,13 @@ const PATHS: Record<NavIconName, ReactNode> = {
     <>
       <path d="M4 2.5h7l3 3v10H4z" />
       <path d="M6.5 9h5M6.5 12h3.5" />
+    </>
+  ),
+  // 플라스크 — 실험실(기존 시스템과 별개로 검증 중인 방식)
+  lab: (
+    <>
+      <path d="M7 2.5h4M7.5 2.5v4.5L3.5 14a1.5 1.5 0 0 0 1.3 2.2h8.4a1.5 1.5 0 0 0 1.3-2.2L10.5 7V2.5" />
+      <path d="M5.2 11h7.6" />
     </>
   ),
   // 발행 — 내보내는 글

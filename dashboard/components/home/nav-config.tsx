@@ -63,6 +63,7 @@ export const TAB_HEADERS: Record<string, { title: string }> = {
   "track-record": { title: "트랙레코드" },
   "bottleneck-signals": { title: "병목 신호" },
   articles: { title: "아티클" },
+  lab: { title: "실험실" },
 };
 
 // 분야 탭 상단바의 도구 아이콘. 누르면 '새 리서치 시작' 모달이 열린다(TASK-91).

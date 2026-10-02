@@ -63,24 +63,26 @@
 
 #### B. 판단 기록부 연동
 
-- [ ] **[TASK-185] (S) `lab-pick` · `lab-control` 콜 지원**
-  - `record_call.py`: 두 스킬은 `call=buy` 고정 · `--health` 등 논제용 필수값 면제 · 목표가/철회선/12M 기록
-  - "이번 주 없음" 기록 형식 확정(티커 없는 콜 — 채점기가 건너뛰는지 확인)
-  - 같은 종목 30일 내 재선정이면 새 콜을 만들지 않는다
-  - 대시보드 '현재 판단'·7일 충돌 판정에서 `lab-*` 제외(`dashboard/lib/` 해당 로직)
-  - `render_track_record.py` 의 보유·관찰 표에서 `lab-*` 제외
-  - ✅ 체크: `python3 tools/run_tests.py` · `cd dashboard && npm test` 둘 다 통과
-  - ✅ 체크: 기존 판단 기록부 68건의 화면이 **바뀌지 않았는지** — 트랙레코드 탭 전후 스크린샷 비교
-  - ✅ 체크: `render_track_record.py --check` 통과
+- [x] **[TASK-185] (S) 실험실 판단 기록부** → 2026-10-02 완료 · **설계 변경**
+  - `data/calls.jsonl` 에 섞지 않고 **별도 파일 `data/lab-calls.jsonl`** 로 분리 — 기존 소비처(트랙레코드 탭 ·
+    track-record.md · 충돌 판정 · 채점기)를 하나도 고칠 필요가 없어 기존 68건 화면이 바뀔 위험이 원천 차단된다
+  - `tools/lab_record.py`: 픽 + 대조군 / 없음 / 수락·거절 기록. **승격 금지를 기계로 강제** — N위를 고르려면
+    1~N−1위 전부의 탈락 사유 + 증거 URL 필수, 5위 밖 금지, 같은 실행일 중복 금지, 30일 내 재선정은 `repeat`
+  - `tools/test_lab_record.py` 9개 · Stop 훅(`commit_reports.py`) 백업 대상에 `data/lab-calls.jsonl` · `data/_lab` 추가
 
 #### C. 실험실 탭 화면 (토스증권 스타일 · `docs/DESIGN-toss.md` 기준)
 
-- [ ] **[TASK-186] (S) 데이터 API — `dashboard/app/api/lab/`**
+- [x] **[TASK-186] (S) 데이터 API — `dashboard/app/api/lab/`** → 2026-10-02 완료
+  - `dashboard/lib/lab.ts` 채점(목표 도달 · 철회 −15% · 후보 이탈 · 만기, SPY 대비) + `lab.test.ts`
+  - 🐛 발견·수정: screen JSON 에 `Infinity`(Q3) → JSON.parse 실패로 탭 전체가 빈 상태. 저장 시 비유한값 null + `allow_nan=False`
   - 최신 `screen-*.json` + 픽 보고서 + 판단 기록부의 `lab-*` 콜 + 채점 결과를 한 번에 내려준다
   - 같은 종목의 **기존 시스템 최신 판단**도 함께 내려준다(일치/엇갈림 배지용)
   - ✅ 체크: 데이터가 하나도 없을 때(첫 실행 전) 빈 응답이 깨지지 않는지
 
-- [ ] **[TASK-187] (O) 🧑 실험실 탭 UI**
+- [~] **[TASK-187] (O) 🧑 실험실 탭 UI** — 사용자 피드백 대기
+  - 사이드바 맨 아래 '실험' 그룹에 추가. 4개 상태(검증 대기 · 픽 · 없음 · 실행 전) 데스크톱 1440 · 모바일 390 확인
+  - ⚠️ 누적 차트 선 색(`--color-chart-1/2`)이 실행 중 dev 서버에 반영 안 됨 — Turbopack 이 globals.css 변경을 못 잡음. **dev 서버 재시작 후 재확인 필요**
+  - 차트 팔레트: cat-* 는 다크 차트 명도 밴드 초과로 FAIL → 선 전용 `chart-1` #16a39e · `chart-2` #8f6ff5 신설(validator 전 항목 PASS), SPY 는 기준선이라 mute 점선
   - 작업 전 `dataviz` 스킬 + `DESIGN-toss.md` 를 읽는다. 하단 탭에 '실험실' 추가
   - 구성(위에서 아래 순서, 주인공은 하나):
     1. **이번 주 픽 카드** — 티커·현재가, 퀄리티·밸류 게이지, 추세 통과 배지, 매수 근거 3줄, 반대 근거, 기존 시스템 판단 배지

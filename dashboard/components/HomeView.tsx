@@ -18,6 +18,7 @@ import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { SectorGroupEditor } from "./SectorGroupEditor";
 import { BottleneckSignalsView } from "./BottleneckSignalsView";
 import { ArticlesView } from "./ArticlesView";
+import { LabView } from "./lab/LabView";
 import { ResearchLaunchModal } from "./ResearchLaunchModal";
 import { CollapsibleReportCard } from "./CollapsibleReportCard";
 import { groupTheses } from "@/lib/thesis-groups";
@@ -465,6 +466,12 @@ export function HomeView({
       label: "발행",
       entries: [{ kind: "item", item: { id: "articles", label: "아티클", icon: "article" } }],
     },
+    {
+      // 기존 시스템과 독립된 두 번째 의견(TASK-187). 매주 S&P 500 을 기계 규칙으로 걸러
+      // 한 종목을 내고 무작위 대조군·SPY 와 비교해 채점한다 — 실험이라 맨 아래에 둔다.
+      label: "실험",
+      entries: [{ kind: "item", item: { id: "lab", label: "실험실", icon: "lab" } }],
+    },
   ];
   // 최상위에 실제로 보이는 칸들(모바일 탭 로우가 쓴다). 드릴다운 안쪽 항목은 여기 없다 —
   // 평탄화하면 접어둔 것이 그대로 다시 나와 드릴다운이 무의미해진다.
@@ -689,6 +696,9 @@ export function HomeView({
               onRetry={() => setReloadKey((k) => k + 1)}
               onOpenReport={(p) => setModalPath(p)}
             />
+          ) : flowTab === "lab" ? (
+            /* 실험실 = 이번 주 추천 종목(tools/lab_screen.py → /lab-pick). 기존 판단 기록부와 분리. */
+            <LabView refreshKey={reloadKey} onOpenReport={(p) => setModalPath(p)} />
           ) : flowTab === "articles" ? (
             /* 아티클 = /investment-article 산출물 + 그 소재가 되는 보고서의 실행 명령. */
             <ArticlesView

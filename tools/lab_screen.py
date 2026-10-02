@@ -147,7 +147,7 @@ def parse_universe(html: str) -> list[dict]:
             continue  # 헤더 행
         rows.append({
             "ticker": cells[0].upper(),
-            "name": cells[1],
+            "name": cells[1].rstrip("| ").strip(),  # 원문 오타 방어 (2026-10-02 "ResMed|")
             "sector": cells[2],
             "subIndustry": cells[3],
             "cik": cells[6].zfill(10) if cells[6].isdigit() else None,
@@ -608,6 +608,19 @@ def coverage_report(universe: list[dict], data: dict[str, dict], run_date: date)
     }
 
 
+def json_safe(o):
+    """비유한 실수(inf · NaN)를 null 로. 표준 JSON 에는 Infinity 가 없어 대시보드의 JSON.parse 가
+    파일 전체를 거부한다(2026-10-02 실측: Q3 = inf 한 종목 때문에 탭이 '실행 기록 없음'으로 떴다).
+    순위 계산은 이미 끝난 뒤라 저장값만 바꾼다 — q3 가 null 이고 원 FCF 가 음수면 '최하위'였다는 뜻."""
+    if isinstance(o, float):
+        return o if o == o and o not in (float("inf"), float("-inf")) else None
+    if isinstance(o, dict):
+        return {k: json_safe(v) for k, v in o.items()}
+    if isinstance(o, list):
+        return [json_safe(v) for v in o]
+    return o
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="실험실 기계 필터 (docs/LAB-SPEC.md)")
     ap.add_argument("--collect-only", action="store_true", help="수집 + 커버리지 리포트만")
@@ -651,7 +664,8 @@ def main() -> int:
     }
     LAB_DIR.mkdir(parents=True, exist_ok=True)
     path = LAB_DIR / f"screen-{run_date.strftime('%Y%m%d')}.json"
-    path.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    path.write_text(json.dumps(json_safe(out), ensure_ascii=False, separators=(",", ":"), allow_nan=False),
+                    encoding="utf-8")
 
     print("\n깔때기: " + " → ".join(f"{c.get('step')} {c['remaining']}" for c in out["funnel"]))
     for t in result["candidates"][:10]:
