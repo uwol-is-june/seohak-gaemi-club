@@ -1,8 +1,8 @@
-﻿# 실험실 주간 추천 — Windows 작업 스케줄러가 매주 월요일 08:30(KST)에 실행한다. (TASK-190)
+﻿# 실험실 주간 추천 — Windows 작업 스케줄러가 매주 월요일 09:05(KST)에 실행한다. (TASK-190)
 #
 # 구조는 병목 스캔(schedule_bottleneck_scan.ps1)과 같다 — 로컬 실행이어야 하는 이유도 같다:
 #   클라우드 루틴은 이 PC 의 reports/·data/ 에 쓰지 못하고, 이 저장소는 public 이라 push 로 우회하면
-#   픽이 공개된다. 대가: 08:30 에 PC 가 켜져 있어야 한다.
+#   픽이 공개된다. 대가: 09:05 에 PC 가 켜져 있어야 한다(꺼져 있었으면 켜지는 대로 돈다).
 #
 # 단계:
 #   ① python3 tools/lab_screen.py   — S&P 500 기계 필터(토큰 0, 약 2분). Claude 가 실패해도 후보 순위는 남는다.
@@ -10,11 +10,12 @@
 #   ③ 기록 확인                      — data/lab-calls.jsonl 에 이번 실행일 기록이 생겼나(조용한 실패 감지)
 #   ④ python3 tools/commit_reports.py — 로컬 커밋(push 없음)
 #
-# 왜 월요일 08:30 인가: 금요일 미국 종가가 반영돼 있고, 출근 전이라 VSCode 의 Claude 세션과
-# OAuth 갱신이 겹칠 가능성이 낮으며(2026-10-02 병목 스캔이 그 충돌로 실패), 미국 장 개장(22:30) 전이다.
+# 왜 월요일 09:05 인가(2026-10-02 사용자 요청으로 08:30 → 09:05): 사용자가 깨어 있는 시간이고, 금요일 미국 종가가
+# 반영돼 있으며, 미국 장 개장(22:30) 전이다. ⚠️ 병목 스캔(매일 09:00)과 몇 분 겹칠 수 있다 —
+# 두 헤드리스 Claude 가 동시에 OAuth 를 갱신하면 충돌하므로 아래의 1회 재시도(120초 뒤)가 그걸 흡수한다.
 #
 # 등록/해제:
-#   등록:      schtasks /create /tn "AI-Berkshire-Lab-Pick" /sc weekly /d MON /st 08:30 /tr "powershell -NoProfile -ExecutionPolicy Bypass -File \"<저장소>\tools\schedule_lab_pick.ps1\""
+#   등록:      schtasks /create /tn "AI-Berkshire-Lab-Pick" /sc weekly /d MON /st 09:05 /tr "powershell -NoProfile -ExecutionPolicy Bypass -File \"<저장소>\tools\schedule_lab_pick.ps1\""
 #   확인:      schtasks /query /tn "AI-Berkshire-Lab-Pick"
 #   즉시 실행: schtasks /run   /tn "AI-Berkshire-Lab-Pick"
 #   해제:      schtasks /delete /tn "AI-Berkshire-Lab-Pick" /f

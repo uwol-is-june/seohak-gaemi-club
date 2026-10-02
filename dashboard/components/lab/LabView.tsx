@@ -533,7 +533,7 @@ function Dots({ level }: { level: number }) {
 }
 
 // ── 자동 실행 경고 ───────────────────────────────────────────────────────
-// 매주 월 08:30 자동 실행이 빠졌거나 실패했을 때만 뜬다. 정상이면 아무것도 그리지 않는다.
+// 매주 월 09:05 자동 실행이 빠졌거나 실패했을 때만 뜬다. 정상이면 아무것도 그리지 않는다.
 function HealthBanner({ issues }: { issues: HealthIssue[] }) {
   if (!issues.length) return null;
   const md = (iso: string) => iso.slice(5).replace("-", "/");
