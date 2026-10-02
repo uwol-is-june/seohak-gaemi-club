@@ -95,3 +95,50 @@ export function ResearchLaunchButton({ onClick }: { onClick: () => void }) {
     </button>
   );
 }
+
+// 상단바 새로고침 버튼(TASK-168). 보고서 목록·트랙레코드를 다시 불러온다.
+// 창으로 돌아오면 자동으로도 갱신되지만, 같은 창에 머문 채 보고서가 써졌을 때를 위한 수동 경로다.
+// 마지막 갱신 시각을 함께 보여 "지금 보는 게 언제 기준인가"를 바로 알 수 있게 한다.
+export function RefreshButton({
+  onClick,
+  busy,
+  loadedAt,
+  compact = false,
+}: {
+  onClick: () => void;
+  busy: boolean;
+  loadedAt: Date | null;
+  compact?: boolean;
+}) {
+  const time = loadedAt
+    ? `${String(loadedAt.getHours()).padStart(2, "0")}:${String(loadedAt.getMinutes()).padStart(2, "0")}`
+    : null;
+  const label = time ? `새로고침 (마지막 갱신 ${time})` : "새로고침";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={busy}
+      title={label}
+      aria-label={label}
+      className="shrink-0 rounded-full border border-hairline h-9 px-3 flex items-center gap-2 text-xs text-mute hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95 disabled:opacity-60"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className={busy ? "animate-spin" : undefined}
+      >
+        <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+        <path d="M21 3v6h-6" />
+      </svg>
+      {!compact && time && <span className="tabular-nums">{time}</span>}
+    </button>
+  );
+}

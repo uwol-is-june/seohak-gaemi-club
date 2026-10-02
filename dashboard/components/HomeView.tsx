@@ -27,7 +27,7 @@ import { quarterDue, quarterBadge, fmtDue } from "@/lib/quarter-due";
 
 import {
   ROOT_NON_SECTOR, DOMAIN_TAB_PREFIX, DOMAIN_TABS, INSPECT_FLOW_IDS, INSPECT_EXTRA_IDS,
-  TAB_HEADERS, navViewOfTab, ResearchLaunchButton,
+  TAB_HEADERS, navViewOfTab, ResearchLaunchButton, RefreshButton,
   type DomainPick, type NavView, type NavItem, type NavEntry,
 } from "./home/nav-config";
 
@@ -85,6 +85,11 @@ export function HomeView({
   }, []);
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  // 마지막으로 보고서 목록을 받은 시각 + 진행 중 여부 — 상단바 새로고침 버튼 표시용(TASK-168).
+  const [loadedAt, setLoadedAt] = useState<Date | null>(null);
+  const [reloading, setReloading] = useState(false);
+  const loadedAtRef = useRef(0);
+  const refresh = useCallback(() => setReloadKey((k) => k + 1), []);
   // 보고서 삭제(개발 정리용): 확인 대기 경로 + 진행/에러 상태.
   const [deletePath, setDeletePath] = useState<string | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
@@ -108,11 +113,12 @@ export function HomeView({
     return () => {
       alive = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   useEffect(() => {
     let cancelled = false;
     setLoadError(false);
+    setReloading(true);
     fetch("/api/reports", { cache: "no-store" })
       .then(readJsonSafe)
       .then((d) => {
@@ -122,16 +128,39 @@ export function HomeView({
           return;
         }
         setFiles(d.files);
+        const now = new Date();
+        loadedAtRef.current = now.getTime();
+        setLoadedAt(now);
         // 섹터·선택 대상은 파생 값 기반 reconciliation 이펙트가 맞춘다
         // (그룹 설정이 나중에 로드돼도 자동 반영).
       })
       .catch(() => {
         if (!cancelled) setLoadError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setReloading(false);
       });
     return () => {
       cancelled = true;
     };
   }, [reloadKey]);
+
+  // 창으로 돌아오면 자동 새로고침(TASK-168). 보고서는 터미널에서 만들어지고 대시보드 탭은
+  // 열린 채 있으므로, 마운트 시 1회 조회만으로는 F5 전까지 새 보고서가 안 보였다.
+  // 목록은 로컬 디스크 읽기라 싸지만, 창 전환을 오가며 연타하지 않도록 10초 간격을 둔다.
+  useEffect(() => {
+    const onReturn = () => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - loadedAtRef.current < 10_000) return;
+      refresh();
+    };
+    window.addEventListener("focus", onReturn);
+    document.addEventListener("visibilitychange", onReturn);
+    return () => {
+      window.removeEventListener("focus", onReturn);
+      document.removeEventListener("visibilitychange", onReturn);
+    };
+  }, [refresh]);
 
   // 좌측 nav에서 분야 탭을 고른 상태면 그 분야명, 아니면 null(TASK-91).
   // 분야 선택은 nav(= flowTab)가 유일한 출처다 — 별도 상태로 들고 있지 않으므로
@@ -570,6 +599,7 @@ export function HomeView({
           <span className="text-ink tracking-[-0.02em]">서학개미클럽</span>
           <div className="flex items-center gap-2">
             {/* 데스크톱 상단바의 도구 아이콘과 동일 — 모바일엔 그 상단바가 없어 여기 둔다. */}
+            <RefreshButton onClick={refresh} busy={reloading} loadedAt={loadedAt} compact />
             {launchable && <ResearchLaunchButton onClick={() => setLaunchTarget(launchable)} />}
             <button onClick={logout} className="rounded-full border border-hairline px-3 py-1 text-xs text-body active:scale-95">로그아웃</button>
           </div>
@@ -620,7 +650,10 @@ export function HomeView({
           <div>
             <div className="text-xl font-bold tracking-[-0.02em] text-ink leading-tight">{headerTitle}</div>
           </div>
-          {launchable && <ResearchLaunchButton onClick={() => setLaunchTarget(launchable)} />}
+          <div className="flex items-center gap-2">
+            <RefreshButton onClick={refresh} busy={reloading} loadedAt={loadedAt} />
+            {launchable && <ResearchLaunchButton onClick={() => setLaunchTarget(launchable)} />}
+          </div>
         </header>
 
         <div className="px-6 md:px-8 py-8 w-full max-w-7xl">
@@ -647,7 +680,7 @@ export function HomeView({
             </div>
           ) : flowTab === "track-record" ? (
             /* 트랙레코드 = 콜(예측) 자동 채점만. 수기 매매기록(실보유)은 포트폴리오 탭으로 이동(TASK-74). */
-            <TrackRecordView />
+            <TrackRecordView refreshKey={reloadKey} />
           ) : flowTab === "bottleneck-signals" ? (
             /* 병목 신호 = 매일 09:00 자동 스캔(S3 /bottleneck-hunter) 산출물 피드. */
             <BottleneckSignalsView

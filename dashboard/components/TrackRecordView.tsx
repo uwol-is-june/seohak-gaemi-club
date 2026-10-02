@@ -69,7 +69,8 @@ const DISABLED_AXIS_HINT = "보유 정보를 불러오지 못해 축을 나눌 �
 const ROW_GRID =
   "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 md:grid-cols-[56px_minmax(0,1fr)_112px_92px_100px_120px_88px_60px]";
 
-export function TrackRecordView() {
+// refreshKey: 상단바 새로고침·창 복귀 시 HomeView 가 올린다(TASK-168). 바뀌면 원장을 다시 채점한다.
+export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}) {
   const [calls, setCalls] = useState<ScoredCall[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -102,7 +103,7 @@ export function TrackRecordView() {
 
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load, refreshKey]);
 
   // localStorage 캐시 복원은 마운트 후에만 — 렌더 중 복원하면 서버 HTML과 어긋나
   // 하이드레이션이 깨진다(HoldingsBanner와 같은 규칙).

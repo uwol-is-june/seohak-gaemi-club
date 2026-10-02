@@ -16,7 +16,17 @@ import {
 } from "@/lib/calls";
 import { mapLimit } from "@/lib/map-limit";
 import { repoPath } from "@/lib/repo-root";
-import { fetchQuote, toYahooSymbol } from "@/lib/yahoo";
+import { createTtlCache } from "@/lib/ttl-cache";
+import { fetchQuote, toYahooSymbol, type RawQuote } from "@/lib/yahoo";
+
+// Yahoo 응답 캐시(TASK-169). 원장은 매 요청 새로 읽으므로 새 콜은 즉시 보이고,
+// 재사용하는 건 외부 시세뿐이다. 실패는 저장하지 않고 직전 성공값으로 폴백한다.
+const quoteCache = createTtlCache<RawQuote>(60 * 1000, (q) => q.price != null); // 1분 — quotes 라우트와 동일
+const historyCache = createTtlCache<ClosePoint[] | null>(30 * 60 * 1000, (h) => h != null); // 30분 — 일봉
+const benchmarkCache = createTtlCache<BenchmarkSeries | null>(30 * 60 * 1000, (s) => s != null);
+
+// 브라우저 휴리스틱 캐시가 이전 채점을 재사용하지 않게 한다(reports 라우트와 동일).
+const NO_STORE = { "Cache-Control": "no-store" } as const;
 
 // 원장 경로는 repoPath() 로 푼다(TASK-157) — 보고서·설정과 같은 루트 해석을 써야
 // 실행 위치가 바뀌어도 한쪽만 못 찾는 일이 없다.
@@ -150,7 +160,7 @@ export async function GET() {
   const raw = await readLedger();
   if (raw == null) {
     // 원장 파일이 아직 없으면 빈 상태로(에러 아님) — 콜이 기록되면 채워진다.
-    return Response.json({ calls: [], aggregate: aggregate([]) });
+    return Response.json({ calls: [], aggregate: aggregate([]) }, { headers: NO_STORE });
   }
 
   // 같은 스킬을 같은 날 다시 돌려 같은 id 가 두 줄 쌓인 경우만 접는다(TASK-104).
@@ -167,9 +177,13 @@ export async function GET() {
     if (!prev || c.date < prev) firstDate.set(c.ticker, c.date);
   }
   const [quoteEntries, pathEntries, benchmark] = await Promise.all([
-    mapLimit(tickers, 6, async (t) => [t, await fetchQuote(t)] as const),
-    mapLimit(tickers, 6, async (t) => [t, await fetchCloseHistory(t, firstDate.get(t) ?? "")] as const),
-    fetchBenchmarkSeries(),
+    mapLimit(tickers, 6, async (t) => [t, await quoteCache.get(t, () => fetchQuote(t))] as const),
+    mapLimit(tickers, 6, async (t) => {
+      const since = firstDate.get(t) ?? "";
+      // 키에 시작일을 넣는다 — 더 이른 콜이 추가되면 이력을 새로 받아야 한다.
+      return [t, await historyCache.get(`${t}:${since}`, () => fetchCloseHistory(t, since))] as const;
+    }),
+    benchmarkCache.get(BENCHMARK_TICKER, fetchBenchmarkSeries),
   ]);
   const quoteMap = new Map(quoteEntries);
   const pathMap = new Map(pathEntries);
@@ -210,5 +224,5 @@ export async function GET() {
       return ra < rb ? 1 : ra > rb ? -1 : 0;
     });
 
-  return Response.json({ calls: scored, aggregate: aggregate(scored) });
+  return Response.json({ calls: scored, aggregate: aggregate(scored) }, { headers: NO_STORE });
 }
