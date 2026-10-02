@@ -169,8 +169,8 @@ python3 tools/financial_rigor.py verify-valuation \
 #### 관문 5: 가격은 충분히 저렴한가 (안전마진, Margin of Safety)
 
 > 🔴 **관문 5는 [quality-tier.md](skills/quality-tier.md) 표준을 따른다.**
-> 요구 안전마진은 고정값이 아니라 **퀄리티 티어별로 다르다**(T1 컴파운더 0~15% ·
-> T2 우량 안정 15~30% · T3 시클리컬·턴어라운드·저품질 30~40%).
+> 요구 안전마진은 고정값이 아니라 **퀄리티 티어별로 다르다**(T1 컴파운더 0~10% ·
+> T2 우량 안정 10~20% · T3 시클리컬·턴어라운드·저품질 30~40% — 2026-10-02 보정).
 > **밸류에이션보다 티어 판정을 먼저 한다** — 순서를 뒤집으면 확증편향이 된다.
 
 ##### 5-a. 퀄리티 티어 판정 (밸류에이션 전에 수행)
@@ -207,11 +207,18 @@ python3 tools/financial_rigor.py verify-valuation \
 
 추가 검증 (**반드시 도구로 정확히 계산, 암산 금지**):
 ```bash
+python3 tools/pe_history.py {티커} && \
 python3 tools/financial_rigor.py three-scenario \
   --price {주가} --eps {EPS} --shares {발행주식수B} \
-  --growth {낙관} {중립} {비관} --pe {낙관PE} {중립PE} {비관PE} --currency USD
+  --growth {낙관} {중립} {비관} --pe {Bull=75분위} {Base=10년 중앙값} {Bear=10년 최저} \
+  --probs 0.25 0.5 0.25 --currency USD && \
+python3 tools/external_value.py {티커} --iv {Intrinsic value (today)}
 ```
 - 3가지 시나리오별 밸류에이션 범위 (도구 출력 결과 인용)
+- 🔴 **내재가치 = 도구 출력의 `Intrinsic value (today)`**(확률가중 3년 목표가 ÷ 1.08³). 3년 목표가를
+  그대로 내재가치로 쓰지 않는다. 목표 PER(10년 중앙값)·성장률(컨센서스 ±5pp)·확률(25/50/25)을
+  기본값에서 벗어나게 쓰면 근거를 적고, 외부 교차점검이 75~125% 밖이면 가정별 해명 표를 넣는다
+  ([quality-tier.md](skills/quality-tier.md) 2.1·2.2단계).
 - 판단이 틀렸을 경우 현재가에 매수 시 최대 손실은 얼마인가?
 - 주가가 반토막 났을 때 추가 매수할 수 있는가?
 
@@ -221,7 +228,7 @@ python3 tools/financial_rigor.py three-scenario \
 T1이라도 아래 중 하나에 걸리면 **MOS와 무관하게 `buy` 금지 → `hold`로 내린다**:
 
 - [ ] 현재가 > 낙관 시나리오 목표가 (시장이 최상 시나리오를 이미 다 반영)
-- [ ] 10년 후 25x PER 매도 가정 시 연환산 수익률 < 10%
+- [ ] 10년 후 25x PER 매도 가정 시 연환산 수익률 < 8% (2026-10-02 10→8%)
 - [ ] 하방 시나리오 손실 > 상방 시나리오 이익 (비대칭이 반대로 걸림)
       🔴 **크기(%)로 비교한다 — 확률 가중 금지**([quality-tier.md](skills/quality-tier.md) 3단계)
 
@@ -246,7 +253,7 @@ T1이라도 아래 중 하나에 걸리면 **MOS와 무관하게 `buy` 금지 �
 | 티어 | 1차(가장 위 차수) | 비중 | 조건 |
 |------|-----------------|------|------|
 | **T1 컴파운더** | **스타터 — 현재가 ~ 매수 상한 사이** | **10~20%** | **조건 없음(즉시 집행 가능)** |
-| **T2 우량 안정** | 매수 상한(= 내재가치 × (1 − 요구 MOS)) 이하 | 25~35% | 필요 시 AND 조건 |
+| **T2 우량 안정** | **현재가 ≤ 내재가치면 스타터**(10~15%) · 아니면 매수 상한(= 내재가치 × (1 − 요구 MOS)) 이하 | 스타터 10~15% / 아니면 25~35% | 🔴 **1차 AND 조건 금지** — 조건은 2차 이하에만 |
 | **T3 시클리컬·턴어라운드·저품질** | 밴드 하단 위주 | 20~30% | 사이클/턴어라운드 확인 조건 필수 |
 
 최상급 컴파운더는 **가격이 아니라 사업 품질이 방어선**이라 완벽한 가격을 기다리다 영영
@@ -256,6 +263,8 @@ T1이라도 아래 중 하나에 걸리면 **MOS와 무관하게 `buy` 금지 �
 2. 🔴 **스타터는 물타기 계획이 아니다** — 남은 80~90%는 반드시 아래로 래더를 깐다.
 3. 🔴 **추격 금지선은 스타터에도 적용**된다.
 4. 차수를 못 나눴으면 ⬛로 남긴다(지어내지 않는다).
+4.5. 🔴 **T1·T2 의 1차에는 AND 조건을 걸지 않는다**(2026-10-02) — 방어선은 레드라인 미발동이다.
+   "가격이 닿아도 조건 미충족이면 안 산다"는 구조가 우량주를 영원히 못 사게 만든 가장 흔한 경로였다.
 5. 🔴 **밴드 산술 검산 필수** — [quality-tier.md](skills/quality-tier.md) 2.5단계.
    `실할인 = 1 − 1차/내재가치` 를 구해 요구 MOS 구간과 대조하고, 검산 표를 출력한다.
    실할인 > 요구 MOS 상한이면 **중복 차감**이니 1차를 `내재가치 × (1 − 요구 MOS 상한)`로
@@ -362,7 +371,8 @@ python3 tools/record_call.py \
   --ticker {티커} --skill investment-checklist \
   --report reports/{회사}/{파일}.md \
   --call {buy|hold|avoid} --conviction "{안전마진 ★평점}" \
-  --tier {T1|T2|T3} --required-mos {요구 MOS %}
+  --tier {T1|T2|T3} --required-mos {요구 MOS %} \
+  --fair-value {현가 IV USD} --ext-fair-value {외부 적정가} --ext-source {morningstar|analystPV}
 ```
 
 - **판정 → call 매핑**: 체크리스트 통과 → `buy` · 회색지대 → `hold` · 미통과/거부 → `avoid`.
@@ -377,7 +387,10 @@ python3 tools/record_call.py \
   시세를 못 구하면 `--price {주가}`로 직접 지정한다(불변 값).
 - 관문5(안전마진) 3-시나리오에서 목표가 밴드가 나오면
   `--target-low {중립 하단} --target-high {낙관 상단} --horizon-months 24`를 덧붙인다(선택).
-- 관문5에서 산출한 내재가치(중립)는 `--fair-value {USD}` 로 넘긴다 — 대시보드 '목표가' 칸이
+- 🔴 **`--fair-value` 는 오늘 가치(현가 IV)다** — `financial_rigor.py three-scenario` 출력의 `Intrinsic value (today)`.
+  3년 목표가를 그대로 넣지 않는다. `--ext-fair-value` 는 `python3 tools/external_value.py {티커} --iv {IV}` 산출값이며,
+  빠지면 게이트 5가 경고하고 대시보드에 외부 비교가 안 뜬다([quality-tier.md](skills/quality-tier.md) 2.1·2.2단계).
+- 관문5에서 산출한 내재가치(현가 IV)는 `--fair-value {USD}` 로 넘긴다 — 대시보드 '목표가' 칸이
   이 값을 쓴다(`hold` 의 밴드는 진입가라 목표가로 쓸 수 없다). 채점에는 쓰지 않는다.
 - **`hold` + 밴드면 `--fill-probability` 가 필수다** — 아래 절 참조.
 - 관문5-e에서 진입 래더를 만들었으면 `--tranche "1차 …" "2차 …"` 와 `--no-chase {가격}` 을
@@ -402,7 +415,7 @@ python3 tools/fill_probability.py --ticker {티커} --target {밴드 상단} \
 | 상황 | 넘길 플래그 |
 |------|-----------|
 | 체결확률 25% 이상 | `--fill-probability {값}` |
-| 25% 미만 · T1 컴파운더 | `--fill-probability {값} --low-fill-plan starter` (1차를 현재가 근처 스타터로) |
+| 25% 미만 · T1·T2 | `--fill-probability {값} --low-fill-plan starter` (1차를 현재가 근처 스타터로) |
 | 25% 미만 · 그 외 | `--fill-probability {값} --low-fill-plan catalyst-wait` (포지션 없음·촉매 대기) |
 | 25% 미만 · 밴드는 맞고 기간이 짧았다 | `--fill-probability {값} --low-fill-plan widen-horizon` 후 호라이즌 재설정 |
 | 상장 이력 부족으로 산출 불가 | `--fill-probability unknown --low-fill-plan {셋 중 하나}` |

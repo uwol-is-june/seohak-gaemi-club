@@ -17,6 +17,8 @@ import {
   groupTarget,
   groupTheses,
   highLadderMismatch,
+  chaseBreaches,
+  externalGap,
 } from "./thesis-groups.ts";
 
 const failures: string[] = [];
@@ -217,7 +219,7 @@ check("논제 1건이면 충돌 없음", detectConflict([call({ skill: "a" })]),
   const noMos = bandDrift(call(
     { skill: "thesis-tracker", date: "2026-06-01", tier: "T1", target: { low: 205, high: 255, horizonMonths: 12 } }, 354.97
   ));
-  check("요구 MOS 결측 → 티어 상한 폴백", [noMos?.requiredMosPct, noMos?.mosFromTier], [15, true]);
+  check("요구 MOS 결측 → 티어 상한 폴백", [noMos?.requiredMosPct, noMos?.mosFromTier], [10, true]);
   check("요구 MOS·티어 모두 결측이면 미판정", bandDrift(call(
     { skill: "thesis-tracker", date: "2026-06-01", target: { low: 205, high: 255, horizonMonths: 12 } }, 354.97
   )), null);
@@ -319,6 +321,28 @@ try {
   }
 } catch (e) {
   failures.push(`[원장] 읽기 실패: ${String(e)}`);
+}
+
+// ── 추격 금지 분리: 현재가가 살아있는 논제의 추격 금지선을 넘었나 ──────────
+{
+  const mk = (active: ScoredCall[]) => ({ active });
+  const nc = (line: number | undefined, priceNow: number, skill = "a") =>
+    call({ skill, target: { low: 90, high: 100, ...(line != null ? { noChaseAbove: line } : {}) } } as Partial<RawCall> & { skill: string }, priceNow);
+  check("현재가 > 추격금지선 → 초과", chaseBreaches(mk([nc(120, 130)])).length, 1);
+  check("현재가 ≤ 추격금지선 → 정상", chaseBreaches(mk([nc(120, 120)])).length, 0);
+  check("추격금지선 미기록 → 정상", chaseBreaches(mk([nc(undefined, 500)])).length, 0);
+  check("논제 둘 중 하나만 넘어도 초과", chaseBreaches(mk([nc(150, 130, "a"), nc(120, 130, "b")])).map((h) => h.skill).join(","), "b");
+}
+
+// ── 외부 적정가 이탈 (TASK-175): 우리 IV 가 외부의 75~125% 밖이면 해명 필요 ──────────
+{
+  const ev = (fv: number | undefined, ext: number | undefined, src = "morningstar") =>
+    call({ skill: "thesis-tracker", target: { low: 90, high: 100, fairValue: fv, extFairValue: ext, extSource: src } } as Partial<RawCall> & { skill: string }, 100);
+  check("IV 69% of 모닝스타 → 보수 이탈", externalGap(ev(300, 433))?.side, "conservative");
+  check("IV 92% → 정합", externalGap(ev(400, 433)), null);
+  check("IV 139% → 낙관 이탈", externalGap(ev(600, 433))?.side, "optimistic");
+  check("외부 미기록 → 판정 없음", externalGap(ev(300, undefined)), null);
+  check("이탈 → 갱신 사유", detectRefresh([ev(300, 433)], false)[0]?.reasons.some((r) => r.includes("보수 이탈")), true);
 }
 
 if (failures.length > 0) {

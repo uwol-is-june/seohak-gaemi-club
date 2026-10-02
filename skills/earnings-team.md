@@ -223,10 +223,19 @@ Agent 도구를 사용해 **같은 메시지 내**에서 4개의 백그라운드
      --price {price} --shares {shares} --reported {reported_market_cap} --currency USD
    python3 tools/financial_rigor.py verify-valuation \
      --price {price} --eps {EPS} --bvps {book_value_per_share}
+   python3 tools/pe_history.py {TICKER}
    python3 tools/financial_rigor.py three-scenario \
      --price {price} --eps {EPS} --shares {shares_billions} \
-     --growth {bull} {base} {bear} --pe {bull_PE} {base_PE} {bear_PE}
+     --growth {bull} {base} {bear} --pe {bull_PE} {base_PE} {bear_PE} --probs 0.25 0.5 0.25
+   python3 tools/external_value.py {TICKER} --iv {Intrinsic value (today)}
    ```
+
+   > 🔴 **내재가치 산정 기본값 (2026-10-02 · 벗어나면 근거를 문장으로)** — 내재가치 = three-scenario 출력의
+   > `Intrinsic value (today)`(확률가중 3년 목표가 ÷ 1.08³, 3년 목표가를 그대로 쓰지 않는다) ·
+   > 목표 PER = `python3 tools/pe_history.py {TICKER}` 기본값(Bull 75분위 · Base 10년 중앙값 · Bear 10년 최저,
+   > 상한 30x — "보수적으로"는 근거가 아니다) · 확률 25/50/25 · Base 성장률 = 컨센서스 ±5pp ·
+   > 할인율 8%(티어 무관, 위험은 MOS 에서만). 끝으로 `python3 tools/external_value.py {TICKER} --iv {IV}` —
+   > 외부 적정가의 75~125% 밖이면 가정별 해명 표를 넣는다(외부 값에 맞춰 가정을 역산하지 않는다).
 
 **산출 요건**: 모든 계산에 도구 출력 기록 첨부, 이익 품질 신호등 🟢/🟡/🔴, 버핏 스타일 총평 제시.
 
@@ -386,6 +395,7 @@ Agent 도구를 사용해 **같은 메시지 내**에서 4개의 백그라운드
 | 같은 악재를 두 Agent 이상이 중복 카운트했는가 | 항목명 · 어느 Agent들 |
 | 🔴 판정 중 **일회성/의도된 투자**를 구조적 악화로 잘못 읽은 것은 없는가 | 항목 · 근거 |
 | 이번 분기 **좋아진 것 3가지**를 말할 수 있는가 | 없으면 "없음"이라고 쓴다(추측 금지) |
+| 🔴 내재가치·밴드를 고쳤다면 **⬆ 과소평가 의심 항목**(목표 PER < 10년 중앙값 · Bear > 25% · 미현가 IV · 외부 적정가 75% 미만)도 점검했는가 | quality-tier.md 2.7단계 양방향 감사 표 — 하향만 적용하고 상향 발견을 "참고"로 두지 않는다 |
 
 ## 8. 결론
 1. 예상 초과/부합/미달?
@@ -538,8 +548,13 @@ python3 tools/record_call.py \
   --reason "{기간} 실적 판정: {한 줄 결론}" \
   --tier {T1|T2|T3} --required-mos {요구 MOS %} \
   [--target-low … --target-high … --horizon-months … --fill-probability … --low-fill-plan …] \
-  [--tranche "1차 …" "2차 …" --no-chase {가격}] [--fair-value {내재가치}]
+  [--tranche "1차 …" "2차 …" --no-chase {가격}] \
+  [--fair-value {현가 IV} --ext-fair-value {외부 적정가} --ext-source {morningstar|analystPV}]
 ```
+
+- 🔴 **`--fair-value` 는 오늘 가치(현가 IV)다** — `financial_rigor.py three-scenario` 출력의 `Intrinsic value (today)`.
+  3년 목표가를 그대로 넣지 않는다. `--ext-fair-value` 는 `python3 tools/external_value.py {티커} --iv {IV}` 산출값이며,
+  빠지면 게이트 5가 경고하고 대시보드에 외부 비교가 안 뜬다([quality-tier.md](skills/quality-tier.md) 2.1·2.2단계).
 
 - **call 종류는 실제 보유 여부로 정한다** — `reports/track-record.md` '매매 로그'에 매수 행이 있으면
   보유(`keep`·`buy`·`avoid`), 없으면 미보유(`hold`·`avoid`). 콜만 보고 보유를 추측하지 않는다.

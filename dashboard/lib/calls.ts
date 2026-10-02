@@ -62,6 +62,10 @@ export interface RawCall {
     noChaseAbove?: number;
     /** 내재가치(USD) — 표시용 목표가. 채점에 쓰지 않는다(TASK-164). hold 의 low/high 는 진입 밴드다. */
     fairValue?: number;
+    /** 외부 적정가(USD) — 모닝스타 또는 애널 목표가 현가. 우리 IV 의 거울(TASK-175). */
+    extFairValue?: number;
+    /** 외부 적정가 출처: "morningstar" | "analystPV" */
+    extSource?: string;
     /**
      * 이 밴드가 호라이즌 안에 체결될 확률(%) — 과거 낙폭 베이스레이트(tools/fill_probability.py).
      * "unknown" 은 상장 이력이 짧아 산출 불가라는 뜻이며, 0% 와 구분해야 한다.
@@ -154,6 +158,10 @@ export interface ScoredCall {
     noChaseAbove?: number;
     /** 내재가치(USD) — 표시용 목표가. 채점에 쓰지 않는다(TASK-164). hold 의 low/high 는 진입 밴드다. */
     fairValue?: number;
+    /** 외부 적정가(USD) — 모닝스타 또는 애널 목표가 현가. 우리 IV 의 거울(TASK-175). */
+    extFairValue?: number;
+    /** 외부 적정가 출처: "morningstar" | "analystPV" */
+    extSource?: string;
     /**
      * 이 밴드가 호라이즌 안에 체결될 확률(%) — 과거 낙폭 베이스레이트(tools/fill_probability.py).
      * "unknown" 은 상장 이력이 짧아 산출 불가라는 뜻이며, 0% 와 구분해야 한다.

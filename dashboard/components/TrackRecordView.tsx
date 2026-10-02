@@ -3,7 +3,7 @@ import { readJsonSafe } from "@/lib/fetch-json";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScoredCall, CallStatus, CallType, type HealthCheck } from "@/lib/calls";
 import { CALL_LABEL } from "@/lib/report-helpers";
-import { groupTheses, groupGoal, groupTarget, goalGapKey, type ThesisGroup, type RefreshFlag } from "@/lib/thesis-groups";
+import { groupTheses, groupGoal, groupTarget, goalGapKey, chaseBreaches, type ThesisGroup, type RefreshFlag } from "@/lib/thesis-groups";
 import { parseTranches, pricedTranches } from "@/lib/tranche";
 import type { Holding } from "@/lib/toss";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
@@ -50,7 +50,10 @@ import {
 
 // 표시 축 — '실제 들고 있는 것'과 '아직 안 산 것'은 읽는 목적이 다르다.
 // 보유는 "지금 어떻게 되고 있나", 관찰은 "언제 살 수 있나"(진입 래더까지 거리).
-type Axis = "all" | "held" | "watch";
+// 추격 금지 = 미보유 + 현재가가 추격 금지선을 넘음(카드의 노란 점). 지금은 어떤 차수도
+// 집행하지 않으니 관찰 목록에서 뺀다. 보유 종목은 넘어도 '보유 종목'에 남는다 — 실제로 돈이
+// 들어가 있으면 그게 먼저다.
+type Axis = "all" | "held" | "watch" | "chase";
 
 // 정렬 축. 라벨은 "무엇을 기준으로 세로로 읽을 것인가"를 그대로 말한다.
 type SortKey = "gap" | "health" | "ticker";
@@ -133,6 +136,13 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
     [holdings]
   );
 
+  // 종목 → 축. 보유가 최우선(추격 금지선을 넘어도 보유면 보유), 그다음 추격 금지선 초과 여부.
+  const axisOf = useCallback(
+    (g: ThesisGroup): Exclude<Axis, "all"> =>
+      heldTickers.has(g.ticker) ? "held" : chaseBreaches(g).length > 0 ? "chase" : "watch",
+    [heldTickers]
+  );
+
   // 종목별 논제 묶음 — 스킬별 최신 1건 중 살아있는 것들이 함께 온다.
   const groups = useMemo(() => groupTheses(calls ?? []), [calls]);
 
@@ -144,7 +154,7 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
     const list =
       axis === "all" || !holdingsReady
         ? groups
-        : groups.filter((g) => (axis === "held" ? heldTickers.has(g.ticker) : !heldTickers.has(g.ticker)));
+        : groups.filter((g) => axisOf(g) === axis);
 
     // 정렬 키를 종목당 하나 뽑는다. 값이 없는 종목은 항상 뒤로 보낸다 —
     // □(미산출)이 위에 섞이면 "가까운 순"이라는 약속이 깨진다.
@@ -173,9 +183,11 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
 
     // 보유 종목을 위로 올리는 건 '전체' 축에서만 — Array#sort 가 안정 정렬이라
     // 위에서 잡은 순서는 그대로 보존된다.
-    if (!holdingsReady || axis !== "all") return sorted;
-    return sorted.sort((a, b) => Number(heldTickers.has(b.ticker)) - Number(heldTickers.has(a.ticker)));
-  }, [axis, sort, groups, heldTickers, holdingsReady]);
+    // '전체'에서는 보유 → 관찰 → 추격 금지 순으로 세운다.
+    if (axis !== "all") return sorted;
+    const rank: Record<Exclude<Axis, "all">, number> = { held: 0, watch: 1, chase: 2 };
+    return sorted.sort((a, b) => rank[axisOf(a)] - rank[axisOf(b)]);
+  }, [axis, sort, groups, axisOf, holdingsReady]);
 
   const toggleTicker = useCallback((t: string) => {
     setOpenTickers((prev) => {
@@ -194,12 +206,17 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
     {
       id: "held",
       label: "보유 종목",
-      count: holdingsReady ? groups.filter((g) => heldTickers.has(g.ticker)).length : null,
+      count: holdingsReady ? groups.filter((g) => axisOf(g) === "held").length : null,
     },
     {
       id: "watch",
       label: "관찰 논제",
-      count: holdingsReady ? groups.filter((g) => !heldTickers.has(g.ticker)).length : null,
+      count: holdingsReady ? groups.filter((g) => axisOf(g) === "watch").length : null,
+    },
+    {
+      id: "chase",
+      label: "추격 금지",
+      count: holdingsReady ? groups.filter((g) => axisOf(g) === "chase").length : null,
     },
   ];
 
@@ -302,7 +319,9 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
             <div className="rounded-xl border border-dashed border-hairline bg-canvas-card px-5 py-8 text-center text-xs text-mute">
               {axis === "held"
                 ? "보유 종목 중 논제가 기록된 것이 없습니다."
-                : "관찰 논제가 없습니다 — 기록된 논제가 전부 보유 종목입니다."}
+                : axis === "chase"
+                  ? "추격 금지선을 넘은 관찰 종목이 없습니다."
+                  : "관찰 논제가 없습니다."}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 items-start">
@@ -399,14 +418,12 @@ function TickerCard({
   // 되는데, 그 사실을 펼쳐야만 알 수 있으면(LadderChart 안에만 있었다) 접은 채로
   // 훑다가 오집행한다. 다만 화면 정보량이 이미 많아 **빨간 점 하나**로만 표기하고,
   // 자세한 내용은 툴팁으로 내린다.
+  // 판정은 '추격 금지' 탭과 공용이다(lib/thesis-groups.ts chaseBreaches).
   const chaseBreach = useMemo(() => {
-    if (priceNow == null) return null;
-    const hits = group.active
-      .map((c) => ({ skill: c.skill, line: c.target?.noChaseAbove }))
-      .filter((x): x is { skill: string; line: number } => typeof x.line === "number" && priceNow > x.line);
+    const hits = chaseBreaches(group);
     if (hits.length === 0) return null;
-    return hits.map((h) => `${h.skill} 추격금지 ${fmtPrice(h.line)} 초과 (현재 ${fmtPrice(priceNow)})`).join(NL);
-  }, [group.active, priceNow]);
+    return hits.map((h) => `${h.skill} 추격금지 ${fmtPrice(h.line)} 초과 (현재 ${fmtPrice(h.priceNow)})`).join(NL);
+  }, [group]);
 
   return (
     <div className="rounded-2xl bg-canvas-card">
@@ -537,6 +554,17 @@ function TickerCard({
               <span className="block font-mono text-[10px] text-mute">
                 {target.price >= priceNow ? "+" : ""}
                 {(((target.price - priceNow) / priceNow) * 100).toFixed(0)}%
+              </span>
+            )}
+            {/* 외부 적정가(모닝스타 · 애널 목표가 현가) — 우리 IV 의 거울(TASK-175). 75~125% 밖이면 경고색. */}
+            {target?.ext != null && (
+              <span
+                className={`block font-mono text-[10px] ${
+                  target.price / target.ext.price < 0.75 || target.price / target.ext.price > 1.25 ? "text-warn" : "text-mute"
+                }`}
+                title={`${target.ext.source === "morningstar" ? "모닝스타 적정가" : "애널 평균 목표가 현가(÷1.08)"} — 우리 내재가치는 그 ${((target.price / target.ext.price) * 100).toFixed(0)}%`}
+              >
+                {target.ext.source === "morningstar" ? "MS" : "애널"} {fmtPrice(target.ext.price)}
               </span>
             )}
           </span>

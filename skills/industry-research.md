@@ -104,6 +104,10 @@ python3 tools/financial_rigor.py batch --spec '[
   (3단계 스캔 표와 4.0-a 정량표의 시총).
 - **4단계 E의 "안전마진 %"는 `three-scenario` 출력이 근거다.** 근거 없이 감으로 % 를 쓰거나,
   도구를 돌리지 않은 채 매번 "산정 불가"로 남기는 것 둘 다 이 절 위반이다.
+- 🔴 **안전마진의 분모는 `Intrinsic value (today)`(확률가중 3년 목표가 ÷ 1.08³)다.** 목표 PER 은
+  `python3 tools/pe_history.py {티커}` 기본값(Base = 10년 중앙값, 상한 30x)을 쓰고, 벗어나면 근거를 적는다
+  ([quality-tier.md](skills/quality-tier.md) 2.1단계 · 2026-10-02). 선정 후보는 `external_value.py` 로
+  외부 적정가와 한 번 대조한다(75~125% 밖이면 표에 표시).
 
 ---
 

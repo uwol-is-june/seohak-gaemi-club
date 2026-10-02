@@ -121,10 +121,19 @@ export function groupGoal(g: { active: ScoredCall[]; history: ScoredCall[] }): G
  */
 export function groupTarget(
   g: { active: ScoredCall[]; history: ScoredCall[] },
-): { price: number; source: "fairValue" | "targetHigh"; date: string } | null {
+): { price: number; source: "fairValue" | "targetHigh"; date: string; ext?: { price: number; source: string } } | null {
   for (const c of g.active) {
     const fv = c.target?.fairValue;
-    if (typeof fv === "number" && fv > 0) return { price: fv, source: "fairValue", date: c.date };
+    if (typeof fv === "number" && fv > 0) {
+      // 같은 콜에 기록된 외부 적정가를 함께 싣는다(TASK-175) — 다른 콜의 값과 섞으면 시점이 어긋난다.
+      const ext = c.target?.extFairValue;
+      return {
+        price: fv,
+        source: "fairValue",
+        date: c.date,
+        ...(typeof ext === "number" && ext > 0 ? { ext: { price: ext, source: c.target?.extSource ?? "external" } } : {}),
+      };
+    }
   }
   const lead = g.active[0] ?? g.history[0];
   if (lead && (lead.call === "buy" || lead.call === "keep")) {
@@ -267,8 +276,8 @@ export function bandDrift(
   if (c.elapsedDays < FRESH_BAND_DAYS) return null;
   const high = c.target?.high;
   if (c.priceNow == null || typeof high !== "number" || high <= 0) return null;
-  // 원장에 요구 MOS 가 없으면 **티어 상한**으로 폴백한다(CLAUDE.md "없으면 티어 상한 T1 15%·
-  // T2 30%·T3 40%") — TASK-148. 예전엔 null 을 돌려 MOS 를 안 적은 콜은 판정 대상에서 조용히 빠졌다.
+  // 원장에 요구 MOS 가 없으면 **티어 상한**으로 폴백한다(CLAUDE.md "없으면 티어 상한 T1 10%·
+  // T2 20%·T3 40%" — 2026-10-02 보정, TASK-177) — TASK-148. 예전엔 null 을 돌려 MOS 를 안 적은 콜은 판정 대상에서 조용히 빠졌다.
   const recorded = typeof c.requiredMosPct === "number" && Number.isFinite(c.requiredMosPct);
   const mos = recorded ? (c.requiredMosPct as number) : c.tier ? TIER_MAX_MOS[c.tier] : null;
   if (mos == null) return null;
@@ -276,8 +285,31 @@ export function bandDrift(
   return driftPct > mos ? { driftPct, requiredMosPct: mos, mosFromTier: !recorded } : null;
 }
 
-/** 티어별 요구 MOS 상한(%) — skills/quality-tier.md. tools/record_call.py TIER_MOS_RANGE 의 상단과 같다. */
-const TIER_MAX_MOS: Record<"T1" | "T2" | "T3", number> = { T1: 15, T2: 30, T3: 40 };
+/**
+ * 티어별 요구 MOS 상한(%) — skills/quality-tier.md. tools/record_call.py TIER_MOS_RANGE 의 상단과 같다.
+ * 2026-10-02 보정(TASK-177): T1 15→10 · T2 30→20 · T3 40 유지.
+ */
+const TIER_MAX_MOS: Record<"T1" | "T2" | "T3", number> = { T1: 10, T2: 20, T3: 40 };
+
+/** 외부 적정가 대비 허용 범위 — tools/external_value.py · record_call.py 게이트 5 와 같은 경계. */
+const EXT_GAP_LOW = 0.75;
+const EXT_GAP_HIGH = 1.25;
+
+/**
+ * 외부 적정가 이탈 (TASK-175) — 우리 내재가치가 모닝스타(또는 애널 목표가 현가)의 75~125% 밖이면
+ * 해명이 필요하다. 2026-10-02 진단에서 IV 가 외부의 61~66%까지 벌어진 종목(SAP·TSM)이 있었는데
+ * 기록에 외부 기준이 없어 아무도 보지 못했다. 이탈 자체는 오류가 아니다 — 해명 없는 이탈이 오류다.
+ */
+export function externalGap(
+  c: ScoredCall
+): { ratio: number; ext: number; source: string; side: "conservative" | "optimistic" } | null {
+  const iv = c.target?.fairValue;
+  const ext = c.target?.extFairValue;
+  if (typeof iv !== "number" || typeof ext !== "number" || iv <= 0 || ext <= 0) return null;
+  const ratio = iv / ext;
+  if (ratio >= EXT_GAP_LOW && ratio <= EXT_GAP_HIGH) return null;
+  return { ratio, ext, source: c.target?.extSource ?? "external", side: ratio < EXT_GAP_LOW ? "conservative" : "optimistic" };
+}
 
 /**
  * `target.high` 와 래더 1차 가격이 어긋나는가 — tools/record_call.py 게이트 4 와 같은 규칙(0.5% 초과).
@@ -324,6 +356,13 @@ export function detectRefresh(active: ScoredCall[], conflicted: boolean): Refres
         reasons.push(`밴드 이탈 +${drift.driftPct.toFixed(1)}% > ${mosLabel} — 재산출 강제`);
       }
     }
+    const gap = externalGap(c);
+    if (gap != null) {
+      const src = gap.source === "morningstar" ? "모닝스타" : gap.source === "analystPV" ? "애널 목표가 현가" : gap.source;
+      reasons.push(
+        `내재가치가 ${src} ${fmt(gap.ext)} 의 ${(gap.ratio * 100).toFixed(0)}% — ${gap.side === "conservative" ? "보수" : "낙관"} 이탈, 논제에 해명 필요`
+      );
+    }
     if (reasons.length > 0) flags.push({ skill: c.skill, date: c.date, reasons });
   }
   return flags;
@@ -333,6 +372,21 @@ export function detectRefresh(active: ScoredCall[], conflicted: boolean): Refres
  * 콜 원장(최신순 정렬 전제) → 종목별 논제 묶음.
  * 정렬은 /api/calls 가 이미 date·recordedAt 최신순으로 해서 준다.
  */
+/**
+ * 추격 금지선 초과 — 살아있는 논제 중 현재가가 `target.noChaseAbove` 를 넘은 것들.
+ *
+ * 이 선을 넘으면 어떤 차수도 활성화되지 않는다(가격이 닿아도 사지 않는다).
+ * 카드의 노란 점과 '추격 금지' 탭이 **같은 판정**을 쓰도록 여기 하나로 둔다.
+ * 🔴 보유 여부는 여기서 보지 않는다 — 보유 종목이면 넘어도 '보유 종목'에 남는 건 화면의 몫이다.
+ */
+export function chaseBreaches(g: { active: ScoredCall[] }): { skill: string; line: number; priceNow: number }[] {
+  const priceNow = g.active[0]?.priceNow;
+  if (priceNow == null) return [];
+  return g.active
+    .map((c) => ({ skill: c.skill, line: c.target?.noChaseAbove, priceNow }))
+    .filter((x): x is { skill: string; line: number; priceNow: number } => typeof x.line === "number" && priceNow > x.line);
+}
+
 export function groupTheses(calls: ScoredCall[]): ThesisGroup[] {
   const byTicker = new Map<string, ScoredCall[]>();
   for (const c of calls) {

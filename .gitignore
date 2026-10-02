@@ -39,3 +39,6 @@ data/_lab/cache/
 
 # 실험실 주간 자동 실행 로그 (schedule_lab_pick.ps1)
 logs/lab-pick/
+
+# Playwright MCP 점검 산출물(스크린샷·페이지 스냅샷) — 대시보드 화면에 잔고 등 개인정보가 담길 수 있어 공개 저장소에 올리지 않는다
+.playwright-mcp/

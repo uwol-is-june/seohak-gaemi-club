@@ -56,6 +56,7 @@ reports/
 | /thesis-tracker | `{티커}/{티커}-thesis.md` (장기 유지) | `reports/AAPL/AAPL-thesis.md` |
 | /portfolio-review | `portfolio-latest.md` (루트, 지속 업데이트) | `reports/portfolio-latest.md` |
 | /article-cards | **보고서가 아니다** — 카드 데이터는 `tools/cards/{slug}.json`, 산출물은 `assets/cards/{slug}/` (PNG + `caption.md`) | `assets/cards/spcx-20260810/` |
+| /lab-pick | `lab/lab-pick-{YYYYMMDD}.md` — `lab/` 은 티커 폴더가 아니다(종목 목록 제외). 섹터 마커 넣지 않음 | `reports/lab/lab-pick-20261005.md` |
 
 ## /investment-team 파일 구조
 
@@ -98,6 +99,7 @@ reports/{티커}/
 | `/investment-checklist` (종목 1개) | 2~5M |
 | `/quality-screen` · `/thesis-tracker` · `/news-pulse` (종목 1개) | 1~3M |
 | `/article-cards` (아티클 1건 → 카드뉴스) | **300K 이하** (변환기 — 웹 조사 없음) |
+| `/lab-pick` (실험실 주간 추천 1회) | **1~3M** (서브에이전트 없음 · 기계 순위 상위 5개 결격 검증) |
 
 범위를 크게 넘고 있으면 재시도 루프나 손자 에이전트가 도는 것이다 — 멈추고 원인을 본다.
 (근거: 2026-07-31 실측. `/investment-team CEG` 1회에 50.4M, 그중 58%가 재시도 폐기분.
@@ -194,6 +196,8 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 | `reports/track-record.md` | 사람이 읽는 요약 — 보유 포지션 / **관찰 논제(관망)** / 매매 로그 / 청산 | 두 표는 **자동 생성**(`tools/render_track_record.py`) · 매매 로그·서술만 손 편집 |
 
 - 콜을 내는 스킬: `/thesis-tracker`, `/investment-team`, `/investment-checklist`, `/earnings-team`.
+  - **실험실 `/lab-pick` 은 여기 기록하지 않는다** — 별도 기록부 `data/lab-calls.jsonl`(`tools/lab_record.py`)에
+    쓴다. 기존 시스템과 독립된 두 번째 의견이라 기존 채점·충돌 판정·track-record.md 에 섞이면 안 된다(docs/LAB-SPEC.md).
   각 스킬 문서의 "트랙레코드 기록(필수)" 절차를 보고서 저장 직후 실행한다.
 - 🔴 **`track-record.md` 의 '보유 포지션'·'관찰 논제' 표는 손으로 고치지 않는다**(TASK-172).
   `<!-- auto:positions|watchlist:begin/end -->` 마커 사이를 `record_call.py` 가 기록 직후,
@@ -243,7 +247,7 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 | 반드시 적을 것 | 예 |
 |---|---|
 | **차수 · 가격 · 비중** | `1차 ≤$185 (25%) · 2차 ≤$165 (35%) · 3차 ≤$148 (40%)` |
-| **차수별 AND 조건** | `1차: 10-Q 매출 YoY +8% 이상 · 2차: 가이던스 하향 없음 · 3차: 조건 없음` |
+| **차수별 AND 조건** | `1차: 조건 없음(T1·T2) · 2차: 10-Q 매출 YoY +8% 이상 · 3차: 가이던스 하향 없음` |
 | **추격 금지선** | `>$237 (현재 17.5% 초과 → 전 차수 미활성)` |
 | **호라이즌** | `24M` |
 
@@ -253,13 +257,18 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 
 - **AND 조건이 붙은 차수는 가격만 닿아도 집행하지 않는다** — 조건 미충족이면 조건 없는
   최하단 차수까지 기다린다. 이 규칙을 표에 명시해야 나중에 가격만 보고 오집행하지 않는다.
+- 🔴 **T1·T2 의 1차에는 AND 조건을 걸지 않는다**(2026-10-02). "가격이 닿아도 조건 미충족이면
+  안 산다"가 우량주를 영원히 못 사게 만든 가장 흔한 경로였다(AMZN·QLYS·ADBE 1차가 전부 조건부).
+  1차의 방어선은 레드라인 미발동이다. 확인이 필요한 가정은 2차 이하로 내린다. (예외: 보유 종목
+  증액 래더에서 건강도 6/10 이하로 약화됐을 때.) T3 는 지금처럼 사이클 확인 조건을 건다.
 - 🔴 **1차 차수는 퀄리티 티어가 정한다**(`skills/quality-tier.md`):
   **T1 컴파운더는 1차를 "스타터"로 둔다** — 현재가 ~ 매수 상한 사이, 비중 10~20%,
-  **조건 없음(즉시 집행 가능)**. T2는 매수 상한 이하에서 25~35%, T3는 밴드 하단 위주에
+  **조건 없음(즉시 집행 가능)**. **T2는 현재가 ≤ 내재가치면 스타터 10~15%**(2026-10-02),
+  아니면 매수 상한 이하에서 25~35%, T3는 밴드 하단 위주에
   사이클 확인 조건 필수. 최상급 컴파운더는 가격이 아니라 사업 품질이 방어선이라,
   완벽한 가격을 기다리다 영영 못 사는 쪽의 비용이 더 크다(2026-07-24 ADBE 1주 토우인이
   유일하게 옳았던 패턴).
-  단서: **절대 고평가 게이트 통과가 전제**이고(현재가 > 낙관목표 / 25x PER 연환산 <10% /
+  단서: **절대 고평가 게이트 통과가 전제**이고(현재가 > 낙관목표 / 25x PER 연환산 <8% /
   하방>상방 중 하나라도 걸리면 스타터 없음), **남은 80~90%는 반드시 아래로 래더를 깐다**
   (1차에 절반 이상을 실으면 스타터가 아니라 그냥 매수다).
 - 아직 차수를 나누지 않았거나 추격금지선을 안 정했으면 **⬛로 남기고 "다음 검토 때 산출"이라고
@@ -287,16 +296,18 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 > python3 tools/record_call.py --ticker XYZ --skill thesis-tracker --call hold \
 >   --conviction "★★★★☆" --health 7 \
 >   --health-check "10-Q 매출 YoY +8% 이상 | 충족" "가이던스 하향 없음 | 미정" \
->   --tier T2 --required-mos 25 \
+>   --tier T2 --required-mos 15 \
+>   --fair-value 218 --ext-fair-value 240 --ext-source morningstar \
 >   --target-low 148 --target-high 185 --horizon-months 24 \
 >   --fill-probability 18 --low-fill-plan catalyst-wait \
->   --tranche "1차 ≤\$185 (25%) — AND 10-Q 매출 YoY +8% 이상" \
->            "2차 ≤\$165 (35%) — AND 가이던스 하향 없음" \
->            "3차 ≤\$148 (40%) — 조건 없음" \
+>   --tranche "1차 ≤\$185 (25%) — 조건 없음" \
+>            "2차 ≤\$165 (35%) — AND 10-Q 매출 YoY +8% 이상" \
+>            "3차 ≤\$148 (40%) — AND 가이던스 하향 없음" \
 >   --no-chase 237
 > ```
 >
 > `--target-high` 는 1차 가격과 **같은 숫자**다(게이트 4). `--health` 는 값이 그대로여도 매번 넘긴다.
+> `--fair-value` 는 **오늘 가치(현가 IV)**, `--ext-fair-value` 는 `external_value.py` 산출값이다(게이트 5).
 >
 > 차수를 아직 안 나눴으면 `--tranche`를 생략한다(빈 값·추정 금지). 화면에는 밴드만 뜬다.
 
@@ -314,10 +325,11 @@ python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24
 ```
 
 - **25% 미만이면 밴드가 실행 계획이 아니라 장식이다.** `--low-fill-plan` 으로 대응을 강제한다:
-  `starter`(1차를 현재가 근처 소액으로 · T1 컴파운더만) · `catalyst-wait`(포지션 없음·촉매 대기) ·
+  `starter`(1차를 현재가 근처 소액으로 · T1·T2) · `catalyst-wait`(포지션 없음·촉매 대기) ·
   `widen-horizon`(호라이즌 연장).
 - **요구 안전마진은 종목 종류마다 다르다** — `skills/quality-tier.md` 참조.
-  T1 컴파운더 0~15% · T2 우량 안정 15~30% · T3 시클리컬·턴어라운드·저품질 30~40%.
+  T1 컴파운더 **0~10%** · T2 우량 안정 **10~20%** · T3 시클리컬·턴어라운드·저품질 30~40%
+  (2026-10-02 보정 — 내재가치가 이미 "연 8% 기대수익 가격"이라 MOS 는 그 위의 초과 할인이다).
   티어는 **감으로 매기지 말고 `python3 tools/quality_tier.py {티커} --moat {★}` 로 판정**하고
   (5개 축 중 4개를 기계가 확정한다), 콜에 `--tier`/`--required-mos` 를 함께 박제한다.
 - 🔴 **체결확률이 낮다고 밴드를 주가에 맞춰 올리지 않는다.** 내재가치는 그대로 두고 진입
@@ -338,7 +350,7 @@ python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24
 | ② **밸류에이션 괴리** | **현재가 / 내재가치 > 100%** | 산술로 못 고친다 → 🔴 **스킬 재실행 필요로 표기**하고 `/thesis-tracker` 모드 B 재실행 |
 
 - **재산출 강제 트리거는 티어 상대다**: `이탈률 > 원장에 기록된 요구 MOS`
-  (없으면 티어 상한 T1 15%·T2 30%·T3 40%). 이탈률은 원장 `target.high` 기준으로 잰다.
+  (없으면 티어 상한 T1 10%·T2 20%·T3 40%). 이탈률은 원장 `target.high` 기준으로 잰다.
   기존 "+20% 고정"은 폐기 — 그 자체가 "전부 똑같이 보수적"이라는 같은 병이었다.
   대시보드가 이 판정을 자동으로 하고 **'갱신 필요 /스킬'** 칩으로 띄운다(`dashboard/lib/thesis-groups.ts` `bandDrift`).
   🔴 **최근 30일 내 재산출한 밴드는 제외**한다 — 재산출 결론이 `catalyst-wait`면 밴드는 여전히
@@ -352,6 +364,27 @@ python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24
   전부 참이면 재산출 강제. 매수 지시가 아니라 **재검산 지시**다.
 - 관망 표에는 **`SPY 대비 초과 __pp`를 숫자로** 남긴다. 안 적으면 기다린 비용이 안 보인다.
 
+### 🔴 내재가치 산정 기본값과 보정 목표 (2026-10-02 · `skills/quality-tier.md` 0·2.1·2.2·2.7단계)
+
+관망·보유 11종목을 공통 척도(0 = 그레이엄 공식 · 100 = 애널 최고 목표가 · 시장가 ≈ 51)로 재 보니
+**가치 판단 43점 · 매수선 26점**이었다(버핏 추정 37~51 / 28~42, 모닝스타 69). 원인은 MOS 가 아니라
+내재가치 단계에 근거 없이 쌓인 보수성이었다 — 목표 PER 을 현재보다 낮게 기본 설정 · 두꺼운 Bear ·
+IV 정의 혼재(3년 목표가 vs 현가) · 하향만 찾는 감사. 우리가 안 산 돈의 대안은 국채가 아니라 **SPY**다.
+
+| 규칙 | 내용 |
+|---|---|
+| **내재가치 = 오늘 가치** | 확률가중 3년 목표가 ÷ 1.08³. `financial_rigor.py three-scenario` 가 `Intrinsic value (today)` 로 출력. DCF 할인율 8%(티어 무관) |
+| **목표 PER 기본값** | `python3 tools/pe_history.py {티커}` — Base 10년 중앙값 · Bull 75분위 · Bear 10년 최저 · 상한 30x. 낮추려면 "체질 변화" 근거 |
+| **확률 · 성장률** | 25/50/25 · Base 성장률 = 컨센서스 ±5pp. 벗어나면 근거(양방향) |
+| **외부 교차점검** | `python3 tools/external_value.py {티커} --iv {IV}` — 모닝스타(없으면 애널 목표가 ÷1.08)의 75~125% 밖이면 가정별 해명. `--ext-fair-value` 로 기록 |
+| **양방향 감사** | 감사·재산정은 ⬇ 과대평가 의심과 ⬆ 과소평가 의심을 같은 표에 함께 출력 |
+| **보정 목표** | 가치 판단 **55~65점**(IV/현재가 1.04~1.15) · T1·T2 매수선 **45~52점**(0.93~1.00). `python3 tools/calibration_check.py --live --record` 로 분기마다 측정·누적(기준점 2026-10-02: 53점·49점) |
+
+- 🔴 **보정 이전(2026-10-02 전) 논제는 다음 `/thesis-tracker` 모드 B 에서 이탈률과 무관하게 전환
+  재산정한다**(thesis-tracker B4.5 ①-0). 그 전까지 기록부의 내재가치·래더는 옛 기준이다.
+- 🔴 **목표는 바스켓 중앙값이지 종목별 할당량이 아니다.** 개별 종목 IV 를 목표 범위나 외부 값에
+  맞추려고 가정을 역산하면 그건 보정이 아니라 추격이다. 벗어나면 기본값을 고친다.
+
 ### ⚠️ 스킬 설치본 동기화
 
 콜 기록 단계는 `skills/`에만 있고 `~/.claude/commands/`가 구버전이면 **실행되지 않는다**
@@ -364,7 +397,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-ti
 
 > 🔴 **두 번째 줄을 빼지 말 것.** `skills/` 의 이 4개는 실행 스킬이 아니라 **공용 표준 문서**다
 > (다른 스킬이 `skills/xxx.md` 경로로 참조한다). 슬래시 커맨드로 설치하면 호출해도 하는 일이
-> 없으면서 오발동 대상만 늘린다. 설치 대상은 **실행 스킬 13개**다.
+> 없으면서 오발동 대상만 늘린다. 설치 대상은 **실행 스킬 14개**다.
 
 ## GitHub 운영 (코드 전용)
 
@@ -398,13 +431,19 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-ti
 > 아래 명령은 전부 **저장소 루트에서** 실행한다.
 
 ```bash
-# Skills 설치 / 재설치 (실행 스킬 13개만 — 공용 표준 문서 4종 제외)
+# Skills 설치 / 재설치 (실행 스킬 14개만 — 공용 표준 문서 4종 제외)
 mkdir -p ~/.claude/commands
 cp skills/*.md ~/.claude/commands/
 rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-tier}.md
 
 # 퀄리티 티어 판정 (SEC XBRL · 5개 축 중 4개를 기계 확정) — 밸류에이션보다 먼저 돌린다
 python3 tools/quality_tier.py GOOGL --moat 4
+
+# 목표 PER 기본값(10년 PER 분포) · 외부 적정가 교차점검 · 보수성 보정 측정 (2026-10-02)
+python3 tools/pe_history.py GOOGL
+python3 tools/external_value.py GOOGL --iv 314
+python3 tools/calibration_check.py --live --record   # 분기 1회 측정을 data/calibration.jsonl 에 누적
+python3 tools/calibration_check.py --history         # 분기별 추이 (TASK-180)
 
 # 진입 밴드 체결확률(과거 낙폭 베이스레이트) 산출 — hold 콜 기록 전 필수
 python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24

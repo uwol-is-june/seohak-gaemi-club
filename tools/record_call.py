@@ -24,7 +24,7 @@ thesis-tracker 스킬이 buy/hold/avoid 판정을 낼 때 이 도구로 콜을 �
     # 관망(hold) 콜 — 진입 밴드가 있으면 체결확률이 필수다(TASK-99):
     python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24
     python tools/record_call.py --ticker CEG --skill thesis-tracker --call hold \
-        --tier T2 --required-mos 25 \
+        --tier T2 --required-mos 15 \
         --target-low 148 --target-high 185 --horizon-months 24 \
         --fill-probability 0 --low-fill-plan catalyst-wait
 """
@@ -62,7 +62,12 @@ LOW_FILL_THRESHOLD = 25.0
 VALID_LOW_FILL_PLANS = ("starter", "catalyst-wait", "widen-horizon")
 
 # 티어별 요구 안전마진 범위(%) — skills/quality-tier.md. 범위 밖이면 티어 판정과 MOS 가 어긋난 것이다.
-TIER_MOS_RANGE = {"T1": (0.0, 15.0), "T2": (15.0, 30.0), "T3": (30.0, 40.0)}
+# 2026-10-02 보정(TASK-177): T1 0~15 → 0~10 · T2 15~30 → 10~20 · T3 유지.
+TIER_MOS_RANGE = {"T1": (0.0, 10.0), "T2": (10.0, 20.0), "T3": (30.0, 40.0)}
+# 외부 적정가 교차점검(TASK-175) — tools/external_value.py 와 같은 경계.
+VALID_EXT_SOURCES = ("morningstar", "analystPV")
+EXT_GAP_LOW = 0.75
+EXT_GAP_HIGH = 1.25
 
 # 논제(건강도)를 다루는 스킬 — 이 스킬의 콜이나 keep/hold 콜은 --health 가 빠지면 경고한다.
 THESIS_SKILLS = ("thesis-tracker", "investment-team", "investment-checklist")
@@ -227,6 +232,13 @@ def build_call(args: argparse.Namespace) -> dict:
 
     if args.fair_value is not None and args.fair_value <= 0:
         sys.exit(f"오류: --fair-value 는 양수(USD)여야 합니다: {args.fair_value}")
+    ext_source = args.ext_source.strip() if args.ext_source else None
+    if args.ext_fair_value is not None:
+        if args.ext_fair_value <= 0:
+            sys.exit(f"오류: --ext-fair-value 는 양수(USD)여야 합니다: {args.ext_fair_value}")
+        if ext_source not in VALID_EXT_SOURCES:
+            sys.exit(f"오류: --ext-fair-value 에는 --ext-source {VALID_EXT_SOURCES} 가 필요합니다.")
+    _check_external_gap(args.fair_value, args.ext_fair_value, ext_source, call, ticker)
 
     if args.target_low is not None and args.target_high is not None and args.target_low > args.target_high:
         sys.exit(f"오류: --target-low {args.target_low} 가 --target-high {args.target_high} 보다 큽니다.")
@@ -280,7 +292,7 @@ def build_call(args: argparse.Namespace) -> dict:
     # target-low/high 없이 --tranche 만 넘기는 경우가 있는데, 예전엔 조건에서 빠져 조용히 버려졌다.
     if any(v is not None for v in (
         args.target_low, args.target_high, args.horizon_months,
-        args.tranche, args.no_chase, args.fair_value, fill, low_fill_plan,
+        args.tranche, args.no_chase, args.fair_value, args.ext_fair_value, fill, low_fill_plan,
     )):
         target: dict = {}
         if args.target_low is not None:
@@ -300,7 +312,12 @@ def build_call(args: argparse.Namespace) -> dict:
         if args.fair_value is not None:
             # 내재가치(USD) — 표시용(대시보드 목표가 칸). 채점에는 쓰지 않는다(TASK-164).
             # hold 의 low/high 는 진입 밴드라 목표가가 아니므로, 목표가는 이 필드로만 전달된다.
+            # 🔴 정의: **오늘 가치**(연 8% 현가) — 3년 목표가를 그대로 넣지 않는다(TASK-176).
             target["fairValue"] = args.fair_value
+        if args.ext_fair_value is not None:
+            # 외부 적정가(모닝스타 또는 애널 목표가 현가) — 우리 IV 의 거울(TASK-175).
+            target["extFairValue"] = args.ext_fair_value
+            target["extSource"] = ext_source
         if fill is not None:
             # "unknown"은 문자열 그대로 박제한다 — 0% 로 뭉개면 "확률이 0"과 구분이 사라진다.
             target["fillProbability"] = fill
@@ -347,7 +364,7 @@ def _check_band_gates(
             shown = "unknown" if fill == "unknown" else f"{fill}%"
             sys.exit(f"""오류: 체결확률 {shown} — 이 밴드는 실행 계획이 아니라 장식입니다.
   --low-fill-plan 으로 대응을 명시하세요:
-    starter        1차를 현재가 근처 소액 스타터로 올린다 (T1 컴파운더만)
+    starter        1차를 현재가 근처 소액 스타터로 올린다 (T1·T2 — 2026-10-02 보정)
     catalyst-wait  '포지션 없음 · 촉매 대기'로 솔직히 적는다
     widen-horizon  호라이즌을 늘려 밴드를 정당화한다""")
 
@@ -374,6 +391,29 @@ def _check_band_gates(
    대시보드는 target.high 로 채점하고 사람은 1차를 읽습니다 — 두 값이 갈리면
    같은 종목이 화면과 문서에서 정반대로 보입니다(skills/quality-tier.md 2.5단계).
    1차 = 가장 먼저 닿는 가격이므로 보통 --target-high 와 같아야 합니다.""")
+
+
+def _check_external_gap(iv: float | None, ext: float | None, source: str | None,
+                        call: str, ticker: str) -> None:
+    """게이트 5 (TASK-175): 우리 IV 가 외부 적정가와 25% 넘게 벌어지면 경고한다.
+
+    2026-10-02 진단: 시스템 IV 가 모닝스타 적정가의 중앙값 88%였고 SAP 61%·TSM 66% 까지 벌어졌는데
+    아무도 몰랐다 — 외부 기준이 기록에 없었기 때문이다. 외부 기준은 정답이 아니라 거울이다.
+    이탈 자체는 허용하되 **해명 없는 이탈**을 막는다(skills/quality-tier.md 2.2단계).
+    """
+    if call == "avoid":
+        return
+    if iv is not None and ext is None:
+        print("⚠️ 경고: --fair-value 에 외부 교차점검(--ext-fair-value)이 없습니다.\n"
+              f"   python3 tools/external_value.py {ticker} --iv {iv:g} 로 산출해 함께 넘기세요.")
+        return
+    if iv is None or ext is None:
+        return
+    ratio = iv / ext
+    if ratio < EXT_GAP_LOW or ratio > EXT_GAP_HIGH:
+        side = "보수" if ratio < EXT_GAP_LOW else "낙관"
+        print(f"⚠️ 경고: 내재가치 ${iv:,.2f} 가 외부 적정가({source}) ${ext:,.2f} 의 {ratio * 100:.0f}% — {side} 이탈.\n"
+              "   논제에 '왜 외부와 다른가'를 가정별(성장률·목표 PER·확률·할인율)로 해명했는지 확인하세요.")
 
 
 def _tranche_price(text: str) -> float | None:
@@ -458,7 +498,11 @@ def build_parser() -> argparse.ArgumentParser:
                     help="퀄리티 티어 T1|T2|T3 (skills/quality-tier.md). 요구 MOS가 티어별로 "
                          "다르므로 사후 채점을 위해 함께 박제한다")
     ap.add_argument("--required-mos", type=float, default=None,
-                    help="티어별 요구 안전마진(%%). T1 0~15 · T2 15~30 · T3 30~40")
+                    help="티어별 요구 안전마진(%%). T1 0~10 · T2 10~20 · T3 30~40 (2026-10-02 보정)")
+    ap.add_argument("--ext-fair-value", type=float, default=None,
+                    help="외부 적정가(USD) — python3 tools/external_value.py 산출값. 우리 IV 의 거울")
+    ap.add_argument("--ext-source", default=None,
+                    help="외부 적정가 출처: morningstar | analystPV (애널 평균 목표가 ÷1.08)")
     ap.add_argument("--fill-probability", default=None,
                     help="진입 밴드가 호라이즌 안에 체결될 확률(%%) 또는 'unknown'. "
                          "python3 tools/fill_probability.py 로 산출한다. "
@@ -490,6 +534,8 @@ def main() -> None:
             tgt += f" · 래더 {len(t['tranches'])}줄"
         if "fairValue" in t:
             tgt += f" · 내재가치 ${t['fairValue']:,.2f}"
+        if "extFairValue" in t:
+            tgt += f" · 외부 ${t['extFairValue']:,.2f}({t.get('extSource')})"
         if "fillProbability" in t:
             fp = t["fillProbability"]
             tgt += f" · 체결확률 {fp if fp == 'unknown' else str(fp) + '%'}"

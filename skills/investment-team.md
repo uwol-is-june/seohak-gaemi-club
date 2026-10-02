@@ -144,10 +144,22 @@ TeamCreate가 **사용 가능한 경우에만** 팀을 생성합니다:
      판정하고, 판정 근거 5개 축 수치를 표로 남긴다(결론만 쓰면 무효).
      **감으로 매기지 말고 도구로 돌린다**: `python3 tools/quality_tier.py {티커} --moat {★}`
      (4개 축은 기계가 확정한다).
-     ⓑ 티어별 요구 MOS를 확정한다 — **T1 0~15% · T2 15~30% · T3 30~40%**.
+     ⓑ 티어별 요구 MOS를 확정한다 — **T1 0~10% · T2 10~20% · T3 30~40%** (2026-10-02 보정).
      ⓒ 내재가치(Intrinsic Value) vs 현재 주가로 현재 안전마진을 구하고 요구 MOS와 비교한다.
+     🔴 **내재가치 산정 기본값 (2026-10-02 · 근거 없이 벗어나지 않는다 — 벗어나면 이유를 문장으로)**:
+        - **내재가치 = 오늘 가치** = 확률가중 3년 목표가 ÷ 1.08³ (three-scenario 가 `Intrinsic value (today)` 로
+          출력한다). 3년 목표가를 그대로 내재가치로 쓰지 않는다. DCF 는 할인율 8%·영구성장 2.5%,
+          **할인율은 티어와 무관하게 8%** — 위험은 MOS 에서 한 번만 반영한다.
+        - **목표 PER = `python3 tools/pe_history.py {티커}` 의 기본값** (Bull 75분위 · Base 10년 중앙값 ·
+          Bear 10년 최저, 상한 30x). Base 를 중앙값보다 낮추려면 "체질 변화" 근거를 적는다
+          ("보수적으로"·"평균 회귀"는 근거가 아니다).
+        - **Base 성장률**은 애널 컨센서스 3년 EPS 성장 또는 5~10년 CAGR ±5pp. **확률은 25/50/25** —
+          Bear 를 25% 넘게 주려면 관측 가능한 트리거 사건과 근거를 적는다.
+        - **외부 교차점검**: `python3 tools/external_value.py {티커} --iv {IV}` — 모닝스타(없으면 애널 목표가
+          ÷1.08)의 75~125% 밖이면 가정별 해명 표(성장률·목표 PER·확률·할인율)를 넣는다. 외부 값에 맞추려고
+          가정을 역산하지 않는다.
      ⓓ **절대 고평가 게이트**(티어 무관 하드 거부)를 점검한다: 현재가 > 낙관목표 / 10년 25x PER
-     매도 시 연환산 <10% / 하방 손실 > 상방 이익(**크기 비교 · 확률 가중 금지**) — 하나라도 걸리면 `buy` 금지.
+     매도 시 연환산 <8% / 하방 손실 > 상방 이익(**크기 비교 · 확률 가중 금지**) — 하나라도 걸리면 `buy` 금지.
      🔴 ④는 **EPS가 아니라 순이익**으로, 깊이가 아니라 **급감 에피소드 수와 회복 연수**로 잰다
      (EPS는 액면분할에, 깊이는 COVID 단발 충격에 오염된다 — 2026-09-14 실측에서 이 오류로
      8종목이 전부 T3가 됐다). 회복이 2년 초과·미회복인 급감이 있거나 에피소드 3회 이상이면 T3.
@@ -158,13 +170,15 @@ TeamCreate가 **사용 가능한 경우에만** 팀을 생성합니다:
      **`batch` 서브커맨드로 한 번에 실행한다** (출력은 개별 실행과 동일):
 
      ```bash
+     python3 tools/pe_history.py {티커} && \
      python3 tools/financial_rigor.py batch --spec '[
        {"cmd":"verify-market-cap","price":{주가},"shares":{발행주식수},"reported":{보고된 시가총액},"currency":"USD"},
        {"cmd":"verify-valuation","price":{주가},"eps":{EPS},"bvps":{BPS}},
        {"cmd":"cross-validate","field":"{항목}","values":{JSON},"unit":"{단위}"},
        {"cmd":"three-scenario","price":{주가},"eps":{EPS},"shares":{발행주식수(B)},
-        "growth":[{낙관},{중립},{비관}],"pe":[{낙관PER},{중립PER},{비관PER}]}
-     ]'
+        "growth":[{낙관},{중립},{비관}],"pe":[{Bull=75분위},{Base=10년 중앙값},{Bear=10년 최저}],
+        "probs":[0.25,0.5,0.25]}
+     ]' && python3 tools/external_value.py {티커} --iv {three-scenario 의 Intrinsic value}
      ```
 
      - 교차검증할 항목이 여럿이면 `cross-validate` 스텝을 배열에 더 넣는다(여전히 호출 1회).
@@ -189,6 +203,8 @@ TeamCreate가 **사용 가능한 경우에만** 팀을 생성합니다:
         -->
 
     - 이 역할에서 흔한 할인 항목: 터미널 성장률 보수화 · 할인율 상향 · 목표 PER 하향 · 요구 안전마진
+      🔴 이 중 **목표 PER 을 10년 중앙값 아래로 · 할인율을 8% 위로 · Bear 확률을 25% 위로** 잡은 것은
+      전부 기본값 이탈이므로 반드시 항목으로 적고 근거를 단다(2026-10-02).
     - 깎지 않았으면 `items: []` · `total: 0` 으로 **명시**한다(빈칸 금지).
     - 숫자로 못 내는 정성 할인(예: 해자 ★4→★3)은 `pct: ⬛` 로 두고 평점 하락폭을 `name` 에
       적는다. 지어내지 않는다.
@@ -441,6 +457,15 @@ ls -la reports/{티커}/0*.md 2>/dev/null
    감사만 하고 숫자를 안 고치면 감사가 아니다.
 5. 반대로 **할인이 과소한 경우도 지적한다** — 강세 변론(01)이 근거 없이 낙관을 밀었으면
    여기서 잡는다. 이 절의 목적은 "덜 깎기"가 아니라 **"깎은 이유를 전부 드러내기"**다.
+6. 🔴 **양방향 감사 표를 반드시 출력한다**(quality-tier.md 2.7단계 · 2026-10-02). 감사가 낙관 편향만
+   찾으면 반복할수록 숫자가 한쪽으로 밀린다(실측: 하향 정정 7건 vs 상향 1건). 한쪽이 "없음"이어도 칸을 채운다.
+
+   | 방향 | 점검 항목 | 발견 | 조치 |
+   |------|----------|------|------|
+   | ⬇ 과대평가 의심 | 성장률·PER 이 외부/과거보다 높은가 · Bull 확률 과다 · 일회성 이익 포함 | | |
+   | ⬆ 과소평가 의심 | 목표 PER < 10년 중앙값(근거 없음) · Bear > 25%(근거 없음) · IV 미현가/이중 할인 · 성장률 < 컨센서스 −5pp · 외부 적정가의 75% 미만 | | |
+
+   ⬆ 항목이 "발견"이면 ⬇ 와 같은 무게로 반영해 IV·래더를 고친다. "참고"로만 두지 않는다.
 
 #### 7. 최종 투자 의견
 - 정성 판단표 (사업 품질 / 경영진 / 밸류에이션 / 타이밍)
@@ -578,7 +603,7 @@ python3 tools/record_call.py \
   --health-check "{조건1} | {충족|미충족|미정}" "{조건2} | {…}" \
   --tier {T1|T2|T3} --required-mos {요구 MOS %} \
   --target-low {목표 하단} --target-high {목표 상단} --horizon-months {기간} \
-  --fair-value {내재가치 USD} \
+  --fair-value {현가 IV USD} --ext-fair-value {외부 적정가} --ext-source {morningstar|analystPV} \
   --fill-probability {체결확률 % 또는 unknown} \
   --tranche "1차 ≤\${가격} ({비중}%) — {AND 조건 또는 조건 없음}" "2차 …" \
   --no-chase {추격 금지선} \
@@ -591,7 +616,10 @@ python3 tools/record_call.py \
   화면에는 밴드 두 숫자만 뜬다. 차수를 안 나눴으면 두 플래그를 생략한다(빈 값·추정 금지).
   한 줄은 ①가격이 있는 차수 ②`AND:` 공통조건 중 하나여야 한다(도구가 형식을 막는다).
 - `hold` 콜의 `--target-high` 는 래더 1차 가격과 같은 숫자여야 한다(게이트 4).
-- `--fair-value` 는 Buffett 관점 보고서의 내재가치(중립 시나리오)다. 대시보드 '목표가' 칸이 이 값을
+- 🔴 **`--fair-value` 는 오늘 가치(현가 IV)다** — `financial_rigor.py three-scenario` 출력의 `Intrinsic value (today)`.
+  3년 목표가를 그대로 넣지 않는다. `--ext-fair-value` 는 `python3 tools/external_value.py {티커} --iv {IV}` 산출값이며,
+  빠지면 게이트 5가 경고하고 대시보드에 외부 비교가 안 뜬다([quality-tier.md](skills/quality-tier.md) 2.1·2.2단계).
+- `--fair-value` 는 Buffett 관점 보고서의 내재가치(확률가중 현가)다. 대시보드 '목표가' 칸이 이 값을
   쓴다 — `hold` 의 밴드는 진입가라 목표가로 쓸 수 없다. 채점에는 쓰지 않는다.
 - `--health` 는 Risk 관점(리루) 보고서의 가정·레드라인 상태를 0~10으로 넘긴다 — 빼면
   대시보드 건강도 칸이 '측정 안 함'이 된다.
@@ -617,7 +645,7 @@ python3 tools/fill_probability.py --ticker {티커} --target {밴드 상단} \
 | 상황 | 넘길 플래그 |
 |------|-----------|
 | 체결확률 25% 이상 | `--fill-probability {값}` |
-| 25% 미만 · T1 컴파운더 | `--fill-probability {값} --low-fill-plan starter` (1차를 현재가 근처 스타터로) |
+| 25% 미만 · T1·T2 | `--fill-probability {값} --low-fill-plan starter` (1차를 현재가 근처 스타터로) |
 | 25% 미만 · 그 외 | `--fill-probability {값} --low-fill-plan catalyst-wait` (포지션 없음·촉매 대기) |
 | 25% 미만 · 밴드는 맞고 기간이 짧았다 | `--fill-probability {값} --low-fill-plan widen-horizon` 후 호라이즌 재설정 |
 | 상장 이력 부족으로 산출 불가 | `--fill-probability unknown --low-fill-plan {셋 중 하나}` |
@@ -638,7 +666,10 @@ python3 tools/fill_probability.py --ticker {티커} --target {밴드 상단} \
   않되, **최상급 컴파운더에 담배꽁초용 할인율을 요구하지도 않는다** — 그것이 2026-09-10
   진단된 보수성 편향의 원인이었다.
 - 판정한 **티어(T1/T2/T3)와 요구 MOS를 FinalReport에 숫자로 명시**한다. 절대 고평가 게이트
-  (현재가 > 낙관목표 / 25x PER 연환산 <10% / 하방>상방) 위반이면 티어 무관 `buy` 금지.
+  (현재가 > 낙관목표 / 25x PER 연환산 <8% / 하방>상방) 위반이면 티어 무관 `buy` 금지.
+- 🔴 **T1·T2 래더의 1차에는 AND 조건을 걸지 않는다**(2026-10-02) — 방어선은 레드라인 미발동이다.
+  확인이 필요한 가정은 2차 이하 조건으로 내린다. T2 도 현재가 ≤ 내재가치면 스타터(10~15%)를 둘 수 있다
+  ([quality-tier.md](skills/quality-tier.md) 2단계).
 - 이 스킬은 목표 주가 구간을 제시하므로 `--target-low/--target-high/--horizon-months`를 반드시 채운다.
 - 리스크 관점(04)의 레드라인/무효화 조건과 핵심 가정(⚑)을 `--invalidation`/`--load-bearing`에 옮겨 담는다.
 - `priceAtCall`은 도구가 Yahoo에서 fetch해 박제한다(**모델 기억값 금지**). 실패 시 `--price`로 지정.

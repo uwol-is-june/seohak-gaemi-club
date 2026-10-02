@@ -184,3 +184,33 @@ def test_append_suffixes_id_when_call_differs():
 if __name__ == "__main__":
     import run_tests
     raise SystemExit(run_tests.run_module(sys.modules[__name__]))
+
+
+# ── 2026-10-02 보정 (TASK-175·177) ──────────────────────────────────────────────
+
+def test_mos_ranges_recalibrated():
+    assert rc.TIER_MOS_RANGE == {"T1": (0.0, 10.0), "T2": (10.0, 20.0), "T3": (30.0, 40.0)}
+    _, out, _ = build(f"{BASE} --call keep --tier T2 --required-mos 25")
+    assert "요구 MOS 범위는 10~20%" in out
+    _, out, _ = build(f"{BASE} --call keep --tier T2 --required-mos 15")
+    assert "요구 MOS 범위" not in out
+
+
+def test_gate5_external_fair_value_recorded_and_checked():
+    row, out, err = build(f"{BASE} --call keep --fair-value 300 --ext-fair-value 433 --ext-source morningstar")
+    assert err is None
+    assert row["target"]["extFairValue"] == 433 and row["target"]["extSource"] == "morningstar"
+    assert "보수 이탈" in out  # 300/433 = 69%
+    _, out, _ = build(f"{BASE} --call keep --fair-value 400 --ext-fair-value 433 --ext-source morningstar")
+    assert "이탈" not in out
+    _, out, _ = build(f"{BASE} --call keep --fair-value 600 --ext-fair-value 433 --ext-source morningstar")
+    assert "낙관 이탈" in out
+
+
+def test_gate5_requires_source_and_warns_when_missing():
+    _, _, err = build(f"{BASE} --call keep --fair-value 300 --ext-fair-value 433")
+    assert err and "--ext-source" in err
+    _, out, _ = build(f"{BASE} --call keep --fair-value 300")
+    assert "외부 교차점검" in out
+    _, out, _ = build(f"{BASE} --call avoid --fair-value 300")
+    assert "외부 교차점검" not in out

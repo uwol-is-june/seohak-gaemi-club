@@ -347,10 +347,33 @@ def exact_calc(expr: str):
 # 6. Three-Scenario Valuation
 # ---------------------------------------------------------------------------
 
+# 내재가치 정의(skills/quality-tier.md 2.1단계, TASK-176): IV = **오늘 가치** =
+# "이 가격에 사면 연 8%(시장 기대수익)를 기대할 수 있는 가격". 3년 후 목표가는 반드시 현가화한다.
+# 2026-09-23 TSM 감사가 3년 목표가를 IV로 쓴 오류를 잡았지만 GOOGL·NVDA·SAP는 같은 오류가 남아
+# 종목 간 IV 정의가 섞였다 — 도구가 항상 현가 IV를 같이 내서 빼먹을 수 없게 한다.
+DEFAULT_DISCOUNT = 0.08
+DEFAULT_PROBS = (0.25, 0.50, 0.25)
+
+
+def scenario_intrinsic_value(targets, probs=DEFAULT_PROBS, discount=DEFAULT_DISCOUNT, years=3):
+    """3시나리오 목표가(Bull, Base, Bear) → 확률가중 목표가와 현가 내재가치.
+
+    probs 합은 1이어야 한다. 반환: {"weighted": 미래 확률가중가, "iv": 오늘 가치}.
+    """
+    if len(targets) != 3 or len(probs) != 3:
+        raise ValueError("targets·probs 는 (bull, base, bear) 3개씩이어야 한다")
+    if abs(sum(probs) - 1.0) > 1e-6:
+        raise ValueError(f"시나리오 확률 합이 1이 아니다: {sum(probs):.3f}")
+    weighted = sum(_CTX.multiply(exact(t), exact(p)) for t, p in zip(targets, probs))
+    factor = _CTX.power(_CTX.add(Decimal("1"), exact(discount)), years)
+    return {"weighted": weighted, "iv": _CTX.divide(weighted, factor)}
+
+
 def three_scenario_valuation(current_price, current_eps, shares_billion,
                              growth_optimistic, growth_neutral, growth_pessimistic,
                              pe_optimistic, pe_neutral, pe_pessimistic,
-                             years=3, currency=""):
+                             years=3, currency="", probs=DEFAULT_PROBS,
+                             discount=DEFAULT_DISCOUNT):
     """Calculate three-scenario target prices with exact arithmetic."""
     print("=" * 60)
     print("Three-Scenario Valuation Model")
@@ -373,6 +396,7 @@ def three_scenario_valuation(current_price, current_eps, shares_billion,
     print(f"  {'Scenario':20} {'Growth':>8} {'Target PE':>10} {'Target EPS':>12} {'Target Price':>13} {'Upside':>8}")
     print(f"  {'-'*20} {'-'*8} {'-'*10} {'-'*12} {'-'*13} {'-'*8}")
 
+    targets = []
     for name, growth, pe in scenarios:
         g = exact(growth)
         target_pe = exact(pe)
@@ -380,17 +404,29 @@ def three_scenario_valuation(current_price, current_eps, shares_billion,
         for _ in range(years):
             future_eps = _CTX.multiply(future_eps, _CTX.add(Decimal("1"), g))
         target_price = _CTX.multiply(future_eps, target_pe)
+        targets.append(target_price)
         # current_price 가 0이면 상승률은 정의되지 않는다 — ZeroDivisionError 방지(TASK-71).
         if float(p) != 0:
             change_str = f"{float(target_price - p) / float(p) * 100:>+8.1f}%"
         else:
             change_str = f"{'N/A':>8}"
 
-        print(f"  {name:20} {float(g)*100:>7.0f}% {float(target_pe):>9.0f}x "
+        print(f"  {name:20} {float(g)*100:>7.0f}% {float(target_pe):>9.1f}x"
               f"{float(future_eps):>12.2f} {float(target_price):>12.1f} {change_str}")
 
+    res = scenario_intrinsic_value(targets, probs, discount, years)
+    iv = float(res["iv"])
+    print()
+    print(f"  Probabilities:  Bull {probs[0]:.0%} / Base {probs[1]:.0%} / Bear {probs[2]:.0%}"
+          + ("" if tuple(probs) == DEFAULT_PROBS else "  ⚠️ 기본값(25/50/25) 아님 — 논제에 근거 필수"))
+    print(f"  Weighted {years}Y target:  {float(res['weighted']):.2f} {currency}")
+    print(f"  ➜ Intrinsic value (today, ÷{1 + discount:.2f}^{years}):  {iv:.2f} {currency}"
+          f"   ← --fair-value 로 기록할 값")
+    if float(p) != 0:
+        print(f"    Price / IV: {float(p) / iv * 100:.1f}%")
     print()
     print("  ✅ All calculations use exact decimal arithmetic — results are auditable")
+    return res
 
 
 # ---------------------------------------------------------------------------
@@ -448,7 +484,9 @@ def run_batch(args):
                 pe = step["pe"]
                 three_scenario_valuation(step["price"], step["eps"], step["shares"],
                                          g[0], g[1], g[2], pe[0], pe[1], pe[2],
-                                         step.get("years", 3), step.get("currency", ""))
+                                         step.get("years", 3), step.get("currency", ""),
+                                         tuple(step.get("probs", DEFAULT_PROBS)),
+                                         step.get("discount", DEFAULT_DISCOUNT))
             else:
                 print(f"❌ 알 수 없는 cmd: {cmd!r}", file=sys.stderr)
                 failed += 1
@@ -527,6 +565,10 @@ Examples:
                     help="Target PE for 3 scenarios, e.g. 25 20 15")
     ts.add_argument("--years", type=int, default=3)
     ts.add_argument("--currency", default="")
+    ts.add_argument("--probs", nargs=3, type=float, default=list(DEFAULT_PROBS),
+                    help="Scenario probabilities (bull base bear), default 0.25 0.5 0.25")
+    ts.add_argument("--discount", type=float, default=DEFAULT_DISCOUNT,
+                    help="Annual discount rate to bring the N-year target to today (default 0.08)")
 
     # batch — 여러 검증을 한 프로세스에서 실행 (Bash 왕복 1회로 압축)
     ba = sub.add_parser(
@@ -558,7 +600,7 @@ Examples:
             args.price, args.eps, args.shares,
             args.growth[0], args.growth[1], args.growth[2],
             args.pe[0], args.pe[1], args.pe[2],
-            args.years, args.currency)
+            args.years, args.currency, tuple(args.probs), args.discount)
     else:
         parser.print_help()
 
