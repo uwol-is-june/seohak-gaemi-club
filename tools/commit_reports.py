@@ -78,6 +78,29 @@ def changed_reports() -> tuple[list[str], list[str]]:
     return sorted(set(targets)), sorted(set(deleted))
 
 
+LEDGER_REL = "data/calls.jsonl"
+
+
+def ledger_changed() -> bool:
+    out = git("status", "--porcelain", "--", LEDGER_REL)
+    return out.returncode == 0 and bool(out.stdout.strip())
+
+
+def sync_track_record() -> None:
+    """track-record.md 표를 기록부에서 다시 그린다(TASK-172). record_call.py 가 이미 하지만,
+    기록부를 다른 경로로 고친 경우의 안전망이다. 실패해도 커밋은 계속한다."""
+    try:
+        sys.path.insert(0, str(REPO_ROOT / "tools"))
+        import contextlib
+        import io
+        import render_track_record
+        # 훅 stdout 은 JSON 한 줄이어야 한다 — 렌더러의 안내 출력은 버린다.
+        with contextlib.redirect_stdout(io.StringIO()):
+            render_track_record.main([])
+    except Exception as e:  # noqa: BLE001 — 훅은 세션을 막지 않는다
+        emit(f"⚠️ track-record.md 표 갱신 실패 — {type(e).__name__}: {e}")
+
+
 def emit(message: str) -> None:
     """Claude Code 훅 규약: stdout 에 JSON 한 줄. systemMessage 는 사용자에게 표시된다."""
     print(json.dumps({"systemMessage": message}, ensure_ascii=False))
@@ -88,7 +111,12 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true", help="대상만 출력하고 종료")
     args = ap.parse_args()
 
+    if not args.dry_run:
+        sync_track_record()
     targets, deleted = changed_reports()
+    # 판단 기록부도 같은 이력·백업 대상이다(TASK-172) — 표의 원본이 커밋 안 된 채 남지 않게.
+    if ledger_changed():
+        targets.append(LEDGER_REL)
     if not targets and not deleted:
         if args.dry_run:
             print("커밋 대상 없음.")

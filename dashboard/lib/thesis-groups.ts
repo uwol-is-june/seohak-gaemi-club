@@ -8,10 +8,19 @@
 // 여기서는 **스킬 하나당 최신 1건**을 살아있는 논제로 보고, 그것들을 나란히 세운 뒤
 // 서로 어긋나는지를 판정한다. 같은 스킬의 더 최신 콜은 앞선 판단을 '갱신'한 것이므로
 // 충돌이 아니라 이력이다 — 충돌은 **서로 다른 출처끼리**만 성립한다.
+//
+// 🔴 **대체 규칙 (TASK-170)**: 다른 스킬이라도 종목의 최신 판단보다 {@link SUPERSEDE_DAYS}일 넘게
+// 앞선 콜은 '살아있는 논제'가 아니라 이력이다. 스킬별 최신 1건을 무기한 살려 두면
+// 새 판단을 내려도 옛 결론이 화면에 계속 남는다(2026-10-02 실측: ADBE 9/30 avoid 옆에
+// 9/10 earnings-team keep 이, QLYS 9/23 재산출 밴드 옆에 7/31 investment-team 밴드가 남아 있었다).
+// 충돌은 **비슷한 시점에 서로 다른 출처가 다른 말을 할 때**만 의미가 있다.
 
 // node 로 직접 돌리는 테스트가 있어 값 import 는 확장자를 붙인다(lib/*.test.ts 규약).
 import type { ScoredCall, CallType } from "./calls";
 import { parseTranches, pricedTranches, topTranchePrice } from "./tranche.ts";
+
+/** 종목의 최신 판단보다 이 일수를 넘게 앞선 다른 스킬의 콜은 대체된 것으로 본다(TASK-170). */
+export const SUPERSEDE_DAYS = 7;
 
 /** 최상단 차수 가격이 이만큼 벌어지면 "어디부터 사기 시작하는가"가 다른 것으로 본다(%). */
 const TOP_PRICE_GAP_PCT = 15;
@@ -338,7 +347,10 @@ export function groupTheses(calls: ScoredCall[]): ThesisGroup[] {
     for (const c of list) if (!latestPerSkill.has(c.skill)) latestPerSkill.set(c.skill, c);
 
     const candidates = Array.from(latestPerSkill.values());
-    const live = candidates.filter(isLive);
+    // 대체 규칙(TASK-170): 살아있는 콜 중 최신 판단에서 SUPERSEDE_DAYS 안쪽만 논제로 남긴다.
+    const liveAll = candidates.filter(isLive);
+    const newestDate = liveAll.reduce((m, c) => (c.date > m ? c.date : m), "");
+    const live = liveAll.filter((c) => daysBetween(c.date, newestDate) <= SUPERSEDE_DAYS);
     // 전부 채점이 끝났으면 종목을 숨기지 않고 최신 1건으로 남긴다 — 추적 대상에서
     // 조용히 사라지면 "그 종목은 어떻게 됐나"를 볼 길이 없어진다.
     const resolvedOnly = live.length === 0;

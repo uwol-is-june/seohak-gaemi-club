@@ -522,6 +522,43 @@ Agent 도구를 사용해 **같은 메시지 내**에서 4개의 백그라운드
 
 ---
 
+## 4단계: 트랙레코드 기록 (필수 · TASK-171)
+
+**실적 판정은 판단 기록부에 콜을 남겨야 끝난다.** 아티클만 쓰고 멈추면 대시보드 '트랙레코드' 탭에는
+지난 판단이 그대로 남는다(2026-10-02 실측: ADBE FY26 Q3 어닝팀이 콜 없이 끝나 화면이 9/10 Q2 판단을
+계속 보여줬다). 아티클 확정 **직후** 실행한다.
+
+```bash
+python3 tools/record_call.py \
+  --ticker {티커} --skill earnings-team \
+  --report reports/{티커}/{티커}-earnings-{기간}.md \
+  --call {buy|keep|hold|avoid} \
+  --conviction "{★평점}" --health {논제 건강도 0~10} \
+  --health-check "{핵심 가정·레드라인} | {충족|미충족|미정}" "{…}" \
+  --reason "{기간} 실적 판정: {한 줄 결론}" \
+  --tier {T1|T2|T3} --required-mos {요구 MOS %} \
+  [--target-low … --target-high … --horizon-months … --fill-probability … --low-fill-plan …] \
+  [--tranche "1차 …" "2차 …" --no-chase {가격}] [--fair-value {내재가치}]
+```
+
+- **call 종류는 실제 보유 여부로 정한다** — `reports/track-record.md` '매매 로그'에 매수 행이 있으면
+  보유(`keep`·`buy`·`avoid`), 없으면 미보유(`hold`·`avoid`). 콜만 보고 보유를 추측하지 않는다.
+- 🔴 **래더·밴드·티어는 지어내지 않는다.** 이 스킬은 내재가치를 재산출하지 않으므로
+  `reports/{티커}/{티커}-thesis.md`(A4.5 진입 래더 · A4.6 증액 래더)의 **현재 값을 그대로** 옮긴다.
+  - 실적 판정이 **논제 유지**면 → 논제 파일 래더·티어·체결확률을 그대로 넘긴다.
+  - **논제 약화·레드라인 발동·붕괴**면 → 래더를 넘기지 않고(동결) `--reason` 에 사유를 적은 뒤,
+    결론에 "`/thesis-tracker {티커}` 분기검토로 래더 재산출 필요"를 명시한다.
+  - 논제 파일이 없으면 → 래더·밴드 플래그를 생략한다(빈 값·추정 금지).
+- `hold` + 밴드면 `--fill-probability` 가 필수다(도구가 막는다) — `python3 tools/fill_probability.py` 로 산출.
+- `--health` 와 `--health-check` 는 **값이 그대로여도 매번** 넘긴다(빠지면 화면 건강도가 빈칸이 된다).
+- 같은 주(7일 안)에 `/thesis-tracker` 가 이미 콜을 냈어도 기록한다 — 판정이 같으면 나란히 서고,
+  다르면 대시보드가 **충돌**로 띄운다. 그 충돌이 바로 확인해야 할 신호다. 7일보다 오래된 다른 스킬의
+  콜은 이 콜이 자동으로 대체한다(TASK-170).
+- `reports/track-record.md` 의 보유·관찰 표는 **손대지 않는다** — `record_call.py` 가 기록 직후
+  판단 기록부에서 다시 그린다(TASK-172). 서술을 남기고 싶으면 마커 밖 구간에 적는다.
+
+---
+
 ## 산출 파일
 
 ```

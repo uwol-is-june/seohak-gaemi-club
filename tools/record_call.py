@@ -500,6 +500,14 @@ def main() -> None:
         tier_s += f"(요구 MOS {row['requiredMosPct']}%)"
     print(f"기록 완료: {row['id']} — {row['call']}{tier_s} @ ${row['priceAtCall']}{tgt}")
     print(f"  → {LEDGER.relative_to(REPO_ROOT)}")
+    # 기록부가 바뀌면 track-record.md 표도 같은 순간 다시 그린다(TASK-172) — 손 편집 단계 제거.
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import render_track_record
+        render_track_record.main([])
+    except Exception as e:  # noqa: BLE001 — 콜 기록 자체는 이미 끝났다
+        print(f"주의: track-record.md 표 갱신 실패({type(e).__name__}: {e}) — "
+              "python3 tools/render_track_record.py 로 수동 실행")
 
 
 if __name__ == "__main__":

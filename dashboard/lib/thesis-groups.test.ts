@@ -116,6 +116,26 @@ check("논제 1건이면 충돌 없음", detectConflict([call({ skill: "a" })]),
   check("같은 스킬끼리는 충돌 아님", groups[0].conflict, null);
 }
 {
+  // 대체 규칙(TASK-170): 다른 스킬이라도 최신 판단보다 7일 넘게 앞서면 이력으로 내려간다.
+  // (실측 ADBE: 9/30 thesis-tracker avoid 옆에 9/10 earnings-team keep 이 남아 있었다)
+  const groups = groupTheses([
+    call({ skill: "thesis-tracker", date: "2026-08-20", call: "avoid" }),
+    call({ skill: "earnings-team", date: "2026-08-01", call: "keep", target: { low: 215, high: 308, horizonMonths: 12 } }),
+  ]);
+  check("대체: 옛 다른 스킬 콜은 이력", [groups[0].active.length, groups[0].history.length], [1, 1]);
+  check("대체: 남는 것은 최신 판단", groups[0].active[0].skill, "thesis-tracker");
+  check("대체: 충돌 아님", groups[0].conflict, null);
+}
+{
+  // 7일 안쪽에서 출처가 갈리면 여전히 충돌이다 — 그건 진짜 불일치다.
+  const groups = groupTheses([
+    call({ skill: "thesis-tracker", date: "2026-08-20", call: "avoid" }),
+    call({ skill: "earnings-team", date: "2026-08-15", call: "keep" }),
+  ]);
+  check("근접 시점 다른 스킬은 둘 다 살아 있음", groups[0].active.length, 2);
+  check("근접 시점 방향 충돌", groups[0].conflict != null, true);
+}
+{
   // 채점이 끝난 종목도 사라지지 않는다.
   const resolved = call(
     { skill: "a", date: "2026-01-01", call: "buy", target: { low: 250, high: 300, horizonMonths: 1 } },
