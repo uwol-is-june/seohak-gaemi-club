@@ -385,6 +385,56 @@ export function chaseBreaches(g: { active: ScoredCall[] }): { skill: string; lin
     .filter((x): x is { skill: string; line: number; priceNow: number } => typeof x.line === "number" && priceNow > x.line);
 }
 
+/**
+ * 제외 논제 (TASK-192) — 살아있는 판단이 **전부 회피(avoid)** 인 종목.
+ *
+ * 관찰 종목을 검토 대상에서 뺄 때는 목록에서 지우지 않고 avoid 콜을 남긴다(판단 기록부는
+ * append-only · 뺀 판단도 채점 대상). 그래서 '제외'는 별도 플래그가 아니라 avoid 콜에서 읽는다.
+ * 다른 출처가 7일 안에 hold·buy 를 말하고 있으면 제외가 아니라 충돌이다 — 그건 충돌 배너가 맡는다.
+ * 🔴 보유 여부는 여기서 보지 않는다 — 보유 종목은 avoid 여도 '보유 종목'에 남는 건 화면의 몫이다
+ *    (보유 종목은 숨기지 않는다 · CLAUDE.md '관찰 논제 제외 규칙').
+ */
+export function isExcluded(g: { active: ScoredCall[] }): boolean {
+  return g.active.length > 0 && g.active.every((c) => c.call === "avoid");
+}
+
+/** 이 건강도 이하가 연속되면 제외 후보(관찰) · 재평가 필요(보유)다(TASK-192). */
+export const LOW_HEALTH_MAX = 4;
+/** 몇 번 연속인가 — 한 번은 일시적일 수 있어 한 분기 유예를 준다. */
+export const LOW_HEALTH_STREAK = 2;
+
+/**
+ * 건강도 저하 연속 (TASK-192) — 최근 {@link LOW_HEALTH_STREAK}번의 **검토 날짜**가 전부
+ * 건강도 {@link LOW_HEALTH_MAX} 이하인가.
+ *
+ * 🔴 횟수는 콜 수가 아니라 **날짜** 단위로 센다. 같은 날 /investment-team 과 /thesis-tracker 를
+ * 함께 돌리면 콜이 두 줄 쌓이는데(2026-10-02 NOC), 그걸 '2회 연속'으로 세면 유예가 사라진다.
+ * 같은 날의 값은 가장 늦게 기록된 콜을 쓴다. 건강도를 안 적은 콜은 건너뛴다(모르는 것은 세지 않는다).
+ * 회피(avoid) 콜은 건강도를 잴 논제가 없으므로 보지 않는다.
+ *
+ * healthOf 는 화면의 건강도 규칙(숫자 필드 우선 · 옛 콜은 텍스트 폴백)을 그대로 받기 위한 주입점이다.
+ */
+export function lowHealthStreak(
+  g: { active: ScoredCall[]; history: ScoredCall[] },
+  healthOf: (c: ScoredCall) => number | null,
+): { values: { date: string; health: number }[] } | null {
+  const byDate = new Map<string, { health: number; at: string }>();
+  for (const c of [...g.active, ...g.history]) {
+    if (c.call === "avoid") continue;
+    const h = healthOf(c);
+    if (h == null) continue;
+    const at = c.recordedAt ?? "";
+    const prev = byDate.get(c.date);
+    if (!prev || at > prev.at) byDate.set(c.date, { health: h, at });
+  }
+  const recent = Array.from(byDate.entries())
+    .sort((a, b) => (a[0] < b[0] ? 1 : a[0] > b[0] ? -1 : 0))
+    .slice(0, LOW_HEALTH_STREAK)
+    .map(([date, v]) => ({ date, health: v.health }));
+  if (recent.length < LOW_HEALTH_STREAK) return null;
+  return recent.every((v) => v.health <= LOW_HEALTH_MAX) ? { values: recent } : null;
+}
+
 export function groupTheses(calls: ScoredCall[]): ThesisGroup[] {
   const byTicker = new Map<string, ScoredCall[]>();
   for (const c of calls) {

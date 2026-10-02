@@ -79,6 +79,7 @@ def test_render_tables_and_keeps_narrative():
                      "lowFillPlan": "catalyst-wait", "noChaseAbove": 133,
                      "tranches": ["1차 ≤$106 (40%)", "2차 ≤$93 (60%) — 조건 없음"]}),
         call("XXX", "2026-09-30", "investment-checklist", "avoid"),
+        call("YYY", "2026-09-30", "investment-checklist", "buy"),
     ]
     out = r.render(DOC, calls, TODAY)
     assert "옛 손 편집 표" not in out
@@ -88,7 +89,10 @@ def test_render_tables_and_keeps_narrative():
     watch = out.split("<!-- auto:watchlist:begin -->")[1].split("<!-- auto:watchlist:end -->")[0]
     assert "**WWW**" in watch and "1차 ≤$106 (40%)<br>2차 ≤$93" in watch
     assert "체결확률 **3.9%** 🔴" in watch and ">$133.00" in watch
-    assert "**XXX**" in watch.split("관망이 아닌 미보유 종목")[1]  # 회피는 별도 표
+    # TASK-192: 미보유 회피는 '제외' 표로, 매수는 '관망이 아닌 미보유' 표로 간다.
+    other, excluded = watch.split("관망이 아닌 미보유 종목")[1].split("**제외**")
+    assert "**YYY**" in other and "**XXX**" not in other
+    assert "**XXX**" in excluded
     assert "**AAA**" not in watch  # 보유 종목은 관찰 표에 안 나온다
     assert r.render(out, calls, TODAY) == out  # 다시 그려도 같다(멱등)
 

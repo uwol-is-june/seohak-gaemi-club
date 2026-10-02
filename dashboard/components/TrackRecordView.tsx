@@ -3,7 +3,10 @@ import { readJsonSafe } from "@/lib/fetch-json";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScoredCall, CallStatus, CallType, type HealthCheck } from "@/lib/calls";
 import { CALL_LABEL } from "@/lib/report-helpers";
-import { groupTheses, groupGoal, groupTarget, goalGapKey, chaseBreaches, type ThesisGroup, type RefreshFlag } from "@/lib/thesis-groups";
+import {
+  groupTheses, groupGoal, groupTarget, goalGapKey, chaseBreaches, isExcluded, lowHealthStreak,
+  LOW_HEALTH_MAX, LOW_HEALTH_STREAK, type ThesisGroup, type RefreshFlag,
+} from "@/lib/thesis-groups";
 import { parseTranches, pricedTranches } from "@/lib/tranche";
 import type { Holding } from "@/lib/toss";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
@@ -53,7 +56,10 @@ import {
 // 추격 금지 = 미보유 + 현재가가 추격 금지선을 넘음(카드의 노란 점). 지금은 어떤 차수도
 // 집행하지 않으니 관찰 목록에서 뺀다. 보유 종목은 넘어도 '보유 종목'에 남는다 — 실제로 돈이
 // 들어가 있으면 그게 먼저다.
-type Axis = "all" | "held" | "watch" | "chase";
+// 제외 = 미보유 + 살아있는 판단이 전부 회피(avoid) — 검토 대상에서 뺀 관찰 논제(TASK-192).
+// '전체'에서도 빠진다(평소 목록은 살아있는 논제만). 보유 종목은 avoid 여도 제외하지 않는다 —
+// 숨기면 돈이 걸린 위험이 안 보이게 된다(대신 '재평가 필요' 칩을 단다).
+type Axis = "all" | "held" | "watch" | "chase" | "excluded";
 
 // 정렬 축. 라벨은 "무엇을 기준으로 세로로 읽을 것인가"를 그대로 말한다.
 type SortKey = "gap" | "health" | "ticker";
@@ -136,10 +142,16 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
     [holdings]
   );
 
-  // 종목 → 축. 보유가 최우선(추격 금지선을 넘어도 보유면 보유), 그다음 추격 금지선 초과 여부.
+  // 종목 → 축. 보유가 최우선(추격 금지선을 넘어도 · 회피여도 보유면 보유), 그다음 제외, 추격 금지선 초과 여부.
   const axisOf = useCallback(
     (g: ThesisGroup): Exclude<Axis, "all"> =>
-      heldTickers.has(g.ticker) ? "held" : chaseBreaches(g).length > 0 ? "chase" : "watch",
+      heldTickers.has(g.ticker)
+        ? "held"
+        : isExcluded(g)
+          ? "excluded"
+          : chaseBreaches(g).length > 0
+            ? "chase"
+            : "watch",
     [heldTickers]
   );
 
@@ -151,9 +163,11 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
   // (살아있는 논제 우선 → 최근 갱신순 → 티커). 실제로 돈이 들어가 있는 종목이 스크롤
   // 아래에 묻히면, 훑어야 할 것과 지켜봐야 할 것의 우선순위가 뒤집힌다.
   const rows = useMemo(() => {
-    const list =
-      axis === "all" || !holdingsReady
-        ? groups
+    // 보유 정보가 없으면 축을 못 가르므로 아무것도 숨기지 않는다(제외 판정도 보유 여부가 먼저다).
+    const list = !holdingsReady
+      ? groups
+      : axis === "all"
+        ? groups.filter((g) => axisOf(g) !== "excluded")
         : groups.filter((g) => axisOf(g) === axis);
 
     // 정렬 키를 종목당 하나 뽑는다. 값이 없는 종목은 항상 뒤로 보낸다 —
@@ -185,7 +199,7 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
     // 위에서 잡은 순서는 그대로 보존된다.
     // '전체'에서는 보유 → 관찰 → 추격 금지 순으로 세운다.
     if (axis !== "all") return sorted;
-    const rank: Record<Exclude<Axis, "all">, number> = { held: 0, watch: 1, chase: 2 };
+    const rank: Record<Exclude<Axis, "all">, number> = { held: 0, watch: 1, chase: 2, excluded: 3 };
     return sorted.sort((a, b) => rank[axisOf(a)] - rank[axisOf(b)]);
   }, [axis, sort, groups, axisOf, holdingsReady]);
 
@@ -201,8 +215,9 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
   const allOpen = rows.length > 0 && rows.every((g) => openTickers.has(g.ticker));
   const toggleAll = () => setOpenTickers(allOpen ? new Set() : new Set(rows.map((g) => g.ticker)));
 
+  const countOf = (a: Exclude<Axis, "all">) => (holdingsReady ? groups.filter((g) => axisOf(g) === a).length : null);
   const AXES: { id: Axis; label: string; count: number | null }[] = [
-    { id: "all", label: "전체", count: groups.length },
+    { id: "all", label: "전체", count: holdingsReady ? groups.length - (countOf("excluded") ?? 0) : groups.length },
     {
       id: "held",
       label: "보유 종목",
@@ -218,6 +233,7 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
       label: "추격 금지",
       count: holdingsReady ? groups.filter((g) => axisOf(g) === "chase").length : null,
     },
+    { id: "excluded", label: "제외", count: countOf("excluded") },
   ];
 
   return (
@@ -321,7 +337,9 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
                 ? "보유 종목 중 논제가 기록된 것이 없습니다."
                 : axis === "chase"
                   ? "추격 금지선을 넘은 관찰 종목이 없습니다."
-                  : "관찰 논제가 없습니다."}
+                  : axis === "excluded"
+                    ? "제외한 관찰 논제가 없습니다."
+                    : "관찰 논제가 없습니다."}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 items-start">
@@ -343,6 +361,7 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
                   key={g.ticker}
                   group={g}
                   held={heldTickers.has(g.ticker)}
+                  excluded={holdingsReady && axisOf(g) === "excluded"}
                   avgPrice={avgPriceByTicker[g.ticker] ?? null}
                   open={openTickers.has(g.ticker)}
                   onToggle={() => toggleTicker(g.ticker)}
@@ -366,6 +385,7 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
 function TickerCard({
   group,
   held,
+  excluded,
   avgPrice,
   open,
   onToggle,
@@ -373,6 +393,7 @@ function TickerCard({
 }: {
   group: ThesisGroup;
   held: boolean;
+  excluded: boolean;
   avgPrice: number | null;
   open: boolean;
   onToggle: () => void;
@@ -412,6 +433,25 @@ function TickerCard({
   const healthNA = healthNotApplicable(group.active, group.history);
   const healthAt = healthNA ? null : groupHealthDated(group.active, group.history);
   const health = healthAt?.value ?? null;
+
+  // 건강도 저하 연속(TASK-192) — 관찰이면 '제외 후보', 보유면 '재평가 필요'.
+  // 같은 조건이라도 처방이 반대다: 관찰은 avoid 를 남기고 빼면 끝이지만, 보유는 실제 돈이 걸려
+  // 있어 숨기지 않고 재평가(새 내재가치 vs 현재가 → 보유·감량·매도)를 요구한다.
+  // 이미 제외된 종목은 avoid 라 건강도를 잴 논제가 없다 — 띄우지 않는다.
+  const lowStreak = useMemo(
+    () => (excluded ? null : lowHealthStreak(group, (c) => callHealth(c))),
+    [group, excluded]
+  );
+  const lowStreakTitle =
+    lowStreak == null
+      ? undefined
+      : `건강도 ${LOW_HEALTH_MAX} 이하 ${LOW_HEALTH_STREAK}회 연속 — ${lowStreak.values
+          .map((v) => `${v.date} ${v.health}/10`)
+          .join(" · ")}` +
+        NL +
+        (held
+          ? "보유 종목은 빼지 않는다 — 새 내재가치와 현재가를 비교해 보유·감량·매도를 정한다."
+          : "관찰 논제 제외 규칙 ③ — /thesis-tracker 로 재검토하고, 그대로면 avoid 콜을 남겨 '제외'로 옮긴다.");
 
   // 추격 금지선 초과 — **접힌 줄에서 바로 보여야 하는 단 하나의 경보**(TASK-113).
   // 이 선을 넘으면 어떤 차수도 활성화되지 않는다. 즉 '가격이 닿아도 사지 않는다'가
@@ -471,6 +511,14 @@ function TickerCard({
                   title="살아있는 논제가 없습니다 — 채점이 끝난 마지막 판단만 남겨둡니다."
                 >
                   종료
+                </span>
+              )}
+              {lowStreak && (
+                <span
+                  className="shrink-0 whitespace-nowrap rounded-full bg-danger/15 px-1.5 py-0.5 text-[9px] font-medium text-danger"
+                  title={lowStreakTitle}
+                >
+                  {held ? "재평가 필요" : "제외 후보"}
                 </span>
               )}
               {refresh.length > 0 && (
@@ -749,6 +797,14 @@ function ThesisBlock({
           </span>
         )}
       </div>
+
+      {/* 회피 콜은 래더·건강도가 없어 "왜 뺐나"가 비어 보인다 — 기록된 사유를 그대로 보인다(TASK-192). */}
+      {c.call === "avoid" && c.reason && (
+        <p className="mb-2 rounded-md border border-hairline px-2.5 py-1.5 text-[11px] leading-snug text-body">
+          <span className="eyebrow mr-1.5 text-[9px]">회피 사유</span>
+          {c.reason}
+        </p>
+      )}
 
       <HealthReasons call={c} />
 

@@ -19,6 +19,8 @@ import {
   highLadderMismatch,
   chaseBreaches,
   externalGap,
+  isExcluded,
+  lowHealthStreak,
 } from "./thesis-groups.ts";
 
 const failures: string[] = [];
@@ -339,6 +341,38 @@ try {
   check("IV 139% → 낙관 이탈", externalGap(ev(600, 433))?.side, "optimistic");
   check("외부 미기록 → 판정 없음", externalGap(ev(300, undefined)), null);
   check("이탈 → 갱신 사유", detectRefresh([ev(300, 433)])[0]?.reasons.some((r) => r.includes("보수 이탈")), true);
+}
+
+// ── 제외 논제 (TASK-192): 살아있는 판단이 전부 avoid 면 제외 ──────────────────
+{
+  const mk = (active: ScoredCall[]) => ({ active });
+  check("avoid 단독 → 제외", isExcluded(mk([call({ skill: "a", call: "avoid" })])), true);
+  check("avoid 둘 → 제외", isExcluded(mk([call({ skill: "a", call: "avoid" }), call({ skill: "b", call: "avoid" })])), true);
+  // 다른 출처가 아직 관망을 말하면 제외가 아니라 충돌이다.
+  check("avoid + hold → 제외 아님", isExcluded(mk([call({ skill: "a", call: "avoid" }), call({ skill: "b", call: "hold" })])), false);
+  check("hold → 제외 아님", isExcluded(mk([call({ skill: "a", call: "hold" })])), false);
+  check("논제 없음 → 제외 아님", isExcluded(mk([])), false);
+}
+
+// ── 건강도 저하 연속 (TASK-192): 최근 2개 검토 '날짜'가 전부 4 이하 ──────────────
+{
+  const hc = (date: string, health: number | undefined, skill = "thesis-tracker", over: Partial<RawCall> = {}) =>
+    call({ skill, date, id: `TST-${date}-${skill}`, ...(health != null ? { health } : {}), ...over });
+  const hOf = (c: ScoredCall) => (typeof c.health === "number" ? c.health : null);
+  const g = (calls: ScoredCall[]) => ({ active: calls.slice(0, 1), history: calls.slice(1) });
+
+  check("4·3 연속 → 걸림", lowHealthStreak(g([hc("2026-08-20", 4), hc("2026-05-20", 3)]), hOf) != null, true);
+  check("4 한 번 → 유예", lowHealthStreak(g([hc("2026-08-20", 4), hc("2026-05-20", 7)]), hOf), null);
+  check("회복(5) 후 → 안 걸림", lowHealthStreak(g([hc("2026-08-20", 5), hc("2026-05-20", 3)]), hOf), null);
+  check("검토 1회뿐 → 판정 없음", lowHealthStreak(g([hc("2026-08-20", 2)]), hOf), null);
+  // 같은 날 두 스킬이 각각 4를 적어도 '2회 연속'이 아니다 — 날짜 단위로 센다.
+  check(
+    "같은 날 콜 둘 → 1회로 셈",
+    lowHealthStreak(g([hc("2026-08-20", 4, "thesis-tracker"), hc("2026-08-20", 4, "investment-team"), hc("2026-05-20", 8)]), hOf),
+    null,
+  );
+  check("건강도 미기록 콜은 건너뜀", lowHealthStreak(g([hc("2026-08-25", undefined), hc("2026-08-20", 4), hc("2026-05-20", 3)]), hOf) != null, true);
+  check("avoid 콜은 건너뜀", lowHealthStreak(g([hc("2026-08-25", 9, "a", { call: "avoid" }), hc("2026-08-20", 4), hc("2026-05-20", 3)]), hOf) != null, true);
 }
 
 if (failures.length > 0) {

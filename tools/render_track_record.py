@@ -240,11 +240,18 @@ def render_positions(groups: dict[str, dict], positions: dict[str, dict]) -> str
 
 
 def render_watchlist(groups: dict[str, dict], positions: dict[str, dict]) -> str:
-    watch, other = [], []
+    watch, other, excluded = [], [], []
     for t in sorted(groups):
         if t in positions:
             continue
-        (watch if groups[t]["active"][0]["call"] == "hold" else other).append(t)
+        active = groups[t]["active"]
+        if active[0]["call"] == "hold":
+            watch.append(t)
+        elif all(c["call"] == "avoid" for c in active):
+            # 제외 논제(TASK-192) — 살아있는 판단이 전부 회피. 대시보드 lib/thesis-groups.ts isExcluded 와 같은 규칙.
+            excluded.append(t)
+        else:
+            other.append(t)
     # 최근 판단이 위로 — 손댄 종목이 먼저 보인다.
     watch.sort(key=lambda t: groups[t]["active"][0]["date"], reverse=True)
     rows = [
@@ -264,15 +271,22 @@ def render_watchlist(groups: dict[str, dict], positions: dict[str, dict]) -> str
         )
     if not watch:
         rows.append("| — | (관망 논제 없음) | | | | | | | | |")
-    if other:
+    sections = [
+        (other, "**관망이 아닌 미보유 종목** — 최근 판단이 매수이거나 출처끼리 갈려 진입 래더가 없다."),
+        (excluded, "**제외** — 살아있는 판단이 전부 회피(`avoid`)라 검토 대상에서 뺀 관찰 논제. "
+                   "다시 보려면 `/thesis-tracker {티커} 논제수립`."),
+    ]
+    for tickers, title in sections:
+        if not tickers:
+            continue
         rows += [
             "",
-            "**관망이 아닌 미보유 종목** — 최근 판단이 매수·회피라 진입 래더가 없다.",
+            title,
             "",
             "| 티커 | 현재 판정 | 시점가 | 건강도 | 판단 사유 | 근거 |",
             "|------|----------|-------|:------:|---------|------|",
         ]
-        for t in other:
+        for t in tickers:
             g = groups[t]
             lead = g["active"][0]
             rows.append(
