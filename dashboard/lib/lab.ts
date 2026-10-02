@@ -301,6 +301,52 @@ export function extractCautions(md: string, max = 3): string[] {
   return out;
 }
 
+// ── 자동 실행 상태 (TASK-190) ─────────────────────────────────────────────
+// 작업 스케줄러가 매주 월 08:30 에 돈다. 실행·커밋까지 넉넉히 잡아 월 10:00 전에는
+// 아직 이번 주 실행을 기대하지 않는다(지난주 월요일 기준으로 본다).
+const RUN_DEADLINE_HOUR = 10;
+
+/** 지금 시점에 이미 끝났어야 할 가장 최근 정기 실행일(월요일, 로컬 날짜). */
+export function expectedRunDate(now: Date): string {
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sinceMonday = (d.getDay() + 6) % 7; // 월=0 … 일=6
+  d.setDate(d.getDate() - sinceMonday);
+  if (sinceMonday === 0 && now.getHours() < RUN_DEADLINE_HOUR) d.setDate(d.getDate() - 7);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+export type LabHealthIssue =
+  | { kind: "no-screen"; expected: string; latest: string | null }
+  | { kind: "no-record"; runDate: string }
+  | { kind: "log-error"; file: string; line: string };
+
+/**
+ * 사람이 로그를 열어보지 않아도 되게, 자동 실행이 빠졌거나 실패했으면 탭에 경고를 띄운다.
+ *   no-screen  — 이번 주 스크리닝 자체가 없음(PC 꺼짐 · 스크립트 실패)
+ *   no-record  — 스크리닝은 있는데 그날 추천/없음 기록이 없음(Claude 단계 실패)
+ *   log-error  — 최신 실행 로그에 ERROR 줄이 있음
+ */
+export function labHealth(
+  now: Date,
+  latestScreen: string | null,
+  recordedDates: Set<string>,
+  latestLog: { file: string; text: string } | null
+): LabHealthIssue[] {
+  const issues: LabHealthIssue[] = [];
+  const expected = expectedRunDate(now);
+  if (!latestScreen || latestScreen < expected) {
+    issues.push({ kind: "no-screen", expected, latest: latestScreen });
+  } else if (!recordedDates.has(latestScreen)) {
+    issues.push({ kind: "no-record", runDate: latestScreen });
+  }
+  if (latestLog) {
+    const err = latestLog.text.split(/\r?\n/).filter((l) => l.includes("ERROR:")).pop();
+    if (err) issues.push({ kind: "log-error", file: latestLog.file, line: err.trim() });
+  }
+  return issues;
+}
+
 /** 백분위 → 5단 게이지 (LAB-SPEC 5절). */
 export function gaugeLevel(pct: number | null | undefined): number {
   if (pct == null || Number.isNaN(pct)) return 0;

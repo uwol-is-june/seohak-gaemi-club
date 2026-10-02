@@ -13,6 +13,7 @@ import {
   cumulativeSeries,
   extractCautions,
   groupStats,
+  labHealth,
   parseLabRows,
   scoreLabCall,
   type LabCall,
@@ -189,6 +190,18 @@ function buildFunnel(screen: ScreenFile) {
   });
 }
 
+// 가장 최근 자동 실행 로그(logs/lab-pick/*.log, git 제외). 파일명이 YYYY-MM-DD_HHmm 이라 이름순 = 시간순.
+async function latestRunLog(): Promise<{ file: string; text: string } | null> {
+  try {
+    const names = (await readdir(repoPath("logs", "lab-pick"))).filter((n) => n.endsWith(".log")).sort();
+    const file = names[names.length - 1];
+    if (!file) return null;
+    return { file, text: await readFile(repoPath("logs", "lab-pick", file), "utf-8") };
+  } catch {
+    return null;
+  }
+}
+
 type ExistingCall = {
   ticker: string;
   date: string;
@@ -306,8 +319,15 @@ export async function GET() {
     funnel: buildFunnel(latest),
   };
 
+  // 자동 실행 상태 — 빠졌거나 실패했으면 탭이 경고한다(사람이 로그를 열어볼 필요 없게).
+  const recordedDates = new Set(
+    rows.filter((r) => r.kind === "call" || r.kind === "none" || r.kind === "repeat").map((r) => r.date)
+  );
+  const health = labHealth(new Date(), latest?.runDate ?? null, recordedDates, await latestRunLog());
+
   return Response.json(
     {
+      health,
       screen,
       week,
       history: rows

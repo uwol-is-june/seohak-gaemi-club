@@ -5,7 +5,9 @@ import type { ClosePoint } from "./calls.ts";
 import {
   closeOnOrBefore,
   cumulativeSeries,
+  expectedRunDate,
   extractCautions,
+  labHealth,
   gaugeLevel,
   groupStats,
   horizonEnd,
@@ -117,6 +119,26 @@ check(
     "세 번째",
   ]);
   check("절 없음", extractCautions("# 제목\n- 항목"), []);
+}
+
+// ── 자동 실행 상태 ─────────────────────────────────────────────────────
+{
+  // 2026-10-05 는 월요일
+  check("금요일 → 그 주 월요일", expectedRunDate(new Date(2026, 9, 9, 15)), "2026-10-05");
+  check("월요일 10시 전 → 지난주", expectedRunDate(new Date(2026, 9, 5, 9, 59)), "2026-09-28");
+  check("월요일 10시 이후 → 오늘", expectedRunDate(new Date(2026, 9, 5, 10, 0)), "2026-10-05");
+  check("일요일 → 그 주 월요일", expectedRunDate(new Date(2026, 9, 11, 23)), "2026-10-05");
+
+  const fri = new Date(2026, 9, 9, 15);
+  check("정상", labHealth(fri, "2026-10-05", new Set(["2026-10-05"]), null), []);
+  check("이번 주 스크리닝 없음", labHealth(fri, "2026-10-02", new Set(["2026-10-02"]), null).map((i) => i.kind), ["no-screen"]);
+  check("기록 없음", labHealth(fri, "2026-10-05", new Set(["2026-10-02"]), null).map((i) => i.kind), ["no-record"]);
+  check("스크리닝 0건", labHealth(fri, null, new Set(), null).map((i) => i.kind), ["no-screen"]);
+  const logErr = labHealth(fri, "2026-10-05", new Set(["2026-10-05"]), {
+    file: "2026-10-05_0830.log",
+    text: "[08:30:01] 시작\r\n[08:31:10] ERROR: Claude 실행 실패 (exit: 1)\r\n[08:31:11] 종료",
+  });
+  check("로그 ERROR", logErr, [{ kind: "log-error", file: "2026-10-05_0830.log", line: "[08:31:10] ERROR: Claude 실행 실패 (exit: 1)" }]);
 }
 
 if (failures.length) {

@@ -75,7 +75,12 @@ type Stats = {
   avgExcessPct: number | null;
   beatSpyPct: number | null;
 };
+type HealthIssue =
+  | { kind: "no-screen"; expected: string; latest: string | null }
+  | { kind: "no-record"; runDate: string }
+  | { kind: "log-error"; file: string; line: string };
 type LabData = {
+  health: HealthIssue[];
   screen: {
     runDate: string;
     ruleVersion: string;
@@ -230,10 +235,20 @@ function PickHero({
         <div className="rounded-xl bg-canvas-soft p-4">
           <h3 className="mb-2 text-[13px] text-ink">이건 조심</h3>
           {week.cautions.length > 0 ? (
-            <ul className="flex flex-col gap-1.5 text-[13px] leading-relaxed text-body">
-              {week.cautions.map((c) => (
-                <li key={c}>· {c}</li>
-              ))}
+            // 보고서 문장을 그대로 옮기면 모바일에서 항목마다 3~4줄이 된다 —
+            // "제목: 설명" 의 제목만 굵게 세우고 설명은 2줄에서 자른다(전문은 검증 보고서).
+            <ul className="flex flex-col gap-2.5">
+              {week.cautions.map((c) => {
+                const cut = c.indexOf(": ");
+                const head = cut > 0 && cut < 24 ? c.slice(0, cut) : null;
+                const body = head ? c.slice(cut + 2) : c;
+                return (
+                  <li key={c} className="flex flex-col gap-0.5">
+                    {head && <span className="text-[13px] font-bold text-ink">{head}</span>}
+                    <span className="line-clamp-2 text-[12px] leading-relaxed text-body">{body}</span>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="text-[13px] leading-relaxed text-body">
@@ -517,6 +532,41 @@ function Dots({ level }: { level: number }) {
   );
 }
 
+// ── 자동 실행 경고 ───────────────────────────────────────────────────────
+// 매주 월 08:30 자동 실행이 빠졌거나 실패했을 때만 뜬다. 정상이면 아무것도 그리지 않는다.
+function HealthBanner({ issues }: { issues: HealthIssue[] }) {
+  if (!issues.length) return null;
+  const md = (iso: string) => iso.slice(5).replace("-", "/");
+  return (
+    <Card level="inset" padding="md" className="flex flex-col gap-2" role="alert">
+      <div className="flex items-center gap-2">
+        <StatusChip tone="warn" dot>자동 실행 확인 필요</StatusChip>
+      </div>
+      <ul className="flex flex-col gap-1.5 text-[13px] leading-relaxed text-body">
+        {issues.map((i) =>
+          i.kind === "no-screen" ? (
+            <li key={i.kind}>
+              {md(i.expected)}(월) 정기 실행 기록이 없어요
+              {i.latest ? ` — 마지막 실행은 ${md(i.latest)}` : ""}. PC가 꺼져 있었다면 켜지는 대로 자동으로 돌아요.
+              계속 비어 있으면 <span className="font-mono text-ink">schtasks /run /tn &quot;AI-Berkshire-Lab-Pick&quot;</span>
+            </li>
+          ) : i.kind === "no-record" ? (
+            <li key={i.kind}>
+              {md(i.runDate)} 기계 순위는 나왔는데 추천 기록이 없어요(검증 단계 실패).{" "}
+              <span className="font-mono text-ink">/lab-pick</span> 을 직접 실행하면 이어서 돼요.
+            </li>
+          ) : (
+            <li key={i.kind}>
+              최근 실행 로그에 오류가 있어요 <span className="text-mute">({i.file})</span>
+              <div className="mt-1 rounded-lg bg-canvas-mid px-2.5 py-1.5 font-mono text-[12px] text-body">{i.line}</div>
+            </li>
+          )
+        )}
+      </ul>
+    </Card>
+  );
+}
+
 // ── 본체 ─────────────────────────────────────────────────────────────────
 export function LabView({
   refreshKey = 0,
@@ -572,7 +622,8 @@ export function LabView({
 
   return (
     <div className="flex flex-col gap-10">
-      <section>
+      <section className="flex flex-col gap-4">
+        <HealthBanner issues={data.health ?? []} />
         {week.status === "pick" ? (
           <PickHero week={week} runDate={screen.runDate} ruleVersion={screen.ruleVersion}
             momentumCutPct={screen.momentumCutPct} candidate={pickCandidate} onOpenReport={onOpenReport} />

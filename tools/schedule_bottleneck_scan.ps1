@@ -111,13 +111,31 @@ if ($DryRun) {
   Write-Log "허용 도구: $($allowedTools -join ' ')"
 } else {
   try {
+    # 로그의 N번째 줄 이후만 본다 — 재시도 판정이 첫 시도의 출력을 다시 읽으면 안 된다.
+    function Test-LogSince([int]$fromLine, [string]$pattern) {
+      $lines = @(Get-Content -Path $log -Encoding utf8)
+      if ($lines.Count -le $fromLine) { return $false }
+      return [bool]($lines[$fromLine..($lines.Count - 1)] | Select-String -Pattern $pattern -SimpleMatch -Quiet)
+    }
+    $from = @(Get-Content -Path $log -Encoding utf8).Count
     $code = Invoke-Native { $prompt | & $claude @claudeArgs }
+    # OAuth 갱신 충돌(다른 Claude 프로세스가 동시에 갱신 중)은 일시적이다 → 2분 뒤 **1회만** 재시도(TB-2).
+    # 2026-09-21 · 10-02 두 번 이 충돌로 죽었는데 재시도가 없어 그날 스캔이 통째로 빠졌다.
+    if (Test-LogSince $from 'Failed to refresh OAuth token') {
+      Write-Log "WARN: OAuth 토큰 갱신 충돌 — 120초 뒤 1회 재시도"
+      Start-Sleep -Seconds 120
+      $from = @(Get-Content -Path $log -Encoding utf8).Count
+      $code = Invoke-Native { $prompt | & $claude @claudeArgs }
+    }
     # 도구가 전부 거부돼도 claude 는 exit 0 으로 끝난다 — 로그에 '완료'만 남아 29회 실패가
     # 안 보였다. 거부 문구가 찍혔으면 실패로 남긴다(회귀 감지).
-    if (Select-String -Path $log -Pattern "haven't granted it yet" -SimpleMatch -Quiet) {
+    # exit ≠ 0 도 '완료'로 적지 않는다 — 10-02 OAuth 실패가 "스캔 완료 (exit: 1)"로 찍혀 성공처럼 읽혔다.
+    if (Test-LogSince $from "haven't granted it yet") {
       Write-Log "ERROR: 도구 권한 거부가 감지됨 — --allowedTools 가 전달되지 않았을 수 있다 (exit: $code)"
+    } elseif ($code -ne 0) {
+      Write-Log "ERROR: 스캔 실패 (exit: $code) — 로그 위쪽 출력을 확인"
     } else {
-      Write-Log "스캔 완료 (exit: $code)"
+      Write-Log "스캔 완료 (exit: 0)"
     }
   } catch {
     Write-Log "ERROR: 스캔 실패 — $_"
