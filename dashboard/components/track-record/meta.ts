@@ -136,7 +136,20 @@ export function groupHealthDated(
   return null;
 }
 
-type HealthSource = { health?: number; conviction?: string; date: string; recordedAt?: string };
+/**
+ * 건강도가 **해당 없는** 종목인가 — 최신 콜이 `avoid` 이고 건강도를 적지 않았다.
+ *
+ * 🔴 건강도는 «논제»의 가정·레드라인 상태다. `avoid` 는 논제를 세우지 않는다는 판정이라
+ * (예: 2026-09-23 TECK — 합병으로 소멸해 평가 대상 아님) 잴 대상이 없다. 이때 groupHealthDated 가
+ * 관망 시절의 옛 값을 날짜 달아 끌어오면 «죽은 논제의 건강도»를 보여주게 되고, 빈칸(□)으로 두면
+ * «기록 누락»으로 읽혀 채우라고 재촉한다 — 둘 다 틀린 신호다.
+ */
+export function healthNotApplicable(active: HealthSource[], history: HealthSource[]): boolean {
+  const newest = [...active, ...history].sort(newestFirst)[0];
+  return newest?.call === "avoid" && callHealth(newest) == null;
+}
+
+type HealthSource = { health?: number; conviction?: string; date: string; recordedAt?: string; call?: string };
 
 // 날짜 내림차순, 같은 날이면 기록 시각 내림차순. Array#sort 는 안정 정렬이라 동률이면 입력 순서를 지킨다.
 function newestFirst(a: HealthSource, b: HealthSource): number {

@@ -7,7 +7,7 @@
 //      없었다 — active 는 비지 않기 때문이다(채점이 끝나도 최신 1건을 남긴다).
 //
 // 실행(Node 24+ 타입 스트리핑):  node dashboard/components/track-record/health.test.ts
-import { callHealth, groupHealth, groupHealthDated, parseHealth } from "./meta.ts";
+import { callHealth, groupHealth, groupHealthDated, healthNotApplicable, parseHealth } from "./meta.ts";
 
 const failures: string[] = [];
 function eq(name: string, got: unknown, want: unknown) {
@@ -92,6 +92,16 @@ eq(
   ),
   { value: 7, date: null, stale: false },
 );
+
+// ── avoid 는 '해당 없음' — 관망 시절 옛 값으로 폴백하지 않는다(TECK 2026-09-23) ──
+const teck = [
+  { call: "avoid", date: "2026-09-30" },
+  { call: "avoid", date: "2026-09-23" },
+  { call: "hold", health: 4, date: "2026-08-04" },
+];
+eq("avoid 최신 → 해당 없음", healthNotApplicable(teck, []), true);
+eq("avoid 라도 값을 적었으면 표시", healthNotApplicable([{ call: "avoid", health: 2, date: "2026-09-30" }], []), false);
+eq("hold 최신 → 해당 아님", healthNotApplicable([{ call: "hold", date: "2026-09-30" }, ...teck], []), false);
 
 if (failures.length > 0) {
   console.error(`❌ 건강도 해석 실패 (${failures.length}건):`);

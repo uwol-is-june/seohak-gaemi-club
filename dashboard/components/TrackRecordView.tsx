@@ -45,7 +45,7 @@ import { ReportModal } from "./ReportModal";
 
 import {
   STATUS_STYLE, BAND_META, NL, TRANCHE_HOWTO, moveColor, fmtPrice,
-  groupHealthDated, healthTone, initials, callHealth,
+  groupHealthDated, healthNotApplicable, healthTone, initials, callHealth,
 } from "./track-record/meta";
 
 // 표시 축 — '실제 들고 있는 것'과 '아직 안 산 것'은 읽는 목적이 다르다.
@@ -154,6 +154,7 @@ export function TrackRecordView({ refreshKey = 0 }: { refreshKey?: number } = {}
       if (!lead) return Number.POSITIVE_INFINITY;
       if (sort === "ticker") return 0;
       if (sort === "health") {
+        if (healthNotApplicable(g.active, g.history)) return Number.POSITIVE_INFINITY;
         const h = groupHealthDated(g.active, g.history);
         return h?.value ?? Number.POSITIVE_INFINITY;
       }
@@ -388,7 +389,9 @@ function TickerCard({
   // 🔴 살아있는 논제에 건강도가 없으면 지나간 콜까지 뒤진다(날짜를 달고).
   // 예전 코드는 `active.length > 0 ? active : history` 였는데 **active 는 비는 일이 없어**
   // (채점이 다 끝나도 최신 1건을 남긴다) history 가 실제로 조회된 적이 없었다.
-  const healthAt = groupHealthDated(group.active, group.history);
+  // avoid(논제 없음)는 옛 값으로 폴백하지 않고 '해당 없음'으로 끝낸다 — healthNotApplicable 참조.
+  const healthNA = healthNotApplicable(group.active, group.history);
+  const healthAt = healthNA ? null : groupHealthDated(group.active, group.history);
   const health = healthAt?.value ?? null;
 
   // 추격 금지선 초과 — **접힌 줄에서 바로 보여야 하는 단 하나의 경보**(TASK-113).
@@ -542,14 +545,16 @@ function TickerCard({
             <span
               className={`font-mono text-[12px] ${healthTone(health)}`}
               title={
-                health == null
+                healthNA
+                  ? `해당 없음 — 최신 콜이 회피(avoid)라 건강도를 잴 논제가 없습니다.`
+                  : health == null
                   ? `콜 기록에 건강도가 없습니다.${NL}기록: python3 tools/record_call.py --health N${NL}(정본은 reports/track-record.md 의 건강도 열)`
                   : healthAt?.stale
                     ? `${healthAt.date} 콜에 기록된 값입니다 — 가장 최근 콜은 건강도를 적지 않았습니다.${NL}그 사이 달라졌을 수 있으니 reports/track-record.md 를 확인하세요.`
                     : undefined
               }
             >
-              {health != null ? `${health}/10` : "□"}
+              {healthNA ? <span className="text-[10.5px]">해당 없음</span> : health != null ? `${health}/10` : "□"}
             </span>
             {/* 🔴 낡은 값은 날짜 없이 보여주면 안 된다 — 오늘 값으로 읽힌다. */}
             {healthAt?.stale && healthAt.date && (
