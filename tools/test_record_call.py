@@ -140,6 +140,32 @@ def test_health_warning():
     assert "--health" not in out
 
 
+def test_health_checks_recorded_and_normalized():
+    # 건강도 근거(TASK-167) — 한글·영문·기호 상태어가 met/unmet/pending 으로 박제된다.
+    row, out, err = build(
+        f'{BASE} --call keep --health-check "PPA 추가 체결 | 충족" "FERC 규칙 | 미정" '
+        '--health-check "FCF 마진 10%+ | ❌"'
+    )
+    assert err is None and "근거(--health-check)가 없습니다" not in out
+    assert row["healthChecks"] == [
+        {"cond": "PPA 추가 체결", "status": "met"},
+        {"cond": "FERC 규칙", "status": "pending"},
+        {"cond": "FCF 마진 10%+", "status": "unmet"},
+    ]
+    # 조건 문자열 안의 '|'는 살리고 마지막 '|' 뒤만 상태로 읽는다.
+    row, _, _ = build(f'{BASE} --call keep --health-check "A|B 둘 중 하나 | met"')
+    assert row["healthChecks"] == [{"cond": "A|B 둘 중 하나", "status": "met"}]
+
+
+def test_health_checks_format_and_warning():
+    _, _, err = build(f'{BASE} --call keep --health-check "상태 없는 조건"')
+    assert err and "--health-check" in err
+    _, _, err = build(f'{BASE} --call keep --health-check "조건 | 아마도"')
+    assert err and "--health-check" in err
+    row, out, _ = build(f"{BASE} --call keep")
+    assert "healthChecks" not in row and "근거(--health-check)가 없습니다" in out
+
+
 def test_append_suffixes_id_when_call_differs():
     # 같은 날·같은 스킬 hold 뒤 buy → id 에 -buy 를 붙여 hold 를 보존한다(TASK-139).
     orig = rc.LEDGER

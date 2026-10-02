@@ -581,6 +581,7 @@ python3 tools/record_call.py \
   --report reports/{종목}/{종목}-thesis.md \
   --call {buy|keep|hold|avoid} \
   --conviction "{★평점}" --health {논제 건강도 0~10} --reason "{이 콜을 낸 사유}" \
+  --health-check "{조건1} | {충족|미충족|미정}" "{조건2} | {…}" \
   --tier {T1|T2|T3} --required-mos {요구 MOS %} \
   --target-low {밴드 하단} --target-high {밴드 상단} --horizon-months {기간} \
   --fair-value {내재가치 USD} \
@@ -590,6 +591,9 @@ python3 tools/record_call.py \
 
 - **`--fair-value` 는 논제의 내재가치(목표가)다.** `hold` 의 `--target-low/high` 는 진입 밴드라
   대시보드 '목표가' 칸은 이 값으로만 채워진다 — 빼면 목표가 칸이 `—` 로 남는다. 채점에는 쓰지 않는다.
+- **`--health-check` 는 건강도 점수의 근거다.** 건강도를 매긴 조건(핵심 가정·레드라인)마다 한 줄씩
+  `"조건 | 충족|미충족|미정"` 으로 넘긴다. 대시보드가 펼친 논제에 번호를 붙여 "왜 N/10인지"를
+  보여준다 — 빼면 '근거 미기록'이 뜬다(TASK-167). 값이 그대로여도 매 콜에 다시 넘긴다.
 
 #### 🔴 `hold` 콜에는 체결확률이 필수다 (TASK-99)
 

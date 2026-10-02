@@ -205,6 +205,8 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
   현재 상태)는 다른 축이므로 **둘 다** 넘기고, 값이 그대로여도 매 콜에 다시 넘긴다.
   (2026-09-23 실측: 일괄 재검토 콜 7건이 별점만 적어 10종목 중 8종목의 건강도 칸이 빈칸이 됐다.
   대시보드는 살아있는 논제에 값이 없으면 지난 콜의 값을 **날짜를 달아** 보여준다.)
+- 🔴 **건강도의 근거는 `--health-check "조건 | 충족|미충족|미정"` 으로 조건마다 넘긴다**(TASK-167).
+  대시보드가 펼친 논제에 번호를 붙여 "왜 N/10인지"를 보여준다. 빼면 '근거 미기록'이 뜬다.
 
 ### 🔴 보유 상태의 기본값은 항상 "미보유 · 관망"
 
@@ -278,6 +280,7 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 > # 가상 종목 XYZ — 조건은 전부 10-Q/실적발표로 분기마다 확인 가능한 것만 건다
 > python3 tools/record_call.py --ticker XYZ --skill thesis-tracker --call hold \
 >   --conviction "★★★★☆" --health 7 \
+>   --health-check "10-Q 매출 YoY +8% 이상 | 충족" "가이던스 하향 없음 | 미정" \
 >   --tier T2 --required-mos 25 \
 >   --target-low 148 --target-high 185 --horizon-months 24 \
 >   --fill-probability 18 --low-fill-plan catalyst-wait \

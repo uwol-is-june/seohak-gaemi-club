@@ -1,10 +1,10 @@
 "use client";
 import { readJsonSafe } from "@/lib/fetch-json";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ScoredCall, CallStatus, CallType } from "@/lib/calls";
+import { ScoredCall, CallStatus, CallType, type HealthCheck } from "@/lib/calls";
 import { CALL_LABEL } from "@/lib/report-helpers";
 import { groupTheses, groupGoal, groupTarget, goalGapKey, type ThesisGroup, type RefreshFlag } from "@/lib/thesis-groups";
-import { ladderGating, parseTranches, pricedTranches } from "@/lib/tranche";
+import { parseTranches, pricedTranches } from "@/lib/tranche";
 import type { Holding } from "@/lib/toss";
 import { holdingsCache, hydratePortfolioCache, commitHoldings, fetchHoldingsShared } from "@/lib/portfolio-cache";
 import { Delta } from "./primitives";
@@ -35,7 +35,7 @@ import { ReportModal } from "./ReportModal";
 // 🔴 **모든 종목 카드가 같은 골격이다**(TASK-110). 화면의 유일한 용도가 종목 간 비교인데
 // 카드마다 폭(충돌이면 2열)·논제 열 수(1~3열)·표시 항목(있는 값만 칩으로)이 달라서
 // 나란히 놓고 읽을 수가 없었다. 규칙 셋으로 고정했다:
-//   1) 카드 폭은 언제나 1열, 논제는 **세로로 쌓는다** — 래더의 가격 축 폭이 항상 같다.
+//   1) 카드 폭은 언제나 1열. 논제가 2건 이상이면 펼친 안에서만 **2열로 나란히**(TASK-166).
 //   2) 접힌 줄은 **컬럼 고정** — 매수가 · 다음 매수가 · 현재가 · 매수까지 · 목표가 · 건강도
 //      (TASK-163). 값이 없으면 칸을 지우지 않고 '미보유' · '—' · '□'로 남긴다.
 //   3) 펼친 논제는 **2×3 숫자 표 고정** — 콜 시점 대비 한 줄 · 벤치마크 대비 한 줄.
@@ -45,7 +45,7 @@ import { ReportModal } from "./ReportModal";
 
 import {
   STATUS_STYLE, BAND_META, NL, TRANCHE_HOWTO, moveColor, fmtPrice,
-  groupHealthDated, healthTone, initials,
+  groupHealthDated, healthTone, initials, callHealth,
 } from "./track-record/meta";
 
 // 표시 축 — '실제 들고 있는 것'과 '아직 안 산 것'은 읽는 목적이 다르다.
@@ -55,28 +55,7 @@ type Axis = "all" | "held" | "watch";
 // 정렬 축. 라벨은 "무엇을 기준으로 세로로 읽을 것인가"를 그대로 말한다.
 type SortKey = "gap" | "health" | "ticker";
 
-// 상태 필터 — 축(보유/관찰)과 다른 축이다. "지금 집행을 막고 있는 게 무엇인가"로 좁힌다.
-type Flag = "gated" | "noLadder";
-const FLAG_LABEL: Record<Flag, { label: string; why: string }> = {
-  gated: {
-    label: "조건 대기",
-    why: "AND 조건이 붙은 차수가 있습니다 — 가격이 닿아도 조건 없이는 집행하지 않습니다.",
-  },
-  noLadder: {
-    label: "차수 미분할",
-    why: "가격이 붙은 차수가 없습니다 — 밴드 양끝 두 숫자로는 집행할 수 없습니다.",
-  },
-};
-
-// 종목 하나가 어떤 깃발을 달고 있나. 정렬·필터·행 렌더가 같은 판정을 써야 어긋나지 않는다.
-function flagsOf(g: ThesisGroup): Set<Flag> {
-  const out = new Set<Flag>();
-  // 공통조건(AND: 줄)도 봐야 한다 — ladderGating 이 래더 전체 조건을 차수마다 적용한다(TASK-140).
-  const ladders = g.active.map((c) => ladderGating(parseTranches(c.target?.tranches)));
-  if (ladders.some((l) => l.withCond > 0)) out.add("gated");
-  if (ladders.every((l) => l.total === 0)) out.add("noLadder");
-  return out;
-}
+// (상태 필터 '조건 대기'·'차수 미분할'은 뺐다 — TASK-165. 조건·래더 결측은 펼친 래더가 보여준다.)
 const SORT_LABEL: Record<SortKey, string> = {
   gap: "매수까지 가까운 순",
   health: "건강도 낮은 순",
@@ -103,8 +82,6 @@ export function TrackRecordView() {
   //    기본 정렬이 그 질문을 답해야 한다 — 보유 여부로만 묶으면 10종목에서
   //    가까운 것이 목록 한가운데 묻힌다.
   const [sort, setSort] = useState<SortKey>("gap");
-  // 복수 선택 — 겹치는 종목이 많아 하나만 고르게 하면 오히려 못 찾는다.
-  const [flags, setFlags] = useState<Set<Flag>>(new Set());
   // 펼친 종목 집합은 부모가 쥔다 — '모두 펼치기'가 카드 내부 상태로는 불가능하다.
   const [openTickers, setOpenTickers] = useState<Set<string>>(new Set());
 
@@ -163,19 +140,10 @@ export function TrackRecordView() {
   // (살아있는 논제 우선 → 최근 갱신순 → 티커). 실제로 돈이 들어가 있는 종목이 스크롤
   // 아래에 묻히면, 훑어야 할 것과 지켜봐야 할 것의 우선순위가 뒤집힌다.
   const rows = useMemo(() => {
-    const byAxis =
+    const list =
       axis === "all" || !holdingsReady
         ? groups
         : groups.filter((g) => (axis === "held" ? heldTickers.has(g.ticker) : !heldTickers.has(g.ticker)));
-    // 깃발이 여럿 선택되면 **하나라도 달린** 종목을 남긴다(교집합이면 대개 0건이 된다).
-    const list =
-      flags.size === 0
-        ? byAxis
-        : byAxis.filter((g) => {
-            const f = flagsOf(g);
-            for (const k of flags) if (f.has(k)) return true;
-            return false;
-          });
 
     // 정렬 키를 종목당 하나 뽑는다. 값이 없는 종목은 항상 뒤로 보낸다 —
     // □(미산출)이 위에 섞이면 "가까운 순"이라는 약속이 깨진다.
@@ -205,7 +173,7 @@ export function TrackRecordView() {
     // 위에서 잡은 순서는 그대로 보존된다.
     if (!holdingsReady || axis !== "all") return sorted;
     return sorted.sort((a, b) => Number(heldTickers.has(b.ticker)) - Number(heldTickers.has(a.ticker)));
-  }, [axis, sort, flags, groups, heldTickers, holdingsReady]);
+  }, [axis, sort, groups, heldTickers, holdingsReady]);
 
   const toggleTicker = useCallback((t: string) => {
     setOpenTickers((prev) => {
@@ -215,11 +183,6 @@ export function TrackRecordView() {
       return next;
     });
   }, []);
-  const flagCounts = useMemo(() => {
-    const c: Record<Flag, number> = { gated: 0, noLadder: 0 };
-    for (const g of groups) for (const k of flagsOf(g)) c[k] += 1;
-    return c;
-  }, [groups]);
 
   const allOpen = rows.length > 0 && rows.every((g) => openTickers.has(g.ticker));
   const toggleAll = () => setOpenTickers(allOpen ? new Set() : new Set(rows.map((g) => g.ticker)));
@@ -326,46 +289,6 @@ export function TrackRecordView() {
             </div>
           </div>
 
-          {/* 상태 필터 — "지금 집행을 막고 있는 게 무엇인가"로 좁힌다. 축 탭과 다른 축이다. */}
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            {(Object.keys(FLAG_LABEL) as Flag[]).map((k) => {
-              const on = flags.has(k);
-              const n = flagCounts[k];
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() =>
-                    setFlags((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(k)) next.delete(k);
-                      else next.add(k);
-                      return next;
-                    })
-                  }
-                  aria-pressed={on}
-                  disabled={n === 0}
-                  title={FLAG_LABEL[k].why}
-                  className={`flex min-h-8 items-center gap-1.5 rounded-full px-3 text-[11px] font-medium transition-colors active:scale-95 ${
-                    on ? "bg-warn/20 text-warn" : "bg-canvas-soft text-mute hover:text-ink"
-                  } ${n === 0 ? "cursor-not-allowed opacity-40" : ""}`}
-                >
-                  {FLAG_LABEL[k].label}
-                  <span className={on ? "text-warn/70" : "text-mute/70"}>{n}</span>
-                </button>
-              );
-            })}
-            {flags.size > 0 && (
-              <button
-                type="button"
-                onClick={() => setFlags(new Set())}
-                className="min-h-8 rounded-full px-2.5 text-[11px] text-mute hover:text-ink"
-              >
-                해제
-              </button>
-            )}
-          </div>
-
           {!holdingsReady && (
             <p className="mb-3 text-[11px] text-warn">
               보유 정보를 불러오지 못해 <span className="text-body">보유·관찰 분리가 비활성</span>입니다 — 전체만
@@ -459,7 +382,7 @@ function TickerCard({
   const reached = gapPct != null && gapPct >= 0;
   const goalNoun = goal?.kind === "add" ? "증액(추가 매수)" : "진입(첫 매수)";
   // (거리 막대(TASK-135)와 '조건부 N/M' 칩은 뺐다 — TASK-161·162. 정렬 '매수까지 가까운 순'이
-  //  비교를, 상단 '조건 대기' 필터와 펼친 래더가 조건 정보를 맡는다.)
+  //  비교를, 펼친 래더가 조건 정보를 맡는다.)
 
   // 🔴 살아있는 논제에 건강도가 없으면 지나간 콜까지 뒤진다(날짜를 달고).
   // 예전 코드는 `active.length > 0 ? active : history` 였는데 **active 는 비는 일이 없어**
@@ -700,12 +623,21 @@ function TickerCard({
             </div>
           )}
 
-          {/* 논제 — **항상 세로로 쌓는다. 항상 카드 폭 전체.** 충돌이라고 2열을 차지하거나
-              나란히 눕히면 래더의 가격 축이 종목마다 다른 폭으로 그려져 비교가 깨진다.
-              몇 건이든 같은 규격의 블록이 N개 쌓일 뿐이다(기본이 접힘이라 길이는 문제 아님). */}
-          <div className="mt-3 flex flex-col">
+          {/* 논제 — 1건이면 카드 폭 전체, **2건 이상이면 2열로 나란히**(TASK-166).
+              세로로만 쌓으면 같은 종목의 두 논제를 위아래로 스크롤하며 맞춰봐야 했다.
+              3건 이상은 2열로 래핑하고, md 미만에서는 다시 세로로 쌓는다. */}
+          <div className={`mt-3 grid grid-cols-1 ${group.active.length > 1 ? "md:grid-cols-2" : ""}`}>
             {group.active.map((c, i) => (
-              <div key={c.id} className={i > 0 ? "mt-4 border-t border-hairline pt-4" : ""}>
+              <div
+                key={c.id}
+                className={[
+                  "min-w-0",
+                  // 모바일(세로): 둘째부터 위 구분선 · 데스크톱(2열): 첫 줄 이후만 위 구분선, 오른쪽 열은 왼쪽 구분선.
+                  i > 0 ? "mt-4 border-t border-hairline pt-4" : "",
+                  i === 1 ? "md:mt-0 md:border-t-0 md:pt-0" : "",
+                  i % 2 === 1 ? "md:border-l md:border-hairline md:pl-4" : "md:pr-4",
+                ].join(" ")}
+              >
                 <ThesisBlock
                   call={c}
                   avgPrice={avgPrice}
@@ -785,6 +717,8 @@ function ThesisBlock({
           </span>
         )}
       </div>
+
+      <HealthReasons call={c} />
 
       <LadderChart
         tranches={tranches}
@@ -869,6 +803,56 @@ function ThesisBlock({
           title="이 판단을 따랐을 때 SPY 대비 포기한 수익(0 이하는 이득)"
         />
       </div>
+    </div>
+  );
+}
+
+// ── 건강도 근거(TASK-167) ─────────────────────────────────────────────────
+// "왜 N/10인가"를 조건 번호 + 충족 여부로만 보여준다. 산문 요약은 하지 않는다 —
+// 근거 문장은 기록할 때 박제된 것만 쓰고, 없으면 지어내지 않고 '미기록'으로 남긴다.
+const CHECK_MARK: Record<HealthCheck["status"], { mark: string; label: string; tone: string }> = {
+  met: { mark: "✓", label: "충족", tone: "text-success" },
+  unmet: { mark: "✕", label: "미충족", tone: "text-danger" },
+  pending: { mark: "…", label: "미정", tone: "text-warn" },
+};
+
+function HealthReasons({ call: c }: { call: ScoredCall }) {
+  const health = callHealth(c);
+  const checks = c.healthChecks ?? [];
+  if (health == null && checks.length === 0) return null;
+  const met = checks.filter((k) => k.status === "met").length;
+  return (
+    <div className="mb-2 rounded-md border border-hairline px-2.5 py-1.5">
+      <div className="mb-1 flex items-baseline gap-1.5">
+        <span className="eyebrow text-[9px]">건강도</span>
+        <span className={`font-mono text-[12px] ${healthTone(health)}`}>{health != null ? `${health}/10` : "□"}</span>
+        {checks.length > 0 && (
+          <span className="text-[10px] text-mute">
+            조건 {checks.length}개 중 {met}개 충족
+          </span>
+        )}
+      </div>
+      {checks.length > 0 ? (
+        <ol className="flex flex-col gap-0.5">
+          {checks.map((k, i) => {
+            const m = CHECK_MARK[k.status] ?? CHECK_MARK.pending;
+            return (
+              <li key={i} className="flex items-baseline gap-1.5 text-[11px] leading-snug">
+                <span className="w-4 shrink-0 font-mono text-[10px] text-mute">{i + 1}.</span>
+                <span className="min-w-0 flex-1 text-body">{k.cond}</span>
+                <span className={`shrink-0 whitespace-nowrap font-mono text-[10px] ${m.tone}`}>
+                  {m.mark} {m.label}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <p className="text-[10px] leading-snug text-mute">
+          근거 미기록 — 다음 검토 때{" "}
+          <code className="font-mono">--health-check &quot;조건 | 충족&quot;</code> 으로 기록합니다.
+        </p>
+      )}
     </div>
   );
 }

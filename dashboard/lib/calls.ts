@@ -18,6 +18,9 @@ const DRIFT_TOLERANCE_PCT = 10;
 const MIN_RESOLVE_DAYS = 30;
 
 // data/calls.jsonl 한 줄 = 콜 하나. record_call.py 가 기록한 불변 스냅샷.
+/** 건강도 근거 한 줄 — 상태 어휘는 셋뿐(record_call.py HEALTH_CHECK_STATUS 가 정규화). */
+export type HealthCheck = { cond: string; status: "met" | "unmet" | "pending" };
+
 export interface RawCall {
   id: string;
   ticker: string;
@@ -39,6 +42,8 @@ export interface RawCall {
    * 없는 옛 콜만 텍스트 파싱으로 폴백한다.
    */
   health?: number;
+  /** 건강도 근거 — 조건별 충족 여부(TASK-167). record_call.py --health-check 로 기록. 옛 콜엔 없다. */
+  healthChecks?: HealthCheck[];
   report?: string;
   /**
    * 퀄리티 티어(skills/quality-tier.md). 요구 안전마진이 티어별로 다르므로
@@ -118,6 +123,7 @@ export interface ScoredCall {
   conviction?: string;
   /** 논제 건강도 0~10. 채점에 쓰이지 않는 상태 서술(RawCall.health 참조). */
   health?: number;
+  healthChecks?: HealthCheck[];
   report?: string;
   tier?: "T1" | "T2" | "T3";
   requiredMosPct?: number;
@@ -347,6 +353,7 @@ export function scoreCall(
     skill: call.skill,
     conviction: call.conviction,
     health: call.health,
+    healthChecks: call.healthChecks,
     report: call.report,
     tier: call.tier,
     requiredMosPct: call.requiredMosPct,

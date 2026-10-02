@@ -575,6 +575,7 @@ python3 tools/record_call.py \
   --ticker {티커} --skill investment-team \
   --report reports/{티커}/FinalReport.md \
   --call {buy|hold|avoid} --conviction "{종합 확신도}" --health {논제 건강도 0~10} \
+  --health-check "{조건1} | {충족|미충족|미정}" "{조건2} | {…}" \
   --tier {T1|T2|T3} --required-mos {요구 MOS %} \
   --target-low {목표 하단} --target-high {목표 상단} --horizon-months {기간} \
   --fair-value {내재가치 USD} \
@@ -594,6 +595,9 @@ python3 tools/record_call.py \
   쓴다 — `hold` 의 밴드는 진입가라 목표가로 쓸 수 없다. 채점에는 쓰지 않는다.
 - `--health` 는 Risk 관점(리루) 보고서의 가정·레드라인 상태를 0~10으로 넘긴다 — 빼면
   대시보드 건강도 칸이 '측정 안 함'이 된다.
+- `--health-check` 는 그 점수의 **근거**다 — 건강도를 매긴 조건(핵심 가정·레드라인)마다 한 줄씩
+  `"조건 | 충족|미충족|미정"` 으로 넘긴다. 대시보드가 펼친 논제에 번호를 붙여 "왜 N/10인지"를 보여준다.
+  빼면 화면에 '근거 미기록'이 뜬다(TASK-167).
 
 #### 🔴 `hold` 콜에는 체결확률이 필수다 (TASK-99)
 

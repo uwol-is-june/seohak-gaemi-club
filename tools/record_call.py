@@ -168,6 +168,32 @@ def validate_tranches(tranches: list[str] | None) -> None:
   자유 서술(예: "잔여는 조정 시 분할")은 --reason 이나 논제 파일에 적으세요.""")
 
 
+# 건강도 근거(TASK-167) — "조건 | 상태". 상태 어휘는 셋뿐이다: 충족 · 미충족 · 미정.
+# 한글·영문·기호 어느 쪽으로 적어도 같은 값으로 박제한다(대시보드는 met/unmet/pending 만 읽는다).
+HEALTH_CHECK_STATUS = {
+    "met": "met", "충족": "met", "달성": "met", "✅": "met", "o": "met",
+    "unmet": "unmet", "미충족": "unmet", "미달성": "unmet", "❌": "unmet", "x": "unmet",
+    "pending": "pending", "미정": "pending", "확인중": "pending", "⏳": "pending", "?": "pending",
+}
+
+
+def parse_health_checks(raw: list[str] | None) -> list[dict] | None:
+    """`--health-check "조건 | 상태"` 들을 [{cond, status}] 로. 형식이 틀리면 종료한다."""
+    if not raw:
+        return None
+    out: list[dict] = []
+    for item in raw:
+        cond, sep, status = item.rpartition("|")
+        cond, key = cond.strip(), status.strip().lower()
+        if not sep or not cond or key not in HEALTH_CHECK_STATUS:
+            sys.exit(
+                f'오류: --health-check 는 "조건 | 충족|미충족|미정" 형식이어야 합니다: {item!r}\n'
+                '   예: --health-check "데이터센터 PPA 추가 체결 | 충족"'
+            )
+        out.append({"cond": cond, "status": HEALTH_CHECK_STATUS[key]})
+    return out
+
+
 def build_call(args: argparse.Namespace) -> dict:
     ticker = normalize_ticker(args.ticker)
     call_date = parse_call_date(args.date, args.price)
@@ -194,6 +220,10 @@ def build_call(args: argparse.Namespace) -> dict:
     if args.health is None and (call in ("keep", "hold") or args.skill in THESIS_SKILLS):
         print("⚠️ 경고: --health 가 없습니다. 논제 건강도(0~10)를 넘기지 않으면 대시보드 건강도 칸이\n"
               "   '측정 안 함'으로 남습니다. 값이 그대로여도 매 콜에 다시 넘기세요(CLAUDE.md).")
+    health_checks = parse_health_checks(args.health_check)
+    if args.health is not None and health_checks is None:
+        print("⚠️ 경고: --health 에 근거(--health-check)가 없습니다. 대시보드가 '왜 N/10인지'를\n"
+              '   보여주지 못합니다. 조건마다 --health-check "조건 | 충족|미충족|미정" 을 넘기세요.')
 
     if args.fair_value is not None and args.fair_value <= 0:
         sys.exit(f"오류: --fair-value 는 양수(USD)여야 합니다: {args.fair_value}")
@@ -236,6 +266,8 @@ def build_call(args: argparse.Namespace) -> dict:
         row["conviction"] = args.conviction
     if args.health is not None:
         row["health"] = round(float(args.health), 1)
+    if health_checks:
+        row["healthChecks"] = health_checks
     if args.reason:
         row["reason"] = args.reason
     if tier:
@@ -405,6 +437,10 @@ def build_parser() -> argparse.ArgumentParser:
                          "🔴 별점(--conviction)과 다른 축이다 — 별점은 확신도, 건강도는 "
                          "가정·레드라인의 현재 상태다. 자유 텍스트에 적지 말고 이 플래그로 "
                          "넘긴다(대시보드가 숫자 필드를 먼저 읽는다)")
+    ap.add_argument("--health-check", nargs="*", action="extend", default=None,
+                    help='건강도 근거 — 조건마다 하나씩 "조건 | 상태". 상태는 충족 · 미충족 · 미정 '
+                         '(met/unmet/pending · ✅/❌/⏳ 도 됨). 대시보드가 펼친 논제에 번호를 붙여 보여준다. '
+                         '예: --health-check "PPA 추가 체결 | 충족" "FERC 규칙 확정 | 미정"')
     ap.add_argument("--reason", help="이 콜을 낸 사유 (예: 목표가 대비 고평가라 진입 대기)")
     ap.add_argument("--price", type=float, help="콜 시점 주가(USD). 생략 시 Yahoo에서 fetch")
     ap.add_argument("--target-low", type=float, help="목표가 밴드 하단(USD)")
