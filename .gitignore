@@ -33,3 +33,6 @@ assets/cards/
 
 # config-store 원자적 쓰기 임시 파일(TASK-157)
 data/*.tmp
+
+# 실험실 원자료 캐시 (SEC·Yahoo — lab_screen.py 가 재생성). screen-*.json 은 커밋한다(사전 등록 증거)
+data/_lab/cache/
