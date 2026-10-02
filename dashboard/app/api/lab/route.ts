@@ -11,6 +11,7 @@ import { requireAuth } from "@/lib/api-auth";
 import type { ClosePoint } from "@/lib/calls";
 import {
   cumulativeSeries,
+  extractCautions,
   groupStats,
   parseLabRows,
   scoreLabCall,
@@ -267,7 +268,13 @@ export async function GET() {
     if (pickRow) {
       const ref = pickRow.kind === "repeat" ? pickRow.ref : pickRow.id;
       const scoredPick = scored.find((c) => c.id === ref) ?? null;
+      // 반대 근거는 검증 보고서가 원본이다(기록부는 append-only 라 나중에 덧붙일 수 없다).
+      const reportPath = pickRow.report ?? scoredPick?.report ?? null;
+      const reportMd = reportPath && /^reports\/lab\/[\w.-]+\.md$/.test(reportPath)
+        ? await readText(...reportPath.split("/"))
+        : null;
       week = {
+        cautions: reportMd ? extractCautions(reportMd) : [],
         status: "pick",
         repeat: pickRow.kind === "repeat",
         pick: scoredPick,

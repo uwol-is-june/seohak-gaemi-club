@@ -275,6 +275,32 @@ export function cumulativeSeries(
   return out;
 }
 
+/**
+ * 검증 보고서의 "## 이건 조심" 절에서 최상위 글머리표를 뽑는다(카드의 반대 근거 칸용).
+ * 판단 기록부는 append-only 라 반대 근거를 나중에 덧붙일 수 없어서, 보고서를 원본으로 읽는다.
+ * 링크는 텍스트만 남기고 굵게·🟡 표기는 지운다 — 카드에서는 출처 대신 보고서 버튼으로 간다.
+ */
+export function extractCautions(md: string, max = 3): string[] {
+  const lines = md.split(/\r?\n/);
+  const start = lines.findIndex((l) => /^##\s+이건 조심/.test(l));
+  if (start < 0) return [];
+  const out: string[] = [];
+  for (const l of lines.slice(start + 1)) {
+    if (/^##\s/.test(l)) break;
+    const m = /^-\s+(.*)$/.exec(l);
+    if (!m) continue;
+    const text = m[1]
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/\*\*/g, "")
+      .replace(/\s*🟡/g, "")
+      .replace(/\s+—\s+[^—]*$/, (tail) => (/https?:|\.com|\.st|\.gov/.test(tail) ? "" : tail))
+      .trim();
+    if (text) out.push(text);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
 /** 백분위 → 5단 게이지 (LAB-SPEC 5절). */
 export function gaugeLevel(pct: number | null | undefined): number {
   if (pct == null || Number.isNaN(pct)) return 0;

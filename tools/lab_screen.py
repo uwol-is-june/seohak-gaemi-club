@@ -608,6 +608,21 @@ def coverage_report(universe: list[dict], data: dict[str, dict], run_date: date)
     }
 
 
+def already_recorded(run_date: date, ledger: Path = REPO_ROOT / "data" / "lab-calls.jsonl") -> bool:
+    """그 실행일의 픽·없음이 판단 기록부에 있는가."""
+    if not ledger.exists():
+        return False
+    iso = run_date.isoformat()
+    for line in ledger.read_text(encoding="utf-8").splitlines():
+        try:
+            r = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if r.get("date") == iso and r.get("kind") in ("call", "none", "repeat"):
+            return True
+    return False
+
+
 def json_safe(o):
     """비유한 실수(inf · NaN)를 null 로. 표준 JSON 에는 Infinity 가 없어 대시보드의 JSON.parse 가
     파일 전체를 거부한다(2026-10-02 실측: Q3 = inf 한 종목 때문에 탭이 '실행 기록 없음'으로 떴다).
@@ -634,6 +649,12 @@ def main() -> int:
     FORCE_REFRESH = args.refresh and not args.offline
 
     run_date = date.fromisoformat(args.date) if args.date else date.today()
+    # 🔴 기록된 실행일의 스크리닝은 덮어쓰지 않는다 — 픽의 시점가·목표가·순위의 근거(사전 등록 증거)다.
+    #    같은 날 다시 돌리면 장중 시세로 값이 바뀌어 기록과 근거가 어긋난다.
+    if not args.collect_only and not args.tickers and already_recorded(run_date):
+        print(f"중단: {run_date} 실행은 이미 판단 기록부(data/lab-calls.jsonl)에 기록돼 있어 "
+              f"screen-{run_date.strftime('%Y%m%d')}.json 을 덮어쓰지 않습니다.", file=sys.stderr)
+        return 0
     uni = fetch_universe(args.offline)
     universe = uni["constituents"]
     if args.tickers:

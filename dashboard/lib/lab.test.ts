@@ -5,6 +5,7 @@ import type { ClosePoint } from "./calls.ts";
 import {
   closeOnOrBefore,
   cumulativeSeries,
+  extractCautions,
   gaugeLevel,
   groupStats,
   horizonEnd,
@@ -94,6 +95,28 @@ check(
   check("누적선 대조군은 청산값 고정", cum.map((p) => Math.round(p.control ?? NaN)), [0, -10, -20]);
   check("누적선 SPY(같은 날 샀다면)", cum.map((p) => Math.round(p.spy ?? NaN)), [0, 2, 4]);
   check("픽 없으면 빈 선", cumulativeSeries([], [b], closes, SPY, "2026-12-01"), []);
+}
+
+// ── 보고서 "이건 조심" 추출 ─────────────────────────────────────────────
+{
+  const md = [
+    "# 제목",
+    "## 이건 조심 (반대 근거)",
+    "",
+    "- **중국 급감**: Q2 −28% — [Investing.com 🟡](https://x.com/a) · [Simply Wall St 🟡](https://y.st/b)",
+    "- **추세가 경계선 근처**: 경계와 2%p 차이",
+    "  - 들여쓴 하위 항목은 무시",
+    "- 세 번째",
+    "- 네 번째는 max 로 잘림",
+    "## 데이터 출처",
+    "- 여기는 다른 절",
+  ].join("\r\n");
+  check("조심 추출", extractCautions(md), [
+    "중국 급감: Q2 −28%",
+    "추세가 경계선 근처: 경계와 2%p 차이",
+    "세 번째",
+  ]);
+  check("절 없음", extractCautions("# 제목\n- 항목"), []);
 }
 
 if (failures.length) {

@@ -36,3 +36,6 @@ data/*.tmp
 
 # 실험실 원자료 캐시 (SEC·Yahoo — lab_screen.py 가 재생성). screen-*.json 은 커밋한다(사전 등록 증거)
 data/_lab/cache/
+
+# 실험실 주간 자동 실행 로그 (schedule_lab_pick.ps1)
+logs/lab-pick/

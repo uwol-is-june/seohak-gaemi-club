@@ -92,7 +92,16 @@ type LabData = {
     | { status: "empty" }
     | { status: "pending" }
     | { status: "none"; rejected: Rejected[]; report: string | null }
-    | { status: "pick"; repeat: boolean; pick: ScoredPick | null; rejected: Rejected[]; report: string | null; existing: Existing };
+    | {
+        status: "pick";
+        repeat: boolean;
+        pick: ScoredPick | null;
+        rejected: Rejected[];
+        report: string | null;
+        existing: Existing;
+        /** 검증 보고서 "이건 조심" 절의 글머리표 */
+        cautions: string[];
+      };
   history: HistoryRow[];
   stats: { lab: Stats; control: Stats };
   series: CumPoint[];
@@ -220,22 +229,26 @@ function PickHero({
         </div>
         <div className="rounded-xl bg-canvas-soft p-4">
           <h3 className="mb-2 text-[13px] text-ink">이건 조심</h3>
-          {week.rejected.length > 0 ? (
+          {week.cautions.length > 0 ? (
             <ul className="flex flex-col gap-1.5 text-[13px] leading-relaxed text-body">
-              {week.rejected.map((r) => (
-                <li key={r.ticker}>
-                  · 위 순위 <span className="font-mono text-ink">{r.ticker}</span>는 탈락 — {r.reason}
-                </li>
+              {week.cautions.map((c) => (
+                <li key={c}>· {c}</li>
               ))}
             </ul>
           ) : (
             <p className="text-[13px] leading-relaxed text-body">
-              1위가 결격 검증을 통과했어요. 반대 근거는 검증 보고서에 있어요.
+              평균회귀 가정이 깨지는 경우(사업 구조 변화)가 가장 큰 위험이에요. 자세한 반대 근거는 검증 보고서에 있어요.
             </p>
           )}
-          <p className="mt-2 text-[12px] text-mute">
-            평균회귀 가정이 깨지는 경우(사업 구조 변화)가 가장 큰 위험이에요.
-          </p>
+          {week.rejected.length > 0 && (
+            <ul className="mt-3 flex flex-col gap-1 border-t border-hairline pt-3 text-[12px] text-mute">
+              {week.rejected.map((r) => (
+                <li key={r.ticker}>
+                  위 순위 <span className="font-mono text-body">{r.ticker}</span> 탈락 — {r.reason}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 

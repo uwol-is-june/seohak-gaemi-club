@@ -241,6 +241,18 @@ def test_upside_gate_applied_after_ranking():
     assert res["stocks"]["IN"]["score"]["v1"] == 100.0
 
 
+def test_already_recorded_blocks_overwrite_of_recorded_run():
+    import json
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        led = Path(d) / "lab-calls.jsonl"
+        assert L.already_recorded(RUN, led) is False  # 기록부 없음
+        led.write_text(json.dumps({"date": "2026-10-02", "kind": "decision"}) + "\n", encoding="utf-8")
+        assert L.already_recorded(RUN, led) is False  # 수락 기록은 실행 기록이 아니다
+        led.write_text(json.dumps({"date": "2026-10-02", "kind": "call"}) + "\n깨진 줄\n", encoding="utf-8")
+        assert L.already_recorded(RUN, led) is True
+
+
 def test_json_safe_strips_non_finite():
     import json
     out = L.json_safe({"a": float("inf"), "b": [float("nan"), 1.5], "c": {"d": float("-inf")}})
