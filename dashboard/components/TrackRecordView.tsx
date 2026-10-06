@@ -608,9 +608,13 @@ function TickerCard({
             {target?.ext != null && (
               <span
                 className={`block font-mono text-[10px] ${
-                  target.price / target.ext.price < 0.75 || target.price / target.ext.price > 1.25 ? "text-warn" : "text-mute"
+                  (target.price / target.ext.price < 0.75 || target.price / target.ext.price > 1.25) && !target.ext.note
+                    ? "text-warn"
+                    : "text-mute"
                 }`}
-                title={`${target.ext.source === "morningstar" ? "모닝스타 적정가" : "애널 평균 목표가 현가(÷1.08)"} — 우리 내재가치는 그 ${((target.price / target.ext.price) * 100).toFixed(0)}%`}
+                title={`${target.ext.source === "morningstar" ? "모닝스타 적정가" : "애널 평균 목표가 현가(÷1.08)"} — 우리 내재가치는 그 ${((target.price / target.ext.price) * 100).toFixed(0)}%${
+                  target.ext.note ? `${NL}해명됨: ${target.ext.note}` : ""
+                }`}
               >
                 {target.ext.source === "morningstar" ? "MS" : "애널"} {fmtPrice(target.ext.price)}
               </span>

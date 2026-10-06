@@ -390,6 +390,9 @@ python3 tools/record_call.py \
 - 🔴 **`--fair-value` 는 오늘 가치(현가 IV)다** — `financial_rigor.py three-scenario` 출력의 `Intrinsic value (today)`.
   3년 목표가를 그대로 넣지 않는다. `--ext-fair-value` 는 `python3 tools/external_value.py {티커} --iv {IV}` 산출값이며,
   빠지면 게이트 5가 경고하고 대시보드에 외부 비교가 안 뜬다([quality-tier.md](skills/quality-tier.md) 2.1·2.2단계).
+- 🔴 **외부 75~125% 밖이면 해명 표를 쓴 뒤 `--ext-gap-explained "해명 위치 · 요지"` 를 함께 넘긴다**(TASK-193).
+  빠지면 대시보드가 '갱신 필요 /스킬' 칩을 띄운다 — 다시 돌려도 정직한 IV 는 같은 자리에 나오므로
+  재실행으로는 꺼지지 않는다. 외부 값에 맞추려 가정을 역산하지 않는다.
 - 관문5에서 산출한 내재가치(현가 IV)는 `--fair-value {USD}` 로 넘긴다 — 대시보드 '목표가' 칸이
   이 값을 쓴다(`hold` 의 밴드는 진입가라 목표가로 쓸 수 없다). 채점에는 쓰지 않는다.
 - **`hold` + 밴드면 `--fill-probability` 가 필수다** — 아래 절 참조.

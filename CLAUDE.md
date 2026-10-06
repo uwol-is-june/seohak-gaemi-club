@@ -394,7 +394,7 @@ IV 정의 혼재(3년 목표가 vs 현가) · 하향만 찾는 감사. 우리가
 | **내재가치 = 오늘 가치** | 확률가중 3년 목표가 ÷ 1.08³. `financial_rigor.py three-scenario` 가 `Intrinsic value (today)` 로 출력. DCF 할인율 8%(티어 무관) |
 | **목표 PER 기본값** | `python3 tools/pe_history.py {티커}` — Base 10년 중앙값 · Bull 75분위 · Bear 10년 최저 · 상한 30x. 낮추려면 "체질 변화" 근거 |
 | **확률 · 성장률** | 25/50/25 · Base 성장률 = 컨센서스 ±5pp. 벗어나면 근거(양방향) |
-| **외부 교차점검** | `python3 tools/external_value.py {티커} --iv {IV}` — 모닝스타(없으면 애널 목표가 ÷1.08)의 75~125% 밖이면 가정별 해명. `--ext-fair-value` 로 기록 |
+| **외부 교차점검** | `python3 tools/external_value.py {티커} --iv {IV}` — 모닝스타(없으면 애널 목표가 ÷1.08)의 75~125% 밖이면 가정별 해명. `--ext-fair-value` 로 기록 · 해명했으면 `--ext-gap-explained "위치 · 요지"` (없으면 대시보드 '갱신 필요' — 재실행으로 안 꺼진다) |
 | **양방향 감사** | 감사·재산정은 ⬇ 과대평가 의심과 ⬆ 과소평가 의심을 같은 표에 함께 출력 |
 | **보정 목표** | 가치 판단 **55~65점**(IV/현재가 1.04~1.15) · T1·T2 매수선 **45~52점**(0.93~1.00). `python3 tools/calibration_check.py --live --record` 로 분기마다 측정·누적(기준점 2026-10-02: 53점·49점) |
 

@@ -207,6 +207,16 @@ def test_gate5_external_fair_value_recorded_and_checked():
     assert "낙관 이탈" in out
 
 
+def test_gate5_explained_gap_is_recorded_and_silences_warning():
+    row, out, err = build(f'{BASE} --call keep --fair-value 600 --ext-fair-value 433 --ext-source morningstar '
+                          f'--ext-gap-explained "02-report-explained"')
+    assert err is None
+    assert row["target"]["extGapNote"] == "02-report-explained"
+    assert "낙관 이탈.\n" not in out and "해명 기록됨" in out
+    _, _, err = build(f'{BASE} --call keep --fair-value 600 --ext-gap-explained "x"')
+    assert err and "--ext-fair-value" in err
+
+
 def test_gate5_requires_source_and_warns_when_missing():
     _, _, err = build(f"{BASE} --call keep --fair-value 300 --ext-fair-value 433")
     assert err and "--ext-source" in err

@@ -7,7 +7,7 @@
 // 실행(Node 24+ 타입 스트리핑):  node dashboard/lib/thesis-groups.test.ts
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { scoreCall, type RawCall, type ScoredCall } from "./calls.ts";
+import { dedupeCalls, scoreCall, type RawCall, type ScoredCall } from "./calls.ts";
 import {
   bandDrift,
   detectConflict,
@@ -299,7 +299,8 @@ try {
   }
   // 시세 없이(priceNow=null) 채점하면 전부 unknown = 전부 '살아있음'이 되어
   // 묶기·충돌 로직이 최대 부하로 돌아간다(가장 많은 논제가 병렬로 서는 경우).
-  const scored = rows
+  // 라우트(/api/calls)와 같게 정정본(같은 id·늦게 기록된 줄)만 남긴다 — 안 하면 화면에 없는 낡은 줄까지 요약된다.
+  const scored = dedupeCalls(rows)
     .map((r) => scoreCall(r, null, TODAY))
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
   const groups = groupTheses(scored);
@@ -341,6 +342,11 @@ try {
   check("IV 139% → 낙관 이탈", externalGap(ev(600, 433))?.side, "optimistic");
   check("외부 미기록 → 판정 없음", externalGap(ev(300, undefined)), null);
   check("이탈 → 갱신 사유", detectRefresh([ev(300, 433)])[0]?.reasons.some((r) => r.includes("보수 이탈")), true);
+  // TASK-193: 해명이 기록된 이탈은 갱신 사유가 아니다(판정 자체는 남겨 화면이 '해명됨'을 보여준다).
+  const explained = call({ skill: "thesis-tracker", target: { low: 90, high: 100, fairValue: 600, extFairValue: 433, extSource: "morningstar", extGapNote: "02 해명 표" } } as Partial<RawCall> & { skill: string }, 100);
+  check("해명된 이탈 → explained", externalGap(explained)?.explained, true);
+  check("해명된 이탈 → 갱신 사유 없음", detectRefresh([explained]).length, 0);
+  check("해명 없는 이탈 → explained false", externalGap(ev(600, 433))?.explained, false);
 }
 
 // ── 제외 논제 (TASK-192): 살아있는 판단이 전부 avoid 면 제외 ──────────────────

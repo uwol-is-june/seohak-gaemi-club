@@ -66,6 +66,8 @@ export interface RawCall {
     extFairValue?: number;
     /** 외부 적정가 출처: "morningstar" | "analystPV" */
     extSource?: string;
+    /** 외부 75~125% 이탈의 해명 위치·요지(TASK-193). 있으면 '갱신 필요' 대신 '해명됨'. */
+    extGapNote?: string;
     /**
      * 이 밴드가 호라이즌 안에 체결될 확률(%) — 과거 낙폭 베이스레이트(tools/fill_probability.py).
      * "unknown" 은 상장 이력이 짧아 산출 불가라는 뜻이며, 0% 와 구분해야 한다.
@@ -162,6 +164,8 @@ export interface ScoredCall {
     extFairValue?: number;
     /** 외부 적정가 출처: "morningstar" | "analystPV" */
     extSource?: string;
+    /** 외부 75~125% 이탈의 해명 위치·요지(TASK-193). 있으면 '갱신 필요' 대신 '해명됨'. */
+    extGapNote?: string;
     /**
      * 이 밴드가 호라이즌 안에 체결될 확률(%) — 과거 낙폭 베이스레이트(tools/fill_probability.py).
      * "unknown" 은 상장 이력이 짧아 산출 불가라는 뜻이며, 0% 와 구분해야 한다.

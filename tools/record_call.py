@@ -238,7 +238,10 @@ def build_call(args: argparse.Namespace) -> dict:
             sys.exit(f"오류: --ext-fair-value 는 양수(USD)여야 합니다: {args.ext_fair_value}")
         if ext_source not in VALID_EXT_SOURCES:
             sys.exit(f"오류: --ext-fair-value 에는 --ext-source {VALID_EXT_SOURCES} 가 필요합니다.")
-    _check_external_gap(args.fair_value, args.ext_fair_value, ext_source, call, ticker)
+    ext_gap_note = args.ext_gap_explained.strip() if args.ext_gap_explained else None
+    if ext_gap_note is not None and args.ext_fair_value is None:
+        sys.exit("오류: --ext-gap-explained 는 --ext-fair-value 와 함께 넘겨야 합니다(무엇에 대한 해명인지 없음).")
+    _check_external_gap(args.fair_value, args.ext_fair_value, ext_source, call, ticker, ext_gap_note)
 
     if args.target_low is not None and args.target_high is not None and args.target_low > args.target_high:
         sys.exit(f"오류: --target-low {args.target_low} 가 --target-high {args.target_high} 보다 큽니다.")
@@ -318,6 +321,10 @@ def build_call(args: argparse.Namespace) -> dict:
             # 외부 적정가(모닝스타 또는 애널 목표가 현가) — 우리 IV 의 거울(TASK-175).
             target["extFairValue"] = args.ext_fair_value
             target["extSource"] = ext_source
+        if ext_gap_note:
+            # 외부 이탈 해명 위치·요지(TASK-193). 이탈 자체는 오류가 아니다 — 해명 없는 이탈이 오류다.
+            # 이 값이 있으면 대시보드는 '갱신 필요'를 띄우지 않고 해명됨으로 표시한다.
+            target["extGapNote"] = ext_gap_note
         if fill is not None:
             # "unknown"은 문자열 그대로 박제한다 — 0% 로 뭉개면 "확률이 0"과 구분이 사라진다.
             target["fillProbability"] = fill
@@ -394,7 +401,7 @@ def _check_band_gates(
 
 
 def _check_external_gap(iv: float | None, ext: float | None, source: str | None,
-                        call: str, ticker: str) -> None:
+                        call: str, ticker: str, note: str | None = None) -> None:
     """게이트 5 (TASK-175): 우리 IV 가 외부 적정가와 25% 넘게 벌어지면 경고한다.
 
     2026-10-02 진단: 시스템 IV 가 모닝스타 적정가의 중앙값 88%였고 SAP 61%·TSM 66% 까지 벌어졌는데
@@ -412,8 +419,12 @@ def _check_external_gap(iv: float | None, ext: float | None, source: str | None,
     ratio = iv / ext
     if ratio < EXT_GAP_LOW or ratio > EXT_GAP_HIGH:
         side = "보수" if ratio < EXT_GAP_LOW else "낙관"
+        if note:
+            print(f"외부 이탈 {ratio * 100:.0f}% ({side}) — 해명 기록됨: {note}")
+            return
         print(f"⚠️ 경고: 내재가치 ${iv:,.2f} 가 외부 적정가({source}) ${ext:,.2f} 의 {ratio * 100:.0f}% — {side} 이탈.\n"
-              "   논제에 '왜 외부와 다른가'를 가정별(성장률·목표 PER·확률·할인율)로 해명했는지 확인하세요.")
+              "   논제에 '왜 외부와 다른가'를 가정별(성장률·목표 PER·확률·할인율)로 해명하고\n"
+              "   --ext-gap-explained \"해명 위치 · 요지\" 로 넘기세요. 없으면 대시보드가 '갱신 필요'를 띄웁니다.")
 
 
 def _tranche_price(text: str) -> float | None:
@@ -503,6 +514,10 @@ def build_parser() -> argparse.ArgumentParser:
                     help="외부 적정가(USD) — python3 tools/external_value.py 산출값. 우리 IV 의 거울")
     ap.add_argument("--ext-source", default=None,
                     help="외부 적정가 출처: morningstar | analystPV (애널 평균 목표가 ÷1.08)")
+    ap.add_argument("--ext-gap-explained", default=None,
+                    help="외부 적정가 75~125%% 이탈의 해명 위치·요지 "
+                         "(예: \"02 보고서 가정별 해명 — AI 부문 가치 차이\"). "
+                         "넘기면 대시보드가 '갱신 필요' 대신 '해명됨'으로 표시한다(TASK-193)")
     ap.add_argument("--fill-probability", default=None,
                     help="진입 밴드가 호라이즌 안에 체결될 확률(%%) 또는 'unknown'. "
                          "python3 tools/fill_probability.py 로 산출한다. "

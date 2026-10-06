@@ -648,6 +648,9 @@ python3 tools/record_call.py \
 - 🔴 **`--fair-value` 는 오늘 가치(현가 IV)다** — `financial_rigor.py three-scenario` 출력의 `Intrinsic value (today)`.
   3년 목표가를 그대로 넣지 않는다. `--ext-fair-value` 는 `python3 tools/external_value.py {티커} --iv {IV}` 산출값이며,
   빠지면 게이트 5가 경고하고 대시보드에 외부 비교가 안 뜬다([quality-tier.md](skills/quality-tier.md) 2.1·2.2단계).
+- 🔴 **외부 75~125% 밖이면 해명 표를 쓴 뒤 `--ext-gap-explained "해명 위치 · 요지"` 를 함께 넘긴다**(TASK-193).
+  빠지면 대시보드가 '갱신 필요 /스킬' 칩을 띄운다 — 다시 돌려도 정직한 IV 는 같은 자리에 나오므로
+  재실행으로는 꺼지지 않는다. 외부 값에 맞추려 가정을 역산하지 않는다.
 - **`--fair-value` 는 논제의 내재가치(목표가)다.** `hold` 의 `--target-low/high` 는 진입 밴드라
   대시보드 '목표가' 칸은 이 값으로만 채워진다 — 빼면 목표가 칸이 `—` 로 남는다. 채점에는 쓰지 않는다.
 - **`--health-check` 는 건강도 점수의 근거다.** 건강도를 매긴 조건(핵심 가정·레드라인)마다 한 줄씩

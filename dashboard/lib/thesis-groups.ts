@@ -121,17 +121,18 @@ export function groupGoal(g: { active: ScoredCall[]; history: ScoredCall[] }): G
  */
 export function groupTarget(
   g: { active: ScoredCall[]; history: ScoredCall[] },
-): { price: number; source: "fairValue" | "targetHigh"; date: string; ext?: { price: number; source: string } } | null {
+): { price: number; source: "fairValue" | "targetHigh"; date: string; ext?: { price: number; source: string; note?: string } } | null {
   for (const c of g.active) {
     const fv = c.target?.fairValue;
     if (typeof fv === "number" && fv > 0) {
       // 같은 콜에 기록된 외부 적정가를 함께 싣는다(TASK-175) — 다른 콜의 값과 섞으면 시점이 어긋난다.
       const ext = c.target?.extFairValue;
+      const note = c.target?.extGapNote;
       return {
         price: fv,
         source: "fairValue",
         date: c.date,
-        ...(typeof ext === "number" && ext > 0 ? { ext: { price: ext, source: c.target?.extSource ?? "external" } } : {}),
+        ...(typeof ext === "number" && ext > 0 ? { ext: { price: ext, source: c.target?.extSource ?? "external", ...(note ? { note } : {}) } } : {}),
       };
     }
   }
@@ -298,16 +299,18 @@ const EXT_GAP_HIGH = 1.25;
  * 외부 적정가 이탈 (TASK-175) — 우리 내재가치가 모닝스타(또는 애널 목표가 현가)의 75~125% 밖이면
  * 해명이 필요하다. 2026-10-02 진단에서 IV 가 외부의 61~66%까지 벌어진 종목(SAP·TSM)이 있었는데
  * 기록에 외부 기준이 없어 아무도 보지 못했다. 이탈 자체는 오류가 아니다 — 해명 없는 이탈이 오류다.
+ * `explained` 는 콜에 해명(`target.extGapNote`)이 기록됐는지다(TASK-193) — 해명된 이탈은 갱신 사유가 아니다.
  */
 export function externalGap(
   c: ScoredCall
-): { ratio: number; ext: number; source: string; side: "conservative" | "optimistic" } | null {
+): { ratio: number; ext: number; source: string; side: "conservative" | "optimistic"; explained: boolean } | null {
   const iv = c.target?.fairValue;
   const ext = c.target?.extFairValue;
   if (typeof iv !== "number" || typeof ext !== "number" || iv <= 0 || ext <= 0) return null;
   const ratio = iv / ext;
   if (ratio >= EXT_GAP_LOW && ratio <= EXT_GAP_HIGH) return null;
-  return { ratio, ext, source: c.target?.extSource ?? "external", side: ratio < EXT_GAP_LOW ? "conservative" : "optimistic" };
+  const explained = typeof c.target?.extGapNote === "string" && c.target.extGapNote.trim() !== "";
+  return { ratio, ext, source: c.target?.extSource ?? "external", side: ratio < EXT_GAP_LOW ? "conservative" : "optimistic", explained };
 }
 
 /**
@@ -354,8 +357,10 @@ export function detectRefresh(active: ScoredCall[]): RefreshFlag[] {
         reasons.push(`밴드 이탈 +${drift.driftPct.toFixed(1)}% > ${mosLabel} — 재산출 강제`);
       }
     }
+    // 🔴 해명이 기록된 이탈은 띄우지 않는다(TASK-193) — 다시 돌려도 정직한 IV 는 같은 자리에 나오고,
+    //    외부 값에 맞추려 가정을 역산하는 건 금지다. 띄우면 '재실행'이 아니라 '추격'을 요구하게 된다.
     const gap = externalGap(c);
-    if (gap != null) {
+    if (gap != null && !gap.explained) {
       const src = gap.source === "morningstar" ? "모닝스타" : gap.source === "analystPV" ? "애널 목표가 현가" : gap.source;
       reasons.push(
         `내재가치가 ${src} ${fmt(gap.ext)} 의 ${(gap.ratio * 100).toFixed(0)}% — ${gap.side === "conservative" ? "보수" : "낙관"} 이탈, 논제에 해명 필요`
