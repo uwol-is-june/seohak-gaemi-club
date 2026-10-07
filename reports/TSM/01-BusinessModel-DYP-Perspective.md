@@ -1,5 +1,5 @@
 # TSMC(TSM) 비즈니스 모델·MOAT·고객가치 분석 — 단융핑(Duan Yongping) 관점
-<!-- meta sector: Semiconductors -->
+<!-- meta sector: AI-Semiconductors -->
 
 **작성일**: 2026-09-23 | **분석 대상**: Taiwan Semiconductor Manufacturing Co., Ltd. (NYSE: TSM, ADR = 보통주 5주)
 **주가**: $452 (ADR) | **시가총액**: 약 $2.32T (ADR 환산 주식수 ≈51.87억주 × $452 ≈ $2.34T, 오차 1% 내 🟢[사실])

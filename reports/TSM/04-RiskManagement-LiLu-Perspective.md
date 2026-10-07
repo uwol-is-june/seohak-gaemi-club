@@ -1,5 +1,5 @@
 # TSMC(TSM) 투자 리스크·경영진 평가 — 리루(Li Lu) 관점
-<!-- meta sector: Semiconductors -->
+<!-- meta sector: AI-Semiconductors -->
 
 **작성일**: 2026-09-23 | **분석 대상**: Taiwan Semiconductor Manufacturing Co., Ltd. (NYSE: TSM, ADR = 보통주 5주)
 **주가**: $452 (ADR, 01-BusinessModel 보고서 기준 인용) | **시가총액**: 약 $2.32T

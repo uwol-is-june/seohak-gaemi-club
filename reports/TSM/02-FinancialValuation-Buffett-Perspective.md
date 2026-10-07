@@ -1,5 +1,5 @@
 # TSMC(TSM) 재무·밸류에이션 분석 — 워런 버핏(Buffett) 관점
-<!-- meta sector: Semiconductors -->
+<!-- meta sector: AI-Semiconductors -->
 
 > 작성일: 2026-09-23 · 작성자: financial-analyst (investment-team 서브에이전트)
 > 데이터 출처: `reports/TSM/_data.md`(SEC XBRL, TWD, FY2015~FY2024) + SEC 6-K(FY2025·1Q26·2Q26·3Q25 실적발표) + stockanalysis.com + WebSearch(TSMC IR)

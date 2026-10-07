@@ -1,5 +1,5 @@
 # SpaceX (SPCX) — 산업 구도·경쟁 포지션 분석 (멍거 관점)
-<!-- meta sector: Space -->
+<!-- meta sector: Aerospace -->
 
 > 작성: industry-researcher (찰리 멍거 관점) · 기준일 2026-10-06 · 정보 풍부도 **B등급**(상장 2026-06-12, 10-K 없음)
 > 재무·세그먼트 수치는 `reports/SPCX/_data.md`(2026-10-06 수집)를 그대로 사용. 경쟁·산업 수치만 신규 조사(WebSearch 10회).

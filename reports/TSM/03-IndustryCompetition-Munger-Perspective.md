@@ -1,5 +1,5 @@
 # TSMC(TSM) 산업·경쟁 분석 — 멍거(Munger)의 시각
-<!-- meta sector: Semiconductors -->
+<!-- meta sector: AI-Semiconductors -->
 
 > 작성일: 2026-09-23 · 작성자: industry-researcher (investment-team 서브에이전트)
 > ⚠️ 통화 주의: `_data.md`의 TSMC 재무는 전부 **TWD**(대만달러) 기준. 본 보고서에서 TSMC 자체 수치를 TWD로 인용할 때는 그대로 두고, 경쟁사·산업 데이터(대부분 USD로 발표됨)와 비교할 때만 참고환율 **1 USD ≈ 32.0 TWD(2026년 기준 근사치, [추정])**를 병기한다. 임의 환산 금지 원칙에 따라 시장조사기관 발표치(TrendForce 등, 원래 USD)는 원 통화 그대로 인용한다.
