@@ -1,45 +1,31 @@
-# NVIDIA Corporation (NVDA) — 투자 리서치
+# NVIDIA (NVDA) — 투자 리서치 팀 개요
 <!-- meta sector: AI-Semiconductors -->
 
-> **리서치 수행일: 2026-09-23** · `/investment-team` 4역할 병렬 분석
-> 기준 주가 **$228.87** · 시총 ≈ $5.61T · 희석주식수 24.514B
-> 직전 리서치: 2026-08-06 (48일 경과 → 전체 재실행)
-
-## 최종 결론
-
-**관망(`hold`).** NVIDIA는 T1 컴파운더 지위를 유지했으나(ROE 76.3% · FCF $96.7B · 5개 축 전부 충족), 확률가중 내재가치 **$214.35** 대비 현재가 $228.87은 **−6.8% 프리미엄**이고 절대 고평가 게이트 ②(10년 25x PER 매도 시 연환산 **8.93% < 10%**)에 걸려 티어와 무관하게 `buy`가 금지된다. 더 중요한 변화는 밸류에이션 밖에 있다 — 12개월 만에 보증 노출이 31배($3.5B→**$108.5B**, 자기자본의 47.4%), 장기부채가 4.3배 늘며 **팹리스 설계사가 AI 인프라 신용 인수자로 이동**했고, 이것이 "이해할 수 있는 사업"이라는 조건을 직접 훼손한다.
-
-**1차 진입 $182 이하 (조건 없음) · 2차 $165 (GM 방어 확인 시) · 3차 $140 · 추격 금지선 $182**
-
-## 4차원 평점 총괄표
-
-| 차원 | 프레임워크 | 평점 | 핵심 판단 |
-|------|-----------|:---:|---------|
-| 비즈니스 모델·MOAT | 단융핑 | ★★★★☆ **4** | 사업의 質은 최상급이나 **사업의 *단순성*이 급격히 악화** (이해가능성 ★3) |
-| 재무·밸류에이션 | 버핏 | ★★★☆☆ **3** | 사업 ★5 / 가격 ★1 — 훌륭한 기업을 훌륭하지 않은 가격에 |
-| 산업·경쟁 | 멍거 | ★★★★☆ **4** | 해자 균열이 점유율표가 아니라 **자기 손익계산서에 먼저** 나타남 |
-| 리스크·경영진 | 리루 | ★★☆☆☆ **2** | 리스크 프로파일이 팹리스 → **신용 인수자**로 이동 완료 |
-
-### 종합 ★★★☆☆ **3.25 / 5** · 퀄리티 티어 **T1** · 요구 MOS **15%** · 데이터 신뢰도 **보통**
+- **리서치 수행일**: 2026-10-23 (`/investment-team` 전체 재실행 · 이전판 2026-09-30)
+- **기준가**: $212.21 (2026-10-22 종가) · 정보 풍부도 A등급
+- **재무 원본**: [_data.md](_data.md) (SEC XBRL · Yahoo 교차검증)
 
 ## 서브 보고서
 
-| # | 관점 | 파일 | 평점 |
-|---|------|------|:---:|
-| 01 | 비즈니스 모델 · MOAT · 강세 변론 | [01-BusinessModel-DYP-Perspective.md](01-BusinessModel-DYP-Perspective.md) | ★4 |
-| 02 | 재무 · 밸류에이션 · 퀄리티 티어 | [02-FinancialValuation-Buffett-Perspective.md](02-FinancialValuation-Buffett-Perspective.md) | ★3 |
-| 03 | 산업 구도 · 경쟁 포지션 | [03-IndustryCompetition-Munger-Perspective.md](03-IndustryCompetition-Munger-Perspective.md) | ★4 |
-| 04 | 리스크 · 경영진 · 레드라인 | [04-RiskManagement-LiLu-Perspective.md](04-RiskManagement-LiLu-Perspective.md) | ★2 |
-| — | **최종 통합 보고서** | **[FinalReport.md](FinalReport.md)** | — |
-| — | 원천 재무 (SEC XBRL 기계추출) | [_data.md](_data.md) | 🟢 |
+| # | 관점 | 보고서 | ★ |
+|---|---|---|:-:|
+| 01 | 비즈니스 모델·MOAT (단융핑) | [01-BusinessModel-DYP-Perspective.md](01-BusinessModel-DYP-Perspective.md) | ★★★★☆ |
+| 02 | 재무·밸류에이션 (버핏) | [02-FinancialValuation-Buffett-Perspective.md](02-FinancialValuation-Buffett-Perspective.md) | ★★★★☆ |
+| 03 | 산업·경쟁 (멍거) | [03-IndustryCompetition-Munger-Perspective.md](03-IndustryCompetition-Munger-Perspective.md) | ★★★★☆ |
+| 04 | 리스크·경영진 (리루) | [04-RiskManagement-LiLu-Perspective.md](04-RiskManagement-LiLu-Perspective.md) | ★★☆☆☆ |
+| — | **종합** | [FinalReport.md](FinalReport.md) | **★★★★☆** |
 
-## 이번 리서치의 핵심 산출물
+## 핵심 숫자
 
-- **할인 누적 감사**: 4역할 할인 단순 합 **67.3%** → 중복 제거 후 **27.3%**. 멍거 20%·리루 20%가 버핏의 Bear 시나리오(30% 가중, "커스텀 ASIC 물량 잠식 · GM 55% 회귀" 명시)와 **같은 위험을 재차감**하고 있어 되돌렸다.
-- **역산 검증 경고**: 시장가가 함의하는 FY2029 EPS는 $10.40(CAGR 5.7%)로 **우리 Base $12.57보다 낮다** → Bear 30% 가중이 상한선임을 명시.
-- **⬛ 미해결 1순위**: 컨센서스 EPS $9.31의 GAAP/non-GAAP 성격 미확인 — 이 하나가 내재가치를 $204~$214 사이에서 움직인다.
+| 항목 | 값 |
+|---|---|
+| 퀄리티 티어 · 요구 MOS | T1 · 10% |
+| 내재가치 (오늘, 할인 감사 후) | $320.2 (모닝스타 $310 대비 103%) |
+| 현재가 / IV | 66.3% |
+| 논제 건강도 | 4/10 (제외 규칙 ③ 유예 중) |
+| 판정 | **관망 (hold)** |
+| 래더 | 1차 ≤$288 (15% · 조건 없음) · 2차 ≤$200 (35% · AND GM≥71%) · 3차 ≤$165 (50% · AND DSO≤55일) · 추격 금지 >$320 |
 
-## 관련 보고서
+## 결론
 
-- [NVDA-thesis.md](NVDA-thesis.md) — 투자 논제 (장기 유지)
-- [NVDA-checklist-20260723.md](NVDA-checklist-20260723.md) · [NVDA-quality-screen-20260723.md](NVDA-quality-screen-20260723.md) · [NVDA-news-20260828.md](NVDA-news-20260828.md)
+사업은 최상위이고 가격은 내재가치의 66%라 T1 스타터는 규칙상 지금 집행할 수 있다. 다만 회사가 고객 수요를 자기 대차대조표(보증 $108.5B·지분·사채)로 받치기 시작했고 최근 분기 이익의 질이 나빠져 건강도가 4/10이다. 그래서 11/18 Q3 10-Q로 현금 전환을 확인한 뒤 집행하기를 권한다.
