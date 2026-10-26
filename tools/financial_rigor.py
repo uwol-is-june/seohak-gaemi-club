@@ -424,6 +424,13 @@ def three_scenario_valuation(current_price, current_eps, shares_billion,
           f"   ← --fair-value 로 기록할 값")
     if float(p) != 0:
         print(f"    Price / IV: {float(p) / iv * 100:.1f}%")
+    # 2.55 정합성 검사는 매수 상한(현가)을 비관 세계의 «오늘 가치»와 비교한다 — 미현가 3년 비관가와
+    # 비교하면 시점이 어긋나 T3 밴드가 거의 전부 위반으로 찍힌다(TASK-194).
+    factor = _CTX.power(_CTX.add(Decimal("1"), exact(discount)), years)
+    bear_pv = _CTX.divide(targets[2], factor)
+    res["bear_pv"] = bear_pv
+    print(f"    Bear (today, ÷{1 + discount:.2f}^{years}):  {float(bear_pv):.2f} {currency}"
+          f"   ← 2.55 정합성: 매수 상한 > {float(bear_pv) * 1.05:.2f} 이어야 한다")
     print()
     print("  ✅ All calculations use exact decimal arithmetic — results are auditable")
     return res

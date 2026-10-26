@@ -28,3 +28,18 @@ def test_probabilities_must_sum_to_one():
 def test_exact_decimal():
     r = scenario_intrinsic_value([100, 100, 100], discount=0)
     assert r["iv"] == Decimal("100")
+
+
+def test_bear_pv_for_2_55_consistency():
+    # TASK-194: 2.55 정합성은 매수 상한(현가)을 비관 «현가»와 비교한다.
+    # CW 2026-10-26 재현 — 구 공식(미현가 비관 $308.8×1.05)으로는 위반, 개정 공식으로는 통과.
+    import contextlib, io
+    from financial_rigor import three_scenario_valuation
+    with contextlib.redirect_stdout(io.StringIO()):
+        r = three_scenario_valuation(464.94, 14.54, 0.03693, 0.19, 0.14, 0.09, 25.1, 23.9, 16.4)
+    iv, bear_pv = float(r["iv"]), float(r["bear_pv"])
+    assert round(iv, 2) == 387.69
+    assert 245.0 < bear_pv < 245.2            # $308.8 ÷ 1.08³
+    buy_cap = iv * 0.70                        # T3 요구 MOS 30%
+    assert buy_cap <= 308.8 * 1.05             # 구 공식: 🔴 위반 (오판)
+    assert buy_cap > bear_pv * 1.05            # 개정 공식: ✅ 통과

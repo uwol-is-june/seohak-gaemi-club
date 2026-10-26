@@ -1,0 +1,1520 @@
+{
+  "ticker": "CW",
+  "cik": "0000026324",
+  "companyName": "CURTISS WRIGHT CORP",
+  "taxonomy": "us-gaap",
+  "currency": "USD",
+  "generatedAt": "2026-10-26T01:07:44.355479+00:00",
+  "source": {
+    "primary": "SEC EDGAR XBRL companyfacts",
+    "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000026324.json",
+    "note": "원본 1차 공시 수치 — 기계 추출이므로 전사 오류 없음 (🟢[사실])"
+  },
+  "tagsUsed": {
+    "revenue": "Revenues + RevenueFromContractWithCustomerExcludingAssessedTax + SalesRevenueNet",
+    "grossProfit": "GrossProfit",
+    "operatingIncome": "OperatingIncomeLoss",
+    "netIncome": "NetIncomeLoss",
+    "epsDiluted": "EarningsPerShareDiluted",
+    "operatingCashFlow": "NetCashProvidedByUsedInOperatingActivities",
+    "capex": "PaymentsToAcquirePropertyPlantAndEquipment",
+    "dilutedShares": "WeightedAverageNumberOfDilutedSharesOutstanding",
+    "totalAssets": "Assets",
+    "totalLiabilities": "Liabilities",
+    "equity": "StockholdersEquity",
+    "cash": "CashAndCashEquivalentsAtCarryingValue + CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+    "longTermDebt": "LongTermDebtNoncurrent"
+  },
+  "freshness": {
+    "latestPeriodEnd": "2025-12-31",
+    "monthsOld": 9.8,
+    "stale": false
+  },
+  "annual": {
+    "2016": {
+      "periodEnd": "2016-12-31",
+      "values": {
+        "revenue": 2108931000,
+        "grossProfit": 734691000,
+        "operatingIncome": 296519000,
+        "netIncome": 187329000,
+        "epsDiluted": 4.15,
+        "operatingCashFlow": 423197000,
+        "capex": 46776000,
+        "dilutedShares": 45045000,
+        "totalAssets": 3037781000,
+        "totalLiabilities": 1746590000,
+        "equity": 1291191000,
+        "cash": 553848000,
+        "longTermDebt": 815630000
+      },
+      "provenance": {
+        "revenue": {
+          "tag": "Revenues",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "grossProfit": {
+          "tag": "GrossProfit",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "operatingIncome": {
+          "tag": "OperatingIncomeLoss",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "netIncome": {
+          "tag": "NetIncomeLoss",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "epsDiluted": {
+          "tag": "EarningsPerShareDiluted",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "operatingCashFlow": {
+          "tag": "NetCashProvidedByUsedInOperatingActivities",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "capex": {
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "dilutedShares": {
+          "tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "totalAssets": {
+          "tag": "Assets",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "totalLiabilities": {
+          "tag": "Liabilities",
+          "accn": "0000026324-18-000003",
+          "filed": "2018-02-22",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "equity": {
+          "tag": "StockholdersEquity",
+          "accn": "0000026324-18-000003",
+          "filed": "2018-02-22",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "cash": {
+          "tag": "CashAndCashEquivalentsAtCarryingValue",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "longTermDebt": {
+          "tag": "LongTermDebtNoncurrent",
+          "accn": "0000026324-18-000003",
+          "filed": "2018-02-22",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        }
+      },
+      "derived": {
+        "fcf": 376421000,
+        "grossMarginPct": 34.837128,
+        "operatingMarginPct": 14.060157,
+        "netMarginPct": 8.882652,
+        "roePct": 14.508233,
+        "debtToEquity": 1.352697
+      }
+    },
+    "2017": {
+      "periodEnd": "2017-12-31",
+      "values": {
+        "revenue": 2271026000,
+        "grossProfit": 800785000,
+        "operatingIncome": 325120000,
+        "netIncome": 214891000,
+        "epsDiluted": 4.8,
+        "operatingCashFlow": 388712000,
+        "capex": 52705000,
+        "dilutedShares": 44761000,
+        "totalAssets": 3236321000,
+        "totalLiabilities": 1708521000,
+        "equity": 1527800000,
+        "cash": 475120000,
+        "longTermDebt": 813989000
+      },
+      "provenance": {
+        "revenue": {
+          "tag": "Revenues",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "grossProfit": {
+          "tag": "GrossProfit",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "operatingIncome": {
+          "tag": "OperatingIncomeLoss",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "netIncome": {
+          "tag": "NetIncomeLoss",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "epsDiluted": {
+          "tag": "EarningsPerShareDiluted",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "operatingCashFlow": {
+          "tag": "NetCashProvidedByUsedInOperatingActivities",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "capex": {
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "dilutedShares": {
+          "tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "totalAssets": {
+          "tag": "Assets",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "totalLiabilities": {
+          "tag": "Liabilities",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "equity": {
+          "tag": "StockholdersEquity",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "cash": {
+          "tag": "CashAndCashEquivalentsAtCarryingValue",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "longTermDebt": {
+          "tag": "LongTermDebtNoncurrent",
+          "accn": "0000026324-19-000003",
+          "filed": "2019-02-27",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        }
+      },
+      "derived": {
+        "fcf": 336007000,
+        "grossMarginPct": 35.260935,
+        "operatingMarginPct": 14.315996,
+        "netMarginPct": 9.462287,
+        "roePct": 14.065388,
+        "debtToEquity": 1.118288
+      }
+    },
+    "2018": {
+      "periodEnd": "2018-12-31",
+      "values": {
+        "revenue": 2411835000,
+        "grossProfit": 871261000,
+        "operatingIncome": 373626000,
+        "netIncome": 275749000,
+        "epsDiluted": 6.22,
+        "operatingCashFlow": 336273000,
+        "capex": 53417000,
+        "dilutedShares": 44316000,
+        "totalAssets": 3255385000,
+        "totalLiabilities": 1724604000,
+        "equity": 1530781000,
+        "cash": 276066000,
+        "longTermDebt": 762313000
+      },
+      "provenance": {
+        "revenue": {
+          "tag": "Revenues",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "grossProfit": {
+          "tag": "GrossProfit",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "operatingIncome": {
+          "tag": "OperatingIncomeLoss",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "netIncome": {
+          "tag": "NetIncomeLoss",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "epsDiluted": {
+          "tag": "EarningsPerShareDiluted",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "operatingCashFlow": {
+          "tag": "NetCashProvidedByUsedInOperatingActivities",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "capex": {
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "dilutedShares": {
+          "tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "totalAssets": {
+          "tag": "Assets",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "totalLiabilities": {
+          "tag": "Liabilities",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "equity": {
+          "tag": "StockholdersEquity",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "cash": {
+          "tag": "CashAndCashEquivalentsAtCarryingValue",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "longTermDebt": {
+          "tag": "LongTermDebtNoncurrent",
+          "accn": "0000026324-20-000004",
+          "filed": "2020-02-27",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        }
+      },
+      "derived": {
+        "fcf": 282856000,
+        "grossMarginPct": 36.124403,
+        "operatingMarginPct": 15.491358,
+        "netMarginPct": 11.433162,
+        "roePct": 18.013615,
+        "debtToEquity": 1.126617
+      }
+    },
+    "2019": {
+      "periodEnd": "2019-12-31",
+      "values": {
+        "revenue": 2487961000,
+        "grossProfit": 898745000,
+        "operatingIncome": 403953000,
+        "netIncome": 307583000,
+        "epsDiluted": 7.15,
+        "operatingCashFlow": 421404000,
+        "capex": 69752000,
+        "dilutedShares": 43016000,
+        "totalAssets": 3764261000,
+        "totalLiabilities": 1989889000,
+        "equity": 1774372000,
+        "cash": 391033000,
+        "longTermDebt": 760639000
+      },
+      "provenance": {
+        "revenue": {
+          "tag": "Revenues",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "grossProfit": {
+          "tag": "GrossProfit",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "operatingIncome": {
+          "tag": "OperatingIncomeLoss",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "netIncome": {
+          "tag": "NetIncomeLoss",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "epsDiluted": {
+          "tag": "EarningsPerShareDiluted",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "operatingCashFlow": {
+          "tag": "NetCashProvidedByUsedInOperatingActivities",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "capex": {
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "dilutedShares": {
+          "tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "totalAssets": {
+          "tag": "Assets",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "totalLiabilities": {
+          "tag": "Liabilities",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "equity": {
+          "tag": "StockholdersEquity",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "cash": {
+          "tag": "CashAndCashEquivalentsAtCarryingValue",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "longTermDebt": {
+          "tag": "LongTermDebtNoncurrent",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        }
+      },
+      "derived": {
+        "fcf": 351652000,
+        "grossMarginPct": 36.123758,
+        "operatingMarginPct": 16.236308,
+        "netMarginPct": 12.362855,
+        "roePct": 17.334753,
+        "debtToEquity": 1.121461
+      }
+    },
+    "2020": {
+      "periodEnd": "2020-12-31",
+      "values": {
+        "revenue": 2391336000,
+        "grossProfit": 841227000,
+        "operatingIncome": 288848000,
+        "netIncome": 201392000,
+        "epsDiluted": 4.8,
+        "operatingCashFlow": 261180000,
+        "capex": 47499000,
+        "dilutedShares": 41999000,
+        "totalAssets": 4021334000,
+        "totalLiabilities": 2233760000,
+        "equity": 1787574000,
+        "cash": 198248000,
+        "longTermDebt": 958292000
+      },
+      "provenance": {
+        "revenue": {
+          "tag": "Revenues",
+          "accn": "0000026324-21-000007",
+          "filed": "2021-02-25",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "grossProfit": {
+          "tag": "GrossProfit",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "operatingIncome": {
+          "tag": "OperatingIncomeLoss",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "netIncome": {
+          "tag": "NetIncomeLoss",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "epsDiluted": {
+          "tag": "EarningsPerShareDiluted",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "operatingCashFlow": {
+          "tag": "NetCashProvidedByUsedInOperatingActivities",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "capex": {
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "dilutedShares": {
+          "tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "totalAssets": {
+          "tag": "Assets",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "totalLiabilities": {
+          "tag": "Liabilities",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "equity": {
+          "tag": "StockholdersEquity",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "cash": {
+          "tag": "CashAndCashEquivalentsAtCarryingValue",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "longTermDebt": {
+          "tag": "LongTermDebtNoncurrent",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        }
+      },
+      "derived": {
+        "fcf": 213681000,
+        "grossMarginPct": 35.178118,
+        "operatingMarginPct": 12.078938,
+        "netMarginPct": 8.421736,
+        "roePct": 11.266219,
+        "debtToEquity": 1.249604
+      }
+    },
+    "2021": {
+      "periodEnd": "2021-12-31",
+      "values": {
+        "revenue": 2500761000,
+        "grossProfit": 927802000,
+        "operatingIncome": 377129000,
+        "netIncome": 262829000,
+        "epsDiluted": 6.47,
+        "operatingCashFlow": 387668000,
+        "capex": 41108000,
+        "dilutedShares": 40602000,
+        "totalAssets": 4103545000,
+        "totalLiabilities": 2277055000,
+        "equity": 1826490000,
+        "cash": 171004000,
+        "longTermDebt": 1050610000
+      },
+      "provenance": {
+        "revenue": {
+          "tag": "RevenueFromContractWithCustomerExcludingAssessedTax",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "grossProfit": {
+          "tag": "GrossProfit",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "operatingIncome": {
+          "tag": "OperatingIncomeLoss",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "netIncome": {
+          "tag": "NetIncomeLoss",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "epsDiluted": {
+          "tag": "EarningsPerShareDiluted",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "operatingCashFlow": {
+          "tag": "NetCashProvidedByUsedInOperatingActivities",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "capex": {
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "dilutedShares": {
+          "tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "totalAssets": {
+          "tag": "Assets",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "totalLiabilities": {
+          "tag": "Liabilities",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "equity": {
+          "tag": "StockholdersEquity",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "cash": {
+          "tag": "CashAndCashEquivalentsAtCarryingValue",
+          "accn": "0000026324-22-000004",
+          "filed": "2022-02-24",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "longTermDebt": {
+          "tag": "LongTermDebtNoncurrent",
+          "accn": "0000026324-23-000005",
+          "filed": "2023-02-22",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        }
+      },
+      "derived": {
+        "fcf": 346560000,
+        "grossMarginPct": 37.100787,
+        "operatingMarginPct": 15.080569,
+        "netMarginPct": 10.509961,
+        "roePct": 14.389841,
+        "debtToEquity": 1.246684
+      }
+    },
+    "2022": {
+      "periodEnd": "2022-12-31",
+      "values": {
+        "revenue": 2557025000,
+        "grossProfit": 954609000,
+        "operatingIncome": 423443000,
+        "netIncome": 294348000,
+        "epsDiluted": 7.62,
+        "operatingCashFlow": 294776000,
+        "capex": 38217000,
+        "dilutedShares": 38649000,
+        "totalAssets": 4448303000,
+        "totalLiabilities": 2467089000,
+        "equity": 1981214000,
+        "cash": 256974000,
+        "longTermDebt": 1051900000
+      },
+      "provenance": {
+        "revenue": {
+          "tag": "RevenueFromContractWithCustomerExcludingAssessedTax",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "grossProfit": {
+          "tag": "GrossProfit",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "operatingIncome": {
+          "tag": "OperatingIncomeLoss",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "netIncome": {
+          "tag": "NetIncomeLoss",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "epsDiluted": {
+          "tag": "EarningsPerShareDiluted",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "operatingCashFlow": {
+          "tag": "NetCashProvidedByUsedInOperatingActivities",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "capex": {
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "dilutedShares": {
+          "tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "totalAssets": {
+          "tag": "Assets",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "totalLiabilities": {
+          "tag": "Liabilities",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "equity": {
+          "tag": "StockholdersEquity",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "cash": {
+          "tag": "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "longTermDebt": {
+          "tag": "LongTermDebtNoncurrent",
+          "accn": "0000026324-24-000004",
+          "filed": "2024-02-20",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        }
+      },
+      "derived": {
+        "fcf": 256559000,
+        "grossMarginPct": 37.332799,
+        "operatingMarginPct": 16.559987,
+        "netMarginPct": 11.511346,
+        "roePct": 14.856951,
+        "debtToEquity": 1.245241
+      }
+    },
+    "2023": {
+      "periodEnd": "2023-12-31",
+      "values": {
+        "revenue": 2845373000,
+        "grossProfit": 1067178000,
+        "operatingIncome": 484602000,
+        "netIncome": 354509000,
+        "epsDiluted": 9.2,
+        "operatingCashFlow": 448089000,
+        "capex": 44666000,
+        "dilutedShares": 38529000,
+        "totalAssets": 4620969000,
+        "totalLiabilities": 2292556000,
+        "equity": 2328413000,
+        "cash": 406867000,
+        "longTermDebt": 1050362000
+      },
+      "provenance": {
+        "revenue": {
+          "tag": "RevenueFromContractWithCustomerExcludingAssessedTax",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "grossProfit": {
+          "tag": "GrossProfit",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "operatingIncome": {
+          "tag": "OperatingIncomeLoss",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "netIncome": {
+          "tag": "NetIncomeLoss",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "epsDiluted": {
+          "tag": "EarningsPerShareDiluted",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "operatingCashFlow": {
+          "tag": "NetCashProvidedByUsedInOperatingActivities",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "capex": {
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "dilutedShares": {
+          "tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "totalAssets": {
+          "tag": "Assets",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "totalLiabilities": {
+          "tag": "Liabilities",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "equity": {
+          "tag": "StockholdersEquity",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "cash": {
+          "tag": "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "longTermDebt": {
+          "tag": "LongTermDebtNoncurrent",
+          "accn": "0000026324-25-000015",
+          "filed": "2025-02-13",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        }
+      },
+      "derived": {
+        "fcf": 403423000,
+        "grossMarginPct": 37.505733,
+        "operatingMarginPct": 17.031229,
+        "netMarginPct": 12.45914,
+        "roePct": 15.225349,
+        "debtToEquity": 0.9846
+      }
+    },
+    "2024": {
+      "periodEnd": "2024-12-31",
+      "values": {
+        "revenue": 3121189000,
+        "grossProfit": 1153549000,
+        "operatingIncome": 528597000,
+        "netIncome": 404978000,
+        "epsDiluted": 10.55,
+        "operatingCashFlow": 544275000,
+        "capex": 60974000,
+        "dilutedShares": 38373000,
+        "totalAssets": 4985704000,
+        "totalLiabilities": 2535905000,
+        "equity": 2449799000,
+        "cash": 385042000,
+        "longTermDebt": 958949000
+      },
+      "provenance": {
+        "revenue": {
+          "tag": "RevenueFromContractWithCustomerExcludingAssessedTax",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "grossProfit": {
+          "tag": "GrossProfit",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "operatingIncome": {
+          "tag": "OperatingIncomeLoss",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "netIncome": {
+          "tag": "NetIncomeLoss",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "epsDiluted": {
+          "tag": "EarningsPerShareDiluted",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "operatingCashFlow": {
+          "tag": "NetCashProvidedByUsedInOperatingActivities",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "capex": {
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "dilutedShares": {
+          "tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "totalAssets": {
+          "tag": "Assets",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "totalLiabilities": {
+          "tag": "Liabilities",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "equity": {
+          "tag": "StockholdersEquity",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "cash": {
+          "tag": "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "longTermDebt": {
+          "tag": "LongTermDebtNoncurrent",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        }
+      },
+      "derived": {
+        "fcf": 483301000,
+        "grossMarginPct": 36.95864,
+        "operatingMarginPct": 16.935757,
+        "netMarginPct": 12.975119,
+        "roePct": 16.531071,
+        "debtToEquity": 1.035148
+      }
+    },
+    "2025": {
+      "periodEnd": "2025-12-31",
+      "values": {
+        "revenue": 3498372000,
+        "grossProfit": 1301534000,
+        "operatingIncome": 633521000,
+        "netIncome": 484228000,
+        "epsDiluted": 12.87,
+        "operatingCashFlow": 643402000,
+        "capex": 89692000,
+        "dilutedShares": 37631000,
+        "totalAssets": 5221292000,
+        "totalLiabilities": 2687718000,
+        "equity": 2533574000,
+        "cash": 371345000,
+        "longTermDebt": 757884000
+      },
+      "provenance": {
+        "revenue": {
+          "tag": "RevenueFromContractWithCustomerExcludingAssessedTax",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "grossProfit": {
+          "tag": "GrossProfit",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "operatingIncome": {
+          "tag": "OperatingIncomeLoss",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "netIncome": {
+          "tag": "NetIncomeLoss",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "epsDiluted": {
+          "tag": "EarningsPerShareDiluted",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "operatingCashFlow": {
+          "tag": "NetCashProvidedByUsedInOperatingActivities",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "capex": {
+          "tag": "PaymentsToAcquirePropertyPlantAndEquipment",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "dilutedShares": {
+          "tag": "WeightedAverageNumberOfDilutedSharesOutstanding",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "totalAssets": {
+          "tag": "Assets",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "totalLiabilities": {
+          "tag": "Liabilities",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "equity": {
+          "tag": "StockholdersEquity",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "cash": {
+          "tag": "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "longTermDebt": {
+          "tag": "LongTermDebtNoncurrent",
+          "accn": "0001628280-26-007587",
+          "filed": "2026-02-12",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        }
+      },
+      "derived": {
+        "fcf": 553710000,
+        "grossMarginPct": 37.203991,
+        "operatingMarginPct": 18.109023,
+        "netMarginPct": 13.841524,
+        "roePct": 19.112447,
+        "debtToEquity": 1.060841
+      }
+    }
+  },
+  "crossValidation": {
+    "status": "ok",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/CW?symbol=CW&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1381885664&period2=1793063264",
+    "worst": "중대 불일치",
+    "items": [
+      {
+        "fiscalYear": "2022",
+        "metric": "capex",
+        "sec": 38217000,
+        "secondary": 38217000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2022",
+        "metric": "epsDiluted",
+        "sec": 7.62,
+        "secondary": 7.62,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2022",
+        "metric": "equity",
+        "sec": 1981214000,
+        "secondary": 1981214000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2022",
+        "metric": "grossProfit",
+        "sec": 954609000,
+        "secondary": 954609000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2022",
+        "metric": "netIncome",
+        "sec": 294348000,
+        "secondary": 294348000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2022",
+        "metric": "operatingCashFlow",
+        "sec": 294776000,
+        "secondary": 294776000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2022",
+        "metric": "operatingIncome",
+        "sec": 423443000,
+        "secondary": 428094000.0,
+        "diffPct": 1.098,
+        "verdict": "불일치"
+      },
+      {
+        "fiscalYear": "2022",
+        "metric": "revenue",
+        "sec": 2557025000,
+        "secondary": 2557025000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2022",
+        "metric": "totalAssets",
+        "sec": 4448303000,
+        "secondary": 4448303000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2023",
+        "metric": "capex",
+        "sec": 44666000,
+        "secondary": 44666000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2023",
+        "metric": "epsDiluted",
+        "sec": 9.2,
+        "secondary": 0.79,
+        "diffPct": 91.413,
+        "verdict": "중대 불일치"
+      },
+      {
+        "fiscalYear": "2023",
+        "metric": "equity",
+        "sec": 2328413000,
+        "secondary": 2328413000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2023",
+        "metric": "grossProfit",
+        "sec": 1067178000,
+        "secondary": 1067178000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2023",
+        "metric": "netIncome",
+        "sec": 354509000,
+        "secondary": 354509000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2023",
+        "metric": "operatingCashFlow",
+        "sec": 448089000,
+        "secondary": 448089000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2023",
+        "metric": "operatingIncome",
+        "sec": 484602000,
+        "secondary": 484602000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2023",
+        "metric": "revenue",
+        "sec": 2845373000,
+        "secondary": 2845373000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2023",
+        "metric": "totalAssets",
+        "sec": 4620969000,
+        "secondary": 4620969000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2024",
+        "metric": "capex",
+        "sec": 60974000,
+        "secondary": 60974000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2024",
+        "metric": "epsDiluted",
+        "sec": 10.55,
+        "secondary": 10.55,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2024",
+        "metric": "equity",
+        "sec": 2449799000,
+        "secondary": 2449799000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2024",
+        "metric": "grossProfit",
+        "sec": 1153549000,
+        "secondary": 1153549000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2024",
+        "metric": "netIncome",
+        "sec": 404978000,
+        "secondary": 404978000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2024",
+        "metric": "operatingCashFlow",
+        "sec": 544275000,
+        "secondary": 544275000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2024",
+        "metric": "operatingIncome",
+        "sec": 528597000,
+        "secondary": 543045000.0,
+        "diffPct": 2.733,
+        "verdict": "불일치"
+      },
+      {
+        "fiscalYear": "2024",
+        "metric": "revenue",
+        "sec": 3121189000,
+        "secondary": 3121189000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2024",
+        "metric": "totalAssets",
+        "sec": 4985704000,
+        "secondary": 4985704000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2025",
+        "metric": "capex",
+        "sec": 89692000,
+        "secondary": 89692000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2025",
+        "metric": "epsDiluted",
+        "sec": 12.87,
+        "secondary": 12.87,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2025",
+        "metric": "equity",
+        "sec": 2533574000,
+        "secondary": 2533574000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2025",
+        "metric": "grossProfit",
+        "sec": 1301534000,
+        "secondary": 1301534000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2025",
+        "metric": "netIncome",
+        "sec": 484228000,
+        "secondary": 484228000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2025",
+        "metric": "operatingCashFlow",
+        "sec": 643402000,
+        "secondary": 643402000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2025",
+        "metric": "operatingIncome",
+        "sec": 633521000,
+        "secondary": 638025000.0,
+        "diffPct": 0.711,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2025",
+        "metric": "revenue",
+        "sec": 3498372000,
+        "secondary": 3498372000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      },
+      {
+        "fiscalYear": "2025",
+        "metric": "totalAssets",
+        "sec": 5221292000,
+        "secondary": 5221292000.0,
+        "diffPct": 0.0,
+        "verdict": "일치"
+      }
+    ]
+  }
+}
