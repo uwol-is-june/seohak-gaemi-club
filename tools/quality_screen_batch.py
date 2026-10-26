@@ -63,15 +63,7 @@ GAP_LIMIT = 3         # ⬛ 가 이 개수 이상이면 '데이터 부족'
 
 FETCH_YEARS = 11      # ⑦은 '최신 vs 5년 전'이라 10년 창 + 1년이 필요하다
 
-# 매출채권 유동화의 이연매입대금(DPP) 회수 — GAAP(ASU 2016-15)는 투자활동으로 분류한다.
-# 영업에서 번 현금이 영업현금흐름 밖으로 빠져 ②FCF·⑤OCF/NI 가 음수로 찍힌다
-# (실측 CEG FY2021~24: 공시 OCF −$1.3~−5.3B · 회수 +$3.9~10.2B · 프로그램 종료 FY2025 에 OCF +$4.2B).
-# 공시 태그가 정해져 있어 기계로 되돌린다 — 보정한 연도는 결과에 그대로 표시한다.
-DPP_METRIC = {
-    "key": "dppCollections", "label": "유동화 채권 회수(DPP)", "kind": "duration", "unit_kind": "money",
-    "gaap": ["ProceedsFromCollectionOfRetainedInterestInSecuritizedReceivables"],
-    "ifrs": [],
-}
+# 매출채권 유동화 회수(DPP) 가산은 fetch_financials.DPP_METRIC 정의를 쓴다(quality_tier 와 공유).
 
 NAMES = {
     "roe": "①ROE", "fcf": "②FCF", "coverage": "③이자커버리지", "gm": "④Gross Margin",
@@ -93,11 +85,7 @@ def fetch_annual(ff, ticker: str, years: int = FETCH_YEARS) -> tuple[dict, str, 
     tax_key, tag_key = ff.detect_taxonomy(facts)
     currency = ff.resolve_currency(facts, tax_key, tag_key)
     annual, _tags = ff.build_annual(facts, years, tax_key, tag_key, currency)
-    dpp, _ = ff.extract_metric(facts, DPP_METRIC, tax_key, tag_key, currency)
-    for fy, row in annual.items():
-        pt = dpp.get(int(fy))
-        if pt and pt.get("value"):
-            row["values"]["dppCollections"] = pt["value"]
+    ff.attach_dpp_collections(facts, annual, tax_key, tag_key, currency)
     meta = {"cik": cik, "currency": currency, "freshness": ff.freshness(annual)}
     return annual, name, meta
 

@@ -74,6 +74,7 @@ def fetch_annual(ff, ticker: str, years: int) -> tuple[dict, str]:
     tax_key, tag_key = ff.detect_taxonomy(facts)
     currency = ff.resolve_currency(facts, tax_key, tag_key)
     annual, _tags = ff.build_annual(facts, years, tax_key, tag_key, currency)
+    ff.attach_dpp_collections(facts, annual, tax_key, tag_key, currency)
     return annual, name
 
 
@@ -125,14 +126,19 @@ def compute_axes(annual: dict) -> dict:
             roics.append(ni / eq * 100)
         roe_fallback = True
 
-    # (2) FCF 마진
-    fcf_margins = []
-    for _, v in rows:
+    # (2) FCF 마진 — 매출채권 유동화 회수(DPP)는 GAAP상 투자활동이라 영업현금흐름에 되돌린다
+    #     (fetch_financials.DPP_METRIC · 실측 CEG). 되돌린 해는 dppYears 로 보고한다.
+    fcf_margins, dpp_years = [], []
+    for y, v in rows:
         ocf = _num(v.get("operatingCashFlow"))
         capex = _num(v.get("capex"))
         rev = _num(v.get("revenue"))
         if ocf is None or rev is None or rev <= 0:
             continue
+        dpp = _num(v.get("dppCollections"))
+        if dpp:
+            ocf += dpp
+            dpp_years.append(str(y))
         fcf_margins.append((ocf - (capex or 0)) / rev * 100)
 
     # (3) 매출 역성장 연도 — 연속한 연도끼리만 비교한다.
@@ -216,6 +222,7 @@ def compute_axes(annual: dict) -> dict:
         "negativeEquityYears": negative_equity_years,
         "fcfMarginPct": round(sum(fcf_margins) / len(fcf_margins), 1) if fcf_margins else None,
         "fcfYears": len(fcf_margins),
+        "dppYears": dpp_years,
         "declineYearCount": len(decline_years) if len(revs) >= 2 else None,
         "declineYears": decline_years,
         "shallowDeclines": shallow_declines,
@@ -373,6 +380,9 @@ def main() -> None:
     if axes["roicIsRoeFallback"]:
         print("  주의: EBIT/투하자본이 성립하지 않아 ROE로 대체했다(금융·보험에서 흔하다).")
         print("        ROE는 레버리지로 부풀 수 있으므로 부채비율을 함께 봐야 한다.")
+    if axes.get("dppYears"):
+        print(f"  · FCF마진 보정: 매출채권 유동화 회수(DPP)를 영업현금흐름에 가산 — {', '.join(axes['dppYears'])}")
+        print("    (GAAP는 투자활동으로 분류한다 · 공시 태그 ProceedsFromCollectionOfRetainedInterestInSecuritizedReceivables)")
     if axes["declineYears"]:
         print(f"  · 역성장 연도(유의미, {TH_DECLINE_PCT:.0f}% 초과): {', '.join(axes['declineYears'])}")
     if axes.get("shallowDeclines"):

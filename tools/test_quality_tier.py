@@ -86,3 +86,13 @@ def test_decline_only_between_adjacent_years():
 if __name__ == "__main__":
     import run_tests
     raise SystemExit(run_tests.run_module(sys.modules[__name__]))
+
+
+def test_dpp_collections_added_back_to_fcf_margin():
+    # CEG 형: 공시 OCF 음수 + 유동화 회수(투자활동) → 되돌리면 FCF 마진이 정상화된다 (TASK-195)
+    annual = {str(y): _row(1000.0) for y in range(2016, 2021)}
+    for y in range(2016, 2020):
+        annual[str(y)]["values"].update(operatingCashFlow=-100.0, dppCollections=300.0)
+    a = qt.compute_axes(annual)
+    assert a["dppYears"] == ["2016", "2017", "2018", "2019"]
+    assert a["fcfMarginPct"] == 16.4   # 4년 (−100+300−20)/1000=18% · 1년 (120−20)/1000=10% → 평균 16.4%

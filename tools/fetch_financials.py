@@ -184,6 +184,16 @@ METRICS: list[dict] = [
     },
 ]
 
+# 매출채권 유동화의 이연매입대금(DPP) 회수 — GAAP(ASU 2016-15)는 투자활동으로 분류해, 영업에서 번
+# 현금이 영업현금흐름 밖으로 빠진다(실측 CEG FY2021~24: 공시 OCF −$1.3~−5.3B · 회수 +$3.9~10.2B ·
+# 프로그램 종료 FY2025 에 OCF +$4.2B). METRICS 에 넣지 않는다 — 대부분의 회사에 없어 _data.md 에 빈 줄만
+# 늘린다. 품질 판정 도구(quality_screen_batch · quality_tier)가 attach_dpp_collections 로 따로 붙인다.
+DPP_METRIC = {
+    "key": "dppCollections", "label": "유동화 채권 회수(DPP)", "kind": "duration", "unit_kind": "money",
+    "gaap": ["ProceedsFromCollectionOfRetainedInterestInSecuritizedReceivables"],
+    "ifrs": [],
+}
+
 # 연간 보고서 서식. 외국기업(TSM 등)은 10-K 대신 20-F, 캐나다 기업은 40-F 를 낸다.
 ANNUAL_FORMS = ("10-K", "10-K/A", "20-F", "20-F/A", "40-F", "40-F/A")
 # 연간 기간 판정: 회계연도는 52/53주(364~371일) 또는 달력 12개월. 여유를 둬 340~400일.
@@ -501,6 +511,16 @@ def build_annual(
         annual[str(fy)] = row
 
     return annual, tags_used
+
+
+def attach_dpp_collections(facts: dict, annual: dict, tax_key: str, tag_key: str, currency: str) -> None:
+    """annual[fy]["values"]["dppCollections"] 를 채운다(값이 있는 해만). 영업현금흐름은 바꾸지 않는다 —
+    가산은 쓰는 쪽이 하고, 가산했다는 사실을 결과에 표시한다."""
+    pts, _ = extract_metric(facts, DPP_METRIC, tax_key, tag_key, currency)
+    for fy, row in annual.items():
+        pt = pts.get(int(fy))
+        if pt and pt.get("value"):
+            row.setdefault("values", {})["dppCollections"] = pt["value"]
 
 
 def freshness(annual: dict) -> dict:
