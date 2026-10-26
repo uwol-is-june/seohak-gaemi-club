@@ -19,7 +19,7 @@ thesis-tracker 스킬이 buy/hold/avoid 판정을 낼 때 이 도구로 콜을 �
         --invalidation "ROE < 15% 2분기 연속"
 
     # 목표가 없는 방향-only 콜(예: 단순 회피):
-    python tools/record_call.py --ticker XYZ --skill quality-screen --call avoid
+    python tools/record_call.py --ticker XYZ --skill investment-checklist --call avoid
 
     # 관망(hold) 콜 — 진입 밴드가 있으면 체결확률이 필수다(TASK-99):
     python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24

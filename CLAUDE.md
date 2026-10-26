@@ -54,6 +54,7 @@ reports/
 | /industry-funnel | `{섹터명}-funnel-{YYYYMMDD}.md` (루트) | `reports/SP500-Fintech-funnel-20260627.md` |
 | /earnings-team | `{티커}/{티커}-earnings-{기간}.md` + 서브보고서 6종(`-연구초안`·`-단용평`·`-버핏`·`-멍거`·`-이루`·`-독자검토`) | `reports/AMZN/AMZN-earnings-2026Q2.md` |
 | /thesis-tracker | `{티커}/{티커}-thesis.md` (장기 유지) | `reports/AAPL/AAPL-thesis.md` |
+| 열등주 제거 (퍼널 1.5단계 · 도구 자동 생성) | `{티커}/{티커}-quality-screen-{YYYYMMDD}.md` — 생존 종목만 | `reports/CW/CW-quality-screen-20261023.md` |
 | /portfolio-review | `portfolio-latest.md` (루트, 지속 업데이트) | `reports/portfolio-latest.md` |
 | /lab-pick | `lab/lab-pick-{YYYYMMDD}.md` — `lab/` 은 티커 폴더가 아니다(종목 목록 제외). 섹터 마커 넣지 않음 | `reports/lab/lab-pick-20261005.md` |
 
@@ -96,7 +97,8 @@ reports/{티커}/
 | `/industry-research` · `/industry-funnel` | 5~12M |
 | `/earnings-team` (종목 1개·1분기) | **1~3M** (2026-08-07 AMZN 실측: 서브에이전트 6개 합계 **609K** + 본체) |
 | `/investment-checklist` (종목 1개) | 2~5M |
-| `/quality-screen` · `/thesis-tracker` · `/news-pulse` (종목 1개) | 1~3M |
+| `/thesis-tracker` · `/news-pulse` (종목 1개) | 1~3M |
+| 열등주 제거 `quality_screen_batch.py` (섹터 30~60종목) | **≈0** (Bash 1회 · 웹 조회 0회 — 기계 계산) |
 | `/lab-pick` (실험실 주간 추천 1회) | **1~3M** (서브에이전트 없음 · 기계 순위 상위 5개 결격 검증) |
 
 범위를 크게 넘고 있으면 재시도 루프나 손자 에이전트가 도는 것이다 — 멈추고 원인을 본다.
@@ -172,7 +174,7 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 | 마커 | 넣는 곳 | 형식 |
 |------|--------|------|
 | 퍼널 최종 선정 | `/industry-funnel` 산출물 H1 다음 줄 | `<!-- funnel sector: Defense \| finalists: NOC, GD, PLTR -->` |
-| 종목 섹터 | 종목 보고서(`/investment-team`·`/investment-checklist`·`/quality-screen`·`/thesis-tracker`) H1 다음 줄 | `<!-- meta sector: Defense -->` |
+| 종목 섹터 | 종목 보고서(`/investment-team`·`/investment-checklist`·`/thesis-tracker`·`quality_screen_batch.py --sector`) H1 다음 줄 | `<!-- meta sector: Defense -->` |
 
 - 섹터명은 **퍼널 보고서 파일명의 섹터 토큰과 정확히 같은 표기**를 쓴다
   (`Defense-funnel-20260730.md` → `Defense`). 표기가 갈리면 대시보드에서 섹터가 둘로 나뉜다.
@@ -415,7 +417,9 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-ti
 
 > 🔴 **두 번째 줄을 빼지 말 것.** `skills/` 의 이 4개는 실행 스킬이 아니라 **공용 표준 문서**다
 > (다른 스킬이 `skills/xxx.md` 경로로 참조한다). 슬래시 커맨드로 설치하면 호출해도 하는 일이
-> 없으면서 오발동 대상만 늘린다. 설치 대상은 **실행 스킬 12개**다.
+> 없으면서 오발동 대상만 늘린다. 설치 대상은 **실행 스킬 11개**다.
+> (`/quality-screen` 은 2026-10-26 폐지 — 열등주 제거는 퍼널 1.5단계의 `tools/quality_screen_batch.py` 가 맡는다.
+> 예전에 설치했다면 `rm -f ~/.claude/commands/quality-screen.md`.)
 
 ## GitHub 운영 (코드 전용)
 
@@ -449,10 +453,13 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-ti
 > 아래 명령은 전부 **저장소 루트에서** 실행한다.
 
 ```bash
-# Skills 설치 / 재설치 (실행 스킬 12개만 — 공용 표준 문서 4종 제외)
+# Skills 설치 / 재설치 (실행 스킬 11개만 — 공용 표준 문서 4종 제외)
 mkdir -p ~/.claude/commands
 cp skills/*.md ~/.claude/commands/
 rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-tier}.md
+
+# 열등주 제거 7지표 일괄 판정 (퍼널 1.5단계 · SEC XBRL · 주가 미사용) — 생존 종목에 종목 보고서 자동 작성
+python3 tools/quality_screen_batch.py BWXT CW CEG VST --sector Nuclear-Power --write-reports
 
 # 퀄리티 티어 판정 (SEC XBRL · 5개 축 중 4개를 기계 확정) — 밸류에이션보다 먼저 돌린다
 python3 tools/quality_tier.py GOOGL --moat 4

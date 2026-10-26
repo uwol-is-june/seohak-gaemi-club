@@ -70,8 +70,8 @@ macrotrends·Seeking Alpha·Glassdoor·Bloomberg 모두 검색으로 실제 수�
 | 최신값 + 전년비 1~3개 | ✅ 대체로 가능 | "AAPL 2025 매출 $416.161B (+6.43%)" 확보 |
 | **연도별 시계열 표** | ❌ **불가** | AAPL 10년 ROE — 질의를 4번 바꿔도 값 0건. COST 5년 GM/OCF — TTM만 |
 
-**따라서 `/quality-screen`의 7개 지표(10년 ROE·5년 FCF·5년 GM 추세 등)를 macrotrends 검색으로
-채우려 하지 말 것** — 헛돈다. 시계열은 **0순위 `tools/fetch_financials.py`(SEC XBRL)** 와
+**따라서 열등주 제거 7개 지표(10년 ROE·5년 FCF·5년 GM 추세 등)를 macrotrends 검색으로
+채우려 하지 말 것** — 헛돈다. 7지표는 `tools/quality_screen_batch.py` 가 SEC XBRL로 기계 계산한다(퍼널 1.5단계). 시계열은 **0순위 `tools/fetch_financials.py`(SEC XBRL)** 와
 **1순위 stockanalysis.com(직접 접근)** 이 담당한다. 검색 경유 macrotrends는 단일 시점 값
 확인용 보조일 뿐이다.
 

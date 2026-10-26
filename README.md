@@ -100,7 +100,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-ti
 
 > ⚠️ **마지막 줄을 빼지 마세요.** `skills/` 안의 이 4개는 실행 스킬이 아니라 다른 스킬이
 > 참조하는 **공용 표준 문서**입니다. 슬래시 커맨드로 설치하면 호출해도 하는 일이 없으면서
-> 오발동 대상만 늘어납니다. 실제 설치 대상은 **실행 스킬 12개**입니다.
+> 오발동 대상만 늘어납니다. 실제 설치 대상은 **실행 스킬 11개**입니다.
 
 ### 3. 사용
 
@@ -114,8 +114,8 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-ti
 
 # 섹터 스크리닝
 /industry-research AI Semiconductors
-/industry-funnel S&P500 Fintech
-/quality-screen Nasdaq 100
+/industry-funnel S&P500 Fintech           # 열등주 7지표 일괄 제거 포함
+python3 tools/quality_screen_batch.py AAPL MSFT NVDA   # 열등주 제거만 따로 (기계 계산)
 /investment-checklist AAPL, MSFT, GOOGL, AMZN
 
 # 포트폴리오 관리
@@ -153,8 +153,7 @@ rm -f ~/.claude/commands/{financial-data,data-confidence,token-budget,quality-ti
 | 스킬 | 하는 일 |
 |---|---|
 | `/industry-research` | 섹터 가치사슬 전체 스캔 + 병목 판정 |
-| `/industry-funnel` | 전체 시장 → 10종목 이하 → 최종 3종목 |
-| `/quality-screen` | 7가지 하드 기준으로 2류 기업 빠르게 탈락 |
+| `/industry-funnel` | 전체 시장 → 열등주 7지표 일괄 제거(기계 계산) → 10종목 이하 → 최종 3종목 |
 | `/investment-checklist` | 버핏식 매수 전 체크리스트, 6개 관문, 10분 판정 |
 
 ### 포트폴리오
@@ -355,7 +354,7 @@ python3 tools/financial_rigor.py three-scenario \
 - [x] 실적 분석 (`/earnings-team`)
 - [x] 포트폴리오 관리 (`/portfolio-review`)
 - [x] 논제 추적 (`/thesis-tracker`)
-- [x] 열등주 스크리닝 — 7가지 하드 기준 (`/quality-screen`)
+- [x] 열등주 스크리닝 — 7가지 하드 기준 (`quality_screen_batch.py` · 퍼널 1.5단계로 통합)
 - [x] **SEC EDGAR 직접 연동** (`fetch_financials.py` — XBRL API)
 - [x] **웹 대시보드** (Next.js, 로컬 전용)
 - [x] **콜 원장 + 실측 자동 채점** (`record_call.py` + `score_calls.py`)
@@ -420,7 +419,7 @@ Copyright (c) 2026 xbtlin (원본) · uwol-is-june (US Edition).
 
 ## 2. 스킬 변경
 
-원본 20개 → US Edition 16개 파일 (**실행 스킬 12개 + 공용 표준 문서 4개**).
+원본 20개 → US Edition 15개 파일 (**실행 스킬 11개 + 공용 표준 문서 4개**).
 
 ### 새로 만든 것
 

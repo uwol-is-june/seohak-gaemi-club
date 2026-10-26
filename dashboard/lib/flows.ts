@@ -77,7 +77,7 @@ export const flows: Flow[] = [
       {
         id: "stock",
         label: "시작점 B: 특정 종목이 있을 때",
-        description: "이미 살펴볼 종목이 있다면 열등주 제거부터 바로 시작합니다.",
+        description: "이미 살펴볼 종목이 있다면 버핏 체크부터 시작합니다. 열등주 제거(7지표)는 체크리스트 첫 단계에서 자동으로 돌아갑니다.",
         fromStep: 2,
       },
     ],
@@ -93,22 +93,13 @@ export const flows: Flow[] = [
       },
       {
         title: "후보 종목 압축",
-        description: "섹터 내 30~60개 종목을 5개 핵심 지표로 스크리닝해 최종 3종목을 선정합니다.",
+        description:
+          "섹터 내 30~60개 종목에서 열등주(ROE·FCF·이자커버리지 등 7지표)를 먼저 일괄 제거하고, 생존 종목만 밸류에이션·재무구조·MOAT로 압축해 최종 3종목을 선정합니다.",
         inputLabel: "섹터명",
         inputPlaceholder: "AI Semiconductors",
         commandTemplate: "/industry-funnel {input}",
-        outputFiles: ["reports/{input}-funnel-{날짜}.md"],
+        outputFiles: ["reports/{input}-funnel-{날짜}.md", "reports/{티커}/{티커}-quality-screen-{날짜}.md"],
         sectorPicker: { groups: DISCOVERY_SECTOR_GROUPS },
-      },
-      {
-        title: "열등주 제거",
-        description: "ROE, FCF, 이자커버리지 등 7가지 하드 기준으로 확실한 열등주를 걸러냅니다.",
-        inputLabel: "후보 종목들",
-        inputPlaceholder: "NVDA, AMD, INTC",
-        commandTemplate: "/quality-screen {input}",
-        outputFiles: [],
-        outputNote: "화면 출력 (파일 저장 없음)",
-        holdingsPicker: true,
       },
       {
         title: "버핏 6-게이트 체크",

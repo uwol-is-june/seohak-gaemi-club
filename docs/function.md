@@ -38,7 +38,7 @@
 |------|-----------|------|-----------|
 | **A1** | `/industry-research` | **S2** | `/news-pulse` |
 | **A2** | `/industry-funnel` | **S3** | `/bottleneck-hunter` |
-| **A3** | `/quality-screen` | | |
+| **A3** | ~~`/quality-screen`~~ → `quality_screen_batch.py` (퍼널 1.5단계) | | |
 | **A4** | `/investment-checklist` | | |
 | **A5+** | `/investment-team` | **T1** | `financial_rigor.py` |
 | **A6** | `/thesis-tracker` (논제 수립 모드) | **T2** | `report_audit.py` |
@@ -68,7 +68,7 @@
 
 ### Step 2 [A2] — `/industry-funnel` ✅
 
-**동작**: 전체 시장(30~60종목) → 5개 지표 스크리닝(≤10종목) → 정밀 분석 → 최종 3종목
+**동작**: 전체 시장(30~60종목) → 열등주 7지표 일괄 제거(1.5단계 · 기계 계산) → 밸류에이션·재무구조·MOAT 3지표(≤10종목) → 정밀 분석 → 최종 3종목
 
 **의존성**: WebSearch (finviz screener, macrotrends, stockanalysis, SEC), `tools/site_preflight.py` (0단계 사전 접근 점검)
 
@@ -76,13 +76,15 @@
 
 ---
 
-### Step 3 [A3] — `/quality-screen` ✅
+### Step 3 [A3] — 열등주 제거 → `tools/quality_screen_batch.py` (2026-10-26 스킬 폐지 · TASK-195)
 
-**동작**: 7가지 하드 기준 (ROE, FCF, 이자커버리지, Gross Margin, OCF/NI, Net Margin, 주식희석)으로 열등주 필터링
+**동작**: 7가지 하드 기준 (ROE, FCF, 이자커버리지, Gross Margin, OCF/NI, Net Margin, 주식희석)을 SEC XBRL로 기계 계산. 면제 A·B 자동, C·M&A 예외는 힌트 → 사람 확인 후 플래그.
 
-**의존성**: WebSearch (macrotrends, stockanalysis), `tools/site_preflight.py` (0단계 사전 접근 점검)
+**호출 위치**: `/industry-funnel` 1.5단계(섹터 전체) · `/investment-checklist` ⓪-2(퍼널 없이 시작한 종목).
 
-**위험 요소**: 결과를 파일로 저장하지 않으므로 재실행 필요 (위험이라기보다 운영 특성).
+**산출**: 생존 종목마다 `reports/{티커}/{티커}-quality-screen-{날짜}.md` (대시보드 칩 계약 유지).
+
+**의존성**: SEC EDGAR XBRL companyfacts (`fetch_financials.py` 태그 정의 재사용) — 웹 조회 0회.
 
 ---
 

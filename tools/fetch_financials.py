@@ -155,6 +155,33 @@ METRICS: list[dict] = [
         "gaap": ["LongTermDebtNoncurrent", "LongTermDebt"],
         "ifrs": ["NoncurrentPortionOfNoncurrentBondsIssued", "LongtermBorrowings"],
     },
+    # ── 열등주 제거(퍼널 1.5단계 · TASK-195) 용 ──
+    # 이자커버리지 = (세전이익 + 이자비용) / 이자비용. 이자비용 태그는 회사·연도마다 갈린다
+    # (실측 CW: FY2014~2023 InterestExpense → FY2022~ InterestExpenseNonoperating).
+    {
+        "key": "interestExpense", "label": "이자비용", "kind": "duration", "unit_kind": "money",
+        "gaap": [
+            "InterestExpense",
+            "InterestExpenseNonoperating",
+            "InterestExpenseDebt",
+            "InterestAndDebtExpense",
+        ],
+        "ifrs": ["FinanceCosts", "InterestExpense"],
+    },
+    {
+        "key": "pretaxIncome", "label": "세전이익", "kind": "duration", "unit_kind": "money",
+        "gaap": [
+            "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+            "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+        ],
+        "ifrs": ["ProfitLossBeforeTax"],
+    },
+    # GrossProfit 태그를 안 쓰는 회사가 있다(실측 BWXT) — 매출원가로 매출총이익률을 보충한다.
+    {
+        "key": "costOfRevenue", "label": "매출원가", "kind": "duration", "unit_kind": "money",
+        "gaap": ["CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfGoodsSold"],
+        "ifrs": ["CostOfSales"],
+    },
 ]
 
 # 연간 보고서 서식. 외국기업(TSM 등)은 10-K 대신 20-F, 캐나다 기업은 40-F 를 낸다.
@@ -451,7 +478,10 @@ def build_annual(
         fcf = None
         if v.get("operatingCashFlow") is not None and v.get("capex") is not None:
             fcf = v["operatingCashFlow"] - v["capex"]
-        gm = _safe_div(v.get("grossProfit"), v.get("revenue"))
+        gp = v.get("grossProfit")
+        if gp is None and v.get("revenue") is not None and v.get("costOfRevenue") is not None:
+            gp = v["revenue"] - v["costOfRevenue"]
+        gm = _safe_div(gp, v.get("revenue"))
         om = _safe_div(v.get("operatingIncome"), v.get("revenue"))
         nm = _safe_div(v.get("netIncome"), v.get("revenue"))
         roe = _safe_div(v.get("netIncome"), v.get("equity"))

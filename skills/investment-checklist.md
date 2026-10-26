@@ -9,7 +9,7 @@ $ARGUMENTS 에 대해 버핏 가치투자 매수 전 체크리스트 분석을 �
 ### ⓪ 사전 점검: 데이터 소스 접근 확인
 
 ```bash
-python3 tools/site_preflight.py quality-screen
+python3 tools/site_preflight.py investment-checklist
 ```
 
 차단된 소스가 있으면 스크립트가 대체 소스를 출력한다. 진행은 계속하되, **다음 규칙을 반드시 지킨다(hard rule):**
@@ -18,6 +18,23 @@ python3 tools/site_preflight.py quality-screen
 > memory)이나 추측으로 채우지 않는다.** 6게이트 표를 "완성"하는 것보다 빈칸이 정직한 것이다. 데이터를
 > 못 구한 게이트는 판정 보류(⬛)로 명시하고, 임의 수치로 통과/미통과를 매기지 않는다.
 > (근거: [data-confidence.md](skills/data-confidence.md) 핵심 원칙 4 — 공백은 채우지 말고 남긴다.)
+
+### ⓪-2 열등주 제거 확인 (TASK-195)
+
+열등주 제거는 이제 `/industry-funnel` **1.5단계**에서 섹터 전체를 한 번에 거른다(개별 `/quality-screen` 스킬은 폐지).
+
+- 퍼널을 거쳐 온 종목 → `reports/{티커}/{티커}-quality-screen-*.md` 가 이미 있다. 그 판정을 관문 2에 인용하고 넘어간다.
+- 퍼널 없이 종목부터 시작했다면(또는 결과 파일이 180일보다 오래됐다면) **먼저** 실행한다 (Bash 1회 · 웹 조회 0회):
+
+```bash
+python3 tools/quality_screen_batch.py {티커…} --sector {섹터 토큰} --write-all   # 은행·보험은 --financials {티커}
+```
+
+| 결과 | 처리 |
+|---|---|
+| 통과 · 면제 통과 | 그대로 진행 |
+| 탈락 | **즉시 거부** — 6관문을 돌리지 않는다. `avoid` 를 기록하고 `--reason` 에 "열등주 제거 탈락 — {미달 지표}"를 적는다. 회계 구조 왜곡이 의심되면 10-K로 확인한 뒤 근거를 남기고 진행할 수 있다([industry-funnel.md](skills/industry-funnel.md) 1.5단계 '수동 복권') |
+| 데이터 부족 | 진행하되 관문 2에 ⬛ 를 반영하고 "회색지대" 쪽으로 판정한다 |
 
 ---
 
@@ -310,6 +327,7 @@ T1이라도 아래 중 하나에 걸리면 **MOS와 무관하게 `buy` 금지 �
 
 각 종목에 대해 항목별 점검. 하나라도 해당하면 즉시 "거부"로 표기:
 
+- [ ] 열등주 제거 7지표에서 탈락했다 (면제·수동 복권 없음 — ⓪-2)
 - [ ] 이 회사가 어떻게 돈을 버는지 설명할 수 없다
 - [ ] 연속 3년 FCF가 마이너스이며 개선 징후가 없다
 - [ ] 경영진에 신뢰성 문제가 있다
