@@ -63,6 +63,16 @@ GAP_LIMIT = 3         # ⬛ 가 이 개수 이상이면 '데이터 부족'
 
 FETCH_YEARS = 11      # ⑦은 '최신 vs 5년 전'이라 10년 창 + 1년이 필요하다
 
+# 매출채권 유동화의 이연매입대금(DPP) 회수 — GAAP(ASU 2016-15)는 투자활동으로 분류한다.
+# 영업에서 번 현금이 영업현금흐름 밖으로 빠져 ②FCF·⑤OCF/NI 가 음수로 찍힌다
+# (실측 CEG FY2021~24: 공시 OCF −$1.3~−5.3B · 회수 +$3.9~10.2B · 프로그램 종료 FY2025 에 OCF +$4.2B).
+# 공시 태그가 정해져 있어 기계로 되돌린다 — 보정한 연도는 결과에 그대로 표시한다.
+DPP_METRIC = {
+    "key": "dppCollections", "label": "유동화 채권 회수(DPP)", "kind": "duration", "unit_kind": "money",
+    "gaap": ["ProceedsFromCollectionOfRetainedInterestInSecuritizedReceivables"],
+    "ifrs": [],
+}
+
 NAMES = {
     "roe": "①ROE", "fcf": "②FCF", "coverage": "③이자커버리지", "gm": "④Gross Margin",
     "ocfNi": "⑤OCF/NI", "nm": "⑥Net Margin", "dilution": "⑦주식희석",
@@ -83,6 +93,11 @@ def fetch_annual(ff, ticker: str, years: int = FETCH_YEARS) -> tuple[dict, str, 
     tax_key, tag_key = ff.detect_taxonomy(facts)
     currency = ff.resolve_currency(facts, tax_key, tag_key)
     annual, _tags = ff.build_annual(facts, years, tax_key, tag_key, currency)
+    dpp, _ = ff.extract_metric(facts, DPP_METRIC, tax_key, tag_key, currency)
+    for fy, row in annual.items():
+        pt = dpp.get(int(fy))
+        if pt and pt.get("value"):
+            row["values"]["dppCollections"] = pt["value"]
     meta = {"cik": cik, "currency": currency, "freshness": ff.freshness(annual)}
     return annual, name, meta
 
@@ -113,9 +128,25 @@ def _ind(value, status: str, text: str, note: str = "", years: int | None = None
     return {"value": value, "status": status, "text": text, "note": note, "years": years}
 
 
+def _adjust_dpp(rows: list[tuple[int, dict]]) -> list[int]:
+    """DPP 회수를 OCF·FCF 에 되돌린다. 보정한 회계연도 목록을 반환."""
+    years = []
+    for fy, v in rows:
+        dpp = _num(v.get("dppCollections"))
+        if not dpp or _num(v.get("operatingCashFlow")) is None:
+            continue
+        v["operatingCashFlow"] = v["operatingCashFlow"] + dpp
+        if _num(v.get("d_fcf")) is not None:
+            v["d_fcf"] = v["d_fcf"] + dpp
+        years.append(fy)
+    return years
+
+
 def compute(annual: dict, *, financial: bool = False) -> dict:
     """7지표 원값과 1차 판정(면제 적용 전)."""
     rows = _rows(annual)
+    dpp_years = _adjust_dpp(rows)
+    dpp_note = f" · 유동화 회수 보정 FY{','.join(str(y)[2:] for y in dpp_years)}" if dpp_years else ""
     last10 = rows[-10:]
     last5 = rows[-5:]
     n_years = len(rows)
@@ -146,7 +177,7 @@ def compute(annual: dict, *, financial: bool = False) -> dict:
         ind["fcf"] = _ind(None, "gap", "⬛", "OCF·CAPEX 3개년 미만")
     else:
         s = sum(fcfs)
-        note = f"{len(fcfs)}년 합계" + ("" if len(fcfs) == 5 else " (데이터 기간 부족)")
+        note = f"{len(fcfs)}년 합계" + ("" if len(fcfs) == 5 else " (데이터 기간 부족)") + dpp_note
         ind["fcf"] = _ind(s, "pass" if s > 0 else "fail", _money(s), note, len(fcfs))
 
     # ③ 이자커버리지 — 최신 연도부터 거슬러 이자비용이 있는 첫 해
@@ -172,11 +203,11 @@ def compute(annual: dict, *, financial: bool = False) -> dict:
     else:
         so, sn = sum(o for o, _ in pairs), sum(n for _, n in pairs)
         if sn <= 0:
-            ind["ocfNi"] = _ind(None, "fail", "적자", f"{len(pairs)}년 합계 순이익 ≤ 0", len(pairs))
+            ind["ocfNi"] = _ind(None, "fail", "적자", f"{len(pairs)}년 합계 순이익 ≤ 0" + dpp_note, len(pairs))
         else:
             r = so / sn
             ind["ocfNi"] = _ind(r, "pass" if r >= TH_OCF_NI else "fail", f"{r:.2f}",
-                                f"{len(pairs)}년 합계 비율", len(pairs))
+                                f"{len(pairs)}년 합계 비율" + dpp_note, len(pairs))
 
     # ⑥ 장기 Net Margin
     nms = [_num(v.get("d_netMarginPct")) for _, v in last10]
@@ -205,7 +236,7 @@ def compute(annual: dict, *, financial: bool = False) -> dict:
         "nmLast": [_num(v.get("d_netMarginPct")) for _, v in rows[-3:]],
         "ocfLast2": [_num(v.get("operatingCashFlow")) for _, v in rows[-2:]],
     }
-    return {"indicators": ind, "trend": trend}
+    return {"indicators": ind, "trend": trend, "dppYears": dpp_years}
 
 
 def _coverage(rows: list[tuple[int, dict]]) -> dict:
@@ -289,7 +320,13 @@ def judge(result: dict, *, exempt_c: bool = False, ma_exempt: bool = False) -> d
         verdict = "면제 통과"
     else:
         verdict = "통과"
-    result.update(verdict=verdict, fails=fails, gaps=gaps, exemptions=exemptions, hints=hints)
+    adjustments = []
+    if result.get("dppYears"):
+        adjustments.append("매출채권 유동화 회수(DPP)를 영업현금흐름에 가산 — GAAP 투자활동 분류 되돌림 "
+                           f"(FY{', FY'.join(str(y) for y in result['dppYears'])} · 공시 태그 "
+                           "ProceedsFromCollectionOfRetainedInterestInSecuritizedReceivables)")
+    result.update(verdict=verdict, fails=fails, gaps=gaps, exemptions=exemptions, hints=hints,
+                  adjustments=adjustments)
     return result
 
 
@@ -371,6 +408,8 @@ def ticker_report(r: dict, *, sector: str | None, today: date) -> str:
         i = ind[k]
         lines.append(f"| {label[0]} | {label[1:]} | {i['text']} | {CRITERIA[k]} | {ICON[i['status']]} | "
                      f"{tag(i)} | {i['note']} |")
+    if r.get("adjustments"):
+        lines += ["", "**회계 표시 보정** 🟢[사실·계산]"] + [f"- {a}" for a in r["adjustments"]]
     lines += ["", "## 요약 테이블", "", summary_table([r]), "", "## 면제 규칙 적용 여부", ""]
     if r["exemptions"]:
         lines += [f"- {e}" for e in r["exemptions"]]
@@ -484,6 +523,8 @@ def main() -> None:
     print()
     print(stats(results))
     for r in results:
+        for adj in r.get("adjustments", []):
+            print(f"  🔧 {r['ticker']}: {adj}")
         for e in r.get("exemptions", []):
             print(f"  {r['ticker']}: {e}")
         for h in r.get("hints", []):

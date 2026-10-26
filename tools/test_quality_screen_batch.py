@@ -126,3 +126,21 @@ def test_screen_isolates_fetch_failure():
     res = screen(["GOOD", "BAD"], financials=set(), exempt_c=set(), ma_exempt=set(), sleep=0, fetch=fake)
     assert res[0]["verdict"] == "통과"
     assert res[1]["verdict"] == "데이터 부족" and "조회 실패" in res[1]["error"]
+
+
+def test_dpp_collections_are_added_back_to_ocf():
+    # CEG 형: 공시 OCF 음수지만 유동화 회수(투자활동)를 되돌리면 흑자
+    dpp = {fy: {"operatingCashFlow": -100.0, "dppCollections": 300.0} for fy in range(2021, 2025)}
+    a = _annual(overrides=dpp)
+    for fy in range(2021, 2025):   # 합성 derived 의 fcf 도 공시 기준으로 맞춘다
+        a[str(fy)]["derived"]["fcf"] = -100.0 - 30.0
+    r = _run(a)
+    assert r["dppYears"] == [2021, 2022, 2023, 2024]
+    assert r["indicators"]["fcf"]["status"] == "pass"
+    assert r["indicators"]["ocfNi"]["status"] == "pass"
+    assert "유동화 회수 보정" in r["indicators"]["fcf"]["note"] and r["adjustments"]
+
+
+def test_no_dpp_no_adjustment():
+    r = _run(_annual())
+    assert r["dppYears"] == [] and r["adjustments"] == []
