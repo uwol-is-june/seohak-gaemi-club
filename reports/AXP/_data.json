@@ -4,7 +4,7 @@
   "companyName": "AMERICAN EXPRESS CO",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-08-06T01:33:10.848546+00:00",
+  "generatedAt": "2026-10-26T00:05:53.641106+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000004962.json",
@@ -27,7 +27,7 @@
   },
   "freshness": {
     "latestPeriodEnd": "2025-12-31",
-    "monthsOld": 7.2,
+    "monthsOld": 9.8,
     "stale": false
   },
   "annual": {
@@ -1063,7 +1063,7 @@
   },
   "crossValidation": {
     "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/AXP?symbol=AXP&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374888790&period2=1786066390",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/AXP?symbol=AXP&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1381881953&period2=1793059553",
     "worst": "중대 불일치",
     "items": [
       {

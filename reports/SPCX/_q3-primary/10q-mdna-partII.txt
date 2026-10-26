@@ -1,0 +1,474 @@
+Item 2. Management’s Discussion and Analysis of Financial Condition and Results of Operations
+MANAGEMENT’S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION AND RESULTS OF OPERATIONS
+The following discussion and analysis of our financial condition and results of operations should be read in conjunction with our consolidated financial statements and the related notes and other financial information included elsewhere in this Quarterly Report on Form 10-Q and our final prospectus filed with the Securities and Exchange Commission (the “SEC”) pursuant to Rule 424(b)(4) under the Securities Act of 1933, as amended on June 12, 2026 in connection with our initial public offering (the “Prospectus”), and “Business” and “Management’s Discussion and Analysis of Financial Condition and Results of Operations” in the Prospectus. In addition to historical consolidated financial information, the following discussion contains forward-looking statements that reflect our plans, estimates, and beliefs. Our actual results or outcomes could differ materially from those discussed in the forward-looking statements. You should review the section titled “Forward-Looking Statements” in this Quarterly Report on Form 10-Q, as well as the section titled “Risk Factors” in our Quarterly Report on Form 10-Q for the quarter ended June 30, 2026 and in the Prospectus for a discussion of factors that could cause actual results or outcomes to differ materially from the results described in or implied by the forward-looking statements contained in the following discussion and analysis and elsewhere in this Quarterly Report on Form 10-Q. 
+Overview
+We design, manufacture, launch, and operate products and services built on cutting-edge technologies, including the world’s most advanced rockets and spacecraft. We safely and reliably transport astronauts, satellites, and other payloads on missions that benefit life on Earth.
+We have three reportable segments in our vertically integrated innovation engine: Space, Connectivity, and SI (formerly known as AI). In our Space segment, we design, manufacture, and launch reusable rockets to provide high cadence, reliable, and affordable access to space at scale. In our Connectivity segment, we have over 11,100 Starlink broadband and mobile satellites in Low-Earth Orbit. Our worldwide high-speed, low-latency broadband data and communications network delivers connectivity to millions of consumer, enterprise, and government customers across 174 countries, territories, and other markets. In our SI segment, we operate a vertically integrated SI platform that includes (i) SI infrastructure solutions, (ii) frontier LLM Grok, (iii) SI-assisted software engineering platform Cursor, and (iv) real-time information, entertainment, and free speech platform X. 
+Acquisitions
+Cursor Merger
+On June 16, 2026, the Company entered into an Agreement and Plan of Merger (the "Cursor Merger Agreement") with Anysphere, Inc. ("Cursor") and X67 Inc., a wholly owned subsidiary of the Company ("Merger Sub"). On August 14, 2026 (the "Closing Date"), the Company completed the merger with Cursor (the "Cursor Merger"). The Cursor Merger is an extension of the Company’s strategy to vertically integrate compute infrastructure, SI models, and applications.
+Pursuant to the Cursor Merger Agreement, Merger Sub merged with and into Cursor, with Cursor surviving the merger as a wholly owned subsidiary of the Company. At the Closing Date, each share of Cursor's common stock and preferred stock outstanding immediately prior to the Closing Date was automatically converted into the right to receive shares of the Company's Class A common stock, plus cash in lieu of fractional shares. The conversion was based on an implied equity value of Cursor of $60.0 billion and the volume-weighted average closing price of the Company's Class A common stock over the seven consecutive trading days immediately preceding the closing of the Cursor Merger (“Exchange Ratio”), resulting in a purchase consideration of $42.5 billion. As part of the Cursor Merger Agreement, certain outstanding shares of Cursor common stock were converted to SpaceX equity awards with time-based vesting conditions in order to retain key talent, which are considered share-based compensation rather than purchase consideration. In addition, any outstanding, unvested equity awards held by Cursor employees prior to the Cursor Merger were assumed and converted into equivalent SpaceX awards based on the Exchange Ratio. For additional information regarding the acquisition, refer to Note 20 - Acquisitions, to the consolidated financial statements included elsewhere in this Quarterly Report on Form 10-Q.
+Evaluation of Potential Combination with Tesla, Inc.
+As announced on our earnings call on October 20, 2026, our board of directors has formed a special committee to evaluate a potential combination between SpaceX and Tesla, Inc. ("Tesla"). The board of directors of Tesla has also formed a special committee. No determination by our special committee has been made regarding any potential combination, and any potential combination would be subject to further approval by our special committee, our board of directors and our controlling shareholder. There can be no assurance that any agreement will be reached or that any transaction will be consummated, and the special committee may determine not to proceed with recommending any transaction it does not believe to be in the best interests of our shareholders.
+38
+Table of Contents
+Key Business Metrics
+We use the following key business metrics to help evaluate our business, measure our performance, identify trends, formulate business plans, and make strategic decisions.
+Space
+In our Space segment, we use mass to orbit and launches as key business metrics to measure our scale and throughput. Mass to orbit and launches generally grow more rapidly than Space segment revenue because these metrics include our internal constellation deployments from which we do not recognize inter-segment revenue.
+Mass to Orbit: Mass to orbit is the total kilograms of payload that we deploy to orbit in a given period, and is a key indicator of SpaceX’s capacity and scalability that supports Space revenue and drives expansion across our Connectivity and SI segments. We calculate this metric by summing verified mass, including Starlink satellites, customer payloads, and development cargo, from all successful orbital and flight tests. This measure excludes failed or scrubbed attempts. 
+Three Months Ended | Nine Months Ended | 
+(in metric tons) | September 30, 2026 | September 30, 2025 | September 30, 2026 | September 30, 2025 | 
+Mass to orbit(1)
+ | 476 | 525 | 1,517 | 1,627 | 
+of which, attributable to customer payloads | 119 | 111 | 251 | 274 | 
+of which, attributable to internal payloads | 358 | 415 | 1,266 | 1,353 | 
+__________________
+(1)Amounts presented may not add up to the corresponding totals due to rounding.
+Launches: Launches are a key measure of our operational scale, which in turn supports our revenue growth and mission to expand humanity’s presence in space. Launches in a period represent the sum of all successful orbital and flight tests across our rockets, including internal Starlink deployments, development tests, and launches for our third-party customers, and excluding any cancellations or scrubs that occurred in that period. We allocate a significant amount of launch capacity to our Connectivity segment, and expect to allocate a significant amount to our SI segment in the future. Our Space segment revenue only reflects our customer launches and customer activities. 
+Three Months Ended | Nine Months Ended | 
+(number) | September 30, 2026 | September 30, 2025 | September 30, 2026 | September 30, 2025 | 
+Falcon launches(1)
+ | 33 | 43 | 110 | 124 | 
+of which, customer launches | 12 | 15 | 29 | 36 | 
+of which, internal launches | 21 | 28 | 81 | 88 | 
+Starship launches(1)
+ | 2 | 1 | 3 | 4 | 
+__________________
+(1)We designate a launch as a “customer launch” if an external customer payload constitutes the primary payload (i.e., where the principal objective is to deliver the customer payload) and the mission parameters (e.g., launch window, orbital parameters, mission profile) are designed around the primary payload’s requirements. To date, all Starship launches have been classified as internal. 
+Connectivity 
+In our Connectivity segment, we view Starlink consumer subscribers and Starlink consumer ARPU as key business metrics to evaluate our growth and monetization.
+Starlink Consumer Subscribers (previously referred to as Starlink Subscribers): We define a Starlink consumer subscriber as a unique service line that is directly assigned to a Starlink.com account registered to a person or entity that does not have a direct, negotiated agreement with the Starlink sales team. A service line is an individual instance of Starlink broadband internet service provisioned under a subscription plan, generally associated with a specific Starlink terminal or group of terminals, and billed according to Starlink’s service plans and terms of service. The number of service lines is distinct from the number of unique devices, account holders, end users or physical persons. An individual, household, or business may share a single service line among multiple end-users. Likewise, an individual, household, or business may maintain multiple service lines (e.g., both a residential service line and a separate roam service line, which would be defined as two separate service lines and therefore two Starlink consumer subscribers). 
+We use this measure to assess the adoption of Starlink as we expand within and across geographies and business segments. Starlink consumer subscribers includes both personal (e.g., residential and roam) and business (e.g., local priority and global priority) 
+39
+Table of Contents
+subscription plans, but does not include managed enterprise and government customers with contracts in domains including aviation, maritime, land mobility, fixed sites, and government entities. We calculate Starlink consumer subscribers for a period as the number of unique service lines at the end of the period. 
+As of | 
+(in millions) | September 30, 2026 | September 30, 2025 | 
+Starlink consumer subscribers | 13.6 | 7.2 | 
+Starlink Consumer ARPU: We calculate consumer ARPU as service revenue generated from Starlink consumer subscribers during the period divided by (i) the average number of Starlink consumer subscribers during the period and by (ii) the number of months in the period. 
+Three Months Ended | Nine Months Ended | 
+(dollars per month) | September 30, 2026 | September 30, 2025 | September 30, 2026 | September 30, 2025 | 
+Starlink consumer ARPU | $69 | $83 | $67 | $84 | 
+SI
+In our SI segment, we use nameplate compute as a key business metric to assess our ability to deploy, scale, and monetize compute capacity.
+Nameplate Compute: We calculate nameplate compute for a period as the number of GPUs installed in our data centers at the end of the period multiplied by their respective all-in power. Nameplate compute reflects installed capacity and does not represent actual power consumption or utilization. It does not include power we install and use for our supporting infrastructure such as cooling systems, power distribution losses, lighting, security systems, or facility-level overhead. 
+As of | 
+(in gigawatts) | September 30, 2026 | September 30, 2025 | 
+Nameplate compute | 1.7 | 0.6 | 
+Components of Results of Operations
+Description of Our Segments
+Space
+Revenue - Space
+Space segment generates revenue primarily through (i) Launch Services for the deployment of payloads to their intended orbits for both commercial and government customers utilizing Falcon 9 and Falcon Heavy, and (ii) Launch and Development for the development of spacecraft and provision of launch and mission services for government agency space programs utilizing Falcon 9, Falcon Heavy, Starship, and Dragon. Launch Services revenue is derived from fixed-price contracts that range from one to five years. Launch and Development revenue is derived from fixed-price contracts that can range from one to fourteen years. 
+The Company recognizes Launch Services revenue at a point in time, due to the interchangeability of flight hardware and minimal unique engineering costs. Revenue and costs are deferred and not recognized until upon the launch or deployment of the customer’s payload to their intended orbit. 
+The Company recognizes Launch and Development revenue over time as the Company’s performance on the contract creates an asset with no alternative use and the Company has an enforceable right to payment for performance to date. The Company measures progress on these contracts using the cost-to-cost input method, which the Company believes represents the most appropriate measure towards satisfaction of its performance obligation. 
+For launches of our Starlink satellites, the Company does not recognize any inter-segment revenue, rather those launch costs are capitalized in satellites in Property, plant, and equipment, net. We allocate a significant amount of launch capacity to our Connectivity segment, and expect to allocate a significant amount to our SI segment in the future. Our Space segment revenue only reflects our customer launches and customer activities.
+40
+Table of Contents
+Revenue from Launch Services recognized at point in time and revenue from Launch and Development recognized over time as a percentage of total Space segment revenue are as follows: 
+Three Months Ended September 30, | Nine Months Ended September 30, | 
+2026 | 2025 | 2026 | 2025 | 
+Launch Services | 64.0 | % | 60.0 | % | 63.0 | % | 62.7 | % | 
+Launch & Development | 36.0 | % | 40.0 | % | 37.0 | % | 37.3 | % | 
+Space 
+ | 100.0 | % | 100.0 | % | 100.0 | % | 100.0 | % | 
+Expenses - Space
+Cost of Revenue
+Space segment’s cost of revenue includes second stages flown related to the Company’s Falcon 9 and Falcon Heavy launches, launch operations and overhead, depreciation (inclusive of booster, Merlin engine, and fairing depreciation), employee compensation costs (including salaries, benefits, and share-based compensation) for our operations teams, launch testing and overhead, engineering costs, inventory excess and obsolescence, shared costs incurred in the production of launch hardware, and ongoing product support. 
+Research and Development
+Space segment’s research and development (“R&D”) expenses mainly relate to the development, build, and testing of Starship. Starship costs consist of test flight hardware, Raptor engines, employee compensation costs (including salaries, benefits, and share-based compensation), tooling and equipment expenses, depreciation for R&D equipment, and allocated overhead. R&D also includes certain expenses related to the development of features and modules created through engineering services for the Company’s Falcon vehicles, where the Company retains the associated intellectual property.
+Selling, General, and Administrative
+Space segment’s selling, general, and administrative (“SG&A”) expenses include allocated employee compensation costs (including salaries, benefits, and share-based compensation) for our sales, facilities, legal, finance, information technology, human resources, and other administrative employees, depreciation, and corporate aircraft costs. 
+Impairment
+Space impairment includes impairment losses on fixed assets due to anomalies on the Company’s flight vehicles and launch sites, which occur outside our normal business operations. 
+Connectivity
+Revenue - Connectivity
+Connectivity segment generates revenue from (i) the broadband and mobile connectivity services provided through Starlink and (ii) the sale of the Starlink Kits (inclusive of the terminal). The Company provides connectivity services and Starlink Kits to consumers as well as enterprise and government customers. 
+The Company recognizes revenue from broadband and mobile connectivity services over time as the customer simultaneously receives and consumes the benefits provided. The Company generates service revenue from (i) fixed-price services that require advance or recurring monthly payments by the customer or (ii) variable-priced services based on actual data consumption. The amounts received from customers for advanced payments for broadband and mobile connectivity services are recognized either ratably over the subscription term or based on actual data consumption. The Company’s broadband contracts are generally month-to-month and the revenue recognized for these recurring consumer customers is equal to the amount billed in that month. The Company’s mobile connectivity agreements are generally multi-year contractual obligations that range from one to five years, although the customer can generally terminate at any time. 
+The Company recognizes revenue over time for certain contracts related to our Starshield business that are multi-year in nature. For revenue that is recognized over time, we use the cost-to-cost input method. The Company records revenue based upon costs (such as materials and labor hours) incurred to date relative to the total estimated cost at completion. 
+The Company records revenue for the Starlink Kit upon delivery to the customer, or in the instance of certain enterprise customers, when it is installed. Starlink Kit revenue is reported net of sales returns, credits, and chargebacks.
+41
+Table of Contents
+Expenses - Connectivity
+Cost of Revenue
+Connectivity segment’s cost of revenue includes depreciation (inclusive of launch, satellite, and ground infrastructure costs), Starlink Kit costs, shipping and handling costs, ground operating expenses, employee compensation costs (including salaries, benefits, and share-based compensation) for our engineering and operations teams, payment processor fees, warranty expense, inventory excess and obsolescence, and customs and duties. 
+Research and Development
+Connectivity segment’s R&D expenses mainly relate to the development, build, and testing of our next-generation satellites, Starlink Kits, and ground infrastructure. These costs include employee compensation costs (including salaries, benefits, and share-based compensation), contractor compensation expenses, equipment lease expenses, depreciation for R&D equipment, and allocated overhead.
+Selling, General, and Administrative
+Connectivity segment’s SG&A expenses include allocated employee compensation costs (including salaries, benefits, and share-based compensation) for our sales, facilities, legal, finance, information technology, human resources, and other administrative employees, licensing and regulatory fees, marketing expenses, depreciation, and bad debt expense. 
+SI
+Revenue - SI
+SI segment generates revenue from (i) the sale of ad products displayed on its X platform, and (ii) providing SI solutions and infrastructure, which includes subscription-related offerings for Grok, Cursor, and X products, data licensing arrangements, and API access to Grok models, as well as the sale of cloud services. Advertising services and certain SI solutions, including subscriptions, are offered to consumer and enterprise customers. 
+Revenue for advertising services is recognized in the period when advertising is delivered as evidenced by a person engaging with an ad on the Company’s platforms in a manner satisfying the types of engagement selected by the advertisers. The Company’s contract terms for advertising services are typically cancellable short-term arrangements. We experience seasonality in our advertising revenues. Overall advertising spend tends to be highest in the fourth quarter of each year due in large part to end-of-year advertiser spending and lowest in the first quarter of each year. 
+Revenue for SI solutions and infrastructure includes: (i) revenue from consumer subscriptions and enterprise plans for Grok, Cursor, and X, which is recognized ratably over the period of the subscription term (ranging from month-to-month to one year) or as services are consumed for usage based arrangements, including on-demand usage in excess of included or pre-committed amounts in the arrangement, (ii) data licensing revenue which is generally recognized ratably over the period (from month-to-month to two years) in which the Company provides data as the customer consumes and benefits from the use of the licensed data, (iii) revenue from providing API access to Grok models recognized ratably over the contract term (typically month-to-month or up to one year) for stand-ready access or as services are consumed for usage based arrangements, and (iv) revenue from cloud services based on a fixed monthly services fee which is recognized ratably over the contract term (typically three years and terminable by either party upon 90 days’ notice).
+Expenses - SI
+Cost of Revenue
+SI segment’s cost of revenue includes infrastructure costs, revenue share expenses, payment processor fees, payments to creators, amortization of acquired intangible assets, and allocated labor and overhead costs. Infrastructure costs consist primarily of depreciation of servers and networking equipment, costs related to data center facilities, including lease and hosting costs, related support, maintenance, energy, and bandwidth costs, public cloud hosting costs, and employee compensation costs (including salaries, benefits, and share-based compensation) for our operations teams. 
+Research and Development
+SI segment’s R&D expenses mainly relate to the training of Grok, our leading frontier model, development, build, and testing of our next-generation SI-enabled products and data center costs to train SI-enabled products. These costs include cloud computing expenses, employee compensation expenses (including salaries, benefits, and share-based compensation), power generation costs, and 
+42
+Table of Contents
+depreciation of data center assets, including processors, equipment lease expenses, and networking equipment. We expect SI segment R&D expenses to increase due to share-based compensation expense related to equity awards granted in connection with our acquisitions, including the Cursor Merger. 
+Selling, General, and Administrative
+SI segment’s SG&A expenses consist primarily of employee compensation expenses (including salaries, benefits, and share-based compensation) for our sales, sales support, marketing, finance, legal, information technology, human resources and other administrative employees. In addition, SG&A expenses include fees and costs for professional services, including consulting, content moderation, third-party legal and accounting services and facilities costs and other supporting overhead costs that are not allocated to other departments. We expect SI segment’s SG&A expenses to increase due to share-based compensation expense related to equity awards granted in connection with our acquisitions, including the Cursor Merger.
+Restructuring Charges
+SI restructuring charges are the result of the acquisition of Twitter in October 2022 by X Holdings. The charges include workforce restructuring for former Twitter employees, as well as impairment and early termination penalties as a result of consolidation of Twitter’s various office leases.
+Other Corporate Expenses
+Interest Expense
+Interest expense includes interest expense related to our borrowings, amortization of associated debt discount and issuance costs, undrawn fees, and finance leases. Interest expense is reflected net of capitalized interest. 
+Interest Income
+Interest income includes interest income earned on cash and cash equivalents and marketable securities, and dividend income from our investments in mutual funds.
+Other Income (Expense), Net
+Other income (expense), net consists of gain or loss on digital assets, gain or loss on foreign currency transactions, gain or loss on our equity investments, and loss on extinguishment of debt.
+Provision for (Benefit from) Income Taxes
+The provision for (benefit from) income taxes consists primarily of income taxes in certain federal, state, local and foreign jurisdictions in which we conduct business. Foreign jurisdictions typically have different statutory tax rates from those in the United States. Accordingly, our effective tax rates may vary depending on the relative proportion of foreign income to domestic income, generation of tax credits, changes in the valuation allowance of our net deferred tax assets, and changes in tax laws.
+43
+Table of Contents
+Comparison of the Three and Nine Months Ended September 30, 2026 and September 30, 2025
+Consolidated Results of Operations
+The following table sets forth our consolidated financial statements data for the periods indicated:
+Three Months EndedSeptember 30, | 2026 vs. 2025 Change | Nine Months EndedSeptember 30, | 2026 vs. 2025 Change | 
+(in millions) | 2026 | 2025 | $ Change | % Change | 2026 | 2025 | $ Change | % Change | 
+Revenue | $ | 14,575 | $ | 5,576 | $ | 8,999 | 161.4 | % | $ | 27,083 | $ | 13,714 | $ | 13,369 | 97.5 | % | 
+Costs and expenses | 
+Cost of revenue | 5,478 | 2,705 | 2,773 | 102.5 | % | 11,361 | 6,949 | 4,412 | 63.5 | % | 
+Research and development | 4,596 | 2,291 | 2,305 | 100.6 | % | 11,658 | 5,806 | 5,852 | 100.8 | % | 
+Selling, general, and administrative | 1,707 | 575 | 1,132 | 196.9 | % | 3,365 | 1,674 | 1,691 | 101.0 | % | 
+Restructuring charges (credits) | 3 | 278 | (275) | (98.9) | % | (6) | 472 | (478) | NM | 
+Impairment | — | — | — | NM | — | 29 | (29) | NM | 
+Total costs and expenses | 11,784 | 5,849 | 5,935 | 101.5 | % | 26,378 | 14,930 | 11,448 | 76.7 | % | 
+Income (loss) from operations | 2,791 | (273) | 3,064 | NM | 705 | (1,216) | 1,921 | NM | 
+Interest expense | (675) | (514) | (161) | 31.3 | % | (1,968) | (1,372) | (596) | 43.4 | % | 
+Interest income | 873 | 155 | 718 | 463.2 | % | 1,426 | 370 | 1,056 | 285.4 | % | 
+Other income (expense), net | 1,025 | 140 | 885 | 632.1 | % | (937) | 342 | (1,279) | NM | 
+Income (loss) before income taxes | 4,014 | (492) | 4,506 | NM | (774) | (1,876) | 1,102 | (58.7) | % | 
+Provision for (benefit from) income taxes | (390) | 562 | (952) | NM | (361) | 714 | (1,075) | NM | 
+Net income (loss) | $ | 4,404 | $ | (1,054) | $ | 5,458 | NM | $ | (413) | $ | (2,590) | $ | 2,177 | (84.1) | % | 
+_________________
+NM — Absolute percentage comparisons from positive to negative values or to zero values are considered not meaningful.
+Revenue 
+Revenue for the three months ended September 30, 2026 increased by $8,999 million, or 161.4%, compared to the three months ended September 30, 2025. This increase was due to an increase in revenue from our SI segment of $6,747 million primarily from the SI infrastructure contracts and additional revenue recognized from Cursor following our acquisition, an increase in revenue from our Connectivity segment of $2,151 million as our Starlink consumer subscribers and enterprise and government customer base continued to grow, as well as an increase in revenue from our Space segment of $101 million primarily driven by a favorable customer mix.
+Revenue for the nine months ended September 30, 2026 increased by $13,369 million, or 97.5%, compared to the nine months ended September 30, 2025. The increase was driven by an increase in revenue from our SI segment of $8,661 million primarily from the SI infrastructure contracts and additional revenue recognized from Cursor following our acquisition, and an increase in revenue from our Connectivity segment of $4,637 million as our Starlink consumer subscribers and enterprise and government customer base continued to grow.
+Cost of Revenue
+Cost of revenue for the three months ended September 30, 2026 increased by $2,773 million, or 102.5%, compared to the three months ended September 30, 2025. This increase was due to a $2,104 million increase in costs in our SI segment primarily due to an increase in infrastructure costs allocated to cost of revenue due to new SI infrastructure revenue contracts and an increase in amortization expense from the intangible assets acquired in the Cursor Merger, an increase in costs in our Connectivity segment of $711 million driven primarily by an increase in depreciation related to the number of satellites placed into orbit and a higher volume of Starlink Kits delivered to customers as our Connectivity revenue grew, partially offset by a decrease in our Space segment of $42 million due to fewer customer launches.
+Cost of revenue for the nine months ended September 30, 2026 increased by $4,412 million, or 63.5%, compared to the nine months ended September 30, 2025. This increase was driven by a $2,663 million increase in costs in our SI segment primarily due to an increase in infrastructure costs allocated to cost of revenue due to new SI infrastructure revenue contracts and an increase in amortization expense from the intangible assets acquired in the Cursor Merger, an increase in costs in our Connectivity segment of $1,808 million driven primarily by an increase in depreciation related to the number of satellites placed into orbit and a higher volume 
+44
+Table of Contents
+of Starlink Kits delivered to customers as our Connectivity revenue grew, partially offset by a decrease in our Space segment of $59 million due to fewer customer launches.
+Research and Development
+Research and development expense for the three months ended September 30, 2026 increased by $2,305 million, or 100.6%, compared to the three months ended September 30, 2025. This increase was primarily due to higher costs in our SI segment of $1,882 million driven by an increase in share-based compensation expense related to replacement equity awards granted as part of our acquisitions, including the Cursor Merger, and higher infrastructure and cloud computing costs as our investment in data center infrastructure expands, and higher costs from our Space segment of $376 million driven by increased investment in our Starship vehicle and related facilities.
+Research and development expense for the nine months ended September 30, 2026 increased by $5,852 million, or 100.8%, compared to the nine months ended September 30, 2025. This increase was primarily due to higher costs in our SI segment of $4,409 million driven by an increase in share-based compensation expense related to replacement equity awards granted as part of our acquisitions including the Cursor Merger, and higher infrastructure and cloud computing costs as a result of our SI data center expansions, and higher costs from our Space segment of $1,162 million driven by increased investment in our Starship vehicle and related facilities.
+Selling, General, and Administrative
+Selling, general, and administrative expense for the three months ended September 30, 2026 increased by $1,132 million, or 196.9%, compared to the three months ended September 30, 2025. This increase was due to higher costs for our SI segment of $883 million primarily driven by higher overall employee compensation expenses, including share-based compensation expense related to replacement equity awards granted as part of our acquisitions including the Cursor Merger, and an increase in costs for our Connectivity segment of $216 million primarily driven by an increase in marketing costs. 
+Selling, general, and administrative expense for the nine months ended September 30, 2026 increased by $1,691 million, or 101.0%, compared to the nine months ended September 30, 2025. This increase was due to higher costs for our SI segment of $1,180 million primarily driven by higher overall employee compensation expenses, including share-based compensation expense related to replacement equity awards granted as part of our acquisitions including the Cursor Merger, and higher costs of $484 million in our Connectivity segment primarily driven by marketing costs. 
+Restructuring Charges (Credits)
+Restructuring charges (credits) for the three and nine months ended September 30, 2026 decreased by $275 million and $478 million, respectively, compared to the corresponding prior year periods primarily due to a change in estimated settlement amounts in 2025 for former Twitter employees as part of the workforce reduction program implemented in 2022.
+Income (Loss) from Operations 
+Income from operations for the three months ended September 30, 2026 increased by $3,064 million compared to the three months ended September 30, 2025, and income from operations for the nine months ended September 30, 2026 increased by $1,921 million compared to the nine months ended September 30, 2025 driven by the factors described above.
+Interest Expense
+Interest expense for the three and nine months ended September 30, 2026 increased by $161 million, or 31.3%, and $596 million, or 43.4%, respectively, compared to the three and nine months ended September 30, 2025. This increase was primarily due to additional debt raised by the Company and by xAI prior to its merger with the Company, and other financing arrangements entered into during the last quarter of 2025 and nine months ended September 30, 2026 by our SI segment.
+Interest Income
+Interest income for the three and nine months ended September 30, 2026 increased by $718 million, or 463.2%, and $1,056 million, or 285.4%, respectively, compared to the prior periods primarily due to an increase in interest income earned from cash equivalents and marketable securities following the deployment of proceeds from the IPO and the SpaceX Notes issuance at the end of June 2026.
+Other Income (Expense), Net
+Other income (expense), net for the three months ended September 30, 2026 increased by $885 million compared to the three months ended September 30, 2025. This increase was primarily due to unrealized gain on investments in unconsolidated affiliates and gain on digital assets.
+45
+Table of Contents
+Other income (expense), net for the nine months ended September 30, 2026 decreased by $1,279 million compared to the nine months ended September 30, 2025. This decrease was primarily due to the loss on extinguishment of debt and an unfavorable change in unrealized loss on digital assets, partially offset by unrealized gain on investments in unconsolidated affiliates .
+Provision for (Benefit from) Income Taxes
+Provision for income taxes for the three and nine months ended September 30, 2026 decreased by $952 million and $1,075 million, respectively, compared to the prior periods primarily due to a partial release in valuation allowance related to deferred tax liabilities recognized in connection with the acquisitions during 2026. 
+Based on the Company’s current and anticipated future earnings, the Company believes there is a reasonable possibility that sufficient positive evidence may become available in the foreseeable future to support the release of a significant portion of the valuation allowance on its U.S. deferred tax assets. A release would result in the recognition of certain deferred tax assets and a material income tax benefit in the period of release. The timing and amount of any such release are subject to the Company’s actual operating results and ongoing assessment of available evidence. 
+Net Income (Loss)
+Net income for the three months ended September 30, 2026 increased by $5,458 million compared to the three months ended September 30, 2025, and net loss for the nine months ended September 30, 2026 decreased by $2,177 million, or 84.1%, compared to the nine months ended September 30, 2025 driven by the factors described above.
+Segment Results
+Space
+Three Months Ended September 30, | 2026 vs. 2025 Change | Nine Months EndedSeptember 30, | 2026 vs. 2025 Change | 
+(in millions) | 2026 | 2025 | $ Change | % Change | 2026 | 2025 | $ Change | % Change | 
+Revenue 
+ | $ | 1,767 | $ | 1,666 | $ | 101 | 6.1 | % | $ | 3,348 | $ | 3,277 | $ | 71 | 2.2 | % | 
+Costs and expenses | 
+Cost of revenue | 435 | 477 | (42) | (8.8) | % | 1,045 | 1,104 | (59) | (5.3) | % | 
+Research and development | 1,225 | 849 | 376 | 44.3 | % | 3,231 | 2,069 | 1,162 | 56.2 | % | 
+Selling, general, and administrative | 114 | 81 | 33 | 40.7 | % | 283 | 256 | 27 | 10.5 | % | 
+Impairment | — | — | — | NM | — | 29 | (29) | NM | 
+Total costs and expenses | $ | 1,774 | $ | 1,407 | $ | 367 | 26.1 | % | $ | 4,559 | $ | 3,458 | $ | 1,101 | 31.8 | % | 
+Income (loss) from operations | $ | (7) | $ | 259 | $ | (266) | NM | $ | (1,211) | $ | (181) | $ | (1,030) | 569.1 | % | 
+_________________
+NM — Absolute percentage comparisons from positive to negative values or to zero values are considered not meaningful.
+Revenue 
+Revenue for the three months ended September 30, 2026 increased by $101 million, or 6.1%, compared to the three months ended September 30, 2025. This increase was primarily driven by an increase in Launch Services revenue of $130 million due to a favorable customer mix shift despite the decrease in customer launches. This was partially offset by a decrease in Launch and Development revenue of $29 million primarily due to timing of work performed on government contracts.
+Revenue for the nine months ended September 30, 2026 increased by $71 million, or 2.2%, compared to the nine months ended September 30, 2025. This increase was primarily driven by an increase in Launch Services revenue of $52 million due to a favorable customer mix shift despite the decrease in customer launches and an increase in Launch and Development revenue of $19 million primarily due to timing of work performed on government contracts.
+Cost of Revenue
+Cost of revenue for the three and nine months ended September 30, 2026 decreased by $42 million, or 8.8%, and $59 million, or 5.3%, respectively, compared to the three and nine months ended September 30, 2025. This decrease was primarily driven by a decrease in customer launches, partially offset by an increase in production related costs.
+46
+Table of Contents
+Research and Development
+Research and development for the three months ended September 30, 2026 increased by $376 million, or 44.3%, compared to the three months ended September 30, 2025. This increase was primarily driven by higher production and engineering costs of $313 million and higher launch and test costs of $63 million to support continued development of the Starship vehicle.
+Research and development for the nine months ended September 30, 2026 increased by $1,162 million, or 56.2%, compared to the nine months ended September 30, 2025. This increase was primarily driven by higher production and engineering costs of $964 million and higher launch and test costs of $198 million to support continued development of the Starship vehicle.
+Selling, General, and Administrative
+Selling, general, and administrative for the three and nine months ended September 30, 2026 increased by $33 million, or 40.7%, and $27 million, or 10.5%, respectively, compared to the three and nine months ended September 30, 2025. This increase was primarily due to higher allocated general corporate and administrative overhead costs. 
+Income (Loss) from Operations 
+Space loss from operations for the three and nine months ended September 30, 2026 increased by $266 million and $1,030 million, respectively, compared to the prior periods driven by the factors described above.
+Connectivity
+Three Months Ended September 30, | 2026 vs. 2025 Change | Nine Months EndedSeptember 30, | 2026 vs. 2025 Change | 
+(in millions) | 2026 | 2025 | $ Change | % Change | 2026 | 2025 | $ Change | % Change | 
+Revenue 
+ | $ | 5,248 | $ | 3,097 | $ | 2,151 | 69.5 | % | $ | 12,796 | $ | 8,159 | $ | 4,637 | 56.8 | % | 
+Costs and expenses | 
+Cost of revenue | 2,368 | 1,657 | 711 | 42.9 | % | 6,079 | 4,271 | 1,808 | 42.3 | % | 
+Research and development | 188 | 141 | 47 | 33.3 | % | 687 | 406 | 281 | 69.2 | % | 
+Selling, general, and administrative | 325 | 109 | 216 | 198.2 | % | 819 | 335 | 484 | 144.5 | % | 
+Total costs and expenses | $ | 2,881 | $ | 1,907 | $ | 974 | 51.1 | % | $ | 7,585 | $ | 5,012 | $ | 2,573 | 51.3 | % | 
+Income from operations | $ | 2,367 | $ | 1,190 | $ | 1,177 | 98.9 | % | $ | 5,211 | $ | 3,147 | $ | 2,064 | 65.6 | % | 
+Revenue 
+Revenue for the three months ended September 30, 2026 increased by $2,151 million, or 69.5%, compared to the three months ended September 30, 2025. This increase was primarily due to an increase of $1,135 million in revenue from our consumer subscribers, driven by 88.9% growth in Starlink consumer subscribers and a 16.9% decline in Starlink consumer ARPU as we expanded internationally and added lower-priced service plans, as well as an increase of $1,016 million in our enterprise and government business, primarily driven by additional aircraft activations.
+Revenue for the nine months ended September 30, 2026 increased by $4,637 million, or 56.8%, compared to the nine months ended September 30, 2025. This increase was primarily due to an increase of $2,556 million in revenue from our consumer subscribers, driven by 88.9% growth in Starlink consumer subscribers and a 20.2% decline in Starlink consumer ARPU as we expanded internationally and added lower-priced service plans, as well as an increase of $2,081 million in our aviation, maritime, and other enterprise and government businesses.
+Cost of Revenue
+Cost of revenue for the three months ended September 30, 2026 increased by $711 million, or 42.9%, compared to the three months ended September 30, 2025. This increase was due to (i) higher volume of Starlink Kits delivered to customers of $222 million to support our Connectivity revenue growth, (ii) higher operating expenses of $212 million mainly driven by customer support and installation costs of $48 million, warranty costs of $40 million, and ground operating costs of $31 million, and (iii) higher depreciation of $160 million primarily from capitalized launch and satellite costs.
+Cost of revenue for the nine months ended September 30, 2026 increased by $1,808 million, or 42.3%, compared to the nine months ended September 30, 2025. This increase was due to (i) higher depreciation of $565 million primarily from capitalized launch and satellite costs, (ii) higher volume of Starlink Kits delivered to customers of $539 million to support our Connectivity revenue growth, 
+47
+Table of Contents
+and (iii) higher operating expenses of $507 million mainly driven by customer support and installation costs of $137 million, ground operating costs of $119 million, and payment processor fees of $57 million.
+Research and Development
+Research and development for the three months ended September 30, 2026 increased by $47 million, or 33.3%, compared to the three months ended September 30, 2025. This increase was primarily due to increased spend on Starlink Kits of $16 million, ground equipment of $10 million, and our next-generation development of satellites of $7 million. 
+Research and development for the nine months ended September 30, 2026 increased by $281 million, or 69.2%, compared to the nine months ended September 30, 2025. This increase was primarily due to increased spend on our next-generation development of satellites of $131 million, ground equipment of $51 million, and Starlink Kits of $40 million. 
+Selling, General, and Administrative
+Selling, general, and administrative for the three months ended September 30, 2026 increased by $216 million, or 198.2%, compared to the three months ended September 30, 2025. This increase was primarily driven by higher marketing costs of $119 million, higher bad debt expense of $36 million, and higher international expansion costs of $16 million.
+Selling, general, and administrative for the nine months ended September 30, 2026 increased by $484 million, or 144.5%, compared to the nine months ended September 30, 2025. This increase was primarily driven by higher marketing costs of $310 million, higher international expansion costs of $43 million, and higher sales and property taxes of $32 million.
+Income from Operations
+Connectivity income from operations for the three and nine months ended September 30, 2026 increased by $1,177 million, or 98.9%, and $2,064 million, or 65.6%, respectively, compared to the prior periods driven by the factors described above.
+SI
+Three Months Ended September 30, | 2026 vs. 2025 Change | Nine Months EndedSeptember 30, | 2026 vs. 2025 Change | 
+(in millions) | 2026 | 2025 | $ Change | % Change | 2026 | 2025 | $ Change | % Change | 
+Revenue 
+ | $ | 7,560 | $ | 813 | $ | 6,747 | 829.9 | % | $ | 10,939 | $ | 2,278 | $ | 8,661 | 380.2 | % | 
+Costs and expenses | 
+Cost of revenue | 2,675 | 571 | 2,104 | 368.5 | % | 4,237 | 1,574 | 2,663 | 169.2 | % | 
+Research and development | 3,183 | 1,301 | 1,882 | 144.7 | % | 7,740 | 3,331 | 4,409 | 132.4 | % | 
+Selling, general, and administrative | 1,268 | 385 | 883 | 229.4 | % | 2,263 | 1,083 | 1,180 | 109.0 | % | 
+Restructuring charges (credits) | 3 | 278 | (275) | (98.9) | % | (6) | 472 | (478) | NM | 
+Total costs and expenses | $ | 7,129 | $ | 2,535 | $ | 4,594 | 181.2 | % | $ | 14,234 | $ | 6,460 | $ | 7,774 | 120.3 | % | 
+Income (loss) from operations | $ | 431 | $ | (1,722) | $ | 2,153 | NM | $ | (3,295) | $ | (4,182) | $ | 887 | (21.2) | % | 
+_________________
+NM — Absolute percentage comparisons from positive to negative values or to zero values are considered not meaningful.
+Revenue 
+Revenue for the three months ended September 30, 2026 increased by $6,747 million, or 829.9%, compared to the three months ended September 30, 2025 due to the increase in SI solutions and infrastructure revenue of $6,663 million and an increase in advertising revenue of $84 million. The increase in SI solutions and infrastructure was primarily due to an increase in revenue from offering cloud services to customers for the full period and signing additional contracts during the period, $608 million of revenue from Cursor following our acquisition in mid-August 2026, and an increase in Grok and X subscription revenue. The increase in advertising revenue was primarily driven by growth in self-serve advertising and higher demand from financial services, technology, and gaming advertisers. 
+Revenue for the nine months ended September 30, 2026 increased by $8,661 million, or 380.2%, compared to the nine months ended September 30, 2025 due to the increase in SI solutions and infrastructure revenue of $8,736 million, partially offset by decrease in advertising revenue of $75 million. The increase in SI solutions and infrastructure was primarily due to an increase in SI infrastructure revenue as we began to offer cloud services to customers during the second quarter of 2026, $608 million of revenue from Cursor following our acquisition in August 2026, and an increase in Grok and X subscription revenue. The decrease in advertising revenue was due to the Company’s transition to a new advertising platform which impacted ad sales for a short period of time.
+48
+Table of Contents
+Cost of Revenue
+Cost of revenue for the three months ended September 30, 2026 increased by $2,104 million, or 368.5%, compared to the three months ended September 30, 2025. This increase was primarily driven by an increase in infrastructure and cloud computing costs of $1,847 million due to more compute costs being allocated to cost of revenue as our SI infrastructure revenue increased and additional costs from Cursor following the Cursor Merger, an increase in amortization expense of $143 million from the intangible assets acquired in the Cursor Merger, and an increase in payment processor fees of $49 million.
+Cost of revenue for the nine months ended September 30, 2026 increased by $2,663 million, or 169.2%, compared to the nine months ended September 30, 2025. This increase was primarily driven by an increase in infrastructure and cloud computing costs of $2,233 million due to more costs being allocated to cost of revenue as our SI infrastructure revenue increased and additional costs from Cursor following the Cursor Merger, an increase in revenue share and content creator fees of $151 million, an increase in amortization expense of intangible assets of $143 million following the Cursor Merger, and an increase in payment processor fees of $104 million, partially offset by a decrease in overall employee compensation expenses (including salaries, benefits, and share-based compensation) of $21 million.
+Research and Development
+Research and development for the three months ended September 30, 2026 increased by $1,882 million, or 144.7%, compared to the three months ended September 30, 2025. This increase was primarily due to an increase in share-based compensation expense of $1,022 million related to replacement equity awards granted as part of our acquisitions including the Cursor Merger and higher infrastructure and cloud computing costs of $350 million.
+Research and development for the nine months ended September 30, 2026 increased by $4,409 million, or 132.4%, compared to the nine months ended September 30, 2025. This increase was primarily due to higher infrastructure and cloud computing costs of $2,092 million, an increase in share-based compensation expense of $1,022 million related to replacement equity awards granted as part of our acquisitions including the Cursor Merger, and higher overall employee compensation expenses (including salaries, benefits, and share-based compensation) of $685 million associated with the continued build out of our compute infrastructure.
+Selling, General, and Administrative
+Selling, general, and administrative for the three months ended September 30, 2026 increased by $883 million, or 229.4%, compared to the three months ended September 30, 2025. This increase was primarily due to higher overall employee compensation expenses (including salaries, benefits, and share-based compensation) of $597 million as we continue to expand our SI business, an increase in share-based compensation expense of $189 million related to replacement equity awards granted as part of our acquisitions including the Cursor Merger, an increase in marketing costs of $47 million, and an increase in amortization expense of intangible assets of $32 million following the Cursor Merger.
+Selling, general, and administrative for the nine months ended September 30, 2026 increased by $1,180 million, or 109.0%, compared to the nine months ended September 30, 2025. This increase was primarily due to higher overall employee compensation expenses (including salaries, benefits, and share-based compensation) of $889 million as we continue to expand our SI business, an increase in share-based compensation expense of $189 million related to replacement equity awards granted as part of our acquisitions including the Cursor Merger, an increase in marketing costs of $51 million, and an increase in amortization expense of intangible assets of $32 million following the Cursor Merger.
+Restructuring Charges (Credits)
+Restructuring charges (credits) for the three and nine months ended September 30, 2026 decreased by $275 million and $478 million, respectively, compared to the prior periods. This decrease was primarily due to a change in estimated settlement amounts in 2025 for former Twitter employees as part of the workforce reduction program implemented in 2022.
+Income (Loss) from Operations 
+SI income from operations for the three months ended September 30, 2026 increased by $2,153 million compared to the three months ended September 30, 2025 driven by the factors described above.
+SI loss from operations for the nine months ended September 30, 2026 decreased by $887 million, or 21.2%, compared to the nine months ended September 30, 2025 driven by the factors described above. 
+49
+Table of Contents
+Non-GAAP Financial Measures
+Management believes that certain financial measures that are not presented in accordance with GAAP provide management and investors with useful supplemental information that provides a meaningful view of our financial condition and results of operations across periods by removing the impact of items that management believes do not directly reflect our ongoing operating performance. Adjusted EBITDA and Segment Adjusted EBITDA are supplemental measures that are not required by or presented in accordance with GAAP. In evaluating our performance as measured by Adjusted EBITDA and Segment Adjusted EBITDA, management recognizes and considers the limitations of these measures. Other companies in our industry may calculate Adjusted EBITDA and Segment Adjusted EBITDA differently than we do or may not calculate them at all, limiting their usefulness as comparative measures. Because of these limitations, Adjusted EBITDA and Segment Adjusted EBITDA should not be considered in isolation or as a substitute for net income (loss), income (loss) from operations, or any other measure calculated in accordance with GAAP, and should be considered together with our GAAP financial measures and the reconciliations to the corresponding most directly comparable GAAP financial measures set forth in this Quarterly Report on Form 10-Q.
+Adjusted EBITDA is defined as net income (loss) excluding (i) depreciation and amortization, (ii) share-based compensation, (iii) share-based compensation related to equity awards granted in connection with our acquisitions, (iv) acquisition-related costs which include direct transaction costs related to legal, regulatory, and other professional services fees, (v) restructuring charges, (vi) impairments, (vii) interest expense, (viii) interest income, (ix) other income (expense), net and (x) provision for (benefit from) income taxes. 
+Segment Adjusted EBITDA is defined as segment income (loss) from operations excluding (i) depreciation and amortization, (ii) share-based compensation, (iii) share-based compensation related to equity awards granted in connection with our acquisitions, (iv) acquisition-related costs which include direct transaction costs related to legal, regulatory, and other professional services fees, (v) restructuring charges, and (vi) impairments. 
+Adjusted EBITDA and Segment Adjusted EBITDA are key performance measures that our management uses to assess our financial performance as well as for internal planning and forecasting purposes. We consider Adjusted EBITDA and Segment Adjusted EBITDA to be meaningful performance measures for investors to evaluate our operating performance and to compare the financial results between periods.
+The following table sets forth a reconciliation of Net income (loss), the most directly comparable GAAP measure, to Adjusted EBITDA:
+Three Months Ended September 30, | Nine Months Ended September 30, | 
+(in millions) | 2026 | 2025 | 2026 | 2025 | 
+Net income (loss) | $ | 4,404 | $ | (1,054) | $ | (413) | $ | (2,590) | 
+Add (deduct): | 
+Depreciation and amortization | 3,644 | 1,814 | 8,934 | 4,784 | 
+Share-based compensation(1)
+ | 1,146 | 350 | 2,616 | 1,044 | 
+Share-based compensation related to acquisitions | 1,217 | — | 1,217 | — | 
+Acquisition-related costs | 8 | — | 8 | — | 
+Restructuring charges (credits) | 3 | 278 | (6) | 472 | 
+Impairments | — | — | — | 29 | 
+Interest expense | 675 | 514 | 1,968 | 1,372 | 
+Interest income | (873) | (155) | (1,426) | (370) | 
+Other (income) expense, net | (1,025) | (140) | 937 | (342) | 
+Provision for (benefit from) income taxes | (390) | 562 | (361) | 714 | 
+Adjusted EBITDA | $ | 8,809 | $ | 2,169 | $ | 13,474 | $ | 5,113 | 
+__________________
+(1)Share-based compensation expense excludes share-based compensation related to equity awards granted in connection with acquisitions, which is separately presented
+50
+Table of Contents
+The following table sets forth a reconciliation of Income (loss) from operations for each segment, the most directly comparable GAAP measure, to Segment Adjusted EBITDA:
+Three Months Ended September 30, | 
+2026 | 
+(in millions) | Space | Connectivity | SI | Total Reportable Segments | 
+Income (loss) from operations | $ | (7) | $ | 2,367 | $ | 431 | $ | 2,791 | 
+Add: | 
+Depreciation and amortization | 185 | 986 | 2,473 | 3,644 | 
+Share-based compensation(1)
+ | 179 | 146 | 821 | 1,146 | 
+Share-based compensation related to acquisitions | — | — | 1,217 | 1,217 | 
+Acquisition-related costs | — | — | 8 | 8 | 
+Restructuring charges | — | — | 3 | 3 | 
+Segment Adjusted EBITDA | $ | 357 | $ | 3,499 | $ | 4,953 | $ | 8,809 | 
+__________________
+(1)Share-based compensation expense excludes share-based compensation related to equity awards granted in connection with acquisitions, which is separately presented
+Nine Months Ended September 30, | 
+2026 | 
+(in millions) | Space | Connectivity | SI | Total Reportable Segments | 
+Income (loss) from operations | $ | (1,211) | $ | 5,211 | $ | (3,295) | $ | 705 | 
+Add: | 
+Depreciation and amortization | 509 | 2,574 | 5,851 | 8,934 | 
+Share-based compensation(1)
+ | 503 | 398 | 1,715 | 2,616 | 
+Share-based compensation related to acquisitions | — | — | 1,217 | 1,217 | 
+Acquisition-related costs | — | — | 8 | 8 | 
+Restructuring charges (credits) | — | — | (6) | (6) | 
+Segment Adjusted EBITDA | $ | (199) | $ | 8,183 | $ | 5,490 | $ | 13,474 | 
+__________________
+(1)Share-based compensation expense excludes share-based compensation related to equity awards granted in connection with acquisitions, which is separately presented
+Three Months Ended September 30, | 
+2025 | 
+(in millions) | Space | Connectivity | SI | Total Reportable Segments | 
+Income (loss) from operations | 259 | 1,190 | (1,722) | (273) | 
+Add: | 
+Depreciation and amortization | 264 | 628 | 922 | 1,814 | 
+Share-based compensation | 151 | 105 | 94 | 350 | 
+Restructuring charges | — | — | 278 | 278 | 
+Segment Adjusted EBITDA | 674 | 1,923 | (428) | 2,169 | 
+51
+Table of Contents
+Nine Months Ended September 30, | 
+2025 | 
+(in millions) | Space | Connectivity | SI | Total Reportable Segments | 
+Income (loss) from operations | (181) | 3,147 | (4,182) | (1,216) | 
+Add: | 
+Depreciation and amortization | 572 | 1,706 | 2,506 | 4,784 | 
+Share-based compensation | 383 | 270 | 391 | 1,044 | 
+Restructuring charges | — | — | 472 | 472 | 
+Impairment | 29 | — | — | 29 | 
+Segment Adjusted EBITDA | 803 | 5,123 | (813) | 5,113 | 
+Liquidity and Capital Resources
+We believe that our existing sources of liquidity and other financing activities will be sufficient to meet our anticipated cash needs for at least the next twelve months. As of September 30, 2026, our primary sources of liquidity consisted of our cash flows from operations, total cash and cash equivalents of $51,294 million, and short-term marketable securities of $38,561 million, as supplemented by $5,000 million available to borrow under the SpaceX Credit Facility and $250 million available to borrow under the xAI Revolving Line of Credit.
+We continually evaluate our liquidity and capital resources in connection with, among other things, our increased investments in SI infrastructure and initiatives, as well as the continued development of our Starship vehicle and related facilities. From time to time, we may seek to raise additional capital through debt or other financing arrangements to fund the rapid growth of our business. Our future capital needs may vary significantly based on the pace and scale of such growth initiatives, and could be affected by, among other things, changes in market conditions, technology requirements, or competitive dynamics. Additionally, we may, from time to time, consider acquiring or investing in complementary businesses, products, services, capital infrastructure, and technologies, which could affect our liquidity requirements or cause us to seek additional financing. There can be no assurance that additional financing will be available in amounts or on terms acceptable to us, if at all. In addition, economic conditions and actions by policymaking bodies may contribute to fluctuations in interest rates and significant capital markets volatility, which, together with any increases in our borrowing levels, could increase our future borrowing costs. Any projections of future cash needs and cash flows are subject to substantial uncertainty and may depend on many factors, including, without limitation, those set forth in the section entitled "Risk Factors" in our Quarterly Report on Form 10-Q for the quarter ended June 30, 2026 and in the Prospectus. 
+Debt Agreements
+As of September 30, 2026, we and our subsidiaries had outstanding $38,006 million in aggregate principal amount of indebtedness and no material debt principal payments are due until July 15, 2031 under SpaceX Notes. For details regarding our indebtedness, refer to Note 9 - Debt of our consolidated financial statements included elsewhere in this Quarterly Report on Form 10-Q. 
+SpaceX Notes
+In June 2026, SpaceX issued senior unsecured notes with The Bank of New York Mellon Trust Company, N.A, as trustee, in an aggregate principal amount of $25,000 million (“SpaceX Notes”). The SpaceX Notes have five tranches maturing on July 15, 2031, July 15, 2033, July 15, 2036, July 15, 2046, and July 15, 2056 with a weighted-average maturity of 11.7 years. SpaceX Notes are unsecured obligations of the Company and rank equally in right of payment with all existing and future unsubordinated indebtedness, liabilities and other obligations of the Company. The proceeds of the SpaceX Notes were used to repay the SpaceX Bridge Loan (as defined and described in Note 9, Debt of our consolidated financial statements included elsewhere in this Quarterly Report on Form 10-Q) in full and to pay related fees and expenses. The remaining proceeds were used for general corporate purposes.
+The SpaceX Notes bear annual coupon interests between 5.350% and 6.650% with a weighted-average coupon interest rate of 5.855%. Interest is payable semi-annually in arrears on January 15 and July 15 of each year, beginning on January 15, 2027.
+SpaceX Notes are redeemable, in whole or in part, at the Company’s option at any time and from time to time prior to the applicable Par Call Date, which is defined as a date ranging from one to six months prior to maturity for each tranche. The redemption price of each tranche is equal to the greater of (i) (a) the sum of the present values of the remaining scheduled payments of principal and interest thereon discounted to the redemption date (assuming the respective tranche matured on the applicable Par Call Date) on a semi-annual basis at the Treasury Rate plus the applicable spread between 20 and 30 basis points for such tranche less (b) interest accrued and unpaid thereon to the date of redemption, and (ii) 100% of the principal amount of the SpaceX Notes to be redeemed, plus accrued and unpaid interest, if any, thereon to, but excluding, the redemption date. On or after the applicable Par Call Date, SpaceX 
+52
+Table of Contents
+Notes are redeemable, in whole or in part, at any time and from time to time, at a redemption price equal to 100% of the principal amount of the respective SpaceX Notes being redeemed plus accrued and unpaid interest.
+The SpaceX Notes contain customary events of default and affirmative and negative covenants, including restrictions on additional liens in excess of 7.5% of the Company’s consolidated total assets and fundamental changes (which is limited to a merger where the Company is not the surviving entity outside certain jurisdictions). 
+SpaceX Credit Facility
+In February 2025, SpaceX entered into a five-year senior unsecured revolving credit agreement with a syndicate of banks, under which the Company may borrow up to $1,500 million (“SpaceX Credit Facility”). The SpaceX Credit Facility is subject to certain customary representations, warranties, covenants, and events of default, including a maximum financial covenant requiring the Company to maintain a Consolidated Leverage Ratio (as defined in the SpaceX Credit Facility) of no greater than 3.75 to 1.0 as of the end of each fiscal quarter (subject to temporary increases to 4.25 to 1.0 following certain qualified acquisitions) and other customary reporting requirements. The SpaceX Credit Facility also includes sublimits of up to $150 million for financial letters of credit and up to $1,000 million for performance letters of credit. The SpaceX Credit Facility was scheduled to terminate, and for all outstanding loans to become due and payable, on February 7, 2030. As of September 30, 2026, no amounts were outstanding under the SpaceX Credit Facility. 
+Borrowings under the SpaceX Credit Facility bear interest, at the Company’s option, at a rate per annum equal to (i) a forward-looking term rate based on SOFR (“Term SOFR”) plus an applicable margin ranging from 0.75% and 1.25% (depending on the Company’s debt rating), or (ii) a base rate equal to the highest of (a) Federal Funds Rate plus 0.5%, (b) the Prime Rate, (c) Term SOFR plus 1.00%, and (d) 1.00% plus an applicable margin ranging from 0.0% and 0.25% (depending on the Company’s debt rating). The Company may also borrow in various alternative currencies, with interest calculated at rates based on SONIA for Pound Sterling-denominated loans and EURIBOR for Euro-denominated loans, plus an applicable margin. In addition, the Company pays a commitment fee on the unused portion of the SpaceX Credit Facility, which ranges from 0.07% (amended to 0.06% under the Amended SpaceX Credit Facility described below) to 0.11% per annum based on the Company’s debt rating. As of September 30, 2026, the Company was in compliance with all covenants under the SpaceX Credit Facility.
+In March 2026, the Company entered into a First Amendment to Credit Agreement and Waiver (the “First Amendment”) with its lenders, in connection with the Company’s entry into the SpaceX Bridge Loan (as defined below). The First Amendment, among other things, (i) waived certain specified defaults and (ii) amended certain definitions and covenants under the SpaceX Credit Facility to conform to the terms of the SpaceX Bridge Loan.
+In May 2026, SpaceX amended the SpaceX Credit Facility to increase the borrowing capacity up to $5,000 million (“Amended SpaceX Credit Facility”). As part of the Amended SpaceX Credit Facility, the sublimit for performance letters of credit was increased to $2,000 million. The Amended SpaceX Credit Facility terminates, and all outstanding loans become due and payable, on May 19, 2031, unless the parties agree to an extension in accordance with the terms of the Amended SpaceX Credit Facility. All other terms were consistent with the terms of the SpaceX Credit Facility.
+Material Cash Commitments
+From time to time in the ordinary course of business, we enter into agreements with suppliers for the purchase of parts and raw materials to manufacture our products. However, due to contractual terms, variability in the precise growth curves of our development and production ramps, and opportunities to renegotiate pricing, these contracts generally do not have long-term binding and enforceable purchase orders, and the timing and magnitude of purchase orders beyond the short term is difficult to accurately project. Because we do not have long-term purchase orders for these parts and raw materials, future purchases may result in material cash commitments. 
+We did not have any material changes in our material cash commitments during the three months ended September 30, 2026 other than activities in the ordinary course of business and as noted below. For additional information about our material cash commitments, refer to “Management’s Discussion and Analysis of Financial Condition and Results of Operations – Liquidity and Capital Resources – Material Cash Commitments” in our Prospectus and Note 16 - Commitments and Contingencies of our consolidated financial statements included elsewhere in this Quarterly Report on Form 10-Q.
+Spectrum Transaction
+On September 7, 2025, the Company entered into a License Purchase Agreement (the “Spectrum License Purchase Agreement”) with Spectrum Business Trust 2025-1, a Nevada Business Trust (“Trust”) and EchoStar Corporation (“EchoStar”) for the purchase of EchoStar’s licenses related to 50 MHz of spectrum (the “AWS-4 and H-Block Licenses” and the transactions contemplated thereby, “Spectrum Transaction”). On November 5, 2025 the parties amended and restated the Spectrum License Purchase Agreement to 
+53
+Table of Contents
+include EchoStar’s licenses for up to 15 MHz of additional unpaired AWS-3 spectrum (together with the AWS-4 and H-Block Licenses, the “Spectrum Licenses”). 
+The total consideration for the acquisition of the Spectrum Licenses is approximately $19.6 billion, consisting of (i) approximately $11.1 billion in equity, payable through the issuance of approximately 261.8 million shares of the Company’s Class A common stock at a fixed value of $42.40 per share, and (ii) up to $8.5 billion related to the payoff of designated EchoStar debt, with any shortfall below $8.5 billion to be paid in cash. The allocation of cash and equity consideration is subject to certain adjustments based on the amount of EchoStar debt satisfied at or prior to closing. The Spectrum License Purchase Agreement provides that the transfer of the Spectrum Licenses occurs in two steps: first, the transfer of the Spectrum Licenses by EchoStar to the Trust (the “Spectrum Transfer Closing”), and second, the Spectrum Licenses will be transferred by the Trust to the Company (the “Spectrum Acquisition Closing”). The Foreign Assets will be transferred directly to the Company at the Spectrum Acquisition Closing, to the extent the required regulatory approvals have been obtained by such date; provided, however, that the failure to obtain such approvals will not delay or prevent the Spectrum Acquisition Closing.
+In connection with the Spectrum License Purchase Agreement, the Company and the Trust entered into a credit agreement (the “Spectrum Credit Agreement”), pursuant to which the Company has agreed upon the Spectrum Transfer Closing, to make payments to the Trust (via loans which are contemplated to be forgiven at six-month intervals), for the Trust to make payments on EchoStar’s debt (interest only) through at least November 30, 2027, but in no event later than November 30, 2028. Although these payments are structured as loans from the Company to the Trust, there is no expectation of repayment as the loan payments are forgiven and are accounted for as additional consideration for the acquisition of the Spectrum Licenses. Accordingly, the payments are recognized as prepaid assets until the Spectrum Acquisition Closing at which point they will be recognized as intangible assets. Total payments expected to be made under the Spectrum Credit Agreement are $1,241 million in 2026, of which $856 million was paid as of September 30, 2026, and $828 million in 2027, assuming an expected closing date of November 30, 2027. The Company may need to make additional payments totaling $827 million if the Spectrum Acquisition Closing occurs at November 30, 2028.
+The Spectrum Transaction was approved by the Federal Communications Commission on May 12, 2026, and the Spectrum Transfer Closing occurred on May 22, 2026. On that date, the Spectrum Licenses were transferred to the Trust, where they will remain until the Spectrum Acquisition Closing. Upon closing, the Company intends to either use cash and cash equivalents on hand or seek alternative financing sources to fund the cash payment to EchoStar. The $11.1 billion equity consideration will be issued at the Spectrum Acquisition Closing.
+Summary of Cash Flows
+The following table summarizes our cash flows for the periods indicated:
+Nine Months Ended September 30, | 
+(in millions) | 2026 | 2025 | 
+Net cash provided by (used in) | 
+Operating activities | $ | 13,097 | $ | 4,120 | 
+Investing activities | $ | (84,611) | $ | (12,997) | 
+Financing activities | $ | 99,819 | $ | 9,440 | 
+Operating Activities
+Net cash provided by operating activities increased by $8,977 million from $4,120 million during the nine months ended September 30, 2025 to $13,097 million during the nine months ended September 30, 2026. This increase was primarily driven by higher net income exclusive of non-cash items and an increase in working capital for deferred revenue of $4,518 million from upfront payments from our Space and Connectivity customers, partially offset by an increase in accounts receivable of $1,948 million, a decrease in accounts payable of $1,638 million, and an increase in inventory of $1,003 million as we scale our Starlink Kit production.
+Investing Activities
+Net cash used in investing activities increased by $71,614 million from $12,997 million during the nine months ended September 30, 2025 to $84,611 million during the nine months ended September 30, 2026. This increase was primarily driven by an increase in purchases of marketable securities of $46,233 million from cash proceeds received from the IPO and the SpaceX Notes and an increase in capital expenditures of $34,223 million related to the build out of data centers and related infrastructure as well as space launch facilities and related infrastructure. This increase was partially offset by an increase in cash received from matured marketable securities of $8,610 million and product rebates of $1,372 million received for our servers and networking equipment.
+54
+Table of Contents
+Financing Activities
+Net cash provided by financing activities increased by $90,379 million from $9,440 million during the nine months ended September 30, 2025 to $99,819 million during the nine months ended September 30, 2026. This increase was primarily driven by an increase in proceeds from our IPO of $85,675 million and an increase in proceeds from the SpaceX Notes and other financing arrangements of $40,887 million, partially offset by an increase in the repayment of debt and other existing debt obligations of $33,831 million from the repayment of the SpaceX Bridge Loan.
+Critical Accounting Estimates
+Business Combinations
+The Company accounts for business combinations using the acquisition method of accounting. Under this method, the assets acquired, including intangible assets that can be identified, and liabilities assumed are recognized based on their estimated fair values at the date of acquisition. Given substantially all of our acquisitions are related to the SI segment, the value of the companies we acquire are concentrated in their existing technology. Determining the fair value of existing technology of the acquired company requires significant estimates and assumptions, including items such as projected revenue, obsolescence rate, royalty rate, discount rate, economic useful life of assets, and tax rates. Although the Company believes these estimates are based on reasonable assumptions, they are based, in part, on historical experience and information obtained from the acquired companies and are inherently uncertain, and therefore actual results may differ.
+Except as described above, there have been no material changes to our critical accounting policies and estimates during the three months ended September 30, 2026. For more information about our critical accounting policies and estimates, refer to the section “Critical Accounting Estimates” in our Prospectus.
+Recent Accounting Pronouncements
+Refer to Note 2 - Summary of Significant Accounting Policies, to the consolidated financial statements included elsewhere in this Quarterly Report on Form 10-Q.
+Item 3. Quantitative and Qualitative Disclosures About Market Risk
+Interest Rate Risk
+In the nine months ended September 30, 2026, we issued the new SpaceX Notes and repaid the SpaceX Bridge Loan. The effective interest rate on the SpaceX Notes was 6.07% as of September 30, 2026. As of September 30, 2026, we had no variable rate debt outstanding. 
+Except as described above, there have been no material changes to our market risk exposures during the three months ended September 30, 2026. For more information about our market risk, please see the section “Management’s Discussion and Analysis of Financial Condition and Results of Operations - Quantitative and Qualitative Disclosures About Market Risk” in our Prospectus.
+55
+Table of Contents
+Item 4. Controls and Procedures
+Evaluation of Disclosure Controls and Procedures
+Our management, with the participation of our Chief Executive Officer and Chief Financial Officer, evaluated the effectiveness of our disclosure controls and procedures (as defined in Rules 13a-15(e) and 15d-15(e) under the Securities Exchange Act of 1934, as amended (the “Exchange Act”), as of September 30, 2026 (the end of the period covered by this Quarterly Report on Form 10-Q). Disclosure controls and procedures are designed to ensure that information required to be disclosed by us in our Exchange Act reports is recorded, processed, summarized, and reported within the time periods specified in the Securities and Exchange Commission’s rules and forms, and that such information is accumulated and communicated to our management, including our Chief Executive Officer and Chief Financial Officer or persons performing similar functions, as appropriate to allow timely decisions regarding required disclosure.
+Based on this evaluation, our Chief Executive Officer and Chief Financial Officer concluded that, as of September 30, 2026, our disclosure controls and procedures were effective at the reasonable assurance level.
+Changes in Internal Control Over Financial Reporting
+There were no changes in our internal control over financial reporting (as defined in Rules 13a-15(f) and 15d-15(f) under the Exchange Act) that occurred during the quarter ended September 30, 2026, that have materially affected, or are reasonably likely to materially affect, our internal control over financial reporting.
+Limitations on Effectiveness of Controls
+Our management, including the Chief Executive Officer and Chief Financial Officer, does not expect that our disclosure controls and procedures or our internal control over financial reporting will prevent or detect all errors and all fraud. A control system, no matter how well conceived and operated, can provide only reasonable, not absolute, assurance that the objectives of the control system are met. Further, the design of a control system must reflect the fact that there are resource constraints, and the benefits of controls must be considered relative to their costs. Because of the inherent limitations in all control systems, no evaluation of controls can provide absolute assurance that all control issues and instances of fraud, if any, within the Company have been detected.
+56
+Table of Contents
+PART II. OTHER INFORMATION
+Item 1. Legal Proceedings
+SEC regulations require disclosure of certain proceedings under environmental laws to which a governmental authority is a party, unless the Company reasonably believes the proceeding will result in monetary sanctions, exclusive of interest and costs, below $1 million, the threshold the Company has elected to apply. In August 2026, the Mississippi Department of Environmental Quality (“MDEQ”) issued notices of violation to MZX Tech LLC alleging that land-disturbing construction activities at sites occurred prior to coverage under Mississippi’s Large Construction Stormwater General Permit. MDEQ is seeking civil penalties of up to $25,000 per day, with preliminary claimed exposure of approximately $6.1 million across three sites. The Company is cooperating with MDEQ and is in discussions to resolve the matters through a single agreed order. 
+We are involved in the legal proceedings described in Note 16 - Commitments and Contingencies, and we are subject to other claims and litigation arising in the ordinary course of business. The outcome of any litigation is inherently uncertain, and if decided adversely to us, or if we determine that settlement of particular litigation is appropriate, we may be subject to liability that could have a material adverse effect on our business.
+Item 1A. Risk Factors
+Certain factors that may affect the Company's business or operations are described under "Risk Factors" in our Quarterly Report on Form 10-Q for the quarter ended June 30, 2026, and under the section titled "Risk Factors" in the Prospectus. There have been no material changes to our risk factors from the risk factors previously disclosed in such Quarterly Report and the Prospectus.
+Item 2. Unregistered Sales of Equity Securities and Use of Proceeds
+Other than as reported by the Company on a Current Report on Form 8-K and as described below, no sales of unregistered equity securities occurred during the three months ended September 30, 2026. 
+On July 6, 2026, the Company completed the Mesh Optical Merger for a total purchase consideration of $249 million in the Company’s Class A common stock. The transaction was exempt from registration under Section 4(a)(2) of the Securities Act.
+Use of Initial Public Offering Proceeds
+On June 11, 2026, our registration statement on Form S-1 (File No. 333-296070) relating to our IPO was declared effective by the SEC. There has been no material change in the expected use of the net proceeds from our IPO as described in the Prospectus and our other periodic reports previously filed with the SEC.
+Item 3. Defaults Upon Senior Securities
+None.
+Item 4. Mine Safety Disclosures
+Not applicable.
+Item 5. Other Information
+Rule 10b5-1 Trading Arrangements
+During the three months ended September 30, 2026, none of the Company’s directors or officers (as defined in Rule 16a-1(f) under the Exchange Act) adopted or terminated a Rule 10b5-1 trading arrangement or non-Rule 10b5-1 trading arrangement (as defined in Item 408 of Regulation S-K). 
+Submission of Shareholder Proposals and Shareholder Director Nominations for the 2027 Annual Meeting of Shareholders
+In accordance with Rule 14a-8 under the Exchange Act (“Rule 14a-8”) and the Amended and Restated Bylaws (the “Bylaws”) of the Company, the deadlines for the receipt of any shareholder proposals and director nominations to be considered at the 2027 Annual Meeting of Shareholders (the “2027 Annual Meeting”) are set forth below.
+Any shareholder proposal submitted pursuant to Rule 14a-8 for inclusion in the Company’s proxy materials for the 2027 Annual Meeting should be sent via email to corporatesecretary@spacex.com or by mail to 1 Rocket Road, Hawthorne, California 90250, Attn: Legal Department and must be received by our corporate secretary no later than the close of business on December 29, 2026. Any 
+57
+Table of Contents
+such proposal also needs to comply with the SEC shareholder proposal rules and any applicable law, including the eligibility requirements set forth in Rule 14a-8 and Section 21.373 of the Texas Business Organizations Code.
+In addition, any shareholder seeking to nominate a director or to bring other business before the 2027 Annual Meeting outside of Rule 14a-8 under the advance notice provisions included in the Bylaws must provide timely notice, as set forth in the Bylaws. Specifically, written notice of any such proposed business or nomination should be sent via email to corporatesecretary@spacex.com or by mail to 1 Rocket Road, Hawthorne, California 90250, Attn: Legal Department and must be received by our corporate secretary no earlier than the close of business on February 19, 2027 and no later than the close of business on March 21, 2027. Any notice of proposed business or nomination also must comply with the notice and other requirements set forth in the Bylaws (which includes, for nominations, information required under Rule 14a-19 under the Exchange Act and, for proposals of other business, Section 21.373 of the Texas Business Organizations Code) and with any applicable law.
+For purposes of the above deadlines, the “close of business” shall mean 5:00 p.m. Pacific Time on any calendar day, whether or not the day is a business day.
+Item 6. Exhibits
+Exhibit No. | Description of Exhibit | 
+2.1 | Agreement and Plan of Merger, dated June 16, 2026, by and among Space Exploration Technologies Corp., X67 Inc. and Anysphere, Inc. (incorporated by reference to Exhibit 10.1 to the Company’s Current Report on Form 8-K, filed with the SEC on June 16, 2026).
+ | 
+31.1 | Certification of Chief Executive Officer pursuant to Rule 13a-14(a) under the Securities Exchange Act of 1934.
+ | 
+31.2 | Certification of Chief Financial Officer pursuant to Rule 13a-14(a) under the Securities Exchange Act of 1934.
+ | 
+32.1* | Certification of Chief Executive Officer pursuant to 18 U.S.C. Section 1350.
+ | 
+32.2* | Certification of Chief Financial Officer pursuant to 18 U.S.C. Section 1350.
+ | 
+101.INS | Inline XBRL Instance Document | 
+101.SCH | Inline XBRL Taxonomy Extension Schema Document | 
+101.CAL | Inline XBRL Taxonomy Extension Calculation Linkbase Document | 
+101.DEF | Inline XBRL Taxonomy Extension Definition Linkbase Document | 
+101.LAB | Inline XBRL Taxonomy Extension Label Linkbase Document | 
+101.PRE | Inline XBRL Taxonomy Extension Presentation Linkbase Document | 
+104 | Cover Page Interactive Data File (embedded within the Inline XBRL document) | 
+__________________
+* Furnished herewith.
+58
+Table of Contents
+SIGNATURES
+Pursuant to the requirements of the Securities Exchange Act of 1934, the registrant has duly caused this report to be signed on its behalf by the undersigned thereunto duly authorized. 
+Space Exploration Technologies Corp. | 
+Date: October 22, 2026
+ | By: | /s/ Bret Johnsen | 
+Name: | Bret Johnsen | 
+Title: | Chief Financial Officer and Duly Authorized Officer | 
+59

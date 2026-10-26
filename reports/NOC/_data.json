@@ -4,7 +4,7 @@
   "companyName": "NORTHROP GRUMMAN CORP /DE/",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-10-02T08:14:23.732142+00:00",
+  "generatedAt": "2026-10-26T00:31:11.794544+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001133421.json",
@@ -27,7 +27,7 @@
   },
   "freshness": {
     "latestPeriodEnd": "2025-12-31",
-    "monthsOld": 9.0,
+    "monthsOld": 9.8,
     "stale": false
   },
   "annual": {
@@ -1154,7 +1154,7 @@
   },
   "crossValidation": {
     "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/NOC?symbol=NOC&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1379837663&period2=1791015263",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/NOC?symbol=NOC&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1381883471&period2=1793061071",
     "worst": "중대 불일치",
     "items": [
       {

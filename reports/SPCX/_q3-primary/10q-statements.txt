@@ -1,0 +1,242 @@
+Item 1. Financial Statements
+Space Exploration Technologies Corp.
+Consolidated Balance Sheets
+(in millions, except per share data)
+(unaudited)
+September 30, 2026 | December 31, 2025 | 
+Assets | 
+Current assets | 
+Cash and cash equivalents | 51,294 | 24,747 | 
+Marketable securities | 38,561 | — | 
+Accounts receivable, net of allowance for credit losses of $67 and $39 at September 30, 2026 and December 31, 2025, respectively
+ | 4,772 | 1,579 | 
+Inventory | 2,891 | 2,416 | 
+Prepaid expenses and other current assets | 3,457 | 2,210 | 
+Total current assets | 100,975 | 30,952 | 
+Property, plant, and equipment, net(a)
+ | 89,483 | 42,602 | 
+Finance lease right-of-use assets | 1,040 | 1,260 | 
+Intangible assets, net | 6,354 | 1,548 | 
+Digital assets | 1,573 | 1,637 | 
+Goodwill | 48,423 | 11,809 | 
+Deferred tax assets | 388 | 141 | 
+Other assets (related party of $570 and $10 at September 30, 2026 and December 31, 2025, respectively)
+ | 5,809 | 2,130 | 
+Total assets 
+ | $ | 254,045 | $ | 92,079 | 
+Liabilities, Redeemable Convertible Preferred Stock, and Shareholders’ Equity
+ | 
+Current liabilities | 
+Accounts payable | 13,259 | 11,792 | 
+Deferred revenue, current | 10,784 | 6,111 | 
+Debt and finance leases, current (related party of $2,181 and $455 at September 30, 2026 and December 31, 2025, respectively)
+ | 2,698 | 928 | 
+Accrued expenses and other current liabilities | 5,997 | 2,569 | 
+Total current liabilities | 32,738 | 21,400 | 
+Long-term liabilities | 
+Deferred revenue, net of current | 6,736 | 6,005 | 
+Debt and finance leases, net of current (related party of $10,716 and $4,052 at September 30, 2026 and December 31, 2025, respectively)
+ | 36,146 | 21,968 | 
+Other liabilities | 1,657 | 1,381 | 
+Total liabilities 
+ | 77,277 | 50,754 | 
+Commitments and contingencies (Note 16) | 
+Redeemable convertible preferred stock | 
+Redeemable convertible preferred stock, par value $0.001; — and 2,351 shares issued; — and 2,046 shares outstanding as of September 30, 2026 and December 31, 2025, respectively
+ | — | 38,752 | 
+Shareholders’ equity | 
+Preferred stock, par value $0.001; no shares issued and outstanding as of September 30, 2026 and December 31, 2025, respectively
+ | — | — | 
+Class A common stock, par value $0.001; 8,240 and 2,036 shares issued; 8,240 and 1,952 shares outstanding as of September 30, 2026 and December 31, 2025, respectively
+ | 8 | 3 | 
+Class B common stock, par value $0.001; 5,339 and 644 shares issued and outstanding as of September 30, 2026 and December 31, 2025, respectively
+ | 5 | 1 | 
+Class C common stock, par value $0.001; — and 482 shares issued and outstanding as of September 30, 2026 and December 31, 2025, respectively
+ | — | 0 | 
+Additional paid-in capital | 212,539 | 37,706 | 
+Accumulated deficit | (37,448) | (37,035) | 
+Accumulated other comprehensive income | 1,664 | 1,898 | 
+Total shareholders’ equity 
+ | 176,768 | 2,573 | 
+Total liabilities, redeemable convertible preferred stock, and shareholders’ equity 
+ | $ | 254,045 | $ | 92,079 | 
+__________________
+(a)Refer to Note 17 - Related Party Transactions for additional details on related party arrangements.
+The accompanying notes are an integral part of these consolidated financial statements.
+4
+Table of Contents
+Space Exploration Technologies Corp.
+Consolidated Statements of Operations
+(in millions, except per share data)
+(unaudited)
+Three Months Ended September 30, | Nine Months Ended September 30, | 
+2026 | 2025 | 2026 | 2025 | 
+Revenue 
+ | $ | 14,575 | $ | 5,576 | $ | 27,083 | $ | 13,714 | 
+Costs and expenses 
+ | 
+Cost of revenue | 5,478 | 2,705 | 11,361 | 6,949 | 
+Research and development | 4,596 | 2,291 | 11,658 | 5,806 | 
+Selling, general, and administrative | 1,707 | 575 | 3,365 | 1,674 | 
+Restructuring charges (credits) | 3 | 278 | (6) | 472 | 
+Impairment | — | — | — | 29 | 
+Total costs and expenses | 11,784 | 5,849 | 26,378 | 14,930 | 
+Income (loss) from operations | 2,791 | (273) | 705 | (1,216) | 
+Interest expense (related party of $351 and $— for the three months ended September 30, 2026 and 2025, respectively, and $864 and $— for the nine months ended September 30, 2026 and 2025, respectively)
+ | (675) | (514) | (1,968) | (1,372) | 
+Interest income | 873 | 155 | 1,426 | 370 | 
+Other income (expense), net (related party of $561 and $— for the three months ended September 30, 2026 and 2025, respectively, and $561 and $— for the nine months ended September 30, 2026 and 2025, respectively)
+ | 1,025 | 140 | (937) | 342 | 
+Income (loss) before income taxes | 4,014 | (492) | (774) | (1,876) | 
+Provision for (benefit from) income taxes | (390) | 562 | (361) | 714 | 
+Net income (loss) | $ | 4,404 | $ | (1,054) | $ | (413) | $ | (2,590) | 
+Net income (loss) attributable to shareholders - basic and diluted | $ | 4,404 | $ | (1,054) | $ | (1,084) | $ | (2,590) | 
+ | 
+Net income (loss) per share of common stock attributable to common shareholders | 
+Basic | $ | 0.37 | $ | (0.36) | $ | (0.15) | $ | (0.89) | 
+Diluted | $ | 0.35 | $ | (0.36) | $ | (0.15) | $ | (0.89) | 
+Weighted average shares used in computing net income (loss) per share of common stock | 
+Basic | 11,942 | 2,941 | 7,274 | 2,915 | 
+Diluted | 12,475 | 2,941 | 7,274 | 2,915 | 
+The accompanying notes are an integral part of these consolidated financial statements.
+5
+Table of Contents
+Space Exploration Technologies Corp.
+Consolidated Statements of Comprehensive Income (Loss)
+(in millions)
+(unaudited)
+Three Months Ended September 30, | Nine Months Ended September 30, | 
+2026 | 2025 | 2026 | 2025 | 
+Net income (loss) | $ | 4,404 | $ | (1,054) | $ | (413) | $ | (2,590) | 
+Other comprehensive income (loss) | 
+Change in foreign currency translation adjustments, net of tax | (29) | (3) | (207) | 792 | 
+Unrealized losses on marketable securities, net of tax | (26) | — | (27) | — | 
+Other comprehensive income (loss) | (55) | (3) | (234) | 792 | 
+Comprehensive income (loss) | $ | 4,349 | $ | (1,057) | $ | (647) | $ | (1,798) | 
+The accompanying notes are an integral part of these consolidated financial statements.
+6
+Table of Contents
+Space Exploration Technologies Corp.
+Consolidated Statements of Redeemable Convertible Preferred Stock and Shareholders’ Equity
+(in millions)
+(unaudited)
+Redeemable ConvertiblePreferred Stock | Common Stock | 
+Three Months Ended September 30, 2026 | Shares | Amount | Shares | Amount | Additional Paid-in Capital | Accumulated Deficit | Accumulated OtherComprehensive Income | Total Shareholders'Equity | 
+Balances at June 30, 2026 | — | $ | — | 13,176 | $ | 13 | $ | 167,344 | $ | (41,852) | $ | 1,719 | $ | 127,224 | 
+Share-based compensation | — | — | — | — | 2,421 | — | — | 2,421 | 
+Common stock issued, net of tax withholding | — | — | 9 | 0 | 51 | — | — | 51 | 
+Transfer of equity in business combinations | — | — | 394 | 0 | 42,723 | — | — | 42,723 | 
+Net income | — | — | — | — | — | 4,404 | — | 4,404 | 
+Other comprehensive loss | — | — | — | — | — | — | (55) | (55) | 
+Balances at September 30, 2026 | — | $ | — | 13,579 | $ | 13 | $ | 212,539 | $ | (37,448) | $ | 1,664 | $ | 176,768 | 
+Redeemable ConvertiblePreferred Stock | Common Stock | 
+Nine Months Ended September 30, 2026 | Shares | Amount | Shares | Amount | Additional Paid-in Capital | Accumulated Deficit | Accumulated OtherComprehensive Income | Total Shareholders'Equity | 
+Balances at December 31, 2025 | 2,046 | $ | 38,752 | 3,079 | $ | 4 | $ | 37,706 | $ | (37,035) | $ | 1,898 | $ | 2,573 | 
+Share-based compensation | — | — | — | — | 3,991 | — | — | 3,991 | 
+Issuance of common stock in connection with IPO, net of underwriting commissions and offering costs | — | — | 639 | 1 | 85,674 | — | — | 85,675 | 
+Issuance of redeemable convertible preferred stock | 78 | 5,869 | — | — | — | — | — | — | 
+Common stock issued, net of tax withholding | — | — | 1,381 | 1 | 2,258 | — | — | 2,259 | 
+Conversion of redeemable convertible preferred stock pursuant to xAI Merger | (1,987) | (37,476) | 1,424 | 1 | 37,474 | — | — | 37,475 | 
+Repurchase of common stock pursuant to xAI Merger | — | — | (25) | 0 | (2,413) | — | — | (2,413) | 
+Conversion of redeemable convertible preferred stock to common stock | (135) | (7,076) | 6,728 | 6 | 7,070 | — | — | 7,076 | 
+Repurchase of common and redeemable convertible preferred stock | (2) | (69) | (41) | 0 | (1,944) | — | — | (1,944) | 
+Transfer of equity in business combinations | — | — | 394 | — | 42,723 | — | — | 42,723 | 
+Net loss | — | — | — | — | — | (413) | — | (413) | 
+Other comprehensive loss | — | — | — | — | — | — | (234) | (234) | 
+Balances at September 30, 2026 | — | $ | — | 13,579 | $ | 13 | $ | 212,539 | $ | (37,448) | $ | 1,664 | $ | 176,768 | 
+The accompanying notes are an integral part of these consolidated financial statements.
+7
+Table of Contents
+Redeemable ConvertiblePreferred Stock | Common Stock | 
+Three Months Ended September 30, 2025 | Shares | Amount | Shares | Amount | Additional Paid-in Capital | Accumulated Deficit | Accumulated OtherComprehensive Income | Total Shareholders'Equity | 
+Balances at June 30, 2025 | 1,893 | $ | 25,086 | 3,048 | $ | 4 | $ | 36,959 | $ | (33,634) | $ | 1,888 | $ | 5,217 | 
+Share-based compensation | — | — | — | — | 382 | — | — | 382 | 
+Issuance of redeemable convertible preferred stock | 0 | 242 | — | — | — | — | — | — | 
+Common stock issued, net of tax withholding | — | — | 11 | 0 | 116 | — | — | 116 | 
+Repurchase of common stock | — | — | (18) | 0 | (3) | — | — | (3) | 
+Net loss | — | — | — | — | — | (1,054) | — | (1,054) | 
+Other comprehensive loss | — | — | — | — | — | — | (3) | (3) | 
+Balances at September 30, 2025 | 1,893 | $ | 25,328 | 3,041 | $ | 4 | $ | 37,454 | $ | (34,688) | $ | 1,885 | $ | 4,655 | 
+Redeemable ConvertiblePreferred Stock | Common Stock | 
+Nine Months Ended September 30, 2025 | Shares | Amount | Shares | Amount | Additional Paid-in Capital | Accumulated Deficit | Accumulated OtherComprehensive Income | Total Shareholders'Equity | 
+Balances at December 31, 2024 | 1,748 | $ | 20,941 | 3,023 | $ | 3 | $ | 35,865 | $ | (32,098) | $ | 1,093 | $ | 4,863 | 
+Share-based compensation | — | — | — | — | 1,150 | — | — | 1,150 | 
+Issuance of redeemable convertible preferred stock | 145 | 4,388 | — | — | — | — | — | — | 
+Common stock issued, net of tax withholding | — | — | 62 | 1 | 922 | — | — | 923 | 
+Conversion of redeemable convertible preferred stock to common stock | 0 | (1) | 2 | 0 | 1 | — | — | 1 | 
+Repurchase of common stock | — | — | (47) | 0 | (523) | — | — | (523) | 
+Transfer of equity in business combination | — | — | 1 | 0 | 39 | — | — | 39 | 
+Net loss | — | — | — | — | — | (2,590) | — | (2,590) | 
+Other comprehensive income | — | — | — | — | — | — | 792 | 792 | 
+Balances at September 30, 2025 | 1,893 | $ | 25,328 | 3,041 | $ | 4 | $ | 37,454 | $ | (34,688) | $ | 1,885 | $ | 4,655 | 
+The accompanying notes are an integral part of these consolidated financial statements.
+8
+Table of Contents
+Space Exploration Technologies Corp.
+Consolidated Statements of Cash Flows
+(in millions)
+(unaudited)
+Nine Months Ended September 30, | 
+2026 | 2025 | 
+Cash flows from operating activities | 
+Net loss | $ | (413) | $ | (2,590) | 
+Adjustments to reconcile net loss to net cash provided by operating activities: | 
+Depreciation and amortization | 8,934 | 4,784 | 
+Share-based compensation | 3,833 | 1,044 | 
+Deferred income taxes | (455) | 623 | 
+Unrealized (gain) loss on digital assets | 64 | (389) | 
+Unrealized gain on investments in unconsolidated affiliates, net | (532) | — | 
+Loss on debt extinguishment | 1,545 | — | 
+Other | (254) | 193 | 
+Changes in operating assets and liabilities | 
+Accounts receivable | (2,882) | (934) | 
+Inventory | (1,381) | (378) | 
+Prepaid expenses and other assets | (1,305) | (427) | 
+Accounts payable | (970) | 668 | 
+Deferred revenue | 4,922 | 404 | 
+Other liabilities, net | 1,991 | 1,122 | 
+Net cash provided by operating activities | $ | 13,097 | $ | 4,120 | 
+Cash flows from investing activities | 
+Purchases of property, plant, and equipment (related party of $480 and $285 for September 30, 2026 and 2025, respectively)
+ | (48,069) | (13,846) | 
+Capitalized interest | (20) | (96) | 
+Proceeds from product rebates | 1,372 | — | 
+Purchases of marketable securities | (46,834) | (601) | 
+Maturities of marketable securities | 9,158 | 548 | 
+Proceeds from sales of marketable securities | 77 | 1,173 | 
+Payments for intangible assets | (866) | — | 
+Cash received from acquisition of businesses | 514 | — | 
+Other investing activities, net | 57 | (175) | 
+Net cash used in investing activities | $ | (84,611) | $ | (12,997) | 
+Cash flows from financing activities | 
+Principal repayments on finance leases | (270) | (213) | 
+Proceeds from debt and other financing obligations | 51,834 | 10,947 | 
+Payment of debt issuance costs | (124) | (66) | 
+Repayments on debt and other financing obligations | (39,845) | (6,014) | 
+Payment of debt extinguishment premium | (1,153) | — | 
+Proceeds from issuance of capital stock, net of issuance costs | 8,319 | 5,299 | 
+Proceeds from employee equity award plans | 368 | 206 | 
+Payments for repurchase of common and redeemable convertible preferred stock | (4,426) | (525) | 
+Taxes paid related to net share settlement of equity awards | (559) | (194) | 
+Proceeds from IPO, net of underwriting commissions and offering costs | 85,675 | — | 
+Net cash provided by financing activities | $ | 99,819 | $ | 9,440 | 
+Effect of exchange rate changes on cash and cash equivalents | (43) | 69 | 
+Net change in cash and cash equivalents and restricted cash | 28,262 | 632 | 
+Cash and cash equivalents and restricted cash, beginning of the period | 25,124 | 11,501 | 
+Cash and cash equivalents and restricted cash, end of the period | $ | 53,386 | $ | 12,133 | 
+Supplemental disclosures of cash flow information | 
+Cash paid for the following: | 
+Interest, net of interest capitalized | $ | 2,078 | $ | 695 | 
+Income taxes, net | $ | 66 | $ | 56 | 
+Supplemental schedule of noncash investing and financing activities | 
+Purchases of property, plant, and equipment included in accounts payable and accrued expenses | $ | 11,827 | $ | 3,573 | 
+Purchases of property, plant, and equipment financed by other financings | $ | 3,921 | $ | — | 
+Share-based compensation capitalized in property, plant, and equipment, net | $ | 160 | $ | 114 | 
+Acquisition of businesses through issuance of shares | $ | 42,723 | $ | — | 
+The accompanying notes are an integral part of these consolidated financial statements.
+9
+Table of Contents
+SPACE EXPLORATION TECHNOLOGIES CORP.
+NOTES TO THE CONSOLIDATED FINANCIAL STATEMENTS
+(tables in millions, except per share data) 
+(unaudited)
