@@ -5,6 +5,8 @@
 **대상**: Curtiss-Wright Corporation — NYSE: CW · CIK 0000026324
 **선행 보고서**: [CW-quality-screen-20261023.md](CW-quality-screen-20261023.md)(7지표 전부 통과) · [Nuclear-Power-funnel-20261023.md](../Nuclear-Power-funnel-20261023.md)(최종 3종목 중 위성)
 
+> ⚠️ **정정 (같은 날 [FinalReport](FinalReport.md))**: ① CEO 승계는 🔴 미확인이 아니라 🟢 확정 — 2026-09-22 8-K, COO Kevin Rayment가 2027-01-01부 CEO. ② 2026 자사주는 $160M이 아니라 $460M 예정(09-10 8-K). ③ Bear 성장률 6%는 이중 할인으로 보고 9%로 교정 → IV $387.69. 판정(`hold`)은 같다.
+
 ## 결론 먼저
 
 **❓ 회색지대 — 관문 5/6 통과, 관문 5(안전마진) 미통과 → `hold`(관망) · catalyst-wait**
