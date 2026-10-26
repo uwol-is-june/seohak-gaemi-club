@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import type { ReportFile } from "@/lib/reports-store";
 import {
   BOTTLENECK_BADGE,
@@ -36,6 +36,15 @@ export function BottleneckSignalsView({
     [files]
   );
   const [selected, setSelected] = useState<string | null>(null);
+  // 날짜 그룹 접힘 상태 — 기본은 전부 펼침. 스캔 기록이 쌓이면 지난 날짜를 접어 둔다.
+  const [collapsedDates, setCollapsedDates] = useState<Set<string>>(() => new Set());
+  const toggleDate = (date: string) =>
+    setCollapsedDates((prev) => {
+      const next = new Set(prev);
+      if (next.has(date)) next.delete(date);
+      else next.add(date);
+      return next;
+    });
 
   // 목록이 로드·갱신되면 선택을 유효한 값으로 맞춘다(가장 최근 스캔이 기본 선택).
   const firstPath = index.groups[0]?.items[0]?.path ?? index.pinned[0]?.path ?? null;
@@ -65,6 +74,10 @@ export function BottleneckSignalsView({
   }
 
   const hasAny = index.groups.length > 0 || index.pinned.length > 0;
+  const selectedSignal =
+    index.pinned.find((p) => p.path === selected) ??
+    index.groups.flatMap((g) => g.items).find((i) => i.path === selected) ??
+    null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -131,31 +144,35 @@ export function BottleneckSignalsView({
       ) : (
         <div className="flex flex-col gap-5">
           {index.groups.map((g) => (
-            <div key={g.date}>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="eyebrow text-[10px] text-ink">{g.date}</span>
-                <span className="text-[11px] text-mute">{g.items.length}건</span>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                {g.items.map((s) => (
-                  <SignalRow
-                    key={s.path}
-                    signal={s}
-                    active={selected === s.path}
-                    onSelect={() => setSelected(s.path)}
-                  />
-                ))}
-              </div>
-            </div>
+            <DateGroup
+              key={g.date}
+              date={g.date}
+              count={g.items.length}
+              open={!collapsedDates.has(g.date)}
+              onToggle={() => toggleDate(g.date)}
+            >
+              {g.items.map((s) => (
+                <SignalRow
+                  key={s.path}
+                  signal={s}
+                  active={selected === s.path}
+                  onSelect={() => setSelected(s.path)}
+                />
+              ))}
+            </DateGroup>
           ))}
         </div>
       )}
 
       {/* ── 선택한 스캔 본문 ── */}
+      {/* key 로 재마운트 — 다른 스캔을 고르면 펼친 상태로 시작한다(CollapsibleReportCard 와 같은 규약). */}
       {selected && (
-        <div className="rounded-2xl bg-canvas-card p-5 sm:p-6">
-          <ReportContentView path={selected} onOpenReport={onOpenReport} />
-        </div>
+        <SignalBodyCard
+          key={selected}
+          path={selected}
+          signal={selectedSignal}
+          onOpenReport={onOpenReport}
+        />
       )}
     </div>
   );
@@ -197,5 +214,114 @@ function SignalRow({
         <span className="shrink-0 text-[11px] text-mute">{signal.tickers.length}종목</span>
       )}
     </button>
+  );
+}
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={`shrink-0 text-mute group-hover:text-ink transition-transform ${open ? "rotate-90" : ""}`}
+    >
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
+
+function DateGroup({
+  date,
+  count,
+  open,
+  onToggle,
+  children,
+}: {
+  date: string;
+  count: number;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  const listId = useId();
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={listId}
+        title={open ? "이 날짜 접기" : "이 날짜 펼치기"}
+        className="group flex items-center gap-2 mb-2 text-left"
+      >
+        <Chevron open={open} />
+        <span className="eyebrow text-[10px] text-ink">{date}</span>
+        <span className="text-[11px] text-mute">{count}건</span>
+      </button>
+      {open && (
+        <div id={listId} className="flex flex-col gap-1.5">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 선택한 스캔 본문. 헤더를 누르면 접힌다 — 본문이 길어 다 읽고 위 목록으로 돌아가려면
+// 한참 스크롤해야 해서(다른 보고서 탭의 CollapsibleReportCard 와 같은 이유).
+function SignalBodyCard({
+  path,
+  signal,
+  onOpenReport,
+}: {
+  path: string;
+  signal: BottleneckSignal | null;
+  onOpenReport: (path: string) => void;
+}) {
+  const [open, setOpen] = useState(true);
+  const bodyId = useId();
+  const badge = signal ? BOTTLENECK_BADGE[signal.kind] : null;
+  const name = signal?.name ?? path.split("/").pop() ?? path;
+
+  return (
+    <div className="rounded-2xl bg-canvas-card overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls={bodyId}
+        title={open ? "본문 접기" : "본문 펼치기"}
+        className={`group w-full flex items-center gap-1.5 px-5 py-3 min-h-11 text-left ${
+          open ? "border-b border-hairline" : ""
+        }`}
+      >
+        <Chevron open={open} />
+        {badge && (
+          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${badge.color}`}>
+            {badge.label}
+          </span>
+        )}
+        {signal?.date && (
+          <span className="shrink-0 text-[11px] font-mono text-mute">
+            {signal.date}
+            {signal.time ? ` ${signal.time}` : ""}
+          </span>
+        )}
+        <span className="min-w-0 truncate text-xs font-mono text-body group-hover:text-ink transition-colors">
+          {name}
+        </span>
+      </button>
+      {open && (
+        <div id={bodyId} className="px-5 py-5 sm:px-6">
+          <ReportContentView path={path} onOpenReport={onOpenReport} />
+        </div>
+      )}
+    </div>
   );
 }

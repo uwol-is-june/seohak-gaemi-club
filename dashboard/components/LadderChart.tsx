@@ -102,7 +102,7 @@ export function LadderChart({
                   <span className="eyebrow w-7 text-[10px] text-mute">{t.label}</span>
                   <span className="font-mono text-[13px] text-ink">≤{fmt(price)}</span>
                   {dist != null && (
-                    <span className={`font-mono text-[10px] ${reached ? "text-success" : "text-down"}`}>
+                    <span className={`text-[10px] ${reached ? "font-bold text-success" : "font-mono text-down"}`}>
                       {reached ? "도달" : pct(dist)}
                     </span>
                   )}

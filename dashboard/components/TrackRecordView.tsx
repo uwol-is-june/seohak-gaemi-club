@@ -579,7 +579,7 @@ function TickerCard({
                 —
               </span>
             ) : reached ? (
-              <span className="font-mono text-[16px] font-bold text-success">도달</span>
+              <span className="text-[15px] font-bold text-success">도달</span>
             ) : (
               <GapText pct={gapPct} size="lg" />
             )}
@@ -657,7 +657,7 @@ function TickerCard({
             {goal == null || gapPct == null ? (
               <span className="font-mono text-mute">—</span>
             ) : reached ? (
-              <span className="font-mono text-success">도달</span>
+              <span className="font-bold text-success">도달</span>
             ) : (
               <GapText pct={gapPct} size="sm" />
             )}

@@ -61,6 +61,9 @@ const googl = earningsDayInfo(both("2026-10-28", "2026-07-22"), NOW);
 eq("GOOGL 라벨", googl.label, "D-83");
 eq("GOOGL 점검대기 아님", googl.reviewDue, false);
 eq("GOOGL 표시날짜=다음 예정일", googl.shownDate, "2026-10-28");
+eq("GOOGL 직전 발표일 병기", googl.prevDate, "2026-07-22");
+eq("GOOGL 직전 경과일", googl.prevSince, 15);
+eq("AAPL(지난 실적이 주인공)은 직전 병기 없음", aapl.prevDate, null);
 
 // NVDA: 다가오는 실적(D-20), 직전은 한참 전(05-20).
 eq("NVDA 라벨", earningsDayInfo(both("2026-08-26", "2026-05-20"), NOW).label, "D-20");

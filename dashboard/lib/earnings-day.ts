@@ -95,6 +95,10 @@ export interface DayInfo {
   shownDate: string | null; // 행에 표시할 날짜
   shownEstimate: boolean; // 그 날짜가 추정치인가
   nextDate: string | null; // 지난 실적을 보여줄 때만 곁들이는 다음 예정일
+  // 다가오는 실적을 앞세운 행에 곁들이는 직전 발표일과 경과일 — 점검 창(7일)이 지나도
+  // "지난 실적이 언제였는지"가 남아야 뒤늦은 점검을 놓치지 않는다.
+  prevDate: string | null;
+  prevSince: number | null;
 }
 
 // ── 점검 완료 판정 ───────────────────────────────────────────────────────────
@@ -155,6 +159,8 @@ export function earningsDayInfo(
     shownDate: e?.date ?? null,
     shownEstimate: Boolean(e?.estimate && e?.date),
     nextDate: null as string | null,
+    prevDate: null as string | null,
+    prevSince: null as number | null,
   };
   const nextMs = e?.epochMs ?? null;
   const lastMs = e?.lastEpochMs ?? null;
@@ -196,6 +202,7 @@ export function earningsDayInfo(
     // 달라서다 — 미국 장 마감 직후 쓴 글이 UTC로는 같은 날일 수도, 하루 뒤일 수도 있다.
     const reviewed = reviewedAtMs != null && dayDelta(reviewedAtMs, now) >= -past.since;
     return {
+      ...base,
       label: `D+${past.since}`,
       tone: reviewed ? "text-mute" : "text-sunset",
       rank: (reviewed ? -500 : -1_000) + past.since,
@@ -215,6 +222,8 @@ export function earningsDayInfo(
       label: `D-${dNext}`,
       tone: dNext <= REVIEW_WINDOW_DAYS ? "text-sunset-soft" : "text-body",
       rank: dNext,
+      prevDate: past?.date ?? null,
+      prevSince: past?.since ?? null,
     };
   }
 

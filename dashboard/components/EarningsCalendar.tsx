@@ -255,6 +255,15 @@ export function EarningsCalendar({
                         다음 <span className="font-mono">{day.nextDate}</span>
                       </span>
                     )}
+                    {/* 다가오는 실적을 앞세운 행은 직전 발표일이 가려지므로 함께 보여준다. */}
+                    {day.prevDate && (
+                      <span className="text-mute/70">
+                        직전 <span className="font-mono">{day.prevDate}</span>
+                        {day.prevSince != null && (
+                          <span className="font-mono"> (D+{day.prevSince})</span>
+                        )}
+                      </span>
+                    )}
                     {call && (
                       <span className="text-mute/70">
                         콜 <span className="font-mono">{call.date}</span>
