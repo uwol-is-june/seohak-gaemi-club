@@ -1,236 +1,295 @@
 # Alphabet(GOOGL) — 산업·경쟁 구도 분석 (Charlie Munger 시각)
 
-> **역할**: industry-researcher / 정신모델·Lollapalooza·경쟁파괴 렌즈
-> **정보 등급**: A (비컨센서스 시각 집중)
-> **작성일**: 2026-07-28 · **데이터 기준**: 2026년 상반기 (Q2 2026 실적 반영)
-> **분석 원칙**: 사실↔의견 분리, 양면 제시, 추정치 "(추정)" 명기
+> **역할**: industry-researcher · 정신모델·인버전·경쟁파괴 렌즈
+> **정보 등급**: A (컨센서스 반복 금지, 반론 검증 집중)
+> **작성일**: 2026-10-28 · **데이터 기준**: Q2'26 실적 + 10/28까지의 2차 보도. **🔴 Q3'26 실적(10/28 장 마감 후) 발표 전 스냅샷**
+> **직전판**: 2026-07-28 (본 파일 덮어씀). 이번 판은 그 이후 3개월의 변화에 집중한다.
+> **현재가**: $320.58 (team-lead 제공)
 
 ---
 
-## 0. 멍거식 프레임 설정
+## 0. 결론 먼저
 
-> "Show me the incentive and I will show you the outcome." — Charlie Munger
+> "Invert, always invert." — Charlie Munger
 
-멍거는 개별 지표가 아니라 **여러 힘이 같은 방향으로 겹쳐 폭발하는 지점(Lollapalooza)**을 본다. Alphabet에 대한 핵심 질문은 단 하나다:
+| 질문 | 07-28 판 | **10-28 판** |
+|---|---|---|
+| 핵심 긴장 | 검색 단일 해자 침식 vs 복합 해자(TPU→Cloud→모델→유통) 강화 | **동일. 단 침식 쪽에 "가격표가 붙은 경쟁자"가 처음 등장했다** — OpenAI 광고(2026 목표 $2.5B 🟡), Meta 광고 +26% |
+| 가장 큰 구조 리스크 | AdX 강제분할 | **AdX 분할은 9/2 기각으로 소멸** → 리스크가 **검색(DC Circuit 교차항소: Chrome 매각)** 과 **자본효율(FCF 음수·증자)** 로 이동 |
+| 종합 ★ | ★★★★☆ | **★★★★☆ (유지)** — 하위 항목 재배치: 검색 해자 하향, TPU 외부판매로 밸류체인 상향 |
 
-**"검색 독점이라는 단일 해자가 침식되는 동시에, TPU→클라우드→모델→유통이라는 새 복합 해자가 형성되는가? 두 힘 중 어느 쪽이 이기고 있는가?"**
-
-2026년의 데이터는 **역설**을 보여준다. 컨센서스는 "AI가 구글 검색을 죽인다"였으나, 실제 데이터는 검색 광고가 오히려 **+17% YoY 성장**(Q2 2026, $63.3B)했고 클라우드는 **+82%**, 영업이익은 3배로 뛰었다. 그러나 동시에 검색의 **정보성 쿼리 점유율이 AI로 15~20% 이탈**하고, 광고 1위 자리를 Meta에 내주는 중이다. 이것이 이 보고서의 핵심 긴장이다.
+**한 줄**: 경쟁에서 지는 회사가 아니라, **이기는 데 드는 비용(capex·증자)이 급등한 회사**다. 멍거식 위험은 "해자가 무너지는 것"보다 "해자를 지키는 값이 해자가 주는 현금보다 비싸지는 것"이다. [의견]
 
 ---
 
 ## 1. 산업 규모·성장 (TAM)
 
-Alphabet이 겹쳐 앉아 있는 4개의 거대 시장:
-
-| 시장 (TAM) | 2026 규모(추정) | 성장률(CAGR/YoY) | Alphabet 노출 | 침투율·비고 |
+| 시장 | 규모 | 성장 | 출처·측정 방식 | 신뢰도 |
 |---|---|---|---|---|
-| **디지털 광고** | ~$800B+ (글로벌) | ~10% YoY | 검색·YouTube·네트워크 | 성숙기 진입, AI가 재편 촉발 |
-| **클라우드 인프라(IaaS/PaaS)** | ~$400B 런레이트(추정) | +25~30% YoY | Google Cloud (GCP) | 초기~중기, AI가 재가속 |
-| **온라인 동영상/CTV** | ~$400B 시청시간 경제 | 두 자릿수 | YouTube | CTV 전환 진행형 |
-| **생성형 AI** | $47B~$161B (소스별 상이) | ~28% CAGR → 2030 | Gemini·Vertex·TPU | 초기, 침투 <10% |
+| 글로벌 디지털 광고 | **≈$0.91T (2026E)** — Google $239.54B ÷ 26.4% 역산 | Google +11.9% · Meta +24.1% (2026E) | eMarketer 2026-04 예측(순광고매출 기준·TAC 차감) | 🟡[추정·역산] |
+| 3사 집중도 | Meta+Google+Amazon **62.3%** (2026E) | 2028년까지 상승 예측 | eMarketer | 🟡[사실·예측치] |
+| 검색 광고(Google) | ≈$224B (연) | — | ppc.land 헤드라인(측정 기준 미공개) | 🔴[주장] |
+| 클라우드 인프라 | **Q2'26 분기 $143B** (연환산 ≈$572B) | **+43% YoY — 8년 내 최고** | Synergy Research 1차 릴리스(IaaS·PaaS·호스티드 프라이빗) | 🟢[사실] |
+| AI 가속기 | NVIDIA 출하 점유 >80% | — | 2차 분석(측정기관 미상) | 🔴[주장] |
+| 로보택시(Waymo) | 주 50만+ 유료 운행(2026 중반) · 목표 연말 주 100만 | 2→3개월마다 2배(2026 초 보도) | Waymo 발표 인용 2차 보도 | 🟡[사실] |
 
-**핵심 관찰**:
-- 디지털 광고는 이미 **성숙**했다. Meta·Google·Amazon 3사가 글로벌 62.3% 점유(2026, 2025년 59.9%에서 상승) — 과점은 오히려 심화. (출처: eMarketer via Yahoo Finance)
-- 성장의 무게중심이 **광고 → 클라우드/AI**로 이동 중. Alphabet의 성장 엔진 교체가 실시간으로 진행된다. Q2 2026 클라우드 백로그 **$514B**는 향후 몇 년치 매출을 예약해 둔 것.
-- 생성형 AI TAM은 소스별 편차가 극심($47B~$394B) — **시장이 아직 형성 중**이라는 신호. 멍거식으로는 "TAM 숫자를 믿지 말고 현금흐름을 봐라".
+**관찰 [의견]**: 07-28 판의 클라우드 TAM "~$400B 런레이트"는 **과소 추정이었다** — Synergy 1차 데이터로 연환산 $572B, 성장률 +43%. 반면 광고 TAM은 성숙(전체 ~10%대)인데 **그 안에서 Meta가 Google보다 2배 빨리 큰다**. 성장 무게중심의 이동(광고→클라우드)은 07-28 판 판단 그대로 강화됐다.
 
-**★ 산업 규모·성장: ★★★★☆ (4/5)** — 4개 시장 모두 동시 노출은 희귀한 포지셔닝. 단 광고 성숙과 AI 불확실성이 만점을 막음.
+**반대 근거**: 클라우드 +43%는 AI 학습·추론 수요가 **차입·지분 조달로 지탱되는 구간**의 숫자다(AI-Infrastructure 보고서 1.4: ORCL BBB-, CRWV 스프레드 15%, Meta 외부 지분 조달). 수요가 아니라 조달이 먼저 꺾이면 TAM 성장률이 급감한다. [추정]
 
----
-
-## 2. 경쟁 구도 (세그먼트별)
-
-### 2-1. 검색 광고 — Google vs 생성형 AI vs Bing
-
-| 플레이어 | 검색/AI검색 위치 | 위협도 | 근거 |
-|---|---|---|---|
-| **Google** | 전체 쿼리량 ~80% 유지 | — | 내비게이션·로컬 쿼리 지배, AI Overviews로 방어 |
-| **ChatGPT (OpenAI)** | AI검색의 정보성 쿼리 잠식 | **높음** | 주간 250~500M 쿼리, 검색습관 대체 |
-| **Perplexity** | 주간 ~50M 쿼리 | 중 | "답변 엔진" 포지션, 규모는 아직 작음 |
-| **Bing (MS)** | 전통검색 마이너 | 낮음 | Copilot 통해 간접 위협 |
-
-**비컨센서스 관찰**: 컨센서스는 "AI Overviews = 클릭 자기잠식 = 광고 붕괴"였다. 그러나 Q2 2026 검색 광고 **+17%** 성장이 이 논리를 반증했다. AI Overviews가 오히려 쿼리 수를 늘리고, 광고를 AI 답변 안으로 재삽입하는 데 성공하고 있다는 증거. (출처: digitalapplied, Alphabet Q2 2026)
-
-**그러나 반대로**: 전체 쿼리량은 유지되나 **정보성/리서치 쿼리의 15~20%가 AI로 이탈**했다. 검색 쿼리의 "질(광고 수익성 높은 상업적 의도)"이 어디로 가는지가 진짜 승부처. 지금은 방어 성공이지만 **구조적 압력은 실재**한다.
-
-### 2-2. 디지털 광고 전체 — Google vs Meta vs Amazon vs TikTok
-
-| 플레이어 | 글로벌 점유율 2026(추정) | YoY 성장 | 무기 |
-|---|---|---|---|
-| **Meta** | **26.8%** (1위 등극) | 강함 | 소셜·AI 추천·Reels |
-| **Google** | 26.4% (2위로 하락) | +5.6%(美, 추정) | 검색·YouTube 통합 |
-| **Amazon** | ~9% | **+17.9%(美)** | 리테일미디어(美 소매광고 75%+), 구매의도 데이터 |
-| **TikTok/ByteDance** | ~4.8%(TikTok), 7.9%(ByteDance 전체) | 강함 | 숏폼·젊은층 |
-
-**역사적 전환**: 2026년 Meta가 Google을 제치고 **글로벌 광고 1위 등극**(Meta 순광고 $243.5B vs Google $239.5B, eMarketer 추정). 20년 만의 왕좌 교체.
-
-**멍거식 해석**: Google 광고 해자에 **두 방향의 균열**. (1) 하단에서 Amazon이 구매전환 직전 광고(리테일미디어)를 가져가고, (2) 상단에서 Meta가 AI 타게팅으로 브랜드 예산을 흡수. Google은 "중간(검색 의도)"에 갇혀 성장률이 한 자릿수로 둔화. **다만** 절대 규모·수익성은 여전히 압도적이고, YouTube를 광고 자산으로 재계산하면 실질 점유는 더 높다.
-
-### 2-3. 클라우드 — GCP vs AWS vs Azure
-
-| 플레이어 | 시장점유율 Q1 2026(추정) | YoY 성장 | 영업이익률 |
-|---|---|---|---|
-| **AWS** | ~28~30% | +19% | 성숙·고마진 |
-| **Azure** | ~21~25% | +40% | MS 통합 |
-| **Google Cloud** | **~13~14%** | **+63~82%** | **35.6%** (전년 20.7%) |
-
-> ※ 점유율은 Synergy Research 기준(소스별 AWS 28~31%, Azure 21~25%, GCP 11~14%로 편차).
-> ※ GCP 성장률: Synergy 기준 산업추정 +63%, Alphabet 자체 Q2 2026 매출 기준 **+82%**($24.8B).
-
-**이것이 Alphabet 스토리의 심장부**. GCP 영업이익률이 1년 만에 **20.7% → 35.6%**로 점프하며 영업이익이 3배($2.8B→$8.8B). 3위 사업자가 1위보다 4배 빠르게 성장하며 마진까지 폭발 — **규모의 경제 임계점 돌파**의 교과서적 신호.
-
-**비컨센서스 포인트**: 시장은 GCP를 "만년 3위, 적자 사업"으로 봤다. 이제 GCP는 **AI 인프라 수요 + TPU 수직통합 원가우위 + 백로그 $514B**의 삼중 결합으로 재평가 국면. 이것이 이 종목의 lollapalooza 후보 1번.
-
-### 2-4. 동영상 — YouTube vs Netflix/TikTok/Disney
-
-| 플레이어 | 美 TV 시청시간 점유(2026.1) | 강점 | 약점 |
-|---|---|---|---|
-| **YouTube** | **12.7~13.4%** (미디어사 1위) | CTV 1.5억명, UGC+프리미엄, 광고+구독 | 콘텐츠 큐레이션 |
-| **Netflix** | 9.0% | 오리지널·구독 브랜드력(선호도 36%) | 광고 규모 아직 작음 |
-| **TikTok** | TV 지표선 미미 | 숏폼 참여·다운로드 1위 | 대화면·미국 규제 리스크 |
-| **Disney+** | 한 자릿수 | IP | 수익성 압박 |
-
-**관찰**: YouTube가 **거실 TV의 최대 미디어**가 됐다(Nielsen The Gauge). 넷플릭스보다 앞선다. 광고(+13%, Q2 $11.1B)와 구독(YouTube TV/Premium) **양쪽 수익화**가 넷플릭스(구독 중심)·TikTok(광고 중심) 대비 구조적 우위. YouTube는 Alphabet의 **저평가된 자산**(추정).
-
-### 2-5. AI 어시스턴트 — Gemini vs ChatGPT vs Copilot vs Claude
-
-| 플레이어 | 챗봇 점유율 2026(추정) | 사용자 규모 | 추세 |
-|---|---|---|---|
-| **ChatGPT** | 46.4%(5월말) — 60%대에서 하락 | 9억 WAU (2026.2) | **하락** |
-| **Gemini** | 15~27%(소스 편차) | 6.5억 MAU (2025.11) | **급상승** |
-| **Copilot (MS)** | ~13% | MS365 번들 | 안정 |
-| **Claude (Anthropic)** | 11.8→18.5% | — | 상승 |
-| **Perplexity** | 소규모 | 주 50M 쿼리 | 하락 |
-
-> ※ 점유율은 측정사(Similarweb/First Page Sage)별로 정의·수치 상이 — Gemini 15~27% 범위.
-
-**멍거식 핵심**: ChatGPT의 점유율이 87%(2025.1)→46%(2026.5)로 붕괴했다. **선발주자 프리미엄의 붕괴**. 반면 Gemini는 **유통(distribution)의 힘**으로 급등 — Android 기본탑재, Chrome, 그리고 (보도 기준) iPhone Siri 백엔드 채택설. 멍거가 사랑하는 "이미 깔린 파이프에 새 물을 흘려보내는" 구조. Gemini 3 Flash + Nano Banana Pro로 성능 격차도 소멸.
-
-**★ 경쟁 구도(세그먼트 종합): ★★★★☆ (4/5)** — 클라우드·동영상·AI어시스턴트 3전선에서 점유율 상승, 검색·광고 전선에서 방어전. 상승 전선이 하락 전선보다 크지만, 광고 1위 상실은 감점.
+**★ 산업 규모·성장: ★★★★☆** — 클라우드 TAM 상향은 플러스, 광고 성숙 + 조달 의존 성장은 감점.
 
 ---
 
-## 3. 핵심 경쟁사별 위협 평가
+## 2. 경쟁 구도
 
-| 경쟁사 | 주 전선 | 위협도 | 멍거식 평가 |
+### 2-1. 검색 — "점유율"이라는 숫자가 세 개다
+
+| 측정치 | 값 | 측정 방식 | 신뢰도 |
 |---|---|---|---|
-| **Microsoft / OpenAI** | AI검색·클라우드·AI어시스턴트 | ★★★★☆ | 가장 다면적 위협. 단 ChatGPT 점유 붕괴·OpenAI 현금소진으로 위협 **정점 통과**(추정) |
-| **Meta** | 디지털 광고 | ★★★★☆ | 광고 1위 탈환. 그러나 클라우드·검색 부재로 Alphabet 전체를 위협 못함. **광고 국지전** 승자 |
-| **Amazon** | 리테일미디어·클라우드 | ★★★☆☆ | 광고 하단(전환) 잠식 + AWS 1위. 검색·동영상엔 무해. **두 전선 강자** |
-| **Apple** | 유통·AI·검색 진입 | ★★★☆☆ | Safari 기본검색료($20B+/년) 재협상 리스크. 단 Gemini의 Siri 백엔드 채택은 오히려 **적을 파트너로**(추정) |
+| StatCounter 미국 검색엔진 점유 | **85.76%** (10/21 월누적) · 9월 85.19% · 8월 86.01% · Bing 9.55% | 페이지뷰 기반 검색엔진 리퍼럴 | 🔴[주장 — 예측시장 페이지 인용, StatCounter 원문 미확인] |
+| 선호 검색엔진 응답 | 70%(저점) → **78%**(2026-08) | 설문 | 🟡[논제 §A6.2] |
+| AI 리퍼럴 트래픽 내 점유 | ChatGPT 86.7% → **64.5%** · Gemini 5.7% → **21.5%** (1년) | AI 챗봇발 리퍼럴 | 🟡[2차 집계] |
+| AI 검색 전체의 검색 리퍼럴 비중 | **<1%** | BrightEdge | 🟡[사실] |
+| "모든 디지털 쿼리" 중 ChatGPT | ≈17% | 정의 불명 | 🔴[주장] |
 
-**비컨센서스**: 컨센서스는 "OpenAI/MS가 최대 위협"이라 봤다. 데이터는 반대 방향을 가리킨다 — ChatGPT 점유 붕괴, Gemini 급등. **위협의 정점은 2024~2025년이었고 2026년은 Alphabet의 반격 국면**(추정). 진짜 지속 위협은 오히려 조용히 하단 전환광고를 가져가는 **Amazon**과, 왕좌를 실제로 뺏은 **Meta**다.
+> ⚠️ 위 수치들은 서로 다른 분모를 쓴다. "Google 점유 70% 후반 회복"(설문)과 "85%대"(StatCounter)는 모순이 아니라 **측정 대상이 다르다**. 어느 숫자도 **상업적 의도 쿼리(광고 단가가 붙는 쿼리)의 이탈**을 직접 재지 않는다 — 이것이 진짜 공백이다. ⬛
 
-**★ 경쟁사 위협 종합: ★★★★☆ (4/5)** — 다면적 위협은 실재하나 어느 단일 경쟁사도 Alphabet의 4개 사업 전체를 위협하지 못함. Alphabet만이 4개 전선 동시 참전.
+**비컨센서스 관찰 [의견]**: 시장은 "AI 검색이 Google 쿼리를 빼앗는가"를 묻는다. 데이터는 **쿼리는 거의 안 빠졌다**(StatCounter 85%대 안정, AI 리퍼럴 <1%)고 말한다. 그러나 이것은 **잘못된 질문**이다. 위협은 쿼리 수가 아니라 **광고주 예산의 대안이 생긴 것**이다 — OpenAI는 2026-02 광고 파일럿, 05-05 Ads Manager 셀프서브, 4월 CPC 입찰 도입 🟡. 경쟁자가 "검색 대체재"에서 **"검색 광고 대체 매체"**로 바뀌는 순간이 2026년이다.
+
+**반대 근거**: OpenAI 2026 광고 목표 $2.5B 🟡는 Google 검색 광고(연 ~$224B 🔴)의 **약 1%**. CPM이 $60 → $25로 떨어지고 최소 집행액이 $200K → $50K로 낮아진 것 🟡은 **수요가 아니라 공급 과잉의 신호**로 읽을 수 있다. 2030년 $100B 목표는 투자자 대상 전망 [주장]이며 검증 불가.
+
+### 2-2. 디지털 광고 — Meta와의 성장 격차가 벌어지고 있다
+
+| 플레이어 | 2026E 순광고매출 | 점유 | 성장 | 최신 분기 실측 |
+|---|---:|---:|---:|---|
+| **Meta** | $243.46B | 26.8% | +24.1% | **Q3'26 매출 ≈$64.6B +26%, 노출 +10% · 단가 +14%** 🟡(10/21 발표, 2차 요약) |
+| **Google** | $239.54B | 26.4% | +11.9% | Q2'26 검색 +17% 🟡 · YouTube 광고 $11.1B +13% 🟡 · Q3 ⬛(미발표) |
+| **Amazon** | $82.07B | 9% | +19.6% | Q3 ⬛(10/29 발표 예정) |
+
+출처: eMarketer 2026-04 예측 🟡 (Reuters 신디케이트 경유 — Reuters 원문은 사용 금지라 MediaPost·TheNextWeb 경유 확인).
+
+**멍거식 해석 [의견]**: Meta의 Q3 **단가 +14%**가 핵심이다. 단가 상승은 광고주가 "Meta의 AI 타게팅이 전환을 더 잘 만든다"고 투표한 것이다. Google의 무기는 "의도(intent)"였고 Meta의 무기는 "예측"이었는데, **AI가 예측의 품질을 의도의 품질에 근접시키고 있다**. 이것이 Google 광고 해자에 대한 가장 과소평가된 위협이다 — OpenAI보다 Meta다.
+
+**반대 근거**: Meta는 같은 분기 FCF **−$2.1B**, capex $34.9B, 주정부 합의 비용 $9.9B 🟡. Meta의 성장도 공짜가 아니다. 또 eMarketer 예측은 Google 검색 +17%(Q2 실측)보다 낮은 +11.9%를 잡아 **Google을 과소 예측했을 가능성**이 있다 [추정]. 1위 역전 폭(1.6%p)은 작아 Q3·Q4 실측으로 뒤집힐 수 있다.
+
+### 2-3. 클라우드 — Synergy 1차 데이터
+
+| 플레이어 | Q2'26 점유 | Q2'25 점유 | 분기 매출 성장 | 비고 |
+|---|---:|---:|---:|---|
+| AWS | **28%** | 30% | +37% 🟡 | 1위 유지, 점유 −2%p |
+| Azure | **20%** | 20% | +43% 🟡 · Q1 FY27 가이던스 **+45%(cc)** 🟡 | **오늘(10/28) 장 후 발표 — 미반영** ⬛ |
+| Google Cloud | **15% (사상 최고)** | 13% | +81.8% (회사 보고) | 영업이익률 35.6% · 백로그 $514B |
+| Oracle · CoreWeave | ⬛ | ⬛ | ⬛ | Synergy 릴리스 미분리. ORCL BBB-·CRWV 스프레드 15%(AI-Infra 보고서) 🟡 |
+
+출처: Synergy Research 2026-07-30 🟢 (점유) · 성장률은 2차 집계 🟡.
+
+> ⚠️ **두 숫자를 섞지 말 것**: Alphabet의 "Google Cloud 매출 +81.8%"에는 Workspace 등 SaaS가 포함되고, Synergy의 15%는 IaaS·PaaS 인프라만 잰다. GCP 인프라만의 성장률은 ⬛.
+
+**관찰 [의견]**: 3위가 1위보다 2배 이상 빨리 크며 점유를 매년 2%p 가져온다. 07-28 판의 "lollapalooza 후보 1번" 판단은 1차 데이터로 확인됐다.
+
+**반대 근거**: CFO가 Q3 **외부 임차 용량 확대 → 단기 마진 압박**을 예고 🟡(논제 §A8.1). 즉 Google도 자체 용량이 부족해 **남의 데이터센터를 빌리고 있다** — "TPU 원가우위"가 모든 매출에 적용되지는 않는다. 백로그 $514B 중 단일 고객(Anthropic 등) 집중도는 ⬛.
+
+### 2-4. AI 모델·어시스턴트
+
+| 지표 | 값 | 출처 | 신뢰도 |
+|---|---|---|---|
+| ChatGPT WAU | 9억+ (2026-02) | OpenAI 발표 인용 | 🟡 |
+| Gemini의 AI 리퍼럴 점유 | 5.7% → 21.5% (1년) | 2차 집계 | 🟡 |
+| Gemini MAU 최신치 | ⬛ (07-28 판 6.5억은 2025-11 수치) | — | ⬛ |
+
+**관찰**: 07-28 판의 "선발주자 프리미엄 붕괴" 판단 유지. 다만 **증권 집단소송**(Gemini 3.5 Pro 진척 허위표시 주장, 대표원고 마감 12/1) 🟡[원고측 보도자료]은 모델 경쟁에서 Google이 "따라잡는 쪽"이었다는 시장 인식을 보여준다 — 주장 단계.
+
+**★ 경쟁 구도: ★★★★☆** — 클라우드 점유 상승(🟢 확인)이 광고 성장 격차 확대(Meta 2배)를 상쇄.
 
 ---
 
-## 4. 산업 트렌드 (5대 축)
+## 3. 핵심 경쟁사별 위협 평가 (★ = 위협 크기, 높을수록 위협)
 
-1. **AI 검색 패러다임 전환** — "10개 파란 링크 → 대화형 답변". Google은 AI Overviews로 방어 성공했으나 광고 삽입 모델의 장기 지속성은 미검증. **양날의 검**.
+| 경쟁사 | 주 전선 | 위협 | 07-28 대비 | 근거 |
+|---|---|:-:|:-:|---|
+| **Meta** | 광고 예산 | ★★★★☆ | ➖ | Q3 +26%, 단가 +14% 🟡. Google 대비 성장 2배. 단 검색·클라우드 부재, FCF 음수 |
+| **OpenAI** | 검색 광고 · 상업 쿼리 | ★★★☆☆ | ⬆ (매체화) | 9억 WAU + 광고 셀프서브 출시. 매출 규모는 Google 검색의 ~1% 🟡. 자금 의존(비상장·지속 조달) |
+| **Microsoft** | Azure · Copilot · Bing | ★★★☆☆ | ⬇ | Bing 미국 9.55% 🔴 정체. Azure 점유 20% 정체(Synergy) — Google이 Azure보다 점유를 더 빨리 가져온다. Copilot 유료 3천만석+ 🟡은 Workspace에 위협 |
+| **Amazon** | 리테일미디어 · AWS | ★★★☆☆ | ➖ | AWS 점유 −2%p(최대 수혜자는 Google). 광고 +19.6%E. Anthropic 주 학습 파트너는 여전히 AWS 🟡 |
+| **Perplexity** | 답변 엔진 | ★☆☆☆☆ | ⬇ | AI 리퍼럴 전체가 <1% |
+| **TikTok** | 동영상·숏폼 광고 | ★★☆☆☆ | ⬛ | 신규 데이터 미확보 |
+| **NVIDIA** | 가속기(공급자 겸 경쟁자) | ★★☆☆☆ | ⬇ | Google의 TPU **외부 판매** 개시 보도 🟡 — 공급자 협상력을 약화시키는 쪽은 Google |
+| **Apple** | 기본검색 배분 · 디바이스 | ★★★☆☆ | ⬛ | Siri-Gemini 출시 상태 미확인 ⬛. DC Circuit 교차항소가 기본검색 지불 금지를 다시 요구 🟡 |
 
-2. **TPU vs NVIDIA GPU** — Ironwood(7세대 TPU, 추론 최적화, 42.5 EFLOPS/9,216칩 팟)로 자체 실리콘 확보. **Anthropic이 100만 Ironwood 칩·5GW 배치 약정**(Google $40B 투자, 2026.4). NVIDIA ~70% 시장에 균열. 이것이 GCP 원가우위의 근원.
+**비컨센서스 [의견]**: Citizens JMP(10/22, 목표가 $515→$450, Outperform 유지 🔴 단일출처)는 "AI 에이전트 검색 경쟁"을 이유로 들었다. 데이터로 보면 **쿼리 측 위협(OpenAI·Perplexity)은 아직 수치에 안 잡히고, 예산 측 위협(Meta)은 이미 수치에 잡힌다**. 시장이 경계하는 대상과 실제로 돈을 가져가는 대상이 다르다.
 
-3. **규제** — 검색 반독점: **구조분할 회피**(Chrome 매각 면제, "선택 화면"·데이터 공유 의무만, 2026.4 안도 랠리). 그러나 **광고기술(AdX) 반독점은 별건 — 2026 상반기 구조분할 명령 가능성**(Brinkema 판사). AT&T 이후 최대 강제분할 리스크 잔존.
-
-4. **에이전트/AI 커머스** — 검색이 "정보 조회"에서 "에이전트가 대신 구매"로. Google·Amazon·OpenAI 모두 에이전트 커머스 진입. Google의 결제·상품 데이터가 무기.
-
-5. **자본지출 군비경쟁** — Alphabet 2026 capex 가이던스 **$195~205B**(Q2에만 $44.9B, 2배 증가). CNBC 기준 주가는 이 capex 급증에 하락 반응. **AI 인프라 승자독식 베팅 vs 자본효율 훼손**의 긴장.
-
-**★ 산업 트렌드 대응: ★★★★☆ (4/5)** — TPU 수직통합·AI Overviews·규제 방어에서 선제 대응. 단 AdX 분할·capex 폭증이 하방.
+**★ 경쟁사 위협 종합(방어력 기준): ★★★★☆** — 4개 전선 전체를 위협하는 단일 경쟁자 없음(07-28 판 유지).
 
 ---
 
-## 5. 밸류체인 분석 — 수직통합 해자
+## 4. 세부 시장별 구도
+
+| 시장 | Alphabet 위치 | 3개월 변화 | ★(포지션) | 핵심 리스크 |
+|---|---|---|:-:|---|
+| **검색** | 쿼리 지배(StatCounter 85%대 🔴) | 점유 안정, OpenAI 광고 매체화 | ★★★★☆ (⬇ from 5) | 상업 쿼리의 에이전트 이전 · Chrome 매각 항소 |
+| **YouTube/동영상** | 美 TV 시청 1위(Nielsen, 07-28 판) | 신규 데이터 없음 | ★★★★☆ | eMarketer가 언급한 YouTube 대상 판결(내용 ⬛) |
+| **Cloud** | 3위·점유 15% 사상 최고 🟢 | +2%p YoY | ★★★★★ | 외부 임차 마진 압박 · 고객 집중 ⬛ |
+| **AI 모델(Gemini)** | 리퍼럴 점유 21.5% 🟡 | 상승 지속 | ★★★★☆ | 증권소송(주장 단계) · 모델 세대 교체 경쟁 |
+| **TPU/반도체** | 자체 설계(Broadcom 제조) | **외부 판매 개시**(TPU 8t/8i) 🟡 · Anthropic 3.5GW(2027~, Broadcom 공시) 🟡 · Meta 계약(확정/잠정 보도 상충) 🔴 | ★★★★★ | 고객 집중 · Anthropic은 Trainium·NVIDIA 병행 |
+| **Android/디바이스** | 모바일 OS 지배 | EU DMA €890M 중 Play €430M 🟡 | ★★★★☆ | 앱 유통 규제 |
+| **Waymo** | 美 로보택시 선두, 주 50만+ 🟡 · 10개 도시 | Apollo Go와 규모 비슷(~50만/주) 🟡 | ★★★★☆ | 2026-05 SW 리콜 🟡 · 연말 100만 목표 미달 가능 |
+
+---
+
+## 5. 산업 트렌드
+
+### 5-1. AI 답변·에이전트 검색 → 쿼리 수 · 광고 단가
+
+| 경로 | 쿼리 수 영향 | 단가 영향 | 현재 증거 |
+|---|---|---|---|
+| AI Overviews(자기잠식) | 중립~증가 | 불확실 | Q2 검색 +17% 🟡 — 단 쿼리/단가 분해 미공시 ⬛ |
+| 외부 챗봇(ChatGPT) | 정보성 쿼리 일부 이탈 | 상업 쿼리는 아직 Google | AI 리퍼럴 <1% 🟡 |
+| 에이전트 커머스(대리 구매) | **상업 쿼리 자체가 사라질 수 있음** | 광고 → 수수료 모델로 전환 압력 | 수치 증거 ⬛ |
+
+**핵심 [의견]**: Google은 쿼리 수와 단가를 분리 공시하지 않는다(유료 클릭·CPC 성장률 공시 중단 여부 확인 필요 ⬛). 따라서 **"검색 +17%"가 쿼리 증가인지 단가 인상(가격결정력 소진)인지 외부에서 구분할 수 없다**. 후자라면 해자의 수확기(harvesting)이고, 멍거식으로는 경고 신호다. 이 공백은 Q3 콜에서 확인할 1순위 질문이다.
+
+### 5-2. 규제 — 리스크가 광고에서 검색으로 이동
+
+| 사건 | 상태 | 영향 | 신뢰도 |
+|---|---|---|---|
+| AdX 구조분할 | **9/2 기각**, 행태적 시정만 | 레드라인 #4 영구 미발동(지방법원) | 🟡[논제 §A6] |
+| 검색 사건 DC Circuit | Google 1월 항소 · DOJ·주정부 **2/3 교차항소(Chrome 매각·기본검색 지불 금지 재요구)** · 판결까지 ~1년 | **현재 최대 구조 리스크** | 🟡[다수 2차] |
+| EU DMA | **€890M 벌금**(검색 €460M + Play €430M), 60일 내 시정 미이행 시 매출 최대 5% 추가 | 금액은 비중요(연 매출 $403B의 ~0.25%), 시정 명령이 실질 | 🟡[2차 다수] |
+| EU 검색데이터 공유 | 2027-01 시행 전 | 가정 #7 | 🟡 |
+
+### 5-3. 신규 진입자
+- **OpenAI 광고**(위 2-1). **Anthropic**은 경쟁자이자 TPU 최대 고객 — 경쟁자의 성장이 Google Cloud 매출이 되는 구조 [사실 구조 · 규모 🟡].
+
+**★ 산업 트렌드 대응: ★★★★☆** — 규제 리스크 축소(AdX)와 신규 광고 경쟁자 등장이 상쇄.
+
+---
+
+## 6. 밸류체인 — 가치는 어디에 쌓이는가
 
 ```
-[반도체]        [인프라]        [모델]         [애플리케이션]    [수익화]
- TPU(Ironwood) → Google Cloud →  Gemini      →  검색/YouTube/  →  광고/구독/
- 자체설계        데이터센터       (자체 프론티어)   Workspace/안드로이드   클라우드 매출
- 원가우위        백로그 $514B     성능 동급 도달    10억+ 유통망      3중 수익모델
+[전력·DC]          [반도체]                 [클라우드]           [모델]            [앱·유통]
+CEG 3,590MW 🟡  →  NVIDIA(>80% 🔴)      →  AWS 28/Azure 20/  →  OpenAI·Gemini·  →  검색·YouTube·
+외부 임차 용량       vs TPU(외부판매 개시)     GCP 15% 🟢           Anthropic·Meta       Android·Chrome
+병목·조달 의존       Broadcom 제조            +43% 시장            가격 하락 경쟁       광고·구독 수익
 ```
 
-**멍거식 관찰**: Alphabet은 AI 밸류체인의 **5개 층 전부를 소유**한 **유일 기업**이다. NVIDIA는 칩만, OpenAI는 모델만, Meta는 앱만 가진다. Alphabet은:
-- **칩**(TPU) — MS/Meta/OpenAI가 NVIDIA에 지불하는 마진을 내부화
-- **인프라**(GCP) — 자체 칩으로 원가우위 → 35.6% 마진
-- **모델**(Gemini) — 외부 라이선스 불필요
-- **유통**(Android·Chrome·검색·YouTube) — 10억+ 사용자 파이프
-
-**이 수직통합이 lollapalooza의 물리적 기반**. 각 층이 다음 층의 원가를 낮추고 수요를 만든다. 경쟁사는 최소 한 층을 외부에 의존한다.
-
-**반대 근거**: 수직통합은 **자본집약적**(capex $200B)이고, 한 층이 규제(AdX 분할)로 뜯기면 연쇄 충격. 또한 "모든 것을 직접"은 각 층에서 전문 최강자(NVIDIA 칩, AWS 인프라)에 국지적으로 밀릴 위험.
-
-**★ 밸류체인 통합: ★★★★★ (5/5)** — 5개 층 완전 소유는 산업 유일. 이 차원은 만점.
-
----
-
-## 6. 멍거식 종합 판단 — Lollapalooza인가 침식인가?
-
-> "The big money is not in the buying and selling, but in the waiting." — Charlie Munger
-
-### 겹치는 힘들(Lollapalooza 후보)
-1. **TPU 원가우위** → GCP 마진 폭발(20.7%→35.6%)
-2. **AI 수요** → 클라우드 백로그 $514B, +82% 성장
-3. **유통 파이프**(Android/Chrome/검색) → Gemini 6.5억 MAU 급등
-4. **데이터 플라이휠** → 검색·YouTube·Cloud 상호 강화
-5. **3중 수익모델**(광고+구독+클라우드) → 단일 경쟁사가 전 전선 대응 불가
-
-이 다섯 힘이 **같은 방향으로 겹쳐 작동**하기 시작한 것이 2026년의 데이터가 보여주는 바다. Q2 2026의 매출 +24%·영업이익 +30%·클라우드 이익 3배는 **여러 엔진이 동시 점화**된 lollapalooza의 초기 신호.
-
-### 침식되는 힘들
-1. **검색 광고 1위 상실**(Meta에 추월)
-2. **정보성 쿼리 15~20% AI 이탈**
-3. **AdX 반독점 구조분할** 리스크(2026 상반기)
-4. **Safari 기본검색료** 재협상 리스크
-5. **capex $200B**의 자본효율 훼손
-
-### 멍거의 판정
-
-**"단일 해자(검색 독점)는 완만히 침식 중이나, 복합 해자(TPU→클라우드→모델→유통)는 빠르게 강화 중이다. 2026년 현재, 강화 속도가 침식 속도를 앞선다."**
-
-핵심은 **속도 비교**다. 검색 침식은 "느리고 방어 가능"(쿼리량 80% 유지, 광고 +17%)한 반면, 클라우드·AI 강화는 "빠르고 복리적"(+82%, 마진 3배). **비대칭적으로 유리한 재편**이 진행 중.
-
-가장 큰 리스크는 경쟁이 아니라 **규제(AdX 강제분할)** — 이는 시장 논리 밖의 외생 충격이라 멍거식 "경쟁파괴 내성"으로도 방어 불가. 이것이 별 하나를 깎는 유일한 구조적 이유.
-
-**비컨센서스 결론**: 2024~2025년 시장의 "AI가 구글을 죽인다" 서사는 **틀렸다**. 데이터는 Alphabet이 AI를 방어가 아니라 **공격 무기**로 전환하며, 밸류체인 유일 완전통합자로서 lollapalooza 국면에 진입했음을 보여준다. 단, 이 우위의 실현은 **규제 리스크 통과**를 전제로 한다.
-
----
-
-## 종합 결론 (산업·경쟁 차원)
-
-| 평가 차원 | ★ 평점 | 핵심 근거 |
+| 층 | 현재 가치 축적 | 근거 |
 |---|---|---|
-| 1. 산업 규모·성장 | ★★★★☆ | 4개 거대시장 동시 노출, 성장 무게중심 광고→AI/클라우드 이동 |
-| 2. 경쟁 구도(세그먼트) | ★★★★☆ | 클라우드·동영상·AI어시스턴트 점유 상승, 광고·검색 방어전 |
-| 3. 경쟁사 위협 | ★★★★☆ | 다면 위협 실재하나 4개 전선 전체 위협 경쟁사 부재 |
-| 4. 산업 트렌드 대응 | ★★★★☆ | TPU 통합·AI Overviews 선제 대응, AdX·capex 하방 |
-| 5. 밸류체인 통합 | ★★★★★ | 5개 층 완전 소유 — 산업 유일 |
+| 전력·DC | **병목 → 높음** | AI-Infra 보고서: 전력장비가 최적 섹터. Google이 CEG와 장기 PPA 🟡 |
+| 반도체 | **최고 (NVIDIA)** | 가속기 출하 >80% 🔴. TPU 외부판매는 이 층의 마진을 일부 Google로 이전하려는 시도 |
+| 클라우드 | 높음·상승 | GCP 마진 35.6%. 단 조달 비용 상승 |
+| 모델 | **낮음·하락** | 경쟁 6~7개 진영, 가격 하락. 독자 모델 업체는 FCF 음수 |
+| 앱·유통 | 높음(기존 해자) | 검색·YouTube 현금흐름이 전 층의 자금원 |
 
-### 종합 산업·경쟁 ★ 평점: **★★★★☆ (4.2 / 5)**
+**멍거식 판단 [의견]**: 가치가 쌓이는 곳은 **양 끝(전력·반도체 / 유통)** 이고 가운데(모델)는 상품화 중이다. Alphabet은 **양 끝 모두에 발을 걸친 유일한 기업**이다 — 칩(TPU)과 유통(검색·Android). 3개월 사이 가장 중요한 변화는 TPU가 **원가 절감 도구 → 외부 판매 상품**으로 바뀐 것이다 🟡. 성공하면 NVIDIA가 가져가던 층의 가치 일부를 직접 확보한다.
 
-**한 줄 요약**: *"검색 해자는 완만히 침식되나, TPU→클라우드→모델→유통의 복합 해자가 빠르게 강화되며 lollapalooza 국면 진입 — 유일한 별점 제약은 경쟁이 아닌 AdX 반독점 규제다."*
+**반대 근거**: 외부 판매 보도는 2차 출처뿐이고, Meta 계약은 "확정"과 "잠정"이 상충한다 🔴. Anthropic 계약(3.5GW, 2027~)은 Broadcom 공시 🟡로 확인되나 Anthropic은 AWS Trainium·NVIDIA를 병행한다 — **TPU가 표준이 아니라 "제2 공급원"** 일 가능성 [추정]. 또 TPU를 외부에 팔면 Google Cloud가 독점하던 원가우위를 경쟁 클라우드·고객에게 나눠 준다.
+
+**★ 밸류체인: ★★★★★** — 양 끝 동시 보유 + TPU 상품화.
+
+---
+
+## 7. 멍거식 인버전 — "Alphabet이 2036년에 실패했다면 왜인가?"
+
+| # | 실패 경로 | 현재 증거 (지지) | 현재 증거 (반박) | 진행도 |
+|:-:|---|---|---|:-:|
+| 1 | **자본 소각**: AI capex의 ROIC < 자본비용. "복리 기계 → 인프라 건설사" 전환 후 회수 실패 | H1'26 조달 $105.8B · 자사주 $0 · Q2 FCF −$5.9B 🟡 · 2026 capex $195~205B 🟡 · FY27 "대폭 증가" 🔴 | Cloud 백로그 $514B · 마진 35.6% · 버크셔 $10B 인수(§A0) | 🟠 **가장 진행됨** |
+| 2 | **상업 쿼리의 에이전트 이전**: 사람이 검색하지 않고 에이전트가 구매 → 광고 경매가 수수료로 대체 | OpenAI 광고·CPC 입찰 🟡 · Citizens JMP 하향 🔴 | AI 리퍼럴 <1% · 검색 +17% · StatCounter 85%대 | 🟡 초기 |
+| 3 | **광고 예산의 Meta 이동**: AI 예측 타게팅이 의도 기반 검색을 대체 | Meta 단가 +14%, 성장 2배, 광고 1위 역전 예측 🟡 | Google 절대 이익 규모·검색 +17% | 🟡 진행 중 |
+| 4 | **규제 해체**: Chrome 매각·기본검색 지불 금지 | DOJ 교차항소 계류 🟡 · EU DMA €890M + 시정 명령 🟡 | AdX 분할 기각(9/2) · 지방법원은 Chrome 매각 거부 | 🟡 ~1년 내 결론 |
+| 5 | **인센티브 실패**: 창업자 의결권 지배 하에서 "모든 층을 다 하겠다"는 제국 건설이 자본규율을 이김 | 자사주 중단 + ATM $40B 승인 🟢(논제 §A0, SEC 원문) | 버크셔가 동일 자금조달에 동참 | 🟡 감시 |
+| 6 | 상품화: Gemini가 모델 경쟁에서 낙오, TPU는 NVIDIA에 밀림 | 증권소송 주장 🟡 | Gemini 리퍼럴 점유 급등 · TPU 외부 수요 | ⚪ 약함 |
+
+**인버전 결론 [의견]**: 07-28 판은 "가장 큰 리스크는 규제"라 했다. **이번 판은 순위를 바꾼다 — 1위는 경로 #1(자본 소각)이다.** 경쟁 경로(#2·#3)는 "아직 숫자에 덜 잡혔다", 규제 경로(#4)는 "가장 큰 다리가 잘렸다". 반면 자본 경로는 **이미 숫자(FCF 음수·증자·자사주 0)로 진행 중**이고 반증은 아직 미래 현금흐름(백로그)뿐이다.
+
+> "Show me the incentive and I will show you the outcome." — 하이퍼스케일러 4사가 모두 "덜 지으면 진다"는 인센티브 아래 있다. 개별적으로 합리적인 결정의 합이 산업 전체의 과잉설비가 되는 것은 멍거가 말한 전형적 집단 오판 구조다. [의견]
+
+**반대 근거**: 1990년대 광섬유 빌드아웃의 교훈(AI-Infra 보고서)은 "공급자는 망했지만 **인프라를 싸게 쓴 사용자(Google)** 는 승자"였다. 이번에 Google은 공급자이자 사용자다 — 과잉설비가 오면 Google 자신의 검색·YouTube·Gemini가 그 설비를 흡수할 수 있는 **유일한 최종 수요처**를 가졌다는 점에서 순수 공급자(CRWV·ORCL)보다 훨씬 안전하다. [추정]
+
+---
+
+## 8. Q3'26 실적(오늘 장 후)이 이 판단을 바꿀 수 있는 지점
+
+1. **Search & other 성장률** — Meta +26% 대비 격차. 쿼리/단가 분해 언급 여부
+2. **Cloud 영업이익률** — 외부 임차 압박 크기(35.6% 기준)
+3. **2027 capex 공식 언급** — 인버전 경로 #1
+4. **TPU 외부 판매·Meta 계약** 회사 측 확인 여부 (현재 🔴/🟡)
+5. 경쟁사: MSFT Azure(오늘 · 가이던스 +45%), AMZN AWS·광고(10/29) — 둘 다 ⬛
+
+---
+
+## 종합 결론
+
+| 차원 | ★ | 07-28 대비 | 핵심 근거 |
+|---|:-:|:-:|---|
+| 1. 산업 규모·성장 | ★★★★☆ | ➖ | 클라우드 TAM 상향(+43% 🟢) · 광고 성숙 · 조달 의존 |
+| 2. 경쟁 구도 | ★★★★☆ | ➖ | GCP 점유 15% 사상 최고 🟢 vs Meta 성장 2배 🟡 |
+| 3. 경쟁사 위협(방어력) | ★★★★☆ | ➖ | 전 전선 위협자 없음. 실제 예산 이동은 Meta |
+| 4. 세부 시장(검색 해자) | ★★★★☆ | ⬇ (검색 ★5→★4) | OpenAI 광고 매체화 · Chrome 항소 |
+| 5. 산업 트렌드 대응 | ★★★★☆ | ➖ | AdX 리스크 소멸 ↔ 검색 규제·에이전트 경쟁 |
+| 6. 밸류체인 | ★★★★★ | ➖ (내용 강화) | 양 끝 보유 + TPU 외부판매 🟡 |
+
+### 종합 산업·경쟁 ★: **★★★★☆**
+
+**한 줄 요약**: *"경쟁 해자는 여전히 넓다(GCP 점유 +2%p, 검색 쿼리 안정). 위험은 경쟁자가 아니라 해자를 넓히는 비용 — 10년 실패 시나리오 1순위는 규제에서 자본 소각으로 바뀌었다."*
+
+**충돌 지점 (다른 역할과 조율 필요)**:
+- 버핏(재무) 역할과: 인버전 경로 #1(자본 소각)은 FCF·ROIC 판단과 겹친다 — 같은 리스크를 두 번 할인하지 않도록 할인 명세에서 정성으로만 표기
+- 논제 §A6.2의 "검색 점유 78% 반등"은 설문 기준이며, StatCounter 85%대와 분모가 다르다 — 반등의 근거로 쓸 때 측정 방식 명기 필요
+- AI-Infra 보고서 4.8의 "GOOGL 해자 ★5"보다 이 보고서의 검색 해자는 한 단계 낮다(★4). 종합 해자 ★5는 Cloud·TPU 덕분이다
+
+> "It's not supposed to be easy. Anyone who finds it easy is stupid." — Charlie Munger
 
 ---
 
 ## 출처
 
-- [AI Search Market Share 2026 (Stackmatix)](https://www.stackmatix.com/blog/ai-search-market-share-2026)
-- [ChatGPT vs Google Search 2026 (QuickSEO)](https://quickseo.ai/blog/chatgpt-vs-google-search-in-2026-market-share-user-data-what-it-means-for-seo)
-- [AI Chatbot Market Share 2026 (Vertu/Similarweb)](https://vertu.com/lifestyle/ai-chatbot-market-share-2026-chatgpt-drops-to-68-as-google-gemini-surges-to-18-2)
-- [ChatGPT vs Gemini Statistics 2026 (SQ Magazine)](https://sqmagazine.co.uk/chatgpt-vs-google-gemini-statistics/)
-- [Cloud Market Share 2026 (Holori / Synergy Research)](https://holori.com/cloud-market-share-2026-top-cloud-vendors-in-2026/)
-- [AWS vs Azure vs GCP Market Share 2026 (CommandLinux)](https://commandlinux.com/statistics/aws-vs-azure-vs-gcp-market-share/)
-- [Google Cloud Q2 2026 Margin Inflection (FourWeekMBA)](https://fourweekmba.com/ai-google-cloud-q2-2026-operating-income-margin-inflection/)
-- [Alphabet Q2 2026 Earnings (Yahoo Finance)](https://finance.yahoo.com/markets/stocks/articles/alphabet-q2-2026-earnings-revenue-203058727.html)
-- [Alphabet Q2 2026 (9to5Google)](https://9to5google.com/2026/07/22/alphabet-q2-2026-earnings/)
-- [Search Ads +17% AI Overviews (DigitalApplied)](https://www.digitalapplied.com/blog/alphabet-q2-2026-earnings-search-ads-ai-overviews)
-- [Meta to surpass Google in ad revenue (eMarketer via Yahoo)](https://finance.yahoo.com/markets/stocks/articles/meta-expected-surpass-google-top-132723217.html)
-- [Amazon retail media dominance (eMarketer)](https://www.emarketer.com/content/faq-on-amazon-advertising--retail-media-dominance--prime-video-scale--agentic-ad-tools)
-- [YouTube CTV growth 2026 (eMarketer)](https://www.emarketer.com/content/youtube-ctv-growth-pricing-edge-boost-2026-streaming-outlook)
-- [Most-watched streaming Q1 2026 (AdWave)](https://adwave.com/resources/most-watched-streaming-service-q1-2026)
-- [Nvidia vs Google TPU / Anthropic deal 2026 (Pasquale Pillitteri)](https://pasqualepillitteri.it/en/news/1441/nvidia-vs-google-tpu-anthropic-ai-chip-2026)
-- [Anthropic expanding Google Cloud TPUs](https://www.anthropic.com/news/expanding-our-use-of-google-cloud-tpus-and-services)
-- [Alphabet dodges structural breakup / Choice Screen (FinancialContent)](https://markets.financialcontent.com/stocks/article/marketminute-2026-4-8-alphabet-dodges-structural-breakup-doj-choice-screen-mandate-triggers-relief-rally-for-google-parent)
-- [DOJ/Google ad tech remedy (AdExchanger)](https://www.adexchanger.com/antitrust/the-doj-and-google-sharpen-their-remedy-proposals-as-the-two-sides-prepare-for-closing-arguments/)
-- [Generative AI Market Size (Precedence Research)](https://www.precedenceresearch.com/generative-ai-market)
+- [Synergy Research — Q2 Cloud Market Passes $143 Billion (2026-07-30)](https://www.srgresearch.com/articles/q2-cloud-market-passes-143-billion-highest-growth-rate-in-eight-years) 🟢
+- [shattered.io — AWS 28%, Google Cloud record 15%](https://shattered.io/aws-falls-28-percent-google-cloud-record-15-2026/) 🟡
+- [MediaPost — Meta Set To Surpass Google In 2026 Ad Revenue](https://www.mediapost.com/publications/article/414285/meta-set-to-surpass-google-in-2026-ad-revenue.html) 🟡
+- [TheNextWeb — Meta to overtake Google (eMarketer)](https://thenextweb.com/news/meta-surpass-google-digital-ad-revenue-emarketer-2026) 🟡
+- [Hargreaves Lansdown — Meta Q3 results](https://www.hl.co.uk/shares/share-research/meta-q3-results-strong-quarter-spending-still-a-question) 🟡
+- [Benzinga — Meta Q3](https://benzinga.com/z/48513171) 🟡
+- [Manifold — Google US search market share (StatCounter 인용)](https://manifold.markets/Terminator2/what-will-googles-us-search-market) 🔴
+- [MediaPost — Google holding on to market share in search](https://www.mediapost.com/publications/article/410094/google-holding-on-to-market-share-in-search.html) 🟡
+- [DEV — AI search market share 2026](https://dev.to/searchless_ai/ai-search-market-share-2026-chatgpt-drops-below-65-as-gemini-and-claude-surge-31bf) 🟡
+- [coincentral — Citizens JMP cut to $450](https://coincentral.com/?p=215520) 🔴
+- [INMA — OpenAI accelerating ad business](https://www.inma.org/blogs/advertising-initiative/post.cfm/openai-is-accelerating-its-ad-business-plans) 🟡
+- [Gigazine — OpenAI ad revenue](https://gigazine.net/gsc_news/en/20260410-openai-ad-revenue) 🟡
+- [ppc.land — ChatGPT targets Google's $224bn search ad business](https://ppc.land/chatgpt-targets-googles-224bn-search-ad-business-with-102bn-bet/) 🔴
+- [Data Center Knowledge — Anthropic multi-GW TPU deal](https://www.datacenterknowledge.com/data-center-chips/anthropic-secures-multi-gigawatt-tpu-deal-with-google-broadcom) 🟡
+- [ITPro — Anthropic/Google/Broadcom](https://www.itpro.com/infrastructure/anthropic-pens-multi-gigawatt-tpu-deal-with-google-broadcom-as-claude-demand-picks-up) 🟡
+- [rallies.ai — Google to sell TPUs (Anthropic, Meta)](https://rallies.ai/news/google-will-sell-tpu-chips-to-select-customers-under-multi-gigawatt-anthropic-meta-pacts) 🔴
+- [Finviz — DOJ challenges refusal to force Chrome sale](https://finviz.com/news/299016/doj-reignites-antitrust-fight-against-google-challenges-courts-refusal-to-force-chrome-sale) 🟡
+- [fintool — DOJ Google appeal Chrome Apple](https://fintool.com/news/doj-google-antitrust-appeal-chrome-apple) 🟡
+- [Crowdfund Insider — EU DMA €890M](https://www.crowdfundinsider.com/2026/07/293311-eu-fines-google-under-digital-markets-act-cma-his-tech-firm-with-e890-million-penalty/) 🟡
+- [Claims Journal — Waymo path to 1M weekly trips](https://amp.claimsjournal.com/news/national/2026/02/12/335668.htm) 🟡
+- [noqta — Waymo 500k weekly rides](https://noqta.tn/en/news/waymo-500k-weekly-rides-robotaxi-10-cities-2026) 🟡
+- [stocktwits — Azure analyst preview](https://stocktwits.com/news-articles/markets/equity/microsoft-s-azure-business-draws-praise-from-analysts-retail-eyes-exponential-growth/cZN5bcuRJcj) 🟡
+- 내부: `reports/GOOGL/_data.md`(SEC XBRL 🟢) · `reports/GOOGL/GOOGL-thesis.md` §A0·§A6·§A8 · `reports/AI-Infrastructure-industry-20261027.md` · 07-28 판 본 파일
+
+## AI 리서치 한계
+- Q3'26 실적(Alphabet·MSFT·AMZN) 미반영. 검색 점유·TPU 계약 다수가 2차 출처. 상업 쿼리 이탈률·GCP 인프라 단독 성장률·백로그 고객 집중도는 공개 데이터 부재(⬛).
+
+<!-- discount-ledger
+role: 산업·경쟁(멍거)
+items:
+  - name: 검색 해자 ★5→★4 (OpenAI 광고 매체화 · Chrome 매각 교차항소)
+    pct: ⬛
+    reason: OpenAI Ads Manager·CPC 입찰 출시 [사실 🟡] · DOJ 교차항소 계류 [사실 🟡] · 상업 쿼리 이탈 규모 미확인 [추정]
+    overlapsWith: 리루(리스크) 규제 할인 · 단융핑(사업모델) 검색 지속성 판단
+  - name: Cloud 마진 경쟁·임차 압박 감시 (정량 할인 없음)
+    pct: ⬛
+    reason: CFO 외부 임차 마진 압박 예고 [사실 🟡] — Q3 실측 전이라 수치 미반영
+    overlapsWith: 버핏(재무) Cloud 마진 가정
+total: 0
+-->
+
+<!-- confidence-summary
+high: 3
+medium: 34
+low: 9
+gap: 14
+verdict: 보통
+-->

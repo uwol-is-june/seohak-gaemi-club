@@ -1,6 +1,6 @@
 # Alphabet Inc. (GOOGL) 열등주 제거 스크리닝
 
-**스크리닝 날짜**: 2026-10-28 · **방식**: 퍼널 1.5단계 기계 판정 (`tools/quality_screen_batch.py`) — 주가를 읽지 않는다
+**스크리닝 날짜**: 2026-10-27 · **방식**: 퍼널 1.5단계 기계 판정 (`tools/quality_screen_batch.py`) — 주가를 읽지 않는다
 **대상**: Alphabet Inc. · CIK 0001652044 · 보고통화 USD · 데이터 11개 회계연도
 
 ## 7지표 판정
@@ -35,7 +35,7 @@
 
 ## 데이터 출처
 
-- SEC EDGAR XBRL companyfacts — `data.sec.gov/api/xbrl/companyfacts/CIK0001652044.json` (10-K/20-F 연간값, 2026-10-28 추출)
+- SEC EDGAR XBRL companyfacts — `data.sec.gov/api/xbrl/companyfacts/CIK0001652044.json` (10-K/20-F 연간값, 2026-10-27 추출)
 - 계산: `tools/quality_screen_batch.py` (fetch_financials 태그 정의 재사용)
 
 ## 데이터 신뢰도
