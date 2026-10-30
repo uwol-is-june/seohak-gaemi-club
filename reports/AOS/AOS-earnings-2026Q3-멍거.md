@@ -198,9 +198,9 @@
 - [Quartr — Rinnai Q2 2026 요약](https://quartr.com/events/rinnai-corporation-5947-q2-2026_FLnEHpUx)
 
 <!-- confidence-summary
-high: X
-medium: X
-low: X
-gap: X
-verdict: X
+high: 41
+medium: 44
+low: 4
+gap: 23
+verdict: 보통
 -->
