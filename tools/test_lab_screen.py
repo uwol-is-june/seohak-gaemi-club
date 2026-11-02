@@ -273,6 +273,18 @@ def test_parse_universe_table():
     assert rows[1]["name"] == "Berkshire & Co" and rows[1]["cik"] == "0001067983"
 
 
+def test_parse_chart_keeps_dst_month_starts_after_switch_to_est():
+    # 2026-11-02 실측: 응답 gmtoffset 이 EST(-5h)인데 2025-11-01 봉은 00:00 EDT(04:00 UTC)라
+    # 고정 오프셋을 쓰면 10-31 로 밀려 2025-11 이 사라지고 12-1M 이 전 종목 None 이 됐다.
+    data = {"chart": {"result": [{
+        "meta": {"gmtoffset": -18000, "exchangeTimezoneName": "America/New_York",
+                 "regularMarketPrice": 10.0},
+        "timestamp": [1759291200, 1761969600, 1764565200],  # 2025-10-01·11-01 EDT, 12-01 EST
+        "indicators": {"quote": [{"close": [1.0, 2.0, 3.0]}]},
+    }]}}
+    assert L.parse_chart(data)["months"] == {"2025-10": 1.0, "2025-11": 2.0, "2025-12": 3.0}
+
+
 if __name__ == "__main__":
     import run_tests
     raise SystemExit(run_tests.run_module(sys.modules[__name__]))

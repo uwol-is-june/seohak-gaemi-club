@@ -30,6 +30,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timedelta, timezone
 from html import unescape
 from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import fetch_financials as ff  # noqa: E402
@@ -235,19 +236,25 @@ def parse_chart(data: dict) -> dict:
     """Yahoo chart 응답 → {months: {"YYYY-MM": close}, splits: [{date, ratio}], price, priceTime}."""
     res = data["chart"]["result"][0]
     meta = res.get("meta", {})
-    offset = int(meta.get("gmtoffset") or 0)
+    # gmtoffset 은 "지금"의 오프셋이라 과거 봉에 쓰면 서머타임 경계에서 월초 봉(00:00 EDT)이
+    # 전달 말일로 밀려 그 달 키가 사라진다(2026-11-02 EST 전환 직후 전 종목 12-1M 산출 실패).
+    # 거래소 시간대로 시점마다 오프셋을 구하고, 없을 때만 고정 오프셋으로 폴백한다.
+    try:
+        tz = ZoneInfo(meta["exchangeTimezoneName"])
+    except (KeyError, TypeError, ValueError, ZoneInfoNotFoundError):
+        tz = timezone(timedelta(seconds=int(meta.get("gmtoffset") or 0)))
     closes = (res.get("indicators", {}).get("quote") or [{}])[0].get("close") or []
     months: dict[str, float] = {}
     for ts, c in zip(res.get("timestamp") or [], closes):
         if c is None:
             continue
-        d = datetime.fromtimestamp(ts + offset, tz=timezone.utc)
+        d = datetime.fromtimestamp(ts, tz=tz)
         months[f"{d.year:04d}-{d.month:02d}"] = float(c)  # 같은 달 중복 시 뒤 값(최신)
     splits = []
     for s in (res.get("events") or {}).get("splits", {}).values():
         num, den = s.get("numerator"), s.get("denominator")
         if num and den:
-            d = datetime.fromtimestamp(s["date"] + offset, tz=timezone.utc).date()
+            d = datetime.fromtimestamp(s["date"], tz=tz).date()
             splits.append({"date": d.isoformat(), "ratio": float(num) / float(den)})
     splits.sort(key=lambda s: s["date"])
     price_time = meta.get("regularMarketTime")
