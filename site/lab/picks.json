@@ -1,6 +1,22 @@
 {
- "updatedAt": "2026-10-26",
+ "updatedAt": "2026-11-02",
  "weeks": [
+  {
+   "runDate": "2026-11-02",
+   "week": "11월 1주차",
+   "kind": "pick",
+   "repeat": false,
+   "pickedOn": "2026-11-02",
+   "ticker": "ACN",
+   "name": "Accenture",
+   "sector": "Information Technology",
+   "price": 258.24,
+   "target": 356.77,
+   "stop": 219.5,
+   "targetPct": 38.2,
+   "stopPct": -15.0,
+   "horizonMonths": 12
+  },
   {
    "runDate": "2026-10-26",
    "week": "10월 5주차",
