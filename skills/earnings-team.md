@@ -556,8 +556,8 @@ python3 tools/record_call.py \
   3년 목표가를 그대로 넣지 않는다. `--ext-fair-value` 는 `python3 tools/external_value.py {티커} --iv {IV}` 산출값이며,
   빠지면 게이트 5가 경고하고 대시보드에 외부 비교가 안 뜬다([quality-tier.md](skills/quality-tier.md) 2.1·2.2단계).
 
-- **call 종류는 실제 보유 여부로 정한다** — `reports/track-record.md` '매매 로그'에 매수 행이 있으면
-  보유(`keep`·`buy`·`avoid`), 없으면 미보유(`hold`·`avoid`). 콜만 보고 보유를 추측하지 않는다.
+- **call 종류는 실제 보유 여부로 정한다** — 먼저 `python3 tools/sync_toss_trades.py` 로 토스 체결을 동기화하고,
+  `data/trades.jsonl` 기준 보유면 `keep`·`buy`·`avoid`, 미보유면 `hold`·`avoid`. 콜만 보고 보유를 추측하지 않는다.
 - 🔴 **래더·밴드·티어는 지어내지 않는다.** 이 스킬은 내재가치를 재산출하지 않으므로
   `reports/{티커}/{티커}-thesis.md`(A4.5 진입 래더 · A4.6 증액 래더)의 **현재 값을 그대로** 옮긴다.
   - 실적 판정이 **논제 유지**면 → 논제 파일 래더·티어·체결확률을 그대로 넘긴다.

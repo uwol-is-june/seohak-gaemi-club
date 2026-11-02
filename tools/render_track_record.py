@@ -9,12 +9,14 @@
 
 소스:
     - 판단(판정·래더·티어·건강도·추격금지) ← data/calls.jsonl
-    - 보유(최초 매수일·평균 단가·수량)      ← track-record.md '매매 로그' 표
-      (사용자가 알린 체결만 적는 곳 — 콜로 보유를 추측하지 않는다)
+    - 보유(최초 매수일·평균 단가·수량)      ← data/trades.jsonl (토스 체결 · tools/sync_toss_trades.py)
+      파일이 없을 때만 track-record.md '매매 로그' 표로 폴백한다(TASK-196).
+      어느 쪽이든 실제 체결이 출처다 — 콜로 보유를 추측하지 않는다.
 
 표는 마커 사이만 교체한다. 마커 밖(서술·감사 기록)은 건드리지 않는다:
     <!-- auto:positions:begin --> ... <!-- auto:positions:end -->
     <!-- auto:watchlist:begin --> ... <!-- auto:watchlist:end -->
+    <!-- auto:fills:begin --> ... <!-- auto:fills:end -->   (선택 — 토스 체결 내역 표)
 
 종목별 '현재 판단'은 대시보드 groupTheses(dashboard/lib/thesis-groups.ts)와 같은 규칙이다:
 스킬별 최신 1건 → 종목 최신 판단에서 SUPERSEDE_DAYS 안쪽만 살아있는 논제(TASK-170).
@@ -34,6 +36,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from score_calls import add_months, dedupe_calls, load_calls  # noqa: E402
+from sync_toss_trades import load_trades, positions as trade_positions  # noqa: E402
 
 for _stream in (sys.stdout, sys.stderr):
     try:
@@ -50,7 +53,7 @@ SUPERSEDE_DAYS = 7
 CALL_LABEL = {"buy": "매수", "keep": "보유 유지", "hold": "관망", "avoid": "회피"}
 LOW_FILL_LABEL = {"starter": "스타터", "catalyst-wait": "촉매 대기", "widen-horizon": "호라이즌 연장"}
 
-AUTO_NOTE = "<sub>🤖 자동 생성 — `data/calls.jsonl` · 매매 로그 기준. 이 표를 직접 고치지 말 것(다음 기록 때 덮어쓴다)</sub>"
+AUTO_NOTE = "<sub>🤖 자동 생성 — `data/calls.jsonl` · `data/trades.jsonl`(토스 체결) 기준. 이 표를 직접 고치지 말 것(다음 기록 때 덮어쓴다)</sub>"
 
 
 # ── 매매 로그 → 보유 ─────────────────────────────────────────────────────
@@ -192,6 +195,13 @@ def _verdict(g: dict) -> str:
     return s
 
 
+def _held_mismatch(g: dict) -> str:
+    """보유 중인데 최신 판단이 관망(hold)이면 표시 — 보유 종목의 콜은 keep·buy·avoid 여야 한다."""
+    if g["active"][0]["call"] == "hold":
+        return "<br>⚠️ 보유 중 — `keep` 콜 필요"
+    return ""
+
+
 def _no_chase(c: dict) -> str:
     v = (c.get("target") or {}).get("noChaseAbove")
     return f">${v:,.2f}" if isinstance(v, (int, float)) else "—"
@@ -231,7 +241,7 @@ def render_positions(groups: dict[str, dict], positions: dict[str, dict]) -> str
             continue
         lead = g["active"][0]
         rows.append(
-            f"| **{t}** | {p['first']} | {_money(avg)} · {qty} | {_verdict(g)} | {_tier(lead, False)} | "
+            f"| **{t}** | {p['first']} | {_money(avg)} · {qty} | {_verdict(g)}{_held_mismatch(g)} | {_tier(lead, False)} | "
             f"{_ladder(lead)} | {_no_chase(lead)} | {_health(g)} | {_reason(lead)} | {_link(lead)} |"
         )
     if len(rows) == 4:
@@ -296,6 +306,21 @@ def render_watchlist(groups: dict[str, dict], positions: dict[str, dict]) -> str
     return "\n".join(rows)
 
 
+def render_fills(trades: list[dict]) -> str:
+    rows = [
+        "<sub>🤖 자동 생성 — 토스 체결 내역(`data/trades.jsonl`, `tools/sync_toss_trades.py`). 최신순. 날짜는 KST</sub>",
+        "",
+        "| 날짜 | 티커 | 매매 | 체결가 | 수량 | 수수료 |",
+        "|------|------|:----:|------|:----:|------|",
+    ]
+    for t in sorted(trades, key=lambda t: t["filledAt"], reverse=True):
+        rows.append(f"| {t['date']} | {t['ticker']} | {'매수' if t['side'] == 'buy' else '매도'} | "
+                    f"{_money(t['price'])} | {t['qty']:g} | {_money(t.get('commission'))} |")
+    if not trades:
+        rows.append("| — | (체결 없음) | | | | |")
+    return "\n".join(rows)
+
+
 def replace_block(md: str, name: str, body: str) -> str:
     begin, end = f"<!-- auto:{name}:begin -->", f"<!-- auto:{name}:end -->"
     pat = re.compile(re.escape(begin) + r".*?" + re.escape(end), re.S)
@@ -304,11 +329,15 @@ def replace_block(md: str, name: str, body: str) -> str:
     return pat.sub(lambda _: f"{begin}\n{body}\n{end}", md, count=1)
 
 
-def render(md: str, calls: list[dict], today: date) -> str:
-    positions = parse_positions(md)
+def render(md: str, calls: list[dict], today: date, trades: list[dict] | None = None) -> str:
+    # 토스 체결이 있으면 그것이 보유의 출처다. 없으면(동기화 전·토스 미연결) 손으로 쓴 매매 로그.
+    positions = trade_positions(trades) if trades else parse_positions(md)
     groups = group_theses(calls, today)
     md = replace_block(md, "positions", render_positions(groups, positions))
-    return replace_block(md, "watchlist", render_watchlist(groups, positions))
+    md = replace_block(md, "watchlist", render_watchlist(groups, positions))
+    if trades and "<!-- auto:fills:begin -->" in md:
+        md = replace_block(md, "fills", render_fills(trades))
+    return md
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -319,7 +348,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{TRACK_RECORD} 없음 — 건너뜀")
         return 0
     old = TRACK_RECORD.read_text(encoding="utf-8")
-    new = render(old, load_calls(), date.today())
+    new = render(old, load_calls(), date.today(), load_trades())
     if new == old:
         print("track-record.md 표: 변경 없음")
         return 0

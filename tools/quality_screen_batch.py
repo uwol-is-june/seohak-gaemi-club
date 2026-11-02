@@ -28,15 +28,20 @@ C(고회전 박리다매)와 ⑦의 M&A 예외는 **사업 모델 판단**이 �
     python3 tools/quality_screen_batch.py BWXT CW CEG VST GEV --sector Nuclear-Power --write-reports
     python3 tools/quality_screen_batch.py JPM BAC WFC --financials JPM,BAC,WFC
     python3 tools/quality_screen_batch.py COST --exempt-c COST --json
+    python3 tools/quality_screen_batch.py VRT --restore "VRT=SPAC 이전 자기자본 음수로 10년 ROE 왜곡" --write-reports
+
+보고서 쓰기(`--write-reports`)는 통과·면제 통과 종목과 **이전 열등주 보고서가 있는 종목**에 쓴다 —
+탈락해도 옛 '통과'가 최신처럼 남지 않게 덮는다. 이미 다른 섹터를 선언한 종목에는 섹터 마커를 안 박는다.
 """
 from __future__ import annotations
 
 import argparse
 import importlib.util
 import json
+import re
 import sys
 import time
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 for _stream in (sys.stdout, sys.stderr):
@@ -405,6 +410,15 @@ def ticker_report(r: dict, *, sector: str | None, today: date) -> str:
         lines.append("- 적용 없음 — 미달 지표에 해당하는 면제 조건이 없거나 미달 지표가 없다.")
     for h in r["hints"]:
         lines.append(f"- 💡 {h}")
+    if r.get("restored"):
+        lines += [
+            "",
+            "## 수동 복권",
+            "",
+            f"- 기계 판정: **{r['machineVerdict']}** → 사람이 회계 구조 왜곡을 확인해 **{r['verdict']}** 로 복권",
+            f"- 사유: {r['restored']}",
+            "- 근거는 퍼널 보고서 1.5단계 '수동 복권 근거'에 문장으로 남긴다. 근거 없는 복권은 무효다.",
+        ]
     reason = (", ".join(NAMES[k] for k in r["fails"]) + " 미달") if r["fails"] else "7지표 기준 충족"
     if r["gaps"]:
         reason += f" · ⬛ {', '.join(NAMES[k] for k in r['gaps'])}는 판정에서 제외"
@@ -469,6 +483,60 @@ def _set(s: str | None) -> set[str]:
     return {x.strip().upper() for x in (s or "").split(",") if x.strip()}
 
 
+# 종목 보고서 머리말의 섹터 마커(대시보드 lib/sector-auto-map.ts 와 같은 계약 — 머리 12줄만 본다).
+_META_RE = re.compile(r"<!--\s*meta\s+sector:\s*([^>|]+?)\s*-->", re.I)
+
+
+def existing_sectors(ticker_dir: Path) -> set[str]:
+    """이 종목 폴더의 보고서들이 이미 선언한 섹터들."""
+    out = set()
+    for p in ticker_dir.glob("*.md") if ticker_dir.is_dir() else []:
+        head = "\n".join(p.read_text(encoding="utf-8", errors="ignore").split("\n", 12)[:12])
+        m = _META_RE.search(head)
+        if m:
+            out.add(m.group(1).strip())
+    return out
+
+
+def has_prior_screen(ticker_dir: Path, ticker: str, today: date) -> bool:
+    """오늘 이전 날짜의 열등주 보고서가 있는가 — 있으면 판정과 무관하게 새로 써서 옛 결과를 덮는다."""
+    if not ticker_dir.is_dir():
+        return False
+    return any(p.name != f"{ticker}-quality-screen-{today:%Y%m%d}.md"
+               for p in ticker_dir.glob(f"{ticker}-quality-screen-*.md"))
+
+
+def plan_write(r: dict, ticker_dir: Path, *, sector: str | None, write_all: bool,
+               today: date) -> tuple[bool, str | None]:
+    """(쓸지, 박을 섹터 마커).
+
+    쓰는 조건: 통과·면제 통과 · --write-all · **이전 열등주 보고서가 있는 종목**(TASK-197).
+    마지막 조건이 없으면 이번에 탈락한 종목의 옛 '통과' 보고서가 최신처럼 남는다
+    (2026-10-28 실측: POWL 7월 '통과' 가 10월 탈락 판정 위에 그대로 보였다).
+    처음 보는 탈락 종목은 여전히 폴더를 만들지 않는다(종목 목록 오염 방지).
+
+    섹터 마커: 이미 **다른** 섹터를 선언한 종목에는 박지 않는다 — 날짜가 최신인 마커가 이겨
+    섹터가 조용히 바뀐다(GOOGL: Cloud-Computing → AI-Infrastructure 로 넘어갈 뻔했다).
+    """
+    write = (write_all or r["verdict"] in ("통과", "면제 통과")
+             or has_prior_screen(ticker_dir, r["ticker"], today))
+    if not write:
+        return False, None
+    if sector and existing_sectors(ticker_dir) - {sector}:
+        return True, None
+    return True, sector
+
+
+def _restores(items: list[str] | None) -> dict[str, str]:
+    out = {}
+    for it in items or []:
+        t, _, why = it.partition("=")
+        if not why.strip():
+            raise SystemExit(f"--restore 는 '티커=사유' 형식이어야 한다(사유 필수): {it!r}")
+        out[t.strip().upper()] = why.strip()
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="열등주 제거 7지표 일괄 판정 (퍼널 1.5단계)")
     ap.add_argument("tickers", nargs="+", help="티커 목록 (공백 또는 쉼표 구분)")
@@ -476,9 +544,14 @@ def main() -> None:
     ap.add_argument("--financials", help="은행·보험 티커(쉼표) — ③이자커버리지 미적용")
     ap.add_argument("--exempt-c", help="면제 C(박리다매 모델)를 사람이 확인한 티커(쉼표)")
     ap.add_argument("--ma-exempt", help="⑦ 희석이 인수 대가임을 사람이 확인한 티커(쉼표)")
+    ap.add_argument("--restore", action="append", metavar="티커=사유",
+                    help="회계 구조 왜곡을 사람이 확인해 탈락을 복권(→ 면제 통과). 사유 필수, 반복 가능")
     ap.add_argument("--write-reports", action="store_true",
-                    help="통과·면제 통과 종목에 reports/{T}/{T}-quality-screen-{날짜}.md 작성(대시보드 칩)")
+                    help="통과·면제 통과 종목 + 이전 열등주 보고서가 있는 종목에 "
+                         "reports/{T}/{T}-quality-screen-{날짜}.md 작성(대시보드 칩)")
     ap.add_argument("--write-all", action="store_true", help="탈락·데이터 부족 종목도 보고서 작성")
+    ap.add_argument("--as-of", metavar="YYYYMMDD",
+                    help="보고서 날짜(기본 오늘). 퍼널 다음 날 일부 종목만 다시 쓸 때 퍼널 날짜에 맞춘다")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--sleep", type=float, default=0.15)
     a = ap.parse_args()
@@ -486,21 +559,30 @@ def main() -> None:
     tickers = []
     for t in a.tickers:
         tickers += [x.strip().upper() for x in t.split(",") if x.strip()]
+    restores = _restores(a.restore)
     results = screen(tickers, financials=_set(a.financials), exempt_c=_set(a.exempt_c),
                      ma_exempt=_set(a.ma_exempt), sleep=a.sleep)
+    for r in results:
+        if r["ticker"] in restores and not r.get("error") and r["verdict"] == "탈락":
+            r.update(machineVerdict=r["verdict"], verdict="면제 통과", restored=restores[r["ticker"]])
 
-    today = date.today()
-    written = []
+    # 같은 퍼널의 판정은 한 날짜로 묶여야 대시보드에서 한 묶음으로 읽힌다 — 나중에 일부만
+    # 다시 쓰면 파일 날짜가 갈렸다(2026-10-28: GOOGL·POWL·VRT 만 1028, 나머지 1027).
+    today = datetime.strptime(a.as_of, "%Y%m%d").date() if a.as_of else date.today()
+    written, kept_sector = [], []
     if a.write_reports or a.write_all:
         for r in results:
             if r.get("error"):
                 continue
-            if not a.write_all and r["verdict"] not in ("통과", "면제 통과"):
-                continue
             d = REPO_ROOT / "reports" / r["ticker"]
+            write, sector = plan_write(r, d, sector=a.sector, write_all=a.write_all, today=today)
+            if not write:
+                continue
+            if a.sector and sector is None:
+                kept_sector.append(r["ticker"])
             d.mkdir(parents=True, exist_ok=True)
             p = d / f"{r['ticker']}-quality-screen-{today:%Y%m%d}.md"
-            p.write_text(ticker_report(r, sector=a.sector, today=today), encoding="utf-8")
+            p.write_text(ticker_report(r, sector=sector, today=today), encoding="utf-8")
             written.append(p.relative_to(REPO_ROOT).as_posix())
 
     if a.json:
@@ -517,10 +599,15 @@ def main() -> None:
             print(f"  {r['ticker']}: {e}")
         for h in r.get("hints", []):
             print(f"  💡 {r['ticker']}: {h}")
+    for r in results:
+        if r.get("restored"):
+            print(f"  ✋ {r['ticker']}: 수동 복권 {r['machineVerdict']} → {r['verdict']} — {r['restored']}")
     if written:
         print("\n종목 보고서 작성:")
         for w in written:
             print(f"  {w}")
+    if kept_sector:
+        print(f"  ↳ 섹터 마커 생략(이미 다른 섹터로 배정): {', '.join(kept_sector)}")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 import { CONFIG_FILES, readConfig, writeConfig } from "@/lib/config-store";
-import { buildSectorAutoMap } from "@/lib/sector-auto-map";
+import { buildFunnelFinalists, buildSectorAutoMap } from "@/lib/sector-auto-map";
 import { requireAuth } from "@/lib/api-auth";
 import { MAX_GROUPS, MAX_MEMBERS_PER_GROUP, MAX_STR, sanitizeGroups as sanitizeGroupsShared } from "@/lib/group-sanitize";
 
@@ -32,18 +32,36 @@ function sanitizeAutoMap(input: unknown): Record<string, string> {
   return out;
 }
 
+// 퍼널 최종 선정도 보고서 마커 파생값이다 — 섹터명·티커 문자열과 개수 상한만 검증한다.
+function sanitizeFinalists(input: Record<string, string[]>): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const [sector, tickers] of Object.entries(input)) {
+    if (!sector || sector.length > MAX_STR || !Array.isArray(tickers)) continue;
+    if (Object.keys(out).length >= MAX_GROUPS) break;
+    out[sector] = tickers
+      .filter((t) => typeof t === "string" && t.length > 0 && t.length <= MAX_STR)
+      .slice(0, MAX_MEMBERS_PER_GROUP);
+  }
+  return out;
+}
+
 export async function GET() {
   const unauth = await requireAuth();
   if (unauth) return unauth;
   try {
     // 자동 맵은 보고서 마커에서 요청 시점에 파생한다 — 별도 저장이 없어 항상 최신이다.
     // 수동 그룹과 같은 축이라 한 응답에 실어 보낸다(클라이언트가 수동 우선으로 병합, TASK-90).
-    const [stored, autoMap] = await Promise.all([
+    const [stored, autoMap, finalists] = await Promise.all([
       readConfig(CONFIG_FILE),
       buildSectorAutoMap(),
+      buildFunnelFinalists(),
     ]);
     const groups = sanitizeGroups(stored) ?? DEFAULT_SECTOR_GROUPS;
-    return Response.json({ groups, autoMap: sanitizeAutoMap(autoMap) });
+    return Response.json({
+      groups,
+      autoMap: sanitizeAutoMap(autoMap),
+      finalists: sanitizeFinalists(finalists),
+    });
   } catch (err) {
     // 원시 에러 메시지를 클라이언트에 노출하지 않는다(TASK-53).
     console.error("sector-groups GET:", err);

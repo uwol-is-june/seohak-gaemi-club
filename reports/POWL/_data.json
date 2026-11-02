@@ -4,7 +4,7 @@
   "companyName": "POWELL INDUSTRIES INC",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-10-07T05:52:22.589009+00:00",
+  "generatedAt": "2026-10-27T01:12:28.768464+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000080420.json",
@@ -23,11 +23,14 @@
     "totalLiabilities": "Liabilities",
     "equity": "StockholdersEquity",
     "cash": "CashAndCashEquivalentsAtCarryingValue",
-    "longTermDebt": "LongTermDebtNoncurrent + LongTermDebt"
+    "longTermDebt": "LongTermDebtNoncurrent + LongTermDebt",
+    "interestExpense": "InterestExpense",
+    "pretaxIncome": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest + IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+    "costOfRevenue": "CostOfGoodsAndServicesSold"
   },
   "freshness": {
     "latestPeriodEnd": "2025-09-30",
-    "monthsOld": 12.2,
+    "monthsOld": 12.9,
     "stale": false
   },
   "annual": {
@@ -46,7 +49,10 @@
         "totalLiabilities": 127199000,
         "equity": 335317000,
         "cash": 97720000,
-        "longTermDebt": 2000000
+        "longTermDebt": 2000000,
+        "interestExpense": 149000,
+        "pretaxIncome": 17793000,
+        "costOfRevenue": 459038000
       },
       "provenance": {
         "revenue": {
@@ -137,6 +143,27 @@
           "tag": "LongTermDebtNoncurrent",
           "accn": "0000080420-17-000032",
           "filed": "2017-12-06",
+          "form": "10-K",
+          "periodEnd": "2016-09-30"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0000080420-18-000036",
+          "filed": "2018-12-12",
+          "form": "10-K",
+          "periodEnd": "2016-09-30"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+          "accn": "0000080420-18-000036",
+          "filed": "2018-12-12",
+          "form": "10-K",
+          "periodEnd": "2016-09-30"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0000080420-18-000036",
+          "filed": "2018-12-12",
           "form": "10-K",
           "periodEnd": "2016-09-30"
         }
@@ -165,7 +192,10 @@
         "totalLiabilities": 93690000,
         "equity": 321296000,
         "cash": 68359000,
-        "longTermDebt": 1600000
+        "longTermDebt": 1600000,
+        "interestExpense": 168000,
+        "pretaxIncome": -16919000,
+        "costOfRevenue": 345142000
       },
       "provenance": {
         "revenue": {
@@ -256,6 +286,27 @@
           "tag": "LongTermDebtNoncurrent",
           "accn": "0000080420-18-000036",
           "filed": "2018-12-12",
+          "form": "10-K",
+          "periodEnd": "2017-09-30"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0000080420-19-000039",
+          "filed": "2019-12-05",
+          "form": "10-K",
+          "periodEnd": "2017-09-30"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+          "accn": "0000080420-19-000039",
+          "filed": "2019-12-05",
+          "form": "10-K",
+          "periodEnd": "2017-09-30"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0000080420-19-000039",
+          "filed": "2019-12-05",
           "form": "10-K",
           "periodEnd": "2017-09-30"
         }
@@ -284,7 +335,10 @@
         "totalLiabilities": 128307000,
         "equity": 301644000,
         "cash": 36584000,
-        "longTermDebt": 1200000
+        "longTermDebt": 1200000,
+        "interestExpense": 207000,
+        "pretaxIncome": -7699000,
+        "costOfRevenue": 383361000
       },
       "provenance": {
         "revenue": {
@@ -377,6 +431,27 @@
           "filed": "2019-12-05",
           "form": "10-K",
           "periodEnd": "2018-09-30"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0000080420-20-000036",
+          "filed": "2020-12-09",
+          "form": "10-K",
+          "periodEnd": "2018-09-30"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+          "accn": "0000080420-20-000036",
+          "filed": "2020-12-09",
+          "form": "10-K",
+          "periodEnd": "2018-09-30"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0000080420-20-000036",
+          "filed": "2020-12-09",
+          "form": "10-K",
+          "periodEnd": "2018-09-30"
         }
       },
       "derived": {
@@ -403,7 +478,10 @@
         "totalLiabilities": 168258000,
         "equity": 299153000,
         "cash": 118639000,
-        "longTermDebt": 800000
+        "longTermDebt": 800000,
+        "interestExpense": 230000,
+        "pretaxIncome": 12334000,
+        "costOfRevenue": 430204000
       },
       "provenance": {
         "revenue": {
@@ -494,6 +572,27 @@
           "tag": "LongTermDebtNoncurrent",
           "accn": "0000080420-20-000036",
           "filed": "2020-12-09",
+          "form": "10-K",
+          "periodEnd": "2019-09-30"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0000080420-21-000045",
+          "filed": "2021-12-08",
+          "form": "10-K",
+          "periodEnd": "2019-09-30"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+          "accn": "0000080420-21-000045",
+          "filed": "2021-12-08",
+          "form": "10-K",
+          "periodEnd": "2019-09-30"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0000080420-21-000045",
+          "filed": "2021-12-08",
           "form": "10-K",
           "periodEnd": "2019-09-30"
         }
@@ -522,7 +621,10 @@
         "totalLiabilities": 165652000,
         "equity": 306626000,
         "cash": 160216000,
-        "longTermDebt": 400000
+        "longTermDebt": 400000,
+        "interestExpense": 228000,
+        "pretaxIncome": 20330000,
+        "costOfRevenue": 423924000
       },
       "provenance": {
         "revenue": {
@@ -613,6 +715,27 @@
           "tag": "LongTermDebtNoncurrent",
           "accn": "0000080420-21-000045",
           "filed": "2021-12-08",
+          "form": "10-K",
+          "periodEnd": "2020-09-30"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0000080420-21-000045",
+          "filed": "2021-12-08",
+          "form": "10-K",
+          "periodEnd": "2020-09-30"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+          "accn": "0000080420-22-000036",
+          "filed": "2022-12-06",
+          "form": "10-K",
+          "periodEnd": "2020-09-30"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0000080420-22-000036",
+          "filed": "2022-12-06",
           "form": "10-K",
           "periodEnd": "2020-09-30"
         }
@@ -641,7 +764,10 @@
         "totalLiabilities": 134969000,
         "equity": 301223000,
         "cash": 114314000,
-        "longTermDebt": 0
+        "longTermDebt": 0,
+        "interestExpense": 204000,
+        "pretaxIncome": 1092000,
+        "costOfRevenue": 395496000
       },
       "provenance": {
         "revenue": {
@@ -732,6 +858,27 @@
           "tag": "LongTermDebtNoncurrent",
           "accn": "0000080420-22-000036",
           "filed": "2022-12-06",
+          "form": "10-K",
+          "periodEnd": "2021-09-30"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0000080420-21-000045",
+          "filed": "2021-12-08",
+          "form": "10-K",
+          "periodEnd": "2021-09-30"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+          "accn": "0000080420-23-000051",
+          "filed": "2023-12-06",
+          "form": "10-K",
+          "periodEnd": "2021-09-30"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0000080420-23-000051",
+          "filed": "2023-12-06",
           "form": "10-K",
           "periodEnd": "2021-09-30"
         }
@@ -760,7 +907,10 @@
         "totalLiabilities": 196174000,
         "equity": 297206000,
         "cash": 101954000,
-        "longTermDebt": 0
+        "longTermDebt": 0,
+        "interestExpense": null,
+        "pretaxIncome": 9843000,
+        "costOfRevenue": 447564000
       },
       "provenance": {
         "revenue": {
@@ -853,6 +1003,20 @@
           "filed": "2022-12-06",
           "form": "10-K",
           "periodEnd": "2022-09-30"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+          "accn": "0000080420-24-000086",
+          "filed": "2024-11-20",
+          "form": "10-K",
+          "periodEnd": "2022-09-30"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0000080420-24-000086",
+          "filed": "2024-11-20",
+          "form": "10-K",
+          "periodEnd": "2022-09-30"
         }
       },
       "derived": {
@@ -879,7 +1043,10 @@
         "totalLiabilities": 407216000,
         "equity": 345026000,
         "cash": 245875000,
-        "longTermDebt": null
+        "longTermDebt": null,
+        "interestExpense": null,
+        "pretaxIncome": 68950000,
+        "costOfRevenue": 551755000
       },
       "provenance": {
         "revenue": {
@@ -963,6 +1130,20 @@
           "tag": "CashAndCashEquivalentsAtCarryingValue",
           "accn": "0000080420-24-000086",
           "filed": "2024-11-20",
+          "form": "10-K",
+          "periodEnd": "2023-09-30"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+          "accn": "0000080420-25-000152",
+          "filed": "2025-11-19",
+          "form": "10-K",
+          "periodEnd": "2023-09-30"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0000080420-25-000152",
+          "filed": "2025-11-19",
           "form": "10-K",
           "periodEnd": "2023-09-30"
         }
@@ -991,7 +1172,10 @@
         "totalLiabilities": 445107000,
         "equity": 483073000,
         "cash": 315331000,
-        "longTermDebt": null
+        "longTermDebt": null,
+        "interestExpense": null,
+        "pretaxIncome": 196088000,
+        "costOfRevenue": 739268000
       },
       "provenance": {
         "revenue": {
@@ -1073,6 +1257,20 @@
         },
         "cash": {
           "tag": "CashAndCashEquivalentsAtCarryingValue",
+          "accn": "0000080420-25-000152",
+          "filed": "2025-11-19",
+          "form": "10-K",
+          "periodEnd": "2024-09-30"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+          "accn": "0000080420-25-000152",
+          "filed": "2025-11-19",
+          "form": "10-K",
+          "periodEnd": "2024-09-30"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
           "accn": "0000080420-25-000152",
           "filed": "2025-11-19",
           "form": "10-K",
@@ -1103,7 +1301,10 @@
         "totalLiabilities": 468214000,
         "equity": 640770000,
         "cash": 450739000,
-        "longTermDebt": null
+        "longTermDebt": null,
+        "interestExpense": null,
+        "pretaxIncome": 233550000,
+        "costOfRevenue": 779937000
       },
       "provenance": {
         "revenue": {
@@ -1189,6 +1390,20 @@
           "filed": "2025-11-19",
           "form": "10-K",
           "periodEnd": "2025-09-30"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+          "accn": "0000080420-25-000152",
+          "filed": "2025-11-19",
+          "form": "10-K",
+          "periodEnd": "2025-09-30"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0000080420-25-000152",
+          "filed": "2025-11-19",
+          "form": "10-K",
+          "periodEnd": "2025-09-30"
         }
       },
       "derived": {
@@ -1203,7 +1418,7 @@
   },
   "crossValidation": {
     "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/POWL?symbol=POWL&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1380261142&period2=1791438742",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/POWL?symbol=POWL&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1381972348&period2=1793149948",
     "worst": "중대 불일치",
     "items": [
       {

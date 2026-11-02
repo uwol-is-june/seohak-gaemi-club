@@ -42,6 +42,32 @@ function cleanTicker(raw: string): string | null {
   return TICKER_RE.test(t) ? t : null;
 }
 
+/**
+ * 섹터 → 최신 퍼널 보고서의 최종 선정 종목(마커 순서 그대로).
+ * 같은 마커를 단 industry 보고서는 제외한다 — 그 finalists 는 '계층 대표'라 퍼널의 최종 3종목과 다르다.
+ * 분야 탭이 그 섹터의 종목 칩을 정렬·표기하는 데 쓴다.
+ */
+export async function buildFunnelFinalists(): Promise<Record<string, string[]>> {
+  const reports = await scanReports();
+  const best = new Map<string, [string, string[]]>(); // sector → [date, tickers]
+  for (const r of reports) {
+    if (r.path.split("/").length !== 2 || !/-funnel-\d{8}\.md$/.test(r.name)) continue;
+    const m = head(r.content).match(FUNNEL_MARKER);
+    const sector = m?.[1].trim();
+    if (!m || !sector) continue;
+    const date = fileDate(r.name);
+    const cur = best.get(sector);
+    if (cur && cur[0] >= date) continue;
+    const tickers = m[2]
+      .split(/[,/·]/)
+      .map(cleanTicker)
+      .filter((t): t is string => t !== null)
+      .map(canonicalCompany);
+    best.set(sector, [date, tickers]);
+  }
+  return Object.fromEntries([...best].map(([s, [, t]]) => [s, t]));
+}
+
 export async function buildSectorAutoMap(): Promise<Record<string, string>> {
   const reports = await scanReports();
   // ticker → [tier, date, sector]

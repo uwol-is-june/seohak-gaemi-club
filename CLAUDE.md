@@ -193,7 +193,8 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 | 대상 | 역할 | 갱신 |
 |------|------|------|
 | `data/calls.jsonl` | **채점 원본** (append-only·수정 금지). 대시보드 '트랙레코드' 탭이 여기서 읽어 자동 채점 | `python3 tools/record_call.py ...` |
-| `reports/track-record.md` | 사람이 읽는 요약 — 보유 포지션 / **관찰 논제(관망)** / 매매 로그 / 청산 | 두 표는 **자동 생성**(`tools/render_track_record.py`) · 매매 로그·서술만 손 편집 |
+| `data/trades.jsonl` | **보유의 원본** — 토스 체결 내역 거울(TASK-196) | `python3 tools/sync_toss_trades.py` (Stop 훅이 1시간마다 자동) |
+| `reports/track-record.md` | 사람이 읽는 요약 — 보유 포지션 / **관찰 논제(관망)** / 체결 내역 / 매매 로그 / 청산 | 세 표는 **자동 생성**(`tools/render_track_record.py`) · 매매 로그(판단 메모)·서술만 손 편집 |
 
 - 콜을 내는 스킬: `/thesis-tracker`, `/investment-team`, `/investment-checklist`, `/earnings-team`.
   - **실험실 `/lab-pick` 은 여기 기록하지 않는다** — 별도 기록부 `data/lab-calls.jsonl`(`tools/lab_record.py`)에
@@ -202,7 +203,8 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
 - 🔴 **`track-record.md` 의 '보유 포지션'·'관찰 논제' 표는 손으로 고치지 않는다**(TASK-172).
   `<!-- auto:positions|watchlist:begin/end -->` 마커 사이를 `record_call.py` 가 기록 직후,
   Stop 훅이 매 응답 끝에 판단 기록부에서 다시 그린다 — 손으로 고친 내용은 덮어써진다.
-  보유/관망은 '매매 로그'의 매수·매도 행으로만 정해진다. 확인: `python3 tools/render_track_record.py --check`.
+  보유/관망은 **토스 체결 내역**(`data/trades.jsonl`)으로만 정해진다 — 파일이 없을 때만 '매매 로그' 표로 폴백.
+  확인: `python3 tools/render_track_record.py --check`.
 - **종목의 '현재 판단'** = 스킬별 최신 콜 중 종목 최신 판단에서 **7일 안쪽**만(TASK-170).
   그보다 오래된 다른 스킬의 콜은 자동으로 이력으로 내려간다 — 7일 안에서 출처가 갈려야 충돌로 뜬다.
 - **콜 종류**: `buy`(매수) · `keep`(보유 중 계속 보유) · `hold`(**관망** — 미보유·진입가 대기) · `avoid`(회피).
@@ -224,11 +226,16 @@ DB가 주는 유일한 이점인 원격 접근이 성립하지 않았다. 이력
   주가가 진입 밴드에 왔다는 이유로, 사업이 훌륭하다는 이유로 **보유로 추측하지 않는다.**
 - `buy` 콜은 "현재가에 매수 권고"라는 **분석 결론일 뿐 사용자 보유를 뜻하지 않는다** —
   콜만 근거로 '보유 포지션' 표에 올리지 않는다.
-- **사용자가 매수를 알렸을 때만** 보유로 전환한다 (예: `GOOGL 매수 $250에 3주`):
-  매수가·수량은 **사용자 입력 그대로** 쓰고(추정·역산 금지),
-  **매매 로그에 매수 행을 먼저 추가**한 뒤 `buy` 콜을 **새로 append**하되 **기존 `hold` 콜은 지우지 않는다**
-  (관망 판단도 채점 대상). 표는 그 순간 '관찰 논제' → '보유 포지션'으로 자동으로 옮겨진다.
-  논제 파일의 앵커가는 실제 매수가로 교체한다.
+- **보유 여부·매수가·수량은 토스 체결에서 온다**(TASK-196, 2026-10-27~) — 사용자가 따로 알릴 필요가 없다.
+  `python3 tools/sync_toss_trades.py` 가 토스 `GET /api/v1/orders?status=CLOSED` 체결을 `data/trades.jsonl` 로
+  가져오고 잔고 수량과 대조한다. Stop 훅이 1시간마다 돌리며 새 체결을 `🆕 토스 체결 …` 으로 알린다.
+  보유 표는 그 순간 '관찰 논제' → '보유 포지션'으로 자동으로 옮겨진다. 매수가·수량은 **체결값 그대로**(추정·역산 금지).
+- 🔴 **스킬은 콜을 고르기 전에 동기화부터 한다** — `keep`/`hold` 는 정반대를 예측하므로 보유 판정이 틀리면
+  채점이 뒤집힌다(2026-10-27 실측: 토스 잔고 9종목 중 6종목이 기록상 관망이었고 NVDA 5주는 `hold` 콜만 3건).
+  토스 미연결(IP 미등록)이면 동기화가 실패를 알리고 기존 `data/trades.jsonl` 로 판단한다.
+- 새 매수가 잡히면 **`keep`(또는 `buy`) 콜을 새로 append**하되 **기존 `hold` 콜은 지우지 않는다**(관망 판단도 채점 대상).
+  보유 표의 `⚠️ 보유 중 — keep 콜 필요` 표시가 그 누락이다. 논제 파일의 앵커가는 실제 평균 매입가로 교체한다.
+  매수 이유 같은 판단 메모는 '매매 로그' 표에 손으로 적는다(보유 계산에는 안 쓰인다).
 
 ### 🔴 관찰 논제 제외 규칙 — 보유 종목은 빼지 않는다 (TASK-192)
 
@@ -472,6 +479,10 @@ python3 tools/calibration_check.py --history         # 분기별 추이 (TASK-18
 
 # 진입 밴드 체결확률(과거 낙폭 베이스레이트) 산출 — hold 콜 기록 전 필수
 python3 tools/fill_probability.py --ticker CEG --target 185 --horizon-months 24
+
+# 토스 체결 → data/trades.jsonl 동기화 + 잔고 대조 (Stop 훅이 1시간마다 자동 실행)
+python3 tools/sync_toss_trades.py
+python3 tools/sync_toss_trades.py --dry-run   # 쓰지 않고 새 체결·대조만
 
 # track-record.md 보유·관찰 표를 판단 기록부에서 다시 그리기 (record_call·Stop 훅이 자동 실행)
 python3 tools/render_track_record.py

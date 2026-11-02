@@ -83,13 +83,36 @@ LEDGER_REL = "data/calls.jsonl"
 CALIBRATION_REL = "data/calibration.jsonl"
 # 실험실(TASK-185) — 판단 기록부와 사전 등록 증거인 주간 스크리닝 결과. 캐시(data/_lab/cache/)는 .gitignore.
 LAB_RELS = ("data/lab-calls.jsonl", "data/_lab", "site/lab/picks.json")
+# 토스 체결 거울(data/trades.jsonl · TASK-196)은 커밋하지 않는다 — 실제 보유·매매가라 공개 저장소에
+# 올리면 안 된다(.gitignore). 로컬 파일만 원본이고 git 백업이 없다.
 DATA_RELS = (LEDGER_REL, CALIBRATION_REL, *LAB_RELS)
+
+# 토스 동기화 주기(분). 토스 주문 조회는 호출 한도가 있고 매 응답마다 부를 이유가 없다.
+TOSS_SYNC_EVERY_MIN = 60
 
 
 def ledger_changed(rel: str = LEDGER_REL) -> bool:
     # --untracked-files=all: 처음 생긴 파일(?? 상태)도 잡는다.
     out = git("status", "--porcelain", "--untracked-files=all", "--", rel)
     return out.returncode == 0 and bool(out.stdout.strip())
+
+
+def sync_toss() -> None:
+    """토스 체결을 data/trades.jsonl 로 가져온다(TASK-196). 1시간에 한 번만.
+    새 체결이 있으면 알린다 — 보유 종목의 판단(keep 콜)은 사람이 정해야 하므로 자동 기록하지 않는다.
+    토스 미연결(IP 미등록·키 없음)이면 조용히 넘어간다 — 다음 훅에서 다시 시도한다."""
+    try:
+        sys.path.insert(0, str(REPO_ROOT / "tools"))
+        import sync_toss_trades as st
+        if not st.stale(TOSS_SYNC_EVERY_MIN):
+            return
+        res = st.sync()
+    except Exception:  # noqa: BLE001 — 네트워크·인증 실패로 세션을 막지 않는다
+        return
+    lines = [f"🆕 토스 체결 {st.describe(t)}" for t in res["added"]]
+    lines += [f"⚠️ {w}" for w in res["warnings"]]
+    if lines:
+        emit("\n".join(lines[:8]) + ("\n…" if len(lines) > 8 else ""))
 
 
 def sync_track_record() -> None:
@@ -118,6 +141,7 @@ def main() -> int:
     args = ap.parse_args()
 
     if not args.dry_run:
+        sync_toss()
         sync_track_record()
     targets, deleted = changed_reports()
     # 판단 기록부도 같은 이력·백업 대상이다(TASK-172) — 표의 원본이 커밋 안 된 채 남지 않게.
@@ -138,7 +162,18 @@ def main() -> int:
 
     # 삭제도 함께 스테이징한다(대시보드에서 지운 보고서가 다음 턴마다 다시 잡히지 않게).
     paths = targets + deleted
-    git("add", "--all", "--", *paths)
+    # 이미 스테이징된 삭제(`D ` — 인덱스에서도 빠진 경로)를 add 에 넘기면 git 이
+    # "pathspec did not match" 로 **add 전체를 중단**한다 — 그러면 아무것도 스테이징되지 않고
+    # 커밋이 엉뚱한 새 파일 이름으로 실패한다(2026-10-28~29 자동 커밋 전부 실패한 원인).
+    # 인덱스에 남은 삭제(` D`)만 add 하고, 이미 스테이징된 삭제는 커밋 pathspec 에만 넣는다.
+    in_index = set(git("-c", "core.quotepath=false", "ls-files", "--", *deleted).stdout.splitlines()) if deleted else set()
+    to_add = targets + [d for d in deleted if d in in_index]
+    added = git("add", "--all", "--", *to_add)
+    if added.returncode != 0:
+        detail = (added.stderr or added.stdout).strip().splitlines()
+        emit(f"⚠️ 보고서 스테이징 실패 ({len(to_add)}건) — {detail[-1] if detail else added.returncode}\n"
+             f"수동 실행: python3 tools/commit_reports.py")
+        return 0
 
     if len(paths) == 1:
         subject = f"reports: {Path(paths[0]).name} 갱신"

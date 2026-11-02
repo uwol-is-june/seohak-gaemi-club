@@ -15,6 +15,8 @@ import { useModalA11y } from "@/lib/use-modal-a11y";
 export function ResearchLaunchModal({
   flowId,
   context,
+  steps,
+  input,
   onLaunch,
   onClose,
 }: {
@@ -22,6 +24,11 @@ export function ResearchLaunchModal({
   flowId: string;
   // 어느 자리에서 열었는지(분야명 등) — eyebrow 안내 문구에만 쓴다.
   context: string;
+  // 보여줄 단계 인덱스. 없으면 전부. 분야 상단바는 섹터 단계(0·1),
+  // 종목 보고서 줄은 종목 단계(2·3·4)만 연다.
+  steps?: number[];
+  // 명령 미리보기의 {input} 자리에 넣을 값(예: 고른 종목 티커). 실제 프리필은 부모가 넘긴다.
+  input?: string;
   onLaunch: (stepIndex: number) => void;
   onClose: () => void;
 }) {
@@ -61,12 +68,13 @@ export function ResearchLaunchModal({
 
         <div className="flex flex-col gap-3">
           {flow.steps.map((step, si) => {
-            const cmd = step.commandTemplate.replace("{input}", step.inputPlaceholder);
+            if (steps && !steps.includes(si)) return null;
+            const cmd = step.commandTemplate.replace("{input}", input || step.inputPlaceholder);
             return (
               <div key={si} className="contents">
                 {/* 시작점 구분(discovery 의 startPoints 와 같은 경계): 1~2는 섹터에서,
-                    3부터는 이미 볼 종목이 정해졌을 때 들어온다. */}
-                {flow.id === "discovery" && si === 2 && (
+                    3부터는 이미 볼 종목이 정해졌을 때 들어온다. 두 묶음이 함께 보일 때만 긋는다. */}
+                {flow.id === "discovery" && si === 2 && (!steps || steps.some((s) => s < 2)) && (
                   <div className="eyebrow text-[10px] text-mute mt-2">볼 종목이 정해졌다면</div>
                 )}
               <button

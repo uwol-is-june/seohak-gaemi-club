@@ -68,13 +68,20 @@ export const TAB_HEADERS: Record<string, { title: string }> = {
 // 분야 탭 상단바의 도구 아이콘. 누르면 '새 리서치 시작' 모달이 열린다(TASK-91).
 // 데스크톱 상단바와 모바일 상단바 양쪽에 같은 버튼을 쓴다 — 모바일엔 데스크톱
 // 상단바가 없어 여기서 빠지면 분야 탭에서 리서치를 시작할 길이 사라진다.
-export function ResearchLaunchButton({ onClick }: { onClick: () => void }) {
+// 종목 보고서 줄에서도 같은 버튼을 쓴다(그 종목 단계 실행) — 그때는 label 로 대상을 밝힌다.
+export function ResearchLaunchButton({
+  onClick,
+  label = "새 리서치 시작",
+}: {
+  onClick: () => void;
+  label?: string;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      title="새 리서치 시작"
-      aria-label="새 리서치 시작"
+      title={label}
+      aria-label={label}
       className="shrink-0 rounded-full border border-hairline w-9 h-9 flex items-center justify-center text-mute hover:text-ink hover:bg-canvas-soft transition-colors active:scale-95"
     >
       {/* 렌치 — 외부 아이콘 라이브러리 없이 인라인 SVG(currentColor로 hover까지 따라온다). */}

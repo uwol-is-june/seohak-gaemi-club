@@ -4,7 +4,7 @@
   "companyName": "Constellation Energy Corp",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-09-30T06:51:17.827196+00:00",
+  "generatedAt": "2026-10-27T01:12:31.270334+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001868275.json",
@@ -23,11 +23,14 @@
     "totalLiabilities": "Liabilities",
     "equity": "StockholdersEquity + StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
     "cash": "CashAndCashEquivalentsAtCarryingValue",
-    "longTermDebt": "LongTermDebtNoncurrent"
+    "longTermDebt": "LongTermDebtNoncurrent",
+    "interestExpense": "InterestExpense + InterestExpenseNonoperating",
+    "pretaxIncome": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+    "costOfRevenue": null
   },
   "freshness": {
     "latestPeriodEnd": "2025-12-31",
-    "monthsOld": 9.0,
+    "monthsOld": 9.9,
     "stale": false
   },
   "annual": {
@@ -46,7 +49,10 @@
         "totalLiabilities": null,
         "equity": 15830000000,
         "cash": 303000000,
-        "longTermDebt": null
+        "longTermDebt": null,
+        "interestExpense": null,
+        "pretaxIncome": null,
+        "costOfRevenue": null
       },
       "provenance": {
         "equity": {
@@ -88,7 +94,10 @@
         "totalLiabilities": null,
         "equity": 14676000000,
         "cash": 226000000,
-        "longTermDebt": null
+        "longTermDebt": null,
+        "interestExpense": 328000000,
+        "pretaxIncome": 836000000,
+        "costOfRevenue": null
       },
       "provenance": {
         "revenue": {
@@ -153,6 +162,20 @@
           "filed": "2023-02-16",
           "form": "10-K",
           "periodEnd": "2020-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001868275-23-000014",
+          "filed": "2023-02-16",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001868275-23-000014",
+          "filed": "2023-02-16",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
         }
       },
       "derived": {
@@ -179,7 +202,10 @@
         "totalLiabilities": 36472000000,
         "equity": 11219000000,
         "cash": 504000000,
-        "longTermDebt": 4575000000
+        "longTermDebt": 4575000000,
+        "interestExpense": 282000000,
+        "pretaxIncome": 152000000,
+        "costOfRevenue": null
       },
       "provenance": {
         "revenue": {
@@ -263,6 +289,20 @@
           "tag": "LongTermDebtNoncurrent",
           "accn": "0001868275-23-000014",
           "filed": "2023-02-16",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001868275-24-000014",
+          "filed": "2024-02-27",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001868275-24-000014",
+          "filed": "2024-02-27",
           "form": "10-K",
           "periodEnd": "2021-12-31"
         }
@@ -291,7 +331,10 @@
         "totalLiabilities": 35537000000,
         "equity": 11018000000,
         "cash": 422000000,
-        "longTermDebt": 4466000000
+        "longTermDebt": 4466000000,
+        "interestExpense": 250000000,
+        "pretaxIncome": -542000000,
+        "costOfRevenue": null
       },
       "provenance": {
         "revenue": {
@@ -375,6 +418,20 @@
           "tag": "LongTermDebtNoncurrent",
           "accn": "0001868275-24-000014",
           "filed": "2024-02-27",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001868275-24-000014",
+          "filed": "2024-02-27",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001868275-25-000023",
+          "filed": "2025-02-18",
           "form": "10-K",
           "periodEnd": "2022-12-31"
         }
@@ -403,7 +460,10 @@
         "totalLiabilities": 39472000000,
         "equity": 10925000000,
         "cash": 368000000,
-        "longTermDebt": 7496000000
+        "longTermDebt": 7496000000,
+        "interestExpense": 431000000,
+        "pretaxIncome": 2447000000,
+        "costOfRevenue": null
       },
       "provenance": {
         "revenue": {
@@ -487,6 +547,20 @@
           "tag": "LongTermDebtNoncurrent",
           "accn": "0001868275-25-000023",
           "filed": "2025-02-18",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001868275-24-000014",
+          "filed": "2024-02-27",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001868275-26-000032",
+          "filed": "2026-02-24",
           "form": "10-K",
           "periodEnd": "2023-12-31"
         }
@@ -515,7 +589,10 @@
         "totalLiabilities": 39387000000,
         "equity": 13166000000,
         "cash": 3022000000,
-        "longTermDebt": 7384000000
+        "longTermDebt": 7384000000,
+        "interestExpense": 506000000,
+        "pretaxIncome": 4516000000,
+        "costOfRevenue": null
       },
       "provenance": {
         "revenue": {
@@ -597,6 +674,20 @@
         },
         "longTermDebt": {
           "tag": "LongTermDebtNoncurrent",
+          "accn": "0001868275-26-000032",
+          "filed": "2026-02-24",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpenseNonoperating",
+          "accn": "0001868275-26-000032",
+          "filed": "2026-02-24",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
           "accn": "0001868275-26-000032",
           "filed": "2026-02-24",
           "form": "10-K",
@@ -627,7 +718,10 @@
         "totalLiabilities": 42396000000,
         "equity": 14517000000,
         "cash": 3641000000,
-        "longTermDebt": 7250000000
+        "longTermDebt": 7250000000,
+        "interestExpense": 511000000,
+        "pretaxIncome": 3511000000,
+        "costOfRevenue": null
       },
       "provenance": {
         "revenue": {
@@ -713,6 +807,20 @@
           "filed": "2026-02-24",
           "form": "10-K",
           "periodEnd": "2025-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpenseNonoperating",
+          "accn": "0001868275-26-000032",
+          "filed": "2026-02-24",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001868275-26-000032",
+          "filed": "2026-02-24",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
         }
       },
       "derived": {
@@ -727,7 +835,7 @@
   },
   "crossValidation": {
     "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/CEG?symbol=CEG&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1379659877&period2=1790837477",
+    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/CEG?symbol=CEG&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1381972351&period2=1793149951",
     "worst": "중대 불일치",
     "items": [
       {

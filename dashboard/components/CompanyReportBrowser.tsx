@@ -9,6 +9,7 @@ import {
   reportDateLabel,
 } from "@/lib/report-helpers";
 import { CollapsibleReportCard } from "./CollapsibleReportCard";
+import { ResearchLaunchButton } from "./home/nav-config";
 
 // 한 종목의 보고서 브라우저: 유형(1차) → 생성일자(2차) → 선택 보고서 카드.
 // 분야 탭에서 섹터 줄의 종목 칩을 고르면 이게 아래에 붙는다(TASK-91).
@@ -19,9 +20,12 @@ export function CompanyReportBrowser({
   verdict,
   onOpenReport,
   onRequestDelete,
+  onLaunch,
 }: {
   files: ReportFile[] | null;
   company: string;
+  // 이 종목으로 종목 단계 실행 모달을 연다(없으면 버튼 숨김).
+  onLaunch?: () => void;
   // 이 종목의 최신 열등주 스크리닝 판정(없으면 null) — 헤더 pill 로만 쓴다.
   verdict: string | null;
   onOpenReport: (path: string) => void;
@@ -70,8 +74,9 @@ export function CompanyReportBrowser({
         <span className="eyebrow text-[10px] text-mute shrink-0">이 종목의 보고서</span>
       </div>
 
-      {/* 1차: 보고서 유형 */}
-      <div className="flex flex-wrap gap-1.5">
+      {/* 1차: 보고서 유형 — 오른쪽 끝에 이 종목의 리서치 단계(버핏 6-게이트·심층 분석·논제 수립) 실행 */}
+      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-wrap gap-1.5 min-w-0">
         {activeSections.map((section) => {
           const active = section.id === activeCategory;
           return (
@@ -91,6 +96,8 @@ export function CompanyReportBrowser({
             </button>
           );
         })}
+      </div>
+        {onLaunch && <ResearchLaunchButton onClick={onLaunch} label={`${company} 리서치 실행`} />}
       </div>
 
       {/* 2차: 생성일자(같은 유형에 보고서가 둘 이상일 때만) */}

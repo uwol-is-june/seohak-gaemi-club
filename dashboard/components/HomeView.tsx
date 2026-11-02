@@ -31,6 +31,8 @@ import {
   type DomainPick, type NavView, type NavItem, type NavEntry,
 } from "./home/nav-config";
 
+type LaunchTarget = { flowId: string; context: string; steps?: number[]; input?: string };
+
 export function HomeView({
   onLaunchStep,
   onOpenFlowModal,
@@ -44,6 +46,8 @@ export function HomeView({
   // 보고서 마커에서 파생된 티커→섹터 자동 맵(TASK-90). 수동 그룹과 별도로 들고 있다가
   // 표시할 때만 병합한다 — 편집 모달에는 수동 원본만 올려야 자동분이 수동으로 굳지 않는다.
   const [sectorAutoMap, setSectorAutoMap] = useState<AutoSectorMap>({});
+  // 섹터 → 최신 퍼널 보고서의 최종 선정 종목. 섹터 상세에서 종목 칩을 앞에 세우고 표기한다.
+  const [funnelFinalists, setFunnelFinalists] = useState<Record<string, string[]>>({});
   const [editingSectors, setEditingSectors] = useState(false);
   // 포트폴리오 카드 → 그 종목의 보고서로 가는 드릴다운 요청. 같은 티커를 다시 눌러도
   // 반응하도록 nonce를 올린다(아래 focus 이펙트가 섹터·선택을 맞춘다).
@@ -60,7 +64,8 @@ export function HomeView({
   const [modalPath, setModalPath] = useState<string | null>(null);
   // 상단바 도구 아이콘이 연 실행 모달(null = 닫힘). 어느 플로우를 어느 자리에서
   // 열었는지 함께 들고 있는다 — 분야 탭이면 종목 발굴, 실적 점검 탭이면 실적 점검.
-  const [launchTarget, setLaunchTarget] = useState<{ flowId: string; context: string } | null>(null);
+  // steps = 보여줄 단계(없으면 전부), input = 단계 모달 입력칸 프리필(종목 줄에서 열 때 티커).
+  const [launchTarget, setLaunchTarget] = useState<LaunchTarget | null>(null);
   const [flowTab, setFlowTab] = useState<string>("portfolio-overview");
   // 사이드바가 지금 그리는 화면(TASK-96). 열려 있는 탭(flowTab)과 별개의 UI 상태다 —
   // 서브메뉴 안에서 '뒤로'를 눌러도 보고 있던 탭은 그대로 남아야 하기 때문이다.
@@ -297,11 +302,25 @@ export function HomeView({
     }
     return out;
   }, [domainSectors, domainCompanies, companySector]);
-  // 선택된 섹터에 속한 종목.
-  const sectorCompanies = useMemo(
-    () => (sectorTab ? domainCompanies.filter((c) => companySector(c) === sectorTab) : []),
-    [sectorTab, domainCompanies, companySector]
-  );
+  // 선택된 섹터 퍼널의 최종 선정 종목(마커 순서). 보고서 폴더가 있는 종목만.
+  // 다른 섹터에 배정된 종목이라도(예: GOOGL — Cloud-Computing) 이 섹터 퍼널이 뽑았으면 함께 보인다.
+  const sectorFinalists = useMemo(() => {
+    if (!sectorTab) return [];
+    const out: string[] = [];
+    for (const [sector, tickers] of Object.entries(funnelFinalists)) {
+      if (canonicalSector(sectors, sector) !== sectorTab) continue;
+      for (const t of tickers) if (companies.includes(t) && !out.includes(t)) out.push(t);
+    }
+    return out;
+  }, [sectorTab, funnelFinalists, sectors, companies]);
+  // 선택된 섹터에 속한 종목 — 퍼널 최종 선정이 맨 앞, 나머지는 기존(가나다) 순.
+  const sectorCompanies = useMemo(() => {
+    if (!sectorTab) return [];
+    const rest = domainCompanies.filter(
+      (c) => companySector(c) === sectorTab && !sectorFinalists.includes(c)
+    );
+    return [...sectorFinalists, ...rest];
+  }, [sectorTab, domainCompanies, companySector, sectorFinalists]);
   // 이 분야에 보여줄 것이 하나라도 있는가(없으면 빈 상태 안내).
   const hasDomainContent = unifiedSectors.length > 0;
 
@@ -337,6 +356,7 @@ export function HomeView({
         if (Array.isArray(d.groups)) setSectorGroups(d.groups);
         // 자동 맵은 같은 응답에 실려 온다(서버가 보고서 마커에서 요청 시점에 파생).
         if (d.autoMap && typeof d.autoMap === "object") setSectorAutoMap(d.autoMap);
+        if (d.finalists && typeof d.finalists === "object") setFunnelFinalists(d.finalists);
       })
       .catch(() => {
         // 네트워크 실패 시 화면엔 기본 그룹이 유지된다.
@@ -469,10 +489,11 @@ export function HomeView({
   const rootEntries = navGroups.flatMap((g) => g.entries);
   const activeFlow = flows.find((f) => f.id === flowTab);
   const headerTitle = activeDomain ?? TAB_HEADERS[flowTab]?.title ?? activeFlow?.title ?? "";
-  // 상단바 도구 아이콘이 열 실행 대상. 분야 탭이면 종목 발굴 플로우, 단계가 있는
+  // 상단바 도구 아이콘이 열 실행 대상. 분야 탭이면 종목 발굴 플로우의 **섹터 단계(1·2)만** —
+  // 종목 단계(3~5)는 종목 보고서 줄의 같은 아이콘이 그 티커로 미리 채워 연다. 단계가 있는
   // 플로우 탭(실적 점검)이면 그 플로우. 그 외 탭(포트폴리오·트랙레코드…)은 아이콘 없음.
-  const launchable: { flowId: string; context: string } | null = activeDomain
-    ? { flowId: "discovery", context: activeDomain }
+  const launchable: LaunchTarget | null = activeDomain
+    ? { flowId: "discovery", context: activeDomain, steps: [0, 1] }
     : activeFlow?.steps?.length
       ? { flowId: activeFlow.id, context: activeFlow.title }
       : null;
@@ -771,9 +792,9 @@ export function HomeView({
                   </div>
 
                   {/* ── 섹터 상세 ──
-                      한 줄에 [섹터 보고서 유형] + [그 섹터에서 뽑힌 종목]을 나란히 놓는다.
-                      퍼널이 종목을 뽑은 단위가 섹터이므로, 'AI-Infrastructure 후보 압축'과
-                      거기서 나온 CEG·VRT·POWL 이 떨어져 있을 이유가 없다(TASK-91). */}
+                      [섹터 보고서 유형] 줄 바로 아래에 [그 섹터의 종목] 줄을 둔다. 퍼널이 종목을
+                      뽑은 단위가 섹터라 둘은 붙어 있어야 하지만(TASK-91), 한 줄에 섞으면 종목이
+                      많을 때 보고서 버튼이 묻힌다. 퍼널 최종 선정은 종목 줄 맨 앞에 '최종'으로 선다. */}
                   {(() => {
                     const selFile =
                       pick?.kind === "sector"
@@ -812,30 +833,51 @@ export function HomeView({
                               </button>
                             );
                           })}
-                          {/* 섹터 보고서와 종목 사이 경계. 둘 다 있을 때만 긋는다. */}
-                          {activeSections.length > 0 && sectorCompanies.length > 0 && (
-                            <span className="mx-1 h-4 w-px bg-hairline shrink-0" aria-hidden="true" />
-                          )}
-                          {sectorCompanies.map((c) => {
-                            const active = pick?.kind === "company" && pick.ticker === c;
-                            const g = SCREEN_GROUPS.find((x) => x.match(screenByCompany[c] ?? null));
-                            return (
-                              <button
-                                key={c}
-                                onClick={() => setPick({ kind: "company", ticker: c })}
-                                title={screenByCompany[c] ?? "미검사"}
-                                className={`shrink-0 rounded-full pl-2 pr-3 py-1.5 text-xs font-mono font-medium border transition-colors active:scale-95 flex items-center gap-1.5 ${
-                                  active
-                                    ? "bg-ink text-canvas border-ink"
-                                    : "border-hairline text-body hover:text-ink hover:bg-canvas-soft"
-                                }`}
-                              >
-                                {g && <span className={`inline-block w-1.5 h-1.5 rounded-full ${g.dot}`} />}
-                                {c}
-                              </button>
-                            );
-                          })}
                         </div>
+
+                        {/* 그 섹터의 종목 — 섹터 보고서 줄 아래 별도 줄. 퍼널 최종 선정이 맨 앞에
+                            '최종' 라벨을 달고 서고, 나머지와는 경계선으로 나뉜다. */}
+                        {sectorCompanies.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {sectorCompanies.map((c, i) => {
+                              const active = pick?.kind === "company" && pick.ticker === c;
+                              const g = SCREEN_GROUPS.find((x) => x.match(screenByCompany[c] ?? null));
+                              const isFinal = sectorFinalists.includes(c);
+                              const boundary =
+                                i === sectorFinalists.length && sectorFinalists.length > 0;
+                              return (
+                                <span key={c} className="contents">
+                                  {boundary && (
+                                    <span className="mx-1 h-4 w-px bg-hairline shrink-0" aria-hidden="true" />
+                                  )}
+                                  <button
+                                    onClick={() => setPick({ kind: "company", ticker: c })}
+                                    title={
+                                      (isFinal ? "퍼널 최종 선정 · " : "") + (screenByCompany[c] ?? "미검사")
+                                    }
+                                    className={`shrink-0 rounded-full pl-2 pr-3 py-1.5 text-xs font-mono font-medium border transition-colors active:scale-95 flex items-center gap-1.5 ${
+                                      active
+                                        ? "bg-ink text-canvas border-ink"
+                                        : "border-hairline text-body hover:text-ink hover:bg-canvas-soft"
+                                    }`}
+                                  >
+                                    {g && <span className={`inline-block w-1.5 h-1.5 rounded-full ${g.dot}`} />}
+                                    {c}
+                                    {isFinal && (
+                                      <span
+                                        className={`font-sans text-[10px] font-bold ${
+                                          active ? "text-canvas/70" : "text-success"
+                                        }`}
+                                      >
+                                        최종
+                                      </span>
+                                    )}
+                                  </button>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
 
                         {/* 섹터 보고서를 고른 경우: 생성일자(같은 유형에 둘 이상일 때) + 보고서 카드 */}
                         {pick?.kind === "sector" && kindFiles.length > 1 && (
@@ -884,6 +926,14 @@ export function HomeView({
                               setDeleteError(null);
                               setDeletePath(p);
                             }}
+                            onLaunch={() =>
+                              setLaunchTarget({
+                                flowId: "discovery",
+                                context: `${pick.ticker} 종목 리서치`,
+                                steps: [2, 3, 4],
+                                input: pick.ticker,
+                              })
+                            }
                           />
                         )}
 
@@ -1027,10 +1077,13 @@ export function HomeView({
         <ResearchLaunchModal
           flowId={launchTarget.flowId}
           context={launchTarget.context}
+          steps={launchTarget.steps}
+          input={launchTarget.input}
           onLaunch={(stepIndex) => {
             const flow = flows.find((f) => f.id === launchTarget.flowId);
+            const input = launchTarget.input;
             setLaunchTarget(null);
-            if (flow) onLaunchStep(flow, stepIndex);
+            if (flow) onLaunchStep(flow, stepIndex, input);
           }}
           onClose={() => setLaunchTarget(null)}
         />

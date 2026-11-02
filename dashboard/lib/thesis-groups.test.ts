@@ -242,7 +242,8 @@ check("종료 종목은 갱신 요구 없음", groupTheses([
 
 // ── 집행 지점: 정렬 키와 표시가 같은 값을 쓴다 (TASK-146) ─────────────────
 {
-  // 관망 논제 둘 — lead 는 $170, 다른 논제는 $185. 표시·정렬 모두 가장 먼저 닿는 $185 여야 한다.
+  // 관망 논제 둘 — 최신(lead) $170, 옛 논제 $185. 최신 판단의 값을 쓴다(2026-10-29 — 예전엔 max).
+  // 표시·정렬은 여전히 같은 값이어야 한다(TASK-146).
   const g = {
     active: [
       call({ skill: "thesis-tracker", call: "hold", target: { low: 150, high: 170, horizonMonths: 12 } }),
@@ -250,8 +251,52 @@ check("종료 종목은 갱신 요구 없음", groupTheses([
     ],
     history: [],
   };
-  check("hold goal = 논제 전체 max", groupGoal(g)?.price, 185);
-  check("hold 정렬 키 = 같은 값", goalGapKey(g), Math.abs((185 - 200) / 200));
+  check("hold goal = 최신 논제", groupGoal(g)?.price, 170);
+  check("hold 정렬 키 = 같은 값", goalGapKey(g), Math.abs((170 - 200) / 200));
+}
+{
+  // GOOGL 2026-10-29 재현 — 보유 1주, 최신 keep 래더의 1차는 집행 완료, 현재가가 추격 금지선 위.
+  // 옛 thesis-tracker buy(1차 $330)가 살아 있어도 다음 증액가는 최신 콜의 2차 $291.10, 판정은 '추격 금지'.
+  const g = {
+    active: [
+      call({ skill: "investment-team", date: "2026-10-29", call: "keep", target: {
+        noChaseAbove: 323,
+        tranches: [
+          "1차 ≤$330 (15%) — 조건 없음(T1 스타터) · 집행 완료 1주 @$324.49",
+          "2차 ≤$291.10 (30%) — AND 직전 분기 Cloud 영업이익률 ≥30% AND Search & other YoY ≥10%",
+          "3차 ≤$270 (25%) — 조건 없음",
+        ],
+      } }, 324.89),
+      call({ skill: "thesis-tracker", date: "2026-10-23", call: "buy", target: {
+        noChaseAbove: 334, tranches: ["1차 ≤$330 (15%) — 조건 없음(T1 스타터)", "2차 ≤$301 (30%)"],
+      } }, 324.89),
+    ],
+    history: [],
+  };
+  const goal = groupGoal(g);
+  check("GOOGL: 집행 완료 1차 건너뜀 · 최신 콜", [goal?.kind, goal?.price, goal?.skill], ["add", 291.1, "investment-team"]);
+  check("GOOGL: 추격 금지선 초과 → blocked", [goal?.blocked, goal?.chaseLine], [true, 323]);
+  check("GOOGL: blocked 는 정렬 맨 뒤", goalGapKey(g), Number.POSITIVE_INFINITY);
+  // 같은 래더, 추격 금지선 아래면 blocked 아님
+  const below = { active: [call({ skill: "a", call: "keep", target: { noChaseAbove: 323, tranches: ["1차 ≤$330 (15%) — 집행 완료", "2차 ≤$291.10 (30%)"] } }, 292.5)], history: [] };
+  check("추격 금지선 아래 → blocked 아님", groupGoal(below)?.blocked, false);
+  // 래더 전부 집행 → 옛 논제로 내려가지 않고 null
+  const allDone = {
+    active: [
+      call({ skill: "a", call: "keep", target: { tranches: ["1차 ≤$330 (100%) — 집행 완료"] } }),
+      call({ skill: "b", call: "buy", target: { tranches: ["1차 ≤$250 (50%)"] } }),
+    ],
+    history: [],
+  };
+  check("래더 전부 집행 → null", groupGoal(allDone), null);
+}
+{
+  // 충돌 문구는 콜별 라벨 — keep 을 '매수'로 부르지 않는다.
+  const c = detectConflict([
+    call({ skill: "earnings-team", call: "keep" }),
+    call({ skill: "thesis-tracker", call: "hold", target: { low: 150, high: 170 } }),
+  ]);
+  check("충돌 문구: keep = 보유", c?.reasons[0], "판단 방향이 갈린다 — 보유(earnings-team) vs 관망(thesis-tracker)");
 }
 {
   // 래더 없는 keep — 다음 매수가는 없다(null). 목표 상단은 목표가 칸으로 간다(TASK-163).

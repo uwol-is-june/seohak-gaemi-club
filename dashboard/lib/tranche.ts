@@ -39,6 +39,8 @@ export interface Tranche {
   condition: string | null;
   /** 조건은 아니지만 같이 읽어야 하는 단서("단 R2 발동한 하락이면 진입 금지" 등). */
   caveat: string | null;
+  /** 이미 산 차수("… · 집행 완료 1주 @$324.49"). 다음 매수가 후보에서 빠진다. */
+  executed: boolean;
 }
 
 // 여러 표기를 한 번에 받는다: "≤$185", "<=$185", "$185", "≤ $1,850.50"
@@ -49,6 +51,9 @@ const PAREN_RE = /\(([^)]*)\)/;
 const LADDER_NOTE_RE = /^AND\s*[:：]/i;
 // 차수 뒤에 붙는 조건절 구분자 — em dash(—) 또는 en dash(–).
 const TAIL_SPLIT_RE = /\s[—–]\s/;
+// 이미 산 차수 표기("집행 완료", "집행됨"). 보유 종목의 증액 래더는 1차가 스타터로 이미 집행된 채
+// 기록된다 — 이걸 다음 매수가로 읽으면 "산 가격 아래 = 도달"이 떠 매수 신호처럼 보인다(2026-10-29 GOOGL).
+const EXECUTED_RE = /집행\s*(완료|됨)/;
 
 function toNumber(s: string): number | null {
   const n = Number(s.replace(/,/g, ""));
@@ -85,6 +90,7 @@ export function parseTranche(raw: string): Tranche {
     weightNote: null,
     condition: null,
     caveat: null,
+    executed: EXECUTED_RE.test(text),
   };
   if (!text) return base;
 
@@ -137,6 +143,7 @@ export function parseTranche(raw: string): Tranche {
     weightNote,
     condition,
     caveat,
+    executed: base.executed,
   };
 }
 
@@ -190,4 +197,9 @@ export function topTranchePrice(list: Tranche[]): number | null {
     .map((t) => t.price)
     .filter((p): p is number => p != null);
   return prices.length > 0 ? Math.max(...prices) : null;
+}
+
+/** 아직 안 산 차수 중 최상단 가격 — '다음 매수가'. 전부 집행됐으면 null. */
+export function nextOpenTranchePrice(list: Tranche[]): number | null {
+  return topTranchePrice(list.filter((t) => !t.executed));
 }

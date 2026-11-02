@@ -4,7 +4,7 @@
   "companyName": "AMAZON COM INC",
   "taxonomy": "us-gaap",
   "currency": "USD",
-  "generatedAt": "2026-08-07T08:07:53.219674+00:00",
+  "generatedAt": "2026-10-27T01:58:22.322003+00:00",
   "source": {
     "primary": "SEC EDGAR XBRL companyfacts",
     "primaryUrl": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001018724.json",
@@ -23,11 +23,14 @@
     "totalLiabilities": null,
     "equity": "StockholdersEquity",
     "cash": "CashAndCashEquivalentsAtCarryingValue",
-    "longTermDebt": "LongTermDebtNoncurrent"
+    "longTermDebt": "LongTermDebtNoncurrent",
+    "interestExpense": "InterestExpense + InterestExpenseNonoperating",
+    "pretaxIncome": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+    "costOfRevenue": "CostOfGoodsAndServicesSold"
   },
   "freshness": {
     "latestPeriodEnd": "2025-12-31",
-    "monthsOld": 7.2,
+    "monthsOld": 9.9,
     "stale": false
   },
   "annual": {
@@ -46,7 +49,10 @@
         "totalLiabilities": null,
         "equity": 19285000000,
         "cash": 19334000000,
-        "longTermDebt": 7694000000
+        "longTermDebt": 7694000000,
+        "interestExpense": 484000000,
+        "pretaxIncome": 3892000000,
+        "costOfRevenue": 88265000000
       },
       "provenance": {
         "revenue": {
@@ -125,11 +131,32 @@
           "filed": "2018-02-02",
           "form": "10-K",
           "periodEnd": "2016-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001018724-19-000004",
+          "filed": "2019-02-01",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001018724-19-000004",
+          "filed": "2019-02-01",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0001018724-19-000004",
+          "filed": "2019-02-01",
+          "form": "10-K",
+          "periodEnd": "2016-12-31"
         }
       },
       "derived": {
         "fcf": 10466000000,
-        "grossMarginPct": null,
+        "grossMarginPct": 35.09306,
         "operatingMarginPct": 3.078235,
         "netMarginPct": 1.743549,
         "roePct": 12.294529,
@@ -151,7 +178,10 @@
         "totalLiabilities": null,
         "equity": 27709000000,
         "cash": 20522000000,
-        "longTermDebt": 24743000000
+        "longTermDebt": 24743000000,
+        "interestExpense": 848000000,
+        "pretaxIncome": 3806000000,
+        "costOfRevenue": 111934000000
       },
       "provenance": {
         "revenue": {
@@ -230,11 +260,32 @@
           "filed": "2019-02-01",
           "form": "10-K",
           "periodEnd": "2017-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001018724-20-000004",
+          "filed": "2020-01-31",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001018724-20-000004",
+          "filed": "2020-01-31",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0001018724-20-000004",
+          "filed": "2020-01-31",
+          "form": "10-K",
+          "periodEnd": "2017-12-31"
         }
       },
       "derived": {
         "fcf": 6410000000,
-        "grossMarginPct": null,
+        "grossMarginPct": 37.068355,
         "operatingMarginPct": 2.308479,
         "netMarginPct": 1.705216,
         "roePct": 10.945902,
@@ -256,7 +307,10 @@
         "totalLiabilities": null,
         "equity": 43549000000,
         "cash": 31750000000,
-        "longTermDebt": 23495000000
+        "longTermDebt": 23495000000,
+        "interestExpense": 1417000000,
+        "pretaxIncome": 11261000000,
+        "costOfRevenue": 139156000000
       },
       "provenance": {
         "revenue": {
@@ -335,11 +389,32 @@
           "filed": "2020-01-31",
           "form": "10-K",
           "periodEnd": "2018-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001018724-21-000004",
+          "filed": "2021-02-03",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001018724-21-000004",
+          "filed": "2021-02-03",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0001018724-21-000004",
+          "filed": "2021-02-03",
+          "form": "10-K",
+          "periodEnd": "2018-12-31"
         }
       },
       "derived": {
         "fcf": 17296000000,
-        "grossMarginPct": null,
+        "grossMarginPct": 40.247416,
         "operatingMarginPct": 5.333488,
         "netMarginPct": 4.325274,
         "roePct": 23.130267,
@@ -361,7 +436,10 @@
         "totalLiabilities": null,
         "equity": 62060000000,
         "cash": 36092000000,
-        "longTermDebt": 23414000000
+        "longTermDebt": 23414000000,
+        "interestExpense": 1600000000,
+        "pretaxIncome": 13976000000,
+        "costOfRevenue": 165536000000
       },
       "provenance": {
         "revenue": {
@@ -440,11 +518,32 @@
           "filed": "2021-02-03",
           "form": "10-K",
           "periodEnd": "2019-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001018724-22-000005",
+          "filed": "2022-02-04",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001018724-22-000005",
+          "filed": "2022-02-04",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0001018724-22-000005",
+          "filed": "2022-02-04",
+          "form": "10-K",
+          "periodEnd": "2019-12-31"
         }
       },
       "derived": {
         "fcf": 21653000000,
-        "grossMarginPct": null,
+        "grossMarginPct": 40.990011,
         "operatingMarginPct": 5.183551,
         "netMarginPct": 4.13087,
         "roePct": 18.672253,
@@ -466,7 +565,10 @@
         "totalLiabilities": null,
         "equity": 93404000000,
         "cash": 42122000000,
-        "longTermDebt": 31816000000
+        "longTermDebt": 31816000000,
+        "interestExpense": 1647000000,
+        "pretaxIncome": 24178000000,
+        "costOfRevenue": 233307000000
       },
       "provenance": {
         "revenue": {
@@ -545,11 +647,32 @@
           "filed": "2022-02-04",
           "form": "10-K",
           "periodEnd": "2020-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001018724-23-000004",
+          "filed": "2023-02-03",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001018724-23-000004",
+          "filed": "2023-02-03",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0001018724-23-000004",
+          "filed": "2023-02-03",
+          "form": "10-K",
+          "periodEnd": "2020-12-31"
         }
       },
       "derived": {
         "fcf": 25924000000,
-        "grossMarginPct": null,
+        "grossMarginPct": 39.567792,
         "operatingMarginPct": 5.9314,
         "netMarginPct": 5.52525,
         "roePct": 22.837352,
@@ -571,7 +694,10 @@
         "totalLiabilities": null,
         "equity": 138245000000,
         "cash": 36220000000,
-        "longTermDebt": 48744000000
+        "longTermDebt": 48744000000,
+        "interestExpense": 1809000000,
+        "pretaxIncome": 38151000000,
+        "costOfRevenue": 272344000000
       },
       "provenance": {
         "revenue": {
@@ -650,11 +776,32 @@
           "filed": "2023-02-03",
           "form": "10-K",
           "periodEnd": "2021-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001018724-24-000008",
+          "filed": "2024-02-02",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001018724-24-000008",
+          "filed": "2024-02-02",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0001018724-24-000008",
+          "filed": "2024-02-02",
+          "form": "10-K",
+          "periodEnd": "2021-12-31"
         }
       },
       "derived": {
         "fcf": -14726000000,
-        "grossMarginPct": null,
+        "grossMarginPct": 42.032514,
         "operatingMarginPct": 5.29541,
         "netMarginPct": 7.101413,
         "roePct": 24.133965,
@@ -676,7 +823,10 @@
         "totalLiabilities": null,
         "equity": 146043000000,
         "cash": 53888000000,
-        "longTermDebt": 67150000000
+        "longTermDebt": 67150000000,
+        "interestExpense": 2367000000,
+        "pretaxIncome": -5936000000,
+        "costOfRevenue": 288831000000
       },
       "provenance": {
         "revenue": {
@@ -755,11 +905,32 @@
           "filed": "2024-02-02",
           "form": "10-K",
           "periodEnd": "2022-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001018724-24-000008",
+          "filed": "2024-02-02",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001018724-25-000004",
+          "filed": "2025-02-07",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0001018724-25-000004",
+          "filed": "2025-02-07",
+          "form": "10-K",
+          "periodEnd": "2022-12-31"
         }
       },
       "derived": {
         "fcf": -16893000000,
-        "grossMarginPct": null,
+        "grossMarginPct": 43.80534,
         "operatingMarginPct": 2.382958,
         "netMarginPct": -0.52959,
         "roePct": -1.863835,
@@ -781,7 +952,10 @@
         "totalLiabilities": null,
         "equity": 201875000000,
         "cash": 73387000000,
-        "longTermDebt": 58314000000
+        "longTermDebt": 58314000000,
+        "interestExpense": 3182000000,
+        "pretaxIncome": 37557000000,
+        "costOfRevenue": 304739000000
       },
       "provenance": {
         "revenue": {
@@ -860,11 +1034,32 @@
           "filed": "2025-02-07",
           "form": "10-K",
           "periodEnd": "2023-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpense",
+          "accn": "0001018724-24-000008",
+          "filed": "2024-02-02",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001018724-26-000004",
+          "filed": "2026-02-06",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0001018724-26-000004",
+          "filed": "2026-02-06",
+          "form": "10-K",
+          "periodEnd": "2023-12-31"
         }
       },
       "derived": {
         "fcf": 32217000000,
-        "grossMarginPct": null,
+        "grossMarginPct": 46.982089,
         "operatingMarginPct": 6.411441,
         "netMarginPct": 5.293284,
         "roePct": 15.071207,
@@ -886,7 +1081,10 @@
         "totalLiabilities": null,
         "equity": 285970000000,
         "cash": 78779000000,
-        "longTermDebt": 52623000000
+        "longTermDebt": 52623000000,
+        "interestExpense": 2406000000,
+        "pretaxIncome": 68614000000,
+        "costOfRevenue": 326288000000
       },
       "provenance": {
         "revenue": {
@@ -965,11 +1163,32 @@
           "filed": "2026-02-06",
           "form": "10-K",
           "periodEnd": "2024-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpenseNonoperating",
+          "accn": "0001018724-26-000004",
+          "filed": "2026-02-06",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001018724-26-000004",
+          "filed": "2026-02-06",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0001018724-26-000004",
+          "filed": "2026-02-06",
+          "form": "10-K",
+          "periodEnd": "2024-12-31"
         }
       },
       "derived": {
         "fcf": 32878000000,
-        "grossMarginPct": null,
+        "grossMarginPct": 48.854393,
         "operatingMarginPct": 10.751945,
         "netMarginPct": 9.287117,
         "roePct": 20.718257,
@@ -991,7 +1210,10 @@
         "totalLiabilities": null,
         "equity": 411065000000,
         "cash": 86810000000,
-        "longTermDebt": 65648000000
+        "longTermDebt": 65648000000,
+        "interestExpense": 2274000000,
+        "pretaxIncome": 97311000000,
+        "costOfRevenue": 356414000000
       },
       "provenance": {
         "revenue": {
@@ -1070,279 +1292,37 @@
           "filed": "2026-02-06",
           "form": "10-K",
           "periodEnd": "2025-12-31"
+        },
+        "interestExpense": {
+          "tag": "InterestExpenseNonoperating",
+          "accn": "0001018724-26-000004",
+          "filed": "2026-02-06",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "pretaxIncome": {
+          "tag": "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments",
+          "accn": "0001018724-26-000004",
+          "filed": "2026-02-06",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
+        },
+        "costOfRevenue": {
+          "tag": "CostOfGoodsAndServicesSold",
+          "accn": "0001018724-26-000004",
+          "filed": "2026-02-06",
+          "form": "10-K",
+          "periodEnd": "2025-12-31"
         }
       },
       "derived": {
         "fcf": 7695000000,
-        "grossMarginPct": null,
+        "grossMarginPct": 50.285665,
         "operatingMarginPct": 11.155297,
         "netMarginPct": 10.833784,
         "roePct": 18.894822,
         "debtToEquity": null
       }
     }
-  },
-  "crossValidation": {
-    "status": "ok",
-    "url": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/AMZN?symbol=AMZN&type=annualTotalRevenue,annualNetIncome,annualOperatingIncome,annualGrossProfit,annualDilutedEPS,annualOperatingCashFlow,annualCapitalExpenditure,annualStockholdersEquity,annualTotalAssets&period1=1374998873&period2=1786176473",
-    "worst": "일치",
-    "items": [
-      {
-        "fiscalYear": "2022",
-        "metric": "capex",
-        "sec": 63645000000,
-        "secondary": 63645000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2022",
-        "metric": "epsDiluted",
-        "sec": -0.27,
-        "secondary": -0.27,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2022",
-        "metric": "equity",
-        "sec": 146043000000,
-        "secondary": 146043000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2022",
-        "metric": "netIncome",
-        "sec": -2722000000,
-        "secondary": -2722000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2022",
-        "metric": "operatingCashFlow",
-        "sec": 46752000000,
-        "secondary": 46752000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2022",
-        "metric": "operatingIncome",
-        "sec": 12248000000,
-        "secondary": 12248000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2022",
-        "metric": "revenue",
-        "sec": 513983000000,
-        "secondary": 513983000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2022",
-        "metric": "totalAssets",
-        "sec": 462675000000,
-        "secondary": 462675000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2023",
-        "metric": "capex",
-        "sec": 52729000000,
-        "secondary": 52729000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2023",
-        "metric": "epsDiluted",
-        "sec": 2.9,
-        "secondary": 2.9,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2023",
-        "metric": "equity",
-        "sec": 201875000000,
-        "secondary": 201875000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2023",
-        "metric": "netIncome",
-        "sec": 30425000000,
-        "secondary": 30425000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2023",
-        "metric": "operatingCashFlow",
-        "sec": 84946000000,
-        "secondary": 84946000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2023",
-        "metric": "operatingIncome",
-        "sec": 36852000000,
-        "secondary": 36852000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2023",
-        "metric": "revenue",
-        "sec": 574785000000,
-        "secondary": 574785000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2023",
-        "metric": "totalAssets",
-        "sec": 527854000000,
-        "secondary": 527854000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2024",
-        "metric": "capex",
-        "sec": 82999000000,
-        "secondary": 82999000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2024",
-        "metric": "epsDiluted",
-        "sec": 5.53,
-        "secondary": 5.53,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2024",
-        "metric": "equity",
-        "sec": 285970000000,
-        "secondary": 285970000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2024",
-        "metric": "netIncome",
-        "sec": 59248000000,
-        "secondary": 59248000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2024",
-        "metric": "operatingCashFlow",
-        "sec": 115877000000,
-        "secondary": 115877000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2024",
-        "metric": "operatingIncome",
-        "sec": 68593000000,
-        "secondary": 68593000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2024",
-        "metric": "revenue",
-        "sec": 637959000000,
-        "secondary": 637959000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2024",
-        "metric": "totalAssets",
-        "sec": 624894000000,
-        "secondary": 624894000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2025",
-        "metric": "capex",
-        "sec": 131819000000,
-        "secondary": 131819000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2025",
-        "metric": "epsDiluted",
-        "sec": 7.17,
-        "secondary": 7.17,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2025",
-        "metric": "equity",
-        "sec": 411065000000,
-        "secondary": 411065000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2025",
-        "metric": "netIncome",
-        "sec": 77670000000,
-        "secondary": 77670000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2025",
-        "metric": "operatingCashFlow",
-        "sec": 139514000000,
-        "secondary": 139514000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2025",
-        "metric": "operatingIncome",
-        "sec": 79975000000,
-        "secondary": 79975000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2025",
-        "metric": "revenue",
-        "sec": 716924000000,
-        "secondary": 716924000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      },
-      {
-        "fiscalYear": "2025",
-        "metric": "totalAssets",
-        "sec": 818042000000,
-        "secondary": 818042000000.0,
-        "diffPct": 0.0,
-        "verdict": "일치"
-      }
-    ]
   }
 }

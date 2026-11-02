@@ -1,6 +1,8 @@
 """tools/quality_screen_batch.py — 열등주 제거 7지표 기계 판정 테스트 (TASK-195). 네트워크 없음."""
 import re
+import tempfile
 from datetime import date
+from pathlib import Path
 
 from quality_screen_batch import compute, judge, screen, ticker_report
 
@@ -144,3 +146,56 @@ def test_dpp_collections_are_added_back_to_ocf():
 def test_no_dpp_no_adjustment():
     r = _run(_annual())
     assert r["dppYears"] == [] and r["adjustments"] == []
+
+
+# ── 보고서 쓰기 규칙 (TASK-197) ──────────────────────────────────────────────
+
+def _res(verdict, ticker="XYZ"):
+    return {"ticker": ticker, "verdict": verdict}
+
+
+def test_failed_ticker_without_prior_report_is_not_written():
+    tmp_path = Path(tempfile.mkdtemp())
+    from quality_screen_batch import plan_write
+    assert plan_write(_res("탈락"), tmp_path / "XYZ", sector="S", write_all=False,
+                      today=date(2026, 10, 28)) == (False, None)
+
+
+def test_failed_ticker_with_prior_report_is_rewritten():
+    tmp_path = Path(tempfile.mkdtemp())
+    from quality_screen_batch import plan_write
+    d = tmp_path / "XYZ"
+    d.mkdir()
+    (d / "XYZ-quality-screen-20260727.md").write_text("# old\n<!-- meta sector: S -->\n", encoding="utf-8")
+    assert plan_write(_res("탈락"), d, sector="S", write_all=False,
+                      today=date(2026, 10, 28)) == (True, "S")
+
+
+def test_todays_report_alone_is_not_a_prior():
+    tmp_path = Path(tempfile.mkdtemp())
+    from quality_screen_batch import plan_write
+    d = tmp_path / "XYZ"
+    d.mkdir()
+    (d / "XYZ-quality-screen-20261028.md").write_text("# today\n", encoding="utf-8")
+    assert plan_write(_res("탈락"), d, sector="S", write_all=False,
+                      today=date(2026, 10, 28))[0] is False
+
+
+def test_sector_marker_skipped_when_other_sector_declared():
+    tmp_path = Path(tempfile.mkdtemp())
+    from quality_screen_batch import plan_write
+    d = tmp_path / "XYZ"
+    d.mkdir()
+    (d / "XYZ-thesis.md").write_text("# t\n<!-- meta sector: Cloud-Computing -->\n", encoding="utf-8")
+    assert plan_write(_res("통과"), d, sector="AI-Infrastructure", write_all=False,
+                      today=date(2026, 10, 28)) == (True, None)
+
+
+def test_restored_report_shows_machine_verdict():
+    r = _run(_annual(overrides={fy: {"netIncome": 10.0} for fy in range(2015, 2026)}))
+    assert r["verdict"] == "탈락"
+    r.update(ticker="XYZ", name="XYZ Corp", machineVerdict="탈락", verdict="면제 통과", restored="왜곡 사유")
+    md = ticker_report(r, sector=None, today=date(2026, 10, 28))
+    assert "## 수동 복권" in md and "왜곡 사유" in md and "**탈락**" in md
+    assert re.search(r"<!--\s*quality-screen\s+result:\s*면제 통과\s*-->", md)
+    assert "meta sector" not in md

@@ -421,7 +421,13 @@ function TickerCard({
   const gapPct =
     goal != null && priceNow != null && priceNow > 0 ? ((goal.price - priceNow) / priceNow) * 100 : null;
   // 다음 매수가는 항상 내려와야 닿는 지점이라 gap ≥ 0 이면 도달.
-  const reached = gapPct != null && gapPct >= 0;
+  // 🔴 추격 금지선 위면 도달보다 먼저 '추격 금지'다 — 어떤 차수도 활성이 아니다(보유 종목 증액 포함).
+  const blocked = goal?.blocked === true;
+  const reached = !blocked && gapPct != null && gapPct >= 0;
+  const blockedTitle =
+    blocked && goal?.chaseLine != null
+      ? `${goal.skill} 추격 금지선 ${fmtPrice(goal.chaseLine)} 초과 — 어떤 차수도 집행하지 않는다 (다음 ${goal.kind === "add" ? "증액" : "진입"}가 ${fmtPrice(goal.price)})`
+      : undefined;
   const goalNoun = goal?.kind === "add" ? "증액(추가 매수)" : "진입(첫 매수)";
   // (거리 막대(TASK-135)와 '조건부 N/M' 칩은 뺐다 — TASK-161·162. 정렬 '매수까지 가까운 순'이
   //  비교를, 펼친 래더가 조건 정보를 맡는다.)
@@ -550,7 +556,7 @@ function TickerCard({
           </span>
 
           {/* 다음 매수가 — 미보유면 진입 1차, 보유면 증액 1차. 래더가 없으면 '—'. */}
-          <span className="hidden min-w-0 md:block" title={goal != null ? `${goalNoun} 래더 1차` : undefined}>
+          <span className="hidden min-w-0 md:block" title={goal != null ? `${goalNoun} — ${goal.skill} 래더의 아직 안 산 최상단 차수` : undefined}>
             <span className="block font-mono text-[12.5px] text-body">{goal != null ? fmtPrice(goal.price) : "—"}</span>
             {goal != null && (
               <span className="block text-[9px] text-mute">{goal.kind === "add" ? "증액" : "진입"}</span>
@@ -578,6 +584,8 @@ function TickerCard({
               >
                 —
               </span>
+            ) : blocked ? (
+              <span className="text-[13px] font-bold text-warn" title={blockedTitle}>추격 금지</span>
             ) : reached ? (
               <span className="text-[15px] font-bold text-success">도달</span>
             ) : (
@@ -656,6 +664,8 @@ function TickerCard({
             <span className="eyebrow shrink-0 text-[9px]">{goal?.kind === "add" ? "증액까지" : "매수까지"}</span>
             {goal == null || gapPct == null ? (
               <span className="font-mono text-mute">—</span>
+            ) : blocked ? (
+              <span className="font-bold text-warn" title={blockedTitle}>추격 금지</span>
             ) : reached ? (
               <span className="font-bold text-success">도달</span>
             ) : (

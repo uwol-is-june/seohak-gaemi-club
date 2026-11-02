@@ -17,7 +17,7 @@
 
 // node 로 직접 돌리는 테스트가 있어 값 import 는 확장자를 붙인다(lib/*.test.ts 규약).
 import type { ScoredCall, CallType } from "./calls";
-import { parseTranches, pricedTranches, topTranchePrice } from "./tranche.ts";
+import { nextOpenTranchePrice, parseTranches, pricedTranches, topTranchePrice } from "./tranche.ts";
 
 /** 종목의 최신 판단보다 이 일수를 넘게 앞선 다른 스킬의 콜은 대체된 것으로 본다(TASK-170). */
 export const SUPERSEDE_DAYS = 7;
@@ -46,7 +46,9 @@ export interface ThesisGroup {
 // keep 과 hold 는 특히 정반대를 예측한다(전자는 하락 없음이 적중, 후자는 하락이 적중).
 type Stance = "bull" | "bear" | "wait";
 const STANCE: Record<CallType, Stance> = { buy: "bull", keep: "bull", avoid: "bear", hold: "wait" };
-const STANCE_LABEL: Record<Stance, string> = { bull: "매수·보유", bear: "회피", wait: "관망" };
+// 방향(충돌 판정 단위)은 buy·keep 을 한 묶음으로 보지만, **표시는 콜별로** 한다 —
+// "매수·보유" 한 라벨로 묶으면 보유 유지(keep)가 매수 권고처럼 읽힌다(2026-10-29 GOOGL).
+const CALL_LABEL: Record<CallType, string> = { buy: "매수", keep: "보유", hold: "관망", avoid: "회피" };
 
 /** 아직 결론이 안 난 콜인가. 시세를 못 받아온 unknown 도 '살아있다'로 본다(네트워크 문제로 논제가 사라지면 안 된다). */
 function isLive(c: ScoredCall): boolean {
@@ -74,18 +76,29 @@ export interface GroupGoal {
   /** entry = 미보유 첫 진입(관망 래더) · add = 보유 중 추가 매수(증액 래더). */
   kind: "entry" | "add";
   price: number;
+  /** 이 매수가를 낸 논제(스킬). */
+  skill: string;
+  /** 그 논제의 추격 금지선. 없으면 null. */
+  chaseLine: number | null;
+  /** 현재가가 추격 금지선 위 — 어떤 차수도 활성이 아니다. 화면은 '도달' 대신 '추격 금지'를 띄운다. */
+  blocked: boolean;
 }
 
 /**
  * 종목 단위 다음 매수가 (TASK-146 · TASK-163).
  *
- * 🔴 기준가는 **대표 논제(lead)의 방향**이 정하고, 값은 **같은 방향의 살아있는 논제 전체**에서
- * 가장 먼저 닿는(가장 비싼) 지점을 쓴다. 예전엔 정렬은 lead 하나만, 표시는 전체 max 를 봐서
- * NVDA·TSM 처럼 논제가 여럿인 종목에서 정렬 순서와 화면 숫자가 어긋났다.
+ * 🔴 기준가는 **대표 논제(lead)의 방향**이 정하고, 값은 그 방향의 살아있는 논제 중
+ * **래더를 가진 가장 최근 논제 하나**에서 가져온다(2026-10-29). 예전엔 같은 방향 논제 전체의
+ * 최상단 max 를 썼는데, 그러면 새 판단이 래더를 내려도 7일 창 안의 옛 래더가 계속 이겼다
+ * (GOOGL: 10/23 thesis-tracker 1차 $330 이 10/29 investment-team 2차 $291 을 덮어 '도달'이 떴다).
  *
  * - hold      → 진입 래더 최상단(없으면 밴드 상단) · entry
- * - buy/keep  → 증액 래더 최상단 · add. 래더가 없으면 **null** — 모르는 것이 맞다.
+ * - buy/keep  → 증액 래더에서 **아직 안 산** 최상단 차수 · add. 래더가 없으면 **null** — 모르는 것이 맞다.
  * - avoid     → null
+ *
+ * 🔴 '집행 완료' 차수는 다음 매수가가 아니다 — 이미 산 가격 아래로 내려오면 "도달"이 떠
+ * 보유 유지 판단이 매수 신호처럼 보였다. 전부 집행됐으면 null.
+ * 🔴 현재가가 그 논제의 추격 금지선 위면 `blocked` — 보유 종목도 예외가 아니다(증액은 매수다).
  *
  * 🔴 예전엔 래더 없는 buy/keep 에서 목표 상단(올라가야 할 가격)으로 폴백해 '집행가' 칸에 띄웠다.
  * 같은 칸에 방향이 반대인 숫자가 섞여 "안 샀는데 집행가가 있다"는 혼동을 만들었다 — 목표가는
@@ -94,19 +107,26 @@ export interface GroupGoal {
 export function groupGoal(g: { active: ScoredCall[]; history: ScoredCall[] }): GroupGoal | null {
   const lead = g.active[0] ?? g.history[0];
   if (!lead) return null;
-  if (lead.call === "hold") {
-    const tops = g.active
-      .filter((c) => c.call === "hold")
-      .map(entryTopPrice)
-      .filter((p): p is number => p != null);
-    return tops.length > 0 ? { kind: "entry", price: Math.max(...tops) } : null;
-  }
-  if (lead.call === "buy" || lead.call === "keep") {
-    const tops = g.active
-      .filter((c) => c.call === "buy" || c.call === "keep")
-      .map((c) => topTranchePrice(parseTranches(c.target?.tranches)))
-      .filter((p): p is number => p != null);
-    return tops.length > 0 ? { kind: "add", price: Math.max(...tops) } : null;
+  const isEntry = lead.call === "hold";
+  if (!isEntry && lead.call !== "buy" && lead.call !== "keep") return null;
+  // active 는 최신순 — 같은 방향에서 래더(또는 hold 밴드)를 가진 첫 논제가 정한다.
+  for (const c of g.active) {
+    if (isEntry ? c.call !== "hold" : c.call !== "buy" && c.call !== "keep") continue;
+    const tranches = parseTranches(c.target?.tranches);
+    const hasLadder = pricedTranches(tranches).length > 0;
+    if (!hasLadder && !(isEntry && typeof c.target?.high === "number")) continue;
+    const price = hasLadder ? nextOpenTranchePrice(tranches) : (c.target?.high as number);
+    if (price == null) return null; // 래더 전부 집행 — 옛 논제로 내려가지 않는다
+    const line = c.target?.noChaseAbove;
+    const chaseLine = typeof line === "number" ? line : null;
+    const now = c.priceNow;
+    return {
+      kind: isEntry ? "entry" : "add",
+      price,
+      skill: c.skill,
+      chaseLine,
+      blocked: chaseLine != null && now != null && now > chaseLine,
+    };
   }
   return null;
 }
@@ -146,13 +166,13 @@ export function groupTarget(
 
 /**
  * '매수까지 가까운 순' 정렬 키 — 현재가에서 다음 매수가까지의 상대 거리(절대값).
- * 다음 매수가가 없으면 ∞ 로 뒤에 보낸다.
+ * 다음 매수가가 없거나 추격 금지선 위(살 수 없음)면 ∞ 로 뒤에 보낸다.
  */
 export function goalGapKey(g: { active: ScoredCall[]; history: ScoredCall[] }): number {
   const goal = groupGoal(g);
   const lead = g.active[0] ?? g.history[0];
   const now = lead?.priceNow;
-  if (!goal || now == null || now <= 0) return Number.POSITIVE_INFINITY;
+  if (!goal || goal.blocked || now == null || now <= 0) return Number.POSITIVE_INFINITY;
   return Math.abs((goal.price - now) / now);
 }
 
@@ -178,15 +198,16 @@ export function detectConflict(active: ScoredCall[]): { reasons: string[] } | nu
   const reasons: string[] = [];
 
   // 1) 방향
-  const stances = new Map<Stance, string[]>();
+  const stances = new Map<Stance, ScoredCall[]>();
   for (const c of active) {
     const s = STANCE[c.call];
-    stances.set(s, [...(stances.get(s) ?? []), c.skill]);
+    stances.set(s, [...(stances.get(s) ?? []), c]);
   }
   if (stances.size > 1) {
-    const parts = Array.from(stances.entries()).map(
-      ([s, skills]) => `${STANCE_LABEL[s]}(${skills.join(", ")})`
-    );
+    const parts = Array.from(stances.values()).map((cs) => {
+      const labels = Array.from(new Set(cs.map((c) => CALL_LABEL[c.call]))).join("·");
+      return `${labels}(${cs.map((c) => c.skill).join(", ")})`;
+    });
     reasons.push(`판단 방향이 갈린다 — ${parts.join(" vs ")}`);
   }
 
