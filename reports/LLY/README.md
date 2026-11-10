@@ -1,29 +1,25 @@
-# Eli Lilly (LLY) — 투자 리서치 팀 보고서
+# Eli Lilly (LLY) — 투자 리서치 팀
 <!-- meta sector: GLP-1-Obesity -->
 
-- **리서치 수행일**: 2026-09-30 (`/investment-team`, 4개 Agent 병렬 · 재시도 0회)
-- **기준 주가**: $1,184.63 (2026-09-29 종가) · 시가총액 $1,055.9B
-- **정보 풍부도**: A등급
-- **핵심 재무 원천**: [`_data.md`](_data.md) — SEC XBRL 기계추출 + Yahoo 교차검증
+**리서치 수행일**: 2026-11-10 (직전 2026-09-30) · 기준 주가 $1,411.95 · 정보 풍부도 A등급
+**보유 상태**: 미보유 · 관망
 
-## 서브 보고서
+## 보고서
+- [01 비즈니스 모델·MOAT — 단융핑](01-BusinessModel-DYP-Perspective.md)
+- [02 재무·밸류에이션 — 버핏](02-FinancialValuation-Buffett-Perspective.md)
+- [03 산업·경쟁 — 멍거](03-IndustryCompetition-Munger-Perspective.md)
+- [04 리스크·경영진 — 리루](04-RiskManagement-LiLu-Perspective.md)
+- [FinalReport — Team Lead 종합](FinalReport.md)
 
-| # | 관점 | 보고서 | 평점 |
-|---|---|---|:---:|
-| 01 | 비즈니스 모델 & MOAT (단융핑) | [01-BusinessModel-DYP-Perspective.md](01-BusinessModel-DYP-Perspective.md) | ★★★★☆ |
-| 02 | 재무 & 밸류에이션 (버핏) | [02-FinancialValuation-Buffett-Perspective.md](02-FinancialValuation-Buffett-Perspective.md) | ★★☆☆☆ |
-| 03 | 산업 & 경쟁 (멍거) | [03-IndustryCompetition-Munger-Perspective.md](03-IndustryCompetition-Munger-Perspective.md) | ★★★★☆ |
-| 04 | 리스크 & 경영진 (리루) | [04-RiskManagement-LiLu-Perspective.md](04-RiskManagement-LiLu-Perspective.md) | ★★★☆☆ |
-| — | **종합** | [FinalReport.md](FinalReport.md) | **★★★☆☆** |
+## 4차원 평점
 
-## 핵심 결론
+| 차원 | 프레임워크 | 평점 | 핵심 |
+|---|---|:-:|---|
+| 비즈니스 모델 | 단융핑 | ★★★★☆ | 최상위 사업 품질. 총이익률 첫 하락(86.3% → 84.4%) |
+| 재무·밸류에이션 | 버핏 | ★★☆☆☆ | T2 · IV $1,346.93(감사 후) · 현재가/IV 104.8% · 게이트 ② 위반 |
+| 산업·경쟁 | 멍거 | ★★★★☆ | 주사제·차세대 우위 확대, 미국 가격 하락 가속 · 해자 ★4 |
+| 리스크·경영진 | 리루 | ★★★☆☆ | 레드라인 0건 · 건강도 7/10 · R4(M&A) 경고 근접 · R6(특허 소송) 신규 |
+| **종합** | | **★★★☆☆** | |
 
-LLY는 가격을 내리면서도 마진을 올리는 최상위 사업이다. 하지만 현재가는 중립 내재가치 $950보다 25% 높고, 시장이 함의하는 성장률(연 21.7%)이 우리의 낙관 시나리오와 같다. 절대 고평가 게이트 ②(10년 25x 연환산 6.4% < 10%)를 위반하므로 **관망(hold)** 이다.
-
-| 항목 | 값 |
-|---|---|
-| 티어 · 요구 MOS | **T2 · 25%** |
-| 중립 내재가치 | **$950** (할인 감사 후 · 방법별 $893~$1,000) |
-| 진입 래더 (24M) | 1차 ≤$712 (30%) · 2차 ≤$665 (35%, AND R1 미발동) · 3차 ≤$620 (35%, AND R2 미발동) |
-| 추격 금지 | >$849 (게이트 ② 해소선) |
-| 체결확률 | **0.0%** → 촉매 대기 (retatrutide 승인 · 가격 안정 · FCF마진 25%+) |
+## 결론
+Q3로 사업 가치는 올랐지만 주가가 먼저 올라 현재가가 내재가치보다 4.8% 높다. **관망(hold)이며 진입 래더는 1차 ≤$1,145 · 2차 ≤$1,078 · 3차 ≤$993, 추격 금지선은 $1,274다.** 1차 체결확률이 7.3%라 실질적으로는 촉매 대기(retatrutide 승인·2027 가이던스)다.
